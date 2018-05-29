@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>VIM: if_lua</title>
+<link rel="stylesheet" href="vim-stylesheet.css" type="text/css">
+</head>
+<body>
+<h2>IF_LUA</h2>
+<pre>
+<b class="vimtag">*<a name="if_lua.txt">if_lua.txt</a>*</b>    For Vim version 7.3.  最近更新: 2010年7月
+
+
+                  VIM 参 考 手 册         by Luis Carvalho
+                                <code class="vim">译者</code>: Willis
+                                http://vimcdoc.sf.net
+
+
+Vim 的 Lua 接口                                         <b class="vimtag">*<a name="lua">lua</a>*</b> <b class="vimtag">*<a name="Lua">Lua</a>*</b>
+
+1. 命令                         |<a href="if_lua.html#lua-commands">lua-commands</a>|
+2. vim 模块                     |<a href="if_lua.html#lua-vim">lua-vim</a>|
+3. 缓冲区用户数据               |<a href="if_lua.html#lua-buffer">lua-buffer</a>|
+4. 窗口用户数据                 |<a href="if_lua.html#lua-window">lua-window</a>|
+
+<code class="notvi">{Vi 没有任何以上的命令}</code>
+
+仅当 Vim 编译时加入 |<a href="various.html#+lua">+lua</a>| 特性时 Lua 接口才可用。
+
+</pre><hr class="doubleline" /><pre>
+<h4>1. 命令                                                 <b class="vimtag">*<a name="lua-commands">lua-commands</a>*</b></h4>
+                                                        <b class="vimtag">*<a name=":lua">:lua</a>*</b>
+:<code class="special">[range]</code>lua <code class="special">{chunk}</code>
+                        执行 Lua 语言块 <code class="special">{chunk}</code>。<code class="notvi">{Vi 无此功能}</code>
+
+示例:
+
+<code class="example">        :lua print("Hello, Vim!")</code>
+<code class="example">        :lua local curbuf = vim.buffer() curbuf[7] = "line #7"</code>
+
+
+:<code class="special">[range]</code>lua &lt;&lt; <code class="special">{endmarker}</code>
+<code class="special">{script}</code>
+<code class="special">{endmarker}</code>
+                        执行 Lua 脚本 <code class="special">{script}</code>。<code class="notvi">{Vi 无此功能}</code>
+                        <code class="note">注意</code>: 如果编译时没有加入 Lua 特性，此命令不能工作。要
+                        避免错误，见 |<a href="if_perl.html#script-here">script-here</a>|。
+
+<code class="special">{endmarker}</code> 之前_不能_有任何空白。如果 "&lt;&lt;" 之后的 <code class="special">{endmarker}</code> 省略，<code class="special">{script}</code>
+之后必须加上句号 '.'，就像 |<a href="insert.html#:append">:append</a>| 和 |<a href="insert.html#:insert">:insert</a>| 命令那样。
+这种形式的 |<a href="if_lua.html#:lua">:lua</a>| 命令主要用于在 Vim 脚本中嵌入 Lua 代码。
+
+示例:
+
+<code class="example">        function! CurrentLineInfo()</code>
+<code class="example">        lua &lt;&lt; EOF</code>
+<code class="example">        local linenr = vim.window().line</code>
+<code class="example">        local curline = vim.buffer()[linenr]</code>
+<code class="example">        print(string.format("Current line [%d] has %d chars",</code>
+<code class="example">                linenr, #curline))</code>
+<code class="example">        EOF</code>
+<code class="example">        endfunction</code>
+
+
+                                                        <b class="vimtag">*<a name=":luado">:luado</a>*</b>
+:<code class="special">[range]</code>luado <code class="special">{body}</code>    在 <code class="special">[range]</code> 行范围的每行执行 Lua 函数
+                        "function (line) <code class="special">{body}</code> end"，其中，函数参数是每行的文
+                        本，结尾的 <code class="special">&lt;EOL&gt;</code> 不计。函数返回值为字符串时用来替代当
+                        前行的文本。缺省的 <code class="special">[range]</code> 是整个文件: "1,$"。
+                        <code class="notvi">{Vi 无此功能}</code>
+
+示例:
+
+<code class="example">        :luado return string.format("%s\t%d", line:reverse(), #line)</code>
+<code class="example"></code>
+<code class="example">        :lua require"lpeg"</code>
+<code class="example">        :lua -- balanced parenthesis grammar:</code>
+<code class="example">        :lua bp = lpeg.P{ "(" * ((1 - lpeg.S"()") + lpeg.V(1))^0 * ")" }</code>
+<code class="example">        :luado if bp:match(line) then return "--&gt;\t" .. line end</code>
+
+
+                                                        <b class="vimtag">*<a name=":luafile">:luafile</a>*</b>
+:<code class="special">[range]</code>luafile <code class="special">{file}</code>
+                        执行 Lua <code class="special">{file}</code> 文件中的脚本。<code class="notvi">{Vi 无此功能}</code>
+                        整个参数用作单个文件名。
+
+示例:
+
+<code class="example">        :luafile script.lua</code>
+<code class="example">        :luafile %</code>
+
+
+以上的命令都可执行一段 Lua 代码块 (chunk)，或从命令行 (:lua 和 :luado)，或从文
+件 (:luafile)，并可给出行范围 <code class="special">[range]</code>。和 Lua 解释器类似，每个代码块都有自己的
+作用域，所以命令之间只有全局变量可以共享。Lua 缺省库中 "table"、"string"、
+"math"、和 "package" 可用，而 "io" 和 "debug" 不可用，"os" 只提供以下函数:
+"date"、"clock"、"time"、"difftime" 和 "getenv"。此外，Lua 的 "print" 函数的输
+出重定向到 Vim 消息区，参数以空格而不是制表符分隔。
+
+Lua 使用 "vim" 模块 (见 |<a href="if_lua.html#lua-vim">lua-vim</a>|) 来对 Vim 发出指令以及对缓冲区
+(|<a href="if_lua.html#lua-buffer">lua-buffer</a>|) 和窗口 (|<a href="if_lua.html#lua-window">lua-window</a>|) 进行管理。不过在 |<a href="eval.html#sandbox">sandbox</a>| 中执行命令时，
+修改缓冲区内容、打开新缓冲区和改变光标位置的过程收到限制。
+
+
+</pre><hr class="doubleline" /><pre>
+<h4>2. vim 模块                                             <b class="vimtag">*<a name="lua-vim">lua-vim</a>*</b></h4>
+Lua 通过 "vim" 模块和 Vim 进行接口。输入行范围的首末行分别存入 "vim.firstline"
+和 "vim.lastline"。该模块也包含一些对缓冲区、窗口以及当前行查询的例程、Vim 调
+用和命令执行，以及其它各种操作。
+
+        vim.isbuffer(value)     如果 "value" 是缓冲区用户数据，返回 <code class="badlink">'true'</code>。否
+                                则返回 <code class="badlink">'false'</code> (见 |<a href="if_lua.html#lua-buffer">lua-buffer</a>|)。
+
+        vim.buffer(<code class="special">[arg]</code>)       如果 "arg" 是数值，返回缓冲区列表中编号为
+                                "arg" 的缓冲区。如果 "arg" 为字符串，返回完整
+                                明或简短名为 "arg" 的缓冲区。这两种情况下，如
+                                果找不到缓冲区，返回 <code class="badlink">'nil'</code>。此外，如果
+                                "toboolean(arg)" 为 <code class="badlink">'true'</code>，返回缓冲区列表的首
+                                个缓冲区，否则返回当前缓冲区。
+
+        vim.iswindow(value)     如果 "value" 是窗口用户数据，返回 <code class="badlink">'true'</code>。否则
+                                返回 <code class="badlink">'false'</code> (见 |<a href="if_lua.html#lua-window">lua-window</a>|)。
+
+        vim.window(<code class="special">[arg]</code>)       如果 "arg" 是数值，返回编号为 "arg" 的窗口，如
+                                果找不到，返回 <code class="badlink">'nil'</code>。此外，如果
+                                "toboolean(arg)" 为 <code class="badlink">'true'</code>，返回首个窗口，否则
+                                返回当前窗口。
+
+        vim.command(<code class="special">{cmd}</code>)      执行 vim (ex 模式) 命令 <code class="special">{cmd}</code>。
+                                示例:
+<code class="example">                                        :lua vim.command"set tw=60"</code>
+<code class="example">                                        :lua vim.command"normal ddp"</code>
+
+        vim.eval(<code class="special">{expr}</code>)        计算表达式 <code class="special">{expr}</code> (见 |<a href="eval.html#expression">expression</a>|)，把结果转
+                                化为 Lua 格式并返回。Vim 字符串和数值被直接转
+                                为响应的 Lua 字符串和数值类型。Vim 列表和字典
+                                被转化为 Lua 表 (列表成为以整数为键的表)。
+                                示例:
+<code class="example">                                        :lua tw = vim.eval"&amp;tw"</code>
+<code class="example">                                        :lua print(vim.eval"{'a': 'one'}".a)</code>
+
+        vim.line()              返回当前行 (没有结尾的 <code class="special">&lt;EOL&gt;</code>)，Lua 字符串。
+
+        vim.beep()              鸣笛。
+
+        vim.open(<code class="special">{fname}</code>)       为文件 <code class="special">{fname}</code> 打开新缓冲区并返回之。<code class="note">注意</code> 并不
+                                把该缓冲区设为当前缓冲区。
+
+
+</pre><hr class="doubleline" /><pre>
+<h4>3. 缓冲区用户数据                                       <b class="vimtag">*<a name="lua-buffer">lua-buffer</a>*</b></h4>
+缓冲区用户数据代表 vim 的缓冲区。缓冲区用户数据 "b" 包含以下属性和方法:
+
+属性
+</pre><hr class="singleline" /><pre>
+        o "b()" 设置 "b" 为当前缓冲区。
+        o "#b" 是缓冲区 "b" 的行数。
+        o "b[k]" 代表行号 k: "b[k] = newline" 把第 "k" 行替换为字符串
+            "newline"，还有 "b[k] = nil" 删除第 "k" 行。
+        o "b.name" 包含缓冲区 "b" 的简短名 (只读)。
+        o "b.fname" 包含缓冲区 "b" 的完整名 (只读)。
+        o "b.number" 包含缓冲区 "b" 在缓冲区列表的位置 (只读)。
+
+方法
+</pre><hr class="singleline" /><pre>
+        o "b:insert(newline"[, pos]")" 在缓冲区 "pos" (可选) 位置插入
+            "newline" 字符串。"pos" 缺省值为 "#b + 1"。如果 "pos == 0"，
+            "newline" 将成为缓冲区的首行。
+        o "b:next()" 返回缓冲区列表中 "b" 的下一个缓冲区。
+        o "b:previous()" 返回缓冲区列表 "b" 的前一个缓冲区。
+        o "b:isvalid()" 如果缓冲区 "b" 对应 "真正的" (内存没有释放的) Vim 缓
+            冲区时，返回 <code class="badlink">'true'</code> (布尔值)。
+
+示例:
+
+<code class="example">        :lua b = vim.buffer() -- 当前缓冲区</code>
+<code class="example">        :lua print(b.name, b.number)</code>
+<code class="example">        :lua b[1] = "first line"</code>
+<code class="example">        :lua b:insert("FIRST!", 0)</code>
+<code class="example">        :lua b[1] = nil -- 删除首行</code>
+<code class="example">        :lua for i=1,3 do b:insert(math.random()) end</code>
+<code class="example">        :3,4lua for i=vim.lastline,vim.firstline,-1 do b[i] = nil end</code>
+<code class="example">        :lua vim.open"myfile"() -- 打开缓冲区，设为当前缓冲区</code>
+<code class="example"></code>
+<code class="example">        function! ListBuffers()</code>
+<code class="example">        lua &lt;&lt; EOF</code>
+<code class="example">        local b = vim.buffer(true) -- 列表中的首个缓冲区</code>
+<code class="example">        while b ~= nil do</code>
+<code class="example">                print(b.number, b.name, #b)</code>
+<code class="example">                b = b:next()</code>
+<code class="example">        end</code>
+<code class="example">        vim.beep()</code>
+<code class="example">        EOF</code>
+<code class="example">        endfunction</code>
+
+
+</pre><hr class="doubleline" /><pre>
+<h4>4. 窗口用户数据                                         <b class="vimtag">*<a name="lua-window">lua-window</a>*</b></h4>
+窗口对象代表 vim 窗口。窗口用户数据 "w" 有以下属性和方法:
+
+属性
+</pre><hr class="singleline" /><pre>
+        o "w()" 设置 "w" 为当前窗口。
+        o "w.buffer" 返回窗口 "w" 对应的缓冲区 (只读)。
+        o "w.line" 返回窗口 "w" 的光标行位置。
+        o "w.col" 返回窗口 "w" 的光标列位置。
+        o "w.width" 代表窗口 "w" 的宽度。
+        o "w.height" 代表窗口 "w" 的高度。
+
+方法
+</pre><hr class="singleline" /><pre>
+        o "w:next()" 返回 "w" 的下一个窗口。
+        o "w:previous()" 返回 "w" 的前一个窗口。
+        o "w:isvalid()"  如果窗口 "w" 对应 "真正的" (内存没有释放的) Vim 窗
+            口，返回 <code class="badlink">'true'</code> (布尔值)。
+
+示例:
+
+<code class="example">        :lua w = vim.window() -- 当前窗口</code>
+<code class="example">        :lua print(w.buffer.name, w.line, w.col)</code>
+<code class="example">        :lua w.width = w.width + math.random(10)</code>
+<code class="example">        :lua w.height = 2 * math.random() * w.height</code>
+<code class="example">        :lua n,w = 0,vim.window(true) while w~=nil do n,w = n + 1,w:next() end</code>
+<code class="example">        :lua print("有 " .. n .. " 个窗口")</code>
+
+
+</pre><hr class="doubleline" /><pre>
+<h4> vim:tw=78:ts=8:ft=help:norl:</h4></pre>
+<p><i>Generated by vim2html on Thu Aug 11 19:14:49 UTC 2011</i></p>
+</body>
+</html>

@@ -1,0 +1,683 @@
+<HTML
+><HEAD
+><TITLE
+>客户端接口</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="大对象"
+HREF="largeobjects.html"><LINK
+REL="PREVIOUS"
+TITLE="实现特点"
+HREF="lo-implementation.html"><LINK
+REL="NEXT"
+TITLE="服务器端函数"
+HREF="lo-funcs.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="lo-implementation.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="largeobjects.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 29. 大对象</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="largeobjects.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="lo-funcs.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="LO-INTERFACES"
+>29.3. 客户端接口</A
+></H1
+><P
+>	本节描述 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 客户端接口库提供来访问大对象的设施。
+	所有使用这些函数进行的大对象操作都<I
+CLASS="EMPHASIS"
+>必须</I
+>在一个SQL事务里实现。
+	（这个要求是自 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL 6.5</SPAN
+> 以来的一个严格的要求，虽然在以前的版本里就隐含这样的要求，如果忽略这一点会导致错误的表现。）
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>大对象接口是对 <SPAN
+CLASS="ACRONYM"
+>Unix</SPAN
+>
+	文件系统的模仿，有仿真的
+	<TT
+CLASS="FUNCTION"
+>open</TT
+>，<TT
+CLASS="FUNCTION"
+>read</TT
+>，
+	<TT
+CLASS="FUNCTION"
+>write</TT
+>，
+	<TT
+CLASS="FUNCTION"
+>lseek</TT
+>，等．
+   </P
+><P
+>	使用 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 里面大对象接口的的客户端应用应该包含头文件 <TT
+CLASS="FILENAME"
+>libpq/libpq-fs.h</TT
+> 并且和
+	<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 库链接。
+   </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN26885"
+>29.3.1. 创建大对象</A
+></H2
+><P
+>        函数
+</P><PRE
+CLASS="SYNOPSIS"
+>Oid lo_creat(PGconn *conn, int mode);</PRE
+><P>
+     <A
+NAME="AEN26889"
+></A
+>
+	创建一个新的大对象。
+	返回值是赋予新大对象的 OID，或者是失败的时候是 InvalidOid（零）。
+
+     在<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 8.1 里，没有再使用
+     <TT
+CLASS="REPLACEABLE"
+><I
+>mode</I
+></TT
+>，并且它被忽略；
+     不过，为了和早期的版本向下兼容，我们最好将其设置为 <TT
+CLASS="SYMBOL"
+>INV_READ</TT
+>，
+     <TT
+CLASS="SYMBOL"
+>INV_WRITE</TT
+>，或者 <TT
+CLASS="SYMBOL"
+>INV_READ</TT
+> <TT
+CLASS="LITERAL"
+>|</TT
+> <TT
+CLASS="SYMBOL"
+>INV_WRITE</TT
+>。
+     （这些符号常量在头文件 <TT
+CLASS="FILENAME"
+>libpq/libpq-fs.h</TT
+> 里定义。）
+    </P
+><P
+>	例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>inv_oid = lo_creat(conn, INV_READ|INV_WRITE);</PRE
+><P>
+    </P
+><P
+>     函数
+</P><PRE
+CLASS="SYNOPSIS"
+>Oid lo_create(PGconn *conn, Oid lobjId);</PRE
+><P>
+     <A
+NAME="AEN26903"
+></A
+>
+     也创建一个大对象。要赋予数值的 OID 可以用 <TT
+CLASS="REPLACEABLE"
+><I
+>lobjId</I
+></TT
+>
+     声明；如果这么做，那么在该 OID 已经被其他大对象使用的情况下就会生成错误。
+     如果 <TT
+CLASS="REPLACEABLE"
+><I
+>lobjId</I
+></TT
+> 为 InvalidOid （零），
+     那么 <TT
+CLASS="FUNCTION"
+>lo_create</TT
+> 赋予一个未用的 OID（这个和 <TT
+CLASS="FUNCTION"
+>lo_creat</TT
+> 的行为一致。）
+     返回值是赋予新的大队想的 OID，或者是失败情况下的 InvalidOid（零）。
+    </P
+><P
+>     <TT
+CLASS="FUNCTION"
+>lo_create</TT
+> 是 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 8.1里面新增加的；
+     如果在老的服务器上运行这个函数，它会失败并返回 InvalidOid。
+    </P
+><P
+>     一个例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>inv_oid = lo_create(conn, desired_oid);</PRE
+><P>
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN26914"
+>29.3.2. 输入大对象</A
+></H2
+><P
+>	要把一个操作系统文件输入成为大对象，调用
+</P><PRE
+CLASS="SYNOPSIS"
+>Oid lo_import(PGconn *conn, const char *filename);</PRE
+><P>
+     <A
+NAME="AEN26918"
+></A
+>
+    <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+> 
+     参数指明要被输入成为大对象的操作系统文件路径名。返回值是赋予新大对象的 OID。
+     如果失败则返回 InvalidOid（零）。请注意这个文件是由客户端接口库读取的，
+     而不是服务器端；因此它必须存在于客户端文件系统上并且可以被客户应用读取。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN26921"
+>29.3.3. 输出大对象</A
+></H2
+><P
+>	要把一个大对象输出为操作系统文件，调用
+</P><PRE
+CLASS="SYNOPSIS"
+>int lo_export(PGconn *conn, Oid lobjId, const char *filename);</PRE
+><P>
+     <A
+NAME="AEN26925"
+></A
+>
+	<TT
+CLASS="PARAMETER"
+>lobjId</TT
+>参数指明要输出的大对象 OID，<TT
+CLASS="PARAMETER"
+>filename</TT
+>
+	参数指明操作系统文件的路径名。请注意这个文件是由客户端接口库写入的，
+	而不是服务器端。成功时返回 1，失败时返回 -1。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN26929"
+>29.3.4. 打开一个现有的大对象</A
+></H2
+><P
+>        要打开一个现存的大对象读写，调用
+</P><PRE
+CLASS="SYNOPSIS"
+>int lo_open(PGconn *conn, Oid lobjId, int mode);</PRE
+><P>
+     <A
+NAME="AEN26933"
+></A
+>
+	参数<TT
+CLASS="PARAMETER"
+>lobjId</TT
+>指明要打开的大对象的 OID （对象标识）。
+	<TT
+CLASS="PARAMETER"
+>mode</TT
+>位控制该对象是用于读 （<TT
+CLASS="SYMBOL"
+>INV_READ</TT
+>），
+	写（<TT
+CLASS="SYMBOL"
+>INV_WRITE</TT
+>）还是读写。
+	（这些符号常量在头文件 <TT
+CLASS="FILENAME"
+>libpq/libpq-fs.h</TT
+> 里定义。）
+	一个大对象在其创建之前不能被打开。
+	<TT
+CLASS="FUNCTION"
+>lo_open</TT
+> 返回一个（非负的）大对象标识用于以后的
+	<TT
+CLASS="FUNCTION"
+>lo_read</TT
+>，<TT
+CLASS="FUNCTION"
+>lo_write</TT
+>，
+	<TT
+CLASS="FUNCTION"
+>lo_lseek</TT
+>，<TT
+CLASS="FUNCTION"
+>lo_tell</TT
+>，和
+	<TT
+CLASS="FUNCTION"
+>lo_close</TT
+>。这个描述符只是在当前事务中有效。
+	失败的时候，返回 -1。</P
+><P
+>     服务器目前并不区分 <TT
+CLASS="SYMBOL"
+>INV_WRITE</TT
+> 和 <TT
+CLASS="SYMBOL"
+>INV_READ</TT
+> <TT
+CLASS="LITERAL"
+>|</TT
+> <TT
+CLASS="SYMBOL"
+>INV_WRITE</TT
+> 模式：
+     对于 <TT
+CLASS="SYMBOL"
+>INV_READ</TT
+>，你不能写入描述符，并且从其中读取的数据将反映执行 <TT
+CLASS="FUNCTION"
+>lo_open</TT
+>
+     的时候事务快照对应的大对象的数据，而不会考虑本次事务后面写入的或者其他事务写入的数据。
+     从一个用
+     <TT
+CLASS="SYMBOL"
+>INV_WRITE</TT
+> 打开的描述符里面读取的数据反映所有其他已经提交的事务和当前事务的写操作写入的大对象的数据。
+     这个行为类似普通 SQL 语句 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 在事务模式 <TT
+CLASS="LITERAL"
+>SERIALIZABLE</TT
+> 和 <TT
+CLASS="LITERAL"
+>READ COMMITTED</TT
+>
+     中的行为。
+    </P
+><P
+>     一个例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>inv_fd = lo_open(conn, inv_oid, INV_READ|INV_WRITE);</PRE
+><P>
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN26959"
+>29.3.5. 向大对象中写数据</A
+></H2
+><P
+>        函数
+</P><PRE
+CLASS="SYNOPSIS"
+>int lo_write(PGconn *conn, int fd, const char *buf, size_t len);</PRE
+><P>
+<A
+NAME="AEN26963"
+></A
+>
+	从<TT
+CLASS="PARAMETER"
+>buf</TT
+>中向大对象描述符<TT
+CLASS="PARAMETER"
+>fd</TT
+>中写<TT
+CLASS="PARAMETER"
+>len</TT
+>字节．
+	参数<TT
+CLASS="PARAMETER"
+>fd</TT
+>必须是前面一个
+	<TT
+CLASS="FUNCTION"
+>lo_open</TT
+> 调用的返回。
+	返回实际写的字节数．出错时返回负数．</P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN26970"
+>29.3.6. 从大对象中读取数据</A
+></H2
+><P
+>	函数
+</P><PRE
+CLASS="SYNOPSIS"
+>int lo_read(PGconn *conn, int fd, char *buf, size_t len);</PRE
+><P>
+<A
+NAME="AEN26974"
+></A
+>
+	从大对象描述符 <TT
+CLASS="PARAMETER"
+>fd</TT
+> 中读取<TT
+CLASS="PARAMETER"
+>len</TT
+>字节数据到<TT
+CLASS="PARAMETER"
+>buf</TT
+>中。
+	<TT
+CLASS="PARAMETER"
+>fd</TT
+>参数必须是前面的一个
+	<TT
+CLASS="FUNCTION"
+>lo_open</TT
+>调用的返回。
+	返回实际读取的字节数。出错时，返回一个负数。</P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN26981"
+>29.3.7. 大对象中数据的查找</A
+></H2
+><P
+>	要改变与一个大对象描述符相关的读写位置，调用
+</P><PRE
+CLASS="SYNOPSIS"
+>int lo_lseek(PGconn *conn, int fd, int offset, int whence);</PRE
+><P>
+<A
+NAME="AEN26985"
+></A
+>
+	这个过程把当前<TT
+CLASS="PARAMETER"
+>fd</TT
+>代表的大对象描述符位置指针移动到
+	<TT
+CLASS="PARAMETER"
+>offset</TT
+>指明的新的位置。
+	参数<TT
+CLASS="PARAMETER"
+>whence</TT
+>的合法的取值是
+	<TT
+CLASS="SYMBOL"
+>SEEK_SET</TT
+>（从对象开头开始找），<TT
+CLASS="SYMBOL"
+>SEEK_CUR</TT
+>（从当前位置开始找），和<TT
+CLASS="SYMBOL"
+>SEEK_END</TT
+>
+	（从对象结尾开始找）。返回值是新位置指针，如果出错为 -1。</P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN26993"
+>29.3.8. 获取一个大对象的当前搜索位置</A
+></H2
+><P
+>	要获取一个大对象描述符的当前读或写位置，调用
+</P><PRE
+CLASS="SYNOPSIS"
+>int lo_tell(PGconn *conn, int fd);</PRE
+><P>
+<A
+NAME="AEN26997"
+></A
+>
+	如果有错误，返回值是负数。</P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN26999"
+>29.3.9. 关闭一个大对象描述符</A
+></H2
+><P
+>	可以通过调用
+</P><PRE
+CLASS="SYNOPSIS"
+>int lo_close(PGconn *conn, int fd);</PRE
+><P>
+<A
+NAME="AEN27003"
+></A
+>
+	关闭一个大对象描述符，这里<TT
+CLASS="PARAMETER"
+>fd</TT
+>是
+	<TT
+CLASS="FUNCTION"
+>lo_open</TT
+>返回的大对象的描述符．成功时，
+	<TT
+CLASS="FUNCTION"
+>lo_close</TT
+>
+	返回零．错误时，返回值是负数．</P
+><P
+>     任何在事务结尾时仍然打开的大对象描述符将在事务结束时自动关闭。</P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN27009"
+>29.3.10. 删除一个大对象</A
+></H2
+><P
+>	从数据库中删除一个大对象，调用
+</P><PRE
+CLASS="SYNOPSIS"
+>int lo_unlink(PGconn *conn, Oid lobjId);</PRE
+><P>
+<A
+NAME="AEN27013"
+></A
+> 
+	<TT
+CLASS="PARAMETER"
+>lobjId</TT
+>参数声明要删除的大对象的 OID。
+	成功时返回 1，失败时返回 -1。
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="lo-implementation.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="lo-funcs.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>实现特点</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="largeobjects.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>服务器端函数</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

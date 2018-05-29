@@ -1,0 +1,392 @@
+<HTML
+><HEAD
+><TITLE
+>用户定义聚集</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="扩展 SQL"
+HREF="extend.html"><LINK
+REL="PREVIOUS"
+TITLE="C 语言函数"
+HREF="xfunc-c.html"><LINK
+REL="NEXT"
+TITLE="用户定义类型"
+HREF="xtypes.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="xfunc-c.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="extend.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 32. 扩展 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="extend.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="xtypes.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="XAGGR"
+>32.10. 用户定义聚集</A
+></H1
+><A
+NAME="AEN32697"
+></A
+><P
+>	在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>里的聚集是用<I
+CLASS="FIRSTTERM"
+>状态值</I
+>
+	和 <I
+CLASS="FIRSTTERM"
+>状态转换函数</I
+>表达的。
+	也就是说，一个聚集可以定义为一些状态，
+	当一条输入的条目被处理时，这些状态被修改。
+	要定义一个新的聚集函数，我们就要选择一个表示状态值的数据类型，
+	一个状态初始值，一个状态转换函数。
+	该状态转换函数只是一个普通函数，也可以用于聚集的环境之外。
+	还可以声明一个<I
+CLASS="FIRSTTERM"
+>终处理函数</I
+>，
+	用于对付当期望的聚集结果和需要保留在运行的状态值里面的数据不同的情况。
+  </P
+><P
+>	因此，除了被聚集用户看到的参数和结果数据类型外，还有一种内部状态值数据类型，这种类型可能和参数与结果类型都不一样。
+  </P
+><P
+>	如果我们定义了一个不使用终处理函数的聚集，
+	那我们的聚集就是对每条记录的字段值进行函数计算。
+	<TT
+CLASS="FUNCTION"
+>sum</TT
+>（求和）是这类聚集的例子。
+	<TT
+CLASS="FUNCTION"
+>sum</TT
+>从零开始，每次都向运行总和追加当前记录值。比如，如果我们要把 <TT
+CLASS="FUNCTION"
+>Sum</TT
+>
+	聚集用于复数，我们只需要该数据类型的加法函数就行了。
+	该聚集可以这样定义：
+   
+</P><PRE
+CLASS="SCREEN"
+>CREATE AGGREGATE complex_sum (
+    sfunc = complex_add,
+    basetype = complex,
+    stype = complex,
+    initcond = '(0,0)'
+);
+
+SELECT complex_sum(a) FROM test_complex;
+
+ complex_sum
+-------------
+ (34,53.9)</PRE
+><P>
+
+	（实际上，我们会把这个聚集命名为 <TT
+CLASS="FUNCTION"
+>sum</TT
+>，然后让
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	来区分对一个类型为 <TT
+CLASS="TYPE"
+>complex</TT
+> 的列应该使用哪种 sum。）
+  </P
+><P
+>	如果不存在非空输入值，上面的<TT
+CLASS="FUNCTION"
+>sum</TT
+>定义将返回零值（初始状态条件）。
+	可能我们在那种情况下会希望返回NULL &mdash; SQL标准要求	<TT
+CLASS="FUNCTION"
+>sum</TT
+> 的行为是那样的。
+	我们只需要忽略<TT
+CLASS="LITERAL"
+>initcond</TT
+>段就可以实现那一点，
+	这样初始状态条件是 NULL。
+	通常这也意味着<TT
+CLASS="LITERAL"
+>sfunc</TT
+>需要检查 NULL 状态条件输入，
+	不过对于 <TT
+CLASS="FUNCTION"
+>sum</TT
+> 和一些象<TT
+CLASS="FUNCTION"
+>Max</TT
+>和<TT
+CLASS="FUNCTION"
+>Min</TT
+>这样的简单聚集来说，
+	把第一个非空输入插入到状态值里面，
+	然后从第二个非空输入状态值开始使用转换函数就足够了。
+	如果初始条件是NULL并且转换函数标记为<SPAN
+CLASS="QUOTE"
+>"strict"</SPAN
+>，
+	（也就是说，不能对NULL输入调用。）
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 就会自动处理这些内容。
+  </P
+><P
+>	另外一个<SPAN
+CLASS="QUOTE"
+>"strict"</SPAN
+>转换函数的缺省特性是：当碰到一个NULL输入的时候，
+	前面一个状态转换函数会被保留下来不做改动。
+	这样，就忽略了NULL。如果你希望对空值输入有其它处理，只需要
+	别把你的转换函数定义为严格的然后编写代码的时候
+	测试NULL并做相应处理即可。
+  </P
+><P
+>	<TT
+CLASS="FUNCTION"
+>avg</TT
+>（平均）是更复杂一点的聚集的例子。它需要两个运行时状态：
+	输入的总和以及输入数量的计数。最终结果是通过把这些量相除得到的。
+	平均的典型实现是用两元素数组做状态值。比如，内建的
+	<TT
+CLASS="FUNCTION"
+>avg(float8)</TT
+>实现是这样的：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE AGGREGATE avg (
+    sfunc = float8_accum,
+    basetype = float8,
+    stype = float8[],
+    finalfunc = float8_avg,
+    initcond = '{0,0}'
+);</PRE
+><P>
+  </P
+><P
+>   聚集函数可以使用多态转换函数或者终处理函数，
+   这样，同一个函数可以用于实现多个聚集。
+   参阅 <A
+HREF="extend-type-system.html#EXTEND-TYPES-POLYMORPHIC"
+>Section 32.2.5</A
+> 获取多态函数的解释。
+   再进一步，聚集函数本身可以用多态的基本类型和状态类型来声明，
+   这样就允许一个聚集定义用于多种输入数据类型。
+   下面是一个多态聚集的例子：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE AGGREGATE array_accum (
+    sfunc = array_append,
+    basetype = anyelement,
+    stype = anyarray,
+    initcond = '{}'
+);</PRE
+><P>
+
+   这里，任意聚集调用的实际状态类型是和元素输入类型相同的数组类型。
+  </P
+><P
+>   下面是使用两个不同实际数据类型作为元素的输出：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT attrelid::regclass, array_accum(attname)
+    FROM pg_attribute
+    WHERE attnum &gt; 0 AND attrelid = 'pg_tablespace'::regclass
+    GROUP BY attrelid;
+
+   attrelid    |              array_accum              
+---------------+---------------------------------------
+ pg_tablespace | {spcname,spcowner,spclocation,spcacl}
+(1 row)
+
+SELECT attrelid::regclass, array_accum(atttypid)
+    FROM pg_attribute
+    WHERE attnum &gt; 0 AND attrelid = 'pg_tablespace'::regclass
+    GROUP BY attrelid;
+
+   attrelid    |   array_accum   
+---------------+-----------------
+ pg_tablespace | {19,26,25,1034}
+(1 row)</PRE
+><P>
+  </P
+><P
+>   一个用 C 写的函数可以判断它是被当作一个聚集转换函数还是终处理函数调用，
+   方法是看看它在函数调用<SPAN
+CLASS="QUOTE"
+>"环境里"</SPAN
+>是否被传递给予一个 <TT
+CLASS="STRUCTNAME"
+>AggState</TT
+> 结点，
+   比如，用
+</P><PRE
+CLASS="PROGRAMLISTING"
+>        if (fcinfo-&#62;context &amp;&amp; IsA(fcinfo-&#62;context, AggState))</PRE
+><P>
+   检查这个的一个原因是，在它为真的时候，左手边的输入必须是一个临时的转换值，
+   因此可以安全地现场修改，而不用分配新的拷贝。（这是函数里<I
+CLASS="EMPHASIS"
+>唯一</I
+>地一个可以修改输入的传递引用的地方。）
+   参阅 <TT
+CLASS="LITERAL"
+>int8inc()</TT
+> 获取例子。
+  </P
+><P
+>	更详细的信息请参考 <A
+HREF="sql-createaggregate.html"
+><I
+>CREATE AGGREGATE</I
+></A
+> 命令。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="xfunc-c.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="xtypes.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>C 语言函数</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="extend.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>用户定义类型</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

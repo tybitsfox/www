@@ -1,0 +1,1221 @@
+<HTML
+><HEAD
+><TITLE
+>系统管理函数</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="函数和操作符"
+HREF="functions.html"><LINK
+REL="PREVIOUS"
+TITLE="系统信息函数"
+HREF="functions-info.html"><LINK
+REL="NEXT"
+TITLE="类型转换"
+HREF="typeconv.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="functions-info.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="functions.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 9. 函数和操作符</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="functions.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="typeconv.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="FUNCTIONS-ADMIN"
+>9.20. 系统管理函数</A
+></H1
+><P
+>   <A
+HREF="functions-admin.html#FUNCTIONS-ADMIN-SET-TABLE"
+>Table 9-44</A
+> 显示了那些可以用于查询以及修改运行时配置参数的函数。
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-ADMIN-SET-TABLE"
+></A
+><P
+><B
+>Table 9-44. 配置设置函数</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>名字</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>返回类型</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>	<TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>current_setting</TT
+>(<TT
+CLASS="PARAMETER"
+>setting_name</TT
+>)</TT
+>
+       </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>当前设置的值</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>	<TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>set_config(<TT
+CLASS="PARAMETER"
+>setting_name</TT
+>,
+			     <TT
+CLASS="PARAMETER"
+>new_value</TT
+>,
+			     <TT
+CLASS="PARAMETER"
+>is_local</TT
+>)</TT
+></TT
+>
+       </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>设置参数并返回新值</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><A
+NAME="AEN14193"
+></A
+><A
+NAME="AEN14195"
+></A
+><A
+NAME="AEN14197"
+></A
+><P
+>	<TT
+CLASS="FUNCTION"
+>current_setting</TT
+> 用于以查询形式获取 <TT
+CLASS="PARAMETER"
+>setting_name</TT
+>
+	设置的当前数值。它和<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>命令 <TT
+CLASS="COMMAND"
+>SHOW</TT
+> 是等效的。
+	比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT current_setting('datestyle');
+
+ current_setting
+-----------------
+ ISO, MDY
+(1 row)</PRE
+><P>
+   </P
+><P
+>	<TT
+CLASS="FUNCTION"
+>set_config</TT
+> 将参数 <TT
+CLASS="PARAMETER"
+>setting_name</TT
+>
+	设置为 <TT
+CLASS="PARAMETER"
+>new_value</TT
+>。如果 <TT
+CLASS="PARAMETER"
+>is_local</TT
+> 
+	设置为 <TT
+CLASS="LITERAL"
+>true</TT
+>，那么新数值将只应用于当前事务。
+	如果你希望新的数值应用于当前会话，那么应该使用 <TT
+CLASS="LITERAL"
+>false</TT
+>。
+	它等效于 SQL 命令 <TT
+CLASS="COMMAND"
+>SET</TT
+>。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT set_config('log_statement_stats','off', false);
+
+ set_config
+------------
+ off
+(1 row)</PRE
+><P>
+   </P
+><A
+NAME="AEN14216"
+></A
+><A
+NAME="AEN14218"
+></A
+><A
+NAME="AEN14220"
+></A
+><A
+NAME="AEN14222"
+></A
+><P
+>    在 <A
+HREF="functions-admin.html#FUNCTIONS-ADMIN-SIGNAL-TABLE"
+>Table 9-45</A
+> 里显示的函数向其它服务器进程发送控制信号。
+    这些函数的使用限制为超级用户。
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-ADMIN-SIGNAL-TABLE"
+></A
+><P
+><B
+>Table 9-45. 服务器信号函数</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>名字</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>返回类型</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>      <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_cancel_backend</TT
+>(<TT
+CLASS="PARAMETER"
+>pid</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>)</TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>取消一个后端的当前查询</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_reload_conf</TT
+>()</TT
+>
+        </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>导致服务器进程重新装载它们的配置文件</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_rotate_logfile</TT
+>()</TT
+>
+        </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>旋转服务器的日志文件</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>    如果成功，这些函数返回 <TT
+CLASS="LITERAL"
+>true</TT
+>，如果没有成功则返回 <TT
+CLASS="LITERAL"
+>false</TT
+>。
+   </P
+><P
+>    <TT
+CLASS="FUNCTION"
+>pg_cancel_backend</TT
+> 向由进程 ID （<TT
+CLASS="LITERAL"
+>pid</TT
+>）
+    标识的后端进程发送一个查询取消（Query Cancel）（<SPAN
+CLASS="SYSTEMITEM"
+>SIGINT</SPAN
+>）信号。
+    一个活跃的后端进程的进程 ID 可以从 <TT
+CLASS="STRUCTNAME"
+>pg_stat_activity</TT
+> 视图的 <TT
+CLASS="STRUCTFIELD"
+>procpid</TT
+>
+    字段找到，或者在服务器上用 <SPAN
+CLASS="APPLICATION"
+>ps</SPAN
+> 列出 <TT
+CLASS="COMMAND"
+>postgres</TT
+> 进程。
+   </P
+><P
+>    <TT
+CLASS="FUNCTION"
+>pg_reload_conf</TT
+> 给 <SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+> 发送一个 <SPAN
+CLASS="SYSTEMITEM"
+>SIGHUP</SPAN
+> 信号，
+    导致所有服务器进程重载配置文件。
+   </P
+><P
+>    <TT
+CLASS="FUNCTION"
+>pg_rotate_logfile</TT
+> 给日志管理器发送信号，告诉它立即切换到一个新的输出文件。
+    这个函数只有在 <TT
+CLASS="VARNAME"
+>redirect_stderr</TT
+> 用于日志输出的时候才有用，
+    否则的话就根本没有日志管理器子进程。
+   </P
+><A
+NAME="AEN14277"
+></A
+><A
+NAME="AEN14279"
+></A
+><A
+NAME="AEN14281"
+></A
+><P
+>    在 <A
+HREF="functions-admin.html#FUNCTIONS-ADMIN-BACKUP-TABLE"
+>Table 9-46</A
+> 里显示的函数帮助我们进行在线备份。
+    这些函数仅限超级用户使用。
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-ADMIN-BACKUP-TABLE"
+></A
+><P
+><B
+>Table 9-46. 备份控制函数</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>名字</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>返回类型</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>      <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_start_backup</TT
+>(<TT
+CLASS="PARAMETER"
+>label_text</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>)</TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>设置执行在线备份</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>      <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_stop_backup</TT
+>()</TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>完成执行在线备份</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>    <TT
+CLASS="FUNCTION"
+>pg_start_backup</TT
+> 接受一个参数，这个参数可以是任意用户为备份定义的标签。
+    （通常这是备份转储文件存放所在的名字。）这个函数向数据库集群的数据目录写入一个备份标签文件，
+    然后以文本方式返回备份的起始 WAL 偏移。（用户不需要注意这个结果值，提供他只为了万一需要的场合。）
+   </P
+><P
+>    <TT
+CLASS="FUNCTION"
+>pg_stop_backup</TT
+> 删除 <TT
+CLASS="FUNCTION"
+>pg_start_backup</TT
+> 创建的标签文件，
+    并且在 WAL 归档区里创建一个备份历史文件。这个历史文件包含给予 <TT
+CLASS="FUNCTION"
+>pg_start_backup</TT
+> 的标签，
+    备份的起始与终止 WAL 偏移量，以及备份的起始和终止时间。返回值是备份的终止 WAL 偏移
+    （同样也可能没有什么用）。
+   </P
+><P
+>    有关正确使用这些函数的细节，参阅 <A
+HREF="backup-online.html"
+>Section 23.3</A
+>。
+   </P
+><P
+>    在 <A
+HREF="functions-admin.html#FUNCTIONS-ADMIN-DBSIZE"
+>Table 9-47</A
+> 里显示的函数计算数据库对象使用的实际磁盘空间。
+   </P
+><A
+NAME="AEN14320"
+></A
+><A
+NAME="AEN14322"
+></A
+><A
+NAME="AEN14324"
+></A
+><A
+NAME="AEN14326"
+></A
+><A
+NAME="AEN14328"
+></A
+><A
+NAME="AEN14330"
+></A
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-ADMIN-DBSIZE"
+></A
+><P
+><B
+>Table 9-47. 数据库对象尺寸函数</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>名字</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>返回类型</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="FUNCTION"
+>pg_column_size</TT
+>(<TT
+CLASS="TYPE"
+>any</TT
+>)</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>int</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>存储一个数值需要的字节数（可能压缩过）</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_tablespace_size</TT
+>(<TT
+CLASS="TYPE"
+>oid</TT
+>)</TT
+>
+        </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>指定 OID 代表的表空间使用的磁盘空间</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_tablespace_size</TT
+>(<TT
+CLASS="TYPE"
+>name</TT
+>)</TT
+>
+        </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>指定名字的表空间使用的磁盘空间</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_database_size</TT
+>(<TT
+CLASS="TYPE"
+>oid</TT
+>)</TT
+>
+        </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>指定 OID 代表的数据库使用的磁盘空间</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_database_size</TT
+>(<TT
+CLASS="TYPE"
+>name</TT
+>)</TT
+>
+        </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>指定名称的数据库使用的磁盘空间</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_relation_size</TT
+>(<TT
+CLASS="TYPE"
+>oid</TT
+>)</TT
+>
+        </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>指定 OID 代表的表或者索引所使用的磁盘空间</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_relation_size</TT
+>(<TT
+CLASS="TYPE"
+>text</TT
+>)</TT
+>
+        </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>指定名称的表或者索引使用的磁盘空间。这个名字可以用模式名修饰。</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_total_relation_size</TT
+>(<TT
+CLASS="TYPE"
+>oid</TT
+>)</TT
+>
+        </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>指定 OID 代表的表使用的磁盘空间，包括索引和压缩数据</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_total_relation_size</TT
+>(<TT
+CLASS="TYPE"
+>text</TT
+>)</TT
+>
+        </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>指定名字的表所使用的全部磁盘空间，包括索引和压缩数据。表名字可以用模式名修饰。</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_size_pretty</TT
+>(<TT
+CLASS="TYPE"
+>bigint</TT
+>)</TT
+>
+        </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>把字节计算的尺寸转换成一个人类易读的尺寸单位</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>    <TT
+CLASS="FUNCTION"
+>pg_column_size</TT
+> 显示用于存储任意独立数据值的空间。
+   </P
+><P
+>    <TT
+CLASS="FUNCTION"
+>pg_tablespace_size</TT
+> 和 <TT
+CLASS="FUNCTION"
+>pg_database_size</TT
+>
+    接受一个数据库的 OID 或者名字，然后返回改对象使用的全部磁盘空间。
+   </P
+><P
+>    <TT
+CLASS="FUNCTION"
+>pg_relation_size</TT
+> 接受一个表，索引或者压缩表的 OID 或者名字，
+    然后返回它们的以字节计的尺寸。
+   </P
+><P
+>    <TT
+CLASS="FUNCTION"
+>pg_total_relation_size</TT
+> 接受一个表或者一个压缩表的 OID 或者名称，
+    然后返回以字节计的数据以及所有相关的索引和压缩表的尺寸。
+   </P
+><P
+>    <TT
+CLASS="FUNCTION"
+>pg_size_pretty</TT
+> 可以用于把其它这些函数的结果格式化成一种人类易读的格式，
+    可以根据情况使用 KB，MB，GB 或者 TB。
+   </P
+><P
+>    在 <A
+HREF="functions-admin.html#FUNCTIONS-ADMIN-GENFILE"
+>Table 9-48</A
+> 里显示的函数提供了对承载数据库服务器的机器上的文件的本地访问接口。
+    只有那些在数据库集群目录和 <TT
+CLASS="VARNAME"
+>log_directory</TT
+> 目录里面的文件可以访问。
+    使用相对路径访问集群目录里面的文件，以及匹配 <TT
+CLASS="VARNAME"
+>log_directory</TT
+> 配置设置的路径访问日志文件。
+    只有超级用户才能使用这些函数。
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-ADMIN-GENFILE"
+></A
+><P
+><B
+>Table 9-48. 通用文件访问函数</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>名字</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>返回类型</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_ls_dir</TT
+>(<TT
+CLASS="PARAMETER"
+>dirname</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>)</TT
+>
+       </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>setof text</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>列出目录中的文件</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_read_file</TT
+>(<TT
+CLASS="PARAMETER"
+>filename</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="PARAMETER"
+>offset</TT
+> <TT
+CLASS="TYPE"
+>bigint</TT
+>, <TT
+CLASS="PARAMETER"
+>length</TT
+> <TT
+CLASS="TYPE"
+>bigint</TT
+>)</TT
+>
+       </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>返回一个文本文件的内容</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>pg_stat_file</TT
+>(<TT
+CLASS="PARAMETER"
+>filename</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>)</TT
+>
+       </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>record</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>返回一个文件的信息</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><A
+NAME="AEN14475"
+></A
+><P
+>    <TT
+CLASS="FUNCTION"
+>pg_ls_dir</TT
+> 返回指定目录里面的除了特殊项
+    <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+>.</TT
+>"</SPAN
+> 和 <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+>..</TT
+>"</SPAN
+> 之外所有名字。
+   </P
+><A
+NAME="AEN14483"
+></A
+><P
+>    <TT
+CLASS="FUNCTION"
+>pg_read_file</TT
+> 返回一个文本文件的一部分，从 <TT
+CLASS="PARAMETER"
+>offset</TT
+> 开始，
+    返回最多 <TT
+CLASS="PARAMETER"
+>length</TT
+> 字节（如果先达到文件结尾，则小于这个数值）。
+    如果 <TT
+CLASS="PARAMETER"
+>offset</TT
+> 是负数，那么它就是相对于文件结尾。
+   </P
+><A
+NAME="AEN14490"
+></A
+><P
+>    <TT
+CLASS="FUNCTION"
+>pg_stat_file()</TT
+> 返回一条包含文件大小，最后访问时间戳，最后更改时间戳，
+    最后文件状态修改时间戳（只在 Unix 平台上可用），文件创建时间戳（只在 Windows 平台上可用），
+    以及一个表示其是否一个目录的 <TT
+CLASS="TYPE"
+>boolean</TT
+> 值。典型的用法包括：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM pg_stat_file('filename');
+SELECT (pg_stat_file('filename')).modification;</PRE
+><P>
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="functions-info.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="typeconv.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>系统信息函数</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="functions.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>类型转换</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

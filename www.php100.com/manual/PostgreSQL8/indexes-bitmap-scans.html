@@ -1,0 +1,179 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>组合多个索引 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="索引" HREF="indexes.html"><LINK REL="PREVIOUS" TITLE="多字段索引" HREF="indexes-multicolumn.html"><LINK REL="NEXT" TITLE="唯一索引" HREF="indexes-unique.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="indexes-multicolumn.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="indexes.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 11. 索引</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="indexes.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="indexes-unique.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="INDEXES-BITMAP-SCANS" >11.4. 组合多个索引</A
+></H1
+><A NAME="AEN15013" ></A
+><A NAME="AEN15016" ></A
+><P
+>   一个单独的索引扫描只能使用那些索引字段和对应索引操作符表里面的操作符的查询子句，
+   以及用 <TT
+CLASS="LITERAL"
+>AND</TT
+> 连接的这样的子句。比如，如果我们有一个在 <TT
+CLASS="LITERAL"
+>(a, b)</TT
+>
+   上的索引，一个类似 <TT
+CLASS="LITERAL"
+>WHERE a = 5 AND b = 6</TT
+> 的条件可以使用索引，
+   但是像 <TT
+CLASS="LITERAL"
+>WHERE a = 5 OR b = 6</TT
+> 这样的就不能直接使用索引。
+  </P
+><P
+>   从版本 8.1 开始，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 拥有了组合多个索引（包括同一个索引的多次使用），
+   来处理单个索引扫描不能实现的场合。系统可以在多个索引扫描之间组成 <TT
+CLASS="LITERAL"
+>AND</TT
+> 和 <TT
+CLASS="LITERAL"
+>OR</TT
+> 条件。
+   比如，一个类似 <TT
+CLASS="LITERAL"
+>WHERE x = 42 OR x = 47 OR x = 53 OR x = 99</TT
+>
+   这样的查询可以分解成四个独立的，在 <TT
+CLASS="LITERAL"
+>x</TT
+> 上的扫描，
+   每个扫描使用一个查询子句。然后这些扫描的结果就 OR 在一起，生成结果。
+   另外一个例子是，如果我们在 <TT
+CLASS="LITERAL"
+>x</TT
+> 和 <TT
+CLASS="LITERAL"
+>y</TT
+> 上有独立的索引，
+   一个类似 <TT
+CLASS="LITERAL"
+>WHERE x = 5 AND y = 6</TT
+> 这样的查询的可能的实现是使用合适的查询子句使用独立的索引，
+   然后把索引结果 AND 在一起生成结果行。
+  </P
+><P
+>   为了组合多个索引，系统扫描每个需要的索引，然后在内存里组织一个 <I
+CLASS="FIRSTTERM"
+>bitmap</I
+>，
+   它给出索引扫描中报告出来的符合索引条件的表数据行的位置。然后，根据查询的需要，
+   把这个位图进行 AND 和 OR 在一起。最后，访问实际的表然后检索并返回数据行。
+   表的数据行是按照物理顺序进行反问的，因为那就是位图的布局；
+   这就意味着任何原来的索引的排序都将消失，而如果查询有一个 <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> 子句，
+   那么还会有一个额外的排序步骤。因为这个原因，以及每个额外的索引扫描都增加了额外的时间，
+   规划器有时候会选择使用简单的索引扫描，即使有多个索引可用也如此。
+  </P
+><P
+>   在大多数最简单的应用里，可能有多种索引的组合可能都是有用的，而数据库开发人员必须在实用哪个索引之间作出平衡。
+   有时候多字段索引是最好的，但是有时候创建一个独立的索引，然后依靠索引组合特性是更好的。
+   比如，假如你的查询有时候只涉及字段 <TT
+CLASS="LITERAL"
+>x</TT
+>，有时候只涉及字段 <TT
+CLASS="LITERAL"
+>y</TT
+>，
+   有时候两个字段都有，那么你可能会选择创建两个独立的索引在 <TT
+CLASS="LITERAL"
+>x</TT
+> 和 <TT
+CLASS="LITERAL"
+>y</TT
+> 上，
+   然后依靠索引组合来处理实用两个字段的查询。你也可以在 <TT
+CLASS="LITERAL"
+>(x, y)</TT
+> 上创建一个多字段索引。
+   这个索引在涉及两个字段的查询里面，通常会比索引组合更高效一些，
+   但是，正如我们在 <A HREF="indexes-multicolumn.html" >Section 11.3</A
+> 里面讨论的，
+   它对那些只包含 <TT
+CLASS="LITERAL"
+>y</TT
+> 的查询几乎没有用，因此它不能是唯一的一个索引。
+   一个多字段索引和 <TT
+CLASS="LITERAL"
+>y</TT
+> 上的独立索引可能会跑得很好。
+   因为对那些只涉及 <TT
+CLASS="LITERAL"
+>x</TT
+> 的查询，可以实用多字段索引，但是它会更大，因此也比只在 <TT
+CLASS="LITERAL"
+>x</TT
+>
+   上的索引更慢。最后一个选择是创建三个索引，但是这种方法只有在表的更新远比查询少得多，
+   并且所有三种查询都很普遍的情况下才是合理的。
+   如果其中一种查询比其它的少很多，那么你可能更愿意只是创建两种匹配更普遍的查询的索引。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="indexes-multicolumn.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="indexes-unique.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >多字段索引</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="indexes.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >唯一索引</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

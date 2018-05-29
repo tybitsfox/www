@@ -1,0 +1,201 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>版本 1.02 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="版本" HREF="release.html"><LINK REL="PREVIOUS" TITLE="版本 1.09" HREF="release-1-09.html"><LINK REL="NEXT" TITLE="版本 1.01" HREF="release-1-01.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="release-1-09.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="release.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Appendix E. 版本</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="release.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="release-1-01.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="RELEASE-1-02" >E.62. 版本 1.02</A
+></H1
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>发布日期: </B
+>1996-08-01</P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN78559" >E.62.1. 从 v1.02 迁移到 v1.02.1</A
+></H2
+><P
+>1996-08-01</P
+><P
+>本文是用于 1.02.1 的新的迁移文件．
+它包括 'copy' 的改变和一个用于转换旧的 ascii 文件的脚本．</P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>下面的信息用于帮助那些希望从 postgres95 1.01 和 1.02 向
+postgres95 1.02.1 迁移的用户．</P
+><P
+>如果你刚刚开始使用 postgres95 1.02.1 并且不需要迁移旧的数据库，
+那么你不需要阅读下面的部分．</P
+></BLOCKQUOTE
+></DIV
+><P
+>要想从旧的 postgres95 版本 1.01 或 1.02 数据库向版本 1.02.1 升级，
+需要进行下面步骤：</P
+><DIV
+CLASS="PROCEDURE"
+><OL
+TYPE="1"
+><LI
+><P
+>运行新的 1.02.1 postmaster</P
+></LI
+><LI
+><P
+>向1.01或1.02数据库中增加新的内建函数．
+方法是在你的1.01或1.02的数据库上运行新的1.02.1服务器然后运
+     行文末的查询．这些工作可以很轻松的通过 psql 来完成．
+如果你的1.01或1.02数据库叫 "testdb" 并且你已经
+     把本文末尾的命令剪切下来并存入到文件 addfunc.sql 里，那么：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>        % psql testdb -f addfunc.sql</PRE
+><P>
+
+那些从1.02数据库升级的人们在执行文件中这两个语句时会看到警告信息，
+因为它们已经在1.02中出现了．
+     这些警告不会产生问题．</P
+></LI
+></OL
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN78574" >E.62.2. 倾倒/恢复过程</A
+></H2
+><P
+>如果你试图恢复用原先版本的 pg_dump 或文本模式的
+'copy tablename to stdout'生成的数据，
+你需要在那些ASCII
+文件上运行下面的 sed 脚本，然后在恢复回数据库中去．
+因为原先的格式用'.'作为数据结束符，而现在使用'\.'．
+同样，现在空字符串用''进行装载，而不是NULL．
+请参阅 copy 的手册页获取完整的细节描述．
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>        sed 's/^\.$/\\./g' &lt;in_file &gt;out_file</PRE
+><P></P
+><P
+>如果你从一个旧的二进制拷贝或非标准输出拷贝中恢复数据，
+就不需要做上述转换，因为不存在数据结束符字符问题．
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>-- following lines added by agc to reflect the case-insensitive
+-- regexp searching for varchar (in 1.02), and bpchar (in 1.02.1)
+create operator ~* (leftarg = bpchar, rightarg = text, procedure = texticregexeq);
+create operator !~* (leftarg = bpchar, rightarg = text, procedure = texticregexne);
+create operator ~* (leftarg = varchar, rightarg = text, procedure = texticregexeq);
+create operator !~* (leftarg = varchar, rightarg = text, procedure = texticregexne);</PRE
+><P></P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN78580" >E.62.3. 修改列表</A
+></H2
+><P
+></P><PRE
+CLASS="PROGRAMLISTING"
+>源代码管理和开发
+ * worldwide team of volunteers
+ * the source tree now in CVS at ftp.ki.net
+
+增强
+ * psql (and underlying libpq library) now has many more options for
+   formatting output, including HTML
+ * pg_dump now output the schema and/or the data, with many fixes to
+   enhance completeness.
+ * psql used in place of monitor in administration shell scripts.
+   monitor to be depreciated in next release.
+ * date/time functions enhanced
+ * NULL insert/update/comparison fixed/enhanced
+ * TCL/TK lib and shell fixed to work with both tck7.4/tk4.0 and tcl7.5/tk4.1
+
+修补（多得说不完）
+ * indexes
+ * storage management
+ * check for NULL pointer before dereferencing
+ * Makefile fixes
+
+新移植
+ * added SolarisX86 port
+ * added BSD/OS 2.1 port
+ * added DG/UX port</PRE
+><P></P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="release-1-09.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="release-1-01.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >版本 1.09</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="release.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >版本 1.01</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

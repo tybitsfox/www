@@ -1,0 +1,60 @@
+<HTML><HEAD><TITLE>PHP 输入／输出流</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="支持的协议／封装协议列表" HREF="wrappers.html"><LINK REL="PREVIOUS" TITLE="FTP 和 FTPS" HREF="wrappers.ftp.html"><LINK REL="NEXT" TITLE="压缩流" HREF="wrappers.compression.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="section" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="wrappers.ftp.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">附录 J. 支持的协议／封装协议列表</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="wrappers.compression.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="section"><H1 CLASS="section"><A NAME="wrappers.php"></A>PHP 输入／输出流</H1><P>&#13; <TT CLASS="literal">PHP 3.0.13</TT> 及以上版本，自
+<TT CLASS="literal">PHP 4.3.0</TT> 起支持 <TT CLASS="filename">php://output</TT>
+和 <TT CLASS="filename">php://input</TT>，自
+<TT CLASS="literal">PHP 5.0.0</TT> 起支持 <TT CLASS="filename">php://filter</TT>。
+</P><P></P><UL><LI><P><TT CLASS="filename">php://stdin</TT></P></LI><LI><P><TT CLASS="filename">php://stdout</TT></P></LI><LI><P><TT CLASS="filename">php://stderr</TT></P></LI><LI><P><TT CLASS="filename">php://output</TT></P></LI><LI><P><TT CLASS="filename">php://input</TT></P></LI><LI><P><TT CLASS="filename">php://filter</TT></P></LI></UL><P>&#13; <TT CLASS="filename">php://stdin</TT>，<TT CLASS="filename">php://stdout</TT> 和 <TT CLASS="filename">php://stderr</TT> 允许访问
+PHP 进程相应的输入或者输出流。
+</P><P>&#13; <TT CLASS="filename">php://output</TT> 允许向输出缓冲机制写入数据，和
+<A HREF="function.print.html"><B CLASS="function">print()</B></A> 与 <A HREF="function.echo.html"><B CLASS="function">echo()</B></A> 的方式相同。
+</P><P>&#13; <TT CLASS="filename">php://input</TT> 允许您读取 POST 的原始数据。
+和 <TT CLASS="varname">$HTTP_RAW_POST_DATA</TT> 比起来，它给内存带来的压力较小，并且不需要任何特殊的 <TT CLASS="filename">php.ini</TT> 设置。
+</P><P>&#13; <TT CLASS="filename">php://stdin</TT> 和
+<TT CLASS="filename">php://input</TT> 是只读的，同时，<TT CLASS="filename">php://stdout</TT>，<TT CLASS="filename">php://stderr</TT> 和
+<TT CLASS="filename">php://output</TT> 是只写的。
+</P><P>&#13; <TT CLASS="filename">php://filter</TT>
+是一种设计用来允许过滤器程序在打开时成为流的封装协议。这对于单独具有完整功能的文件函数例如
+<A HREF="function.readfile.html"><B CLASS="function">readfile()</B></A>，<A HREF="function.file.html"><B CLASS="function">file()</B></A>
+和 <A HREF="function.file-get-contents.html"><B CLASS="function">file_get_contents()</B></A> 很有用，否则就没有机会在读取内容之前将过滤器应用于流之上。
+</P><P>&#13; <TT CLASS="filename">php://filter</TT> 的目标接受随后的'参数'作为其'路径'的一部分。
+</P><P></P><UL><LI><P>&#13; <TT CLASS="literal">/resource=&#60;stream to be filtered&#62;</TT>
+(<SPAN CLASS="emphasis"><I CLASS="emphasis">required</I></SPAN>) 此参数必须位于
+<TT CLASS="filename">php://filter</TT> 的末尾并且需要指向向要过滤的流。
+<DIV CLASS="informalexample"><A NAME="AEN133557"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#FF8000">/* This is equivalent to simply:<br />&nbsp;&nbsp;&nbsp;readfile("http://www.example.com");<br />&nbsp;&nbsp;&nbsp;since no filters are actually specified */<br /><br /></font><font color="#0000BB">readfile</font><font color="#007700">(</font><font color="#DD0000">"php://filter/resource=http://www.example.com"</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P></P></DIV>
+</P></LI><LI><P>&#13; <TT CLASS="literal">/read=&#60;filter list to apply to read chain&#62;</TT>
+(<SPAN CLASS="emphasis"><I CLASS="emphasis">optional</I></SPAN>) 本参数接受一个或多个过滤器的名字，用管道字符 <TT CLASS="literal">|</TT> 分隔。
+<DIV CLASS="informalexample"><A NAME="AEN133564"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#FF8000">/* This will output the contents of<br />&nbsp;&nbsp;&nbsp;www.example.com entirely in uppercase */<br /></font><font color="#0000BB">readfile</font><font color="#007700">(</font><font color="#DD0000">"php://filter/read=string.toupper/resource=http://www.example.com"</font><font color="#007700">);<br /><br /></font><font color="#FF8000">/* This will do the same as above<br />&nbsp;&nbsp;&nbsp;but will also ROT13 encode it */<br /></font><font color="#0000BB">readfile</font><font color="#007700">(</font><font color="#DD0000">"php://filter/read=string.toupper|string.rot13/resource=http://www.example.com"</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P></P></DIV>
+</P></LI><LI><P>&#13; <TT CLASS="literal">/write=&#60;filter list to apply to write chain&#62;</TT>
+(<SPAN CLASS="emphasis"><I CLASS="emphasis">optional</I></SPAN>) 本参数接受一个或多个过滤器的名字，用管道字符 <TT CLASS="literal">|</TT> 分隔。
+<DIV CLASS="informalexample"><A NAME="AEN133571"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#FF8000">/* This will filter the string "Hello World"<br />&nbsp;&nbsp;&nbsp;through the rot13 filter, then write to<br />&nbsp;&nbsp;&nbsp;example.txt in the current directory */<br /></font><font color="#0000BB">file_set_contents</font><font color="#007700">(</font><font color="#DD0000">"php://filter/write=string.rot13/resource=example.txt"</font><font color="#007700">,</font><font color="#DD0000">"Hello World"</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P></P></DIV>
+</P></LI><LI><P>&#13; <TT CLASS="literal">/&#60;filter list to apply to both chains&#62;</TT>
+(<SPAN CLASS="emphasis"><I CLASS="emphasis">optional</I></SPAN>) 任何没有被
+<TT CLASS="literal">read=</TT> 或
+<TT CLASS="literal">write=</TT> 指定的过滤器会被同时应用于读写链。
+</P></LI></UL><P>&#13; <DIV CLASS="table"><A NAME="AEN133580"></A><P><B>表格 J-5.
+Wrapper Summary (For <TT CLASS="literal">php://filter</TT>,
+refer to summary of wrapper being filtered.)
+</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">属性</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">支持</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">Restricted by <TT CLASS="literal">allow_url_fopen</TT>.</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">No</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">Allows Reading</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">php://stdin</TT> and
+<TT CLASS="literal">php://input</TT> only.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">Allows Writing</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">php://stdout</TT>,
+<TT CLASS="literal">php://stderr</TT>, and
+<TT CLASS="literal">php://output</TT> only.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">Allows Appending</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">php://stdout</TT>,
+<TT CLASS="literal">php://stderr</TT>, and
+<TT CLASS="literal">php://output</TT> only. (Equivalent to writing)
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">Allows Simultaneous Reading and Writing</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">No. These wrappers are unidirectional.</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">Supports <A HREF="function.stat.html"><B CLASS="function">stat()</B></A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">No</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">Supports <A HREF="function.unlink.html"><B CLASS="function">unlink()</B></A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">No</TD></TR></TBODY></TABLE></DIV>
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="wrappers.ftp.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="wrappers.compression.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">FTP 和 FTPS</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="wrappers.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">压缩流</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

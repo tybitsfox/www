@@ -1,0 +1,356 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>函数 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="类型转换" HREF="typeconv.html"><LINK REL="PREVIOUS" TITLE="操作符" HREF="typeconv-oper.html"><LINK REL="NEXT" TITLE="值存储" HREF="typeconv-query.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="typeconv-oper.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="typeconv.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 10. 类型转换</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="typeconv.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="typeconv-query.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="TYPECONV-FUNC" >10.3. 函数</A
+></H1
+><A NAME="AEN14674" ></A
+><P
+>	函数调用的参数类型是用下面的步骤来解析的。
+  </P
+><DIV
+CLASS="PROCEDURE"
+><P
+><B
+>函数参数类型解析</B
+></P
+><OL
+TYPE="1"
+><LI
+><P
+>从 <TT
+CLASS="CLASSNAME"
+>pg_proc</TT
+> 系统表中选择要考虑的函数。
+如果使用了未经修饰的名字，那么则认为该函数是那些在当前搜索路径中可见的，
+拥有正确名字和参数个数的函数（参阅 <A HREF="ddl-schemas.html#DDL-SCHEMAS-PATH" >Section 5.7.3</A
+>）。
+如果给出了一个带修饰的函数名，那么只考虑在声明的模式中的函数。</P
+><OL
+CLASS="SUBSTEPS"
+TYPE="a"
+><LI
+><P
+>如果在搜索路径中找到多个函数有相同的参数类型，
+那么只考虑出现在搜索路径最前面的那个。但是有不同参数类型的函数都以相同的态度看待，
+而不管它们在搜索路径中的位置。</P
+></LI
+></OL
+></LI
+><LI
+><P
+>找一个刚好接受完全一致的输入参数类型的函数。
+如果存在这么一个（在考虑的函数集中可能只存在一个），用之。
+（涉及到 <TT
+CLASS="TYPE"
+>unknown</TT
+> 类型的情况下在本步骤不会找到任何匹配。）</P
+></LI
+><LI
+><P
+>如果没有找到准确的匹配，则看看函数调用是否明显需要一个简单的类型转换。
+如果函数调用只有一个参数并且函数名与某些数据类型的（内部）名称相同，那么就会出现这种情况。
+另外，该函数的参数必须是一个未知类型的文本或者与命名数据类型二进制兼容。如果符合这些条件，
+则该函数参数在不做任何实际函数调用的情况下转换成这个命名的数据类型。</P
+></LI
+><LI
+><P
+>查找最优的匹配</P
+><OL
+CLASS="SUBSTEPS"
+TYPE="a"
+><LI
+><P
+>抛弃那些输入类型不匹配并且也不能强制转换（使用隐含转换）成匹配的候选操作符。
+<TT
+CLASS="TYPE"
+>unknown</TT
+> 文本在这种情况下被认为是可以转换成任何东西。如果只剩下一个候选项，用之；
+否则继续下一步。</P
+></LI
+><LI
+><P
+>遍历所有候选函数，保留那些在输入类型上有最多准确匹配的。
+（在这种场合下域被认为和其基本类型一样。）
+如果没有一个有准确匹配，则保留全部。
+如果只剩下一个，用之；否则继续下一步。</P
+></LI
+><LI
+><P
+>遍历所有候选函数，保留那些在最多需要类型转换的参数位置上接受优选类型的函数。
+如果没有哪个候选函数接受优选类型，则保留全部。
+如果只剩下一个，用之；否则继续下一步。</P
+></LI
+><LI
+><P
+>如果任何输入参数是<TT
+CLASS="TYPE"
+>unknown</TT
+>，检查剩下的候选函数对应参数位置的类型表。
+如果任何候选函数接受<TT
+CLASS="TYPE"
+>string</TT
+>类型，则在那些位置选 <TT
+CLASS="TYPE"
+>string</TT
+> 类型
+（这个假设认为 string 是合适的，因为 unknown 类型文本确实象 string）。
+否则，如果所有剩下的候选函数接受相同的类型，选择该类型；
+否则抛出一个错误，因为在没有更多线索的条件下不能导出正确的选择。
+现在抛弃不接受选定的类型表的候选函数；然后，
+如果任意候选函数在某个给定的参数位置接受一个优选类型，
+则抛弃那些在该参数位置接受非优选类型的候选函数。</P
+></LI
+><LI
+><P
+>如果只剩下一个函数，用之。
+如果还有超过一个的候选函数或是没有候选函数，则产生一个错误。</P
+></LI
+></OL
+></LI
+></OL
+></DIV
+><P
+>请注意，<SPAN
+CLASS="QUOTE"
+>"最佳匹配"</SPAN
+> 规则对操作符和对函数的类型分析都是一样的。
+下面是一些例子。</P
+><DIV
+CLASS="EXAMPLE"
+><A NAME="AEN14711" ></A
+><P
+><B
+>Example 10-4. 圆整函数参数类型解析</B
+></P
+><P
+>只有一个<TT
+CLASS="FUNCTION"
+>round</TT
+>函数有两个参数。（第一个参数是<TT
+CLASS="TYPE"
+>numeric</TT
+>，
+第二个是 <TT
+CLASS="TYPE"
+>integer</TT
+>。）所以下面的查询自动把第一个类型为 <TT
+CLASS="TYPE"
+>integer</TT
+> 的参数转换成 <TT
+CLASS="TYPE"
+>numeric</TT
+>：
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT round(4, 4);
+
+ round
+--------
+ 4.0000
+(1 row)</PRE
+><P>
+
+实际上它被分析器转换成：
+</P><PRE
+CLASS="SCREEN"
+>SELECT round(CAST (4 AS numeric), 4);</PRE
+><P></P
+><P
+>因为带小数点的数值常量初始时被赋予 <TT
+CLASS="TYPE"
+>numeric</TT
+> 类型，因此下面的查询将不需要类型转换，并且可能会略微高效一些：
+</P><PRE
+CLASS="SCREEN"
+>SELECT round(4.0, 4);</PRE
+><P></P
+></DIV
+><DIV
+CLASS="EXAMPLE"
+><A NAME="AEN14724" ></A
+><P
+><B
+>Example 10-5. 子字串函数类型解析</B
+></P
+><P
+>有好几个 <TT
+CLASS="FUNCTION"
+>substr</TT
+> 函数，其中一个接受类型
+<TT
+CLASS="TYPE"
+>text</TT
+> 和 <TT
+CLASS="TYPE"
+>integer</TT
+>。如果用一个未声明类型的字串常量调用它，
+系统将选择接受优选 <TT
+CLASS="LITERAL"
+>string</TT
+>类型（也就是类型 <TT
+CLASS="TYPE"
+>text</TT
+>）的候选函数。
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT substr('1234', 3);
+
+ substr
+--------
+     34
+(1 row)</PRE
+><P></P
+><P
+>如果该字符串声明为类型 <TT
+CLASS="TYPE"
+>varchar</TT
+>，
+就像大多数从表中取来的数据一样，分析器将试着将其转换成
+<TT
+CLASS="TYPE"
+>text</TT
+>：
+</P><PRE
+CLASS="SCREEN"
+>SELECT substr(varchar '1234', 3);
+
+ substr
+--------
+     34
+(1 row)</PRE
+><P>
+
+被分析器转换后实际上变成：
+</P><PRE
+CLASS="SCREEN"
+>SELECT substr(CAST(varchar '1234' AS text), 3);
+
+ substr
+--------
+     34
+(1 row)</PRE
+><P></P
+><P
+></P><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>分析器从<TT
+CLASS="STRUCTNAME"
+>pg_cast</TT
+>中了解到 <TT
+CLASS="TYPE"
+>text</TT
+> 和 <TT
+CLASS="TYPE"
+>varchar</TT
+> 是二进制兼容的，
+意思是说其中一个可以传递给一个接受另外一个的函数而不需要做任何物理转换。
+因此，在这种情况下，实际上没有做任何明确的类型转换。</P
+></BLOCKQUOTE
+></DIV
+><P></P
+><P
+>而且，如果以 <TT
+CLASS="TYPE"
+>integer</TT
+>为参数调用函数，分析器将试图将其转换成
+ <TT
+CLASS="TYPE"
+>text</TT
+>：
+</P><PRE
+CLASS="SCREEN"
+>SELECT substr(1234, 3);
+
+ substr
+--------
+     34
+(1 row)</PRE
+><P>
+
+实际上是这样执行的
+</P><PRE
+CLASS="SCREEN"
+>SELECT substr(CAST(1234 AS text), 3);
+
+ substr
+--------
+     34
+(1 row)</PRE
+><P>
+这种自动转换能够成功是因为存在一个从 <TT
+CLASS="TYPE"
+>integer</TT
+> 到 <TT
+CLASS="TYPE"
+>text</TT
+> 的隐含转换可以调用。</P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="typeconv-oper.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="typeconv-query.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >操作符</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="typeconv.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >值存储</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

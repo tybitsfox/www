@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:html="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta content="text/html; charset=utf-8"></meta><link rel="stylesheet" href="/skin/gtkdoc.css" type="text/css"></link><link rel="stylesheet" type="text/css" media="all" href="https://static.gnome.org/css/grass-theme-style.css"></link><link rel="stylesheet" type="text/css" media="all" href="/skin/lgo2010.css"></link><link rel="icon" type="image/png" href="/skin/gnome-16.png"></link><link rel="SHORTCUT ICON" type="image/png" href="/skin/gnome-16.png"></link><link rel="search" type="application/opensearchdescription+xml" href="/gnome-library-search.xml" title="GNOME Library Search"></link><link rel="stylesheet" type="text/css" href="/skin/jquery.autocomplete.css"></link><script type="text/javascript" src="/js/jquery.js"></script><script type="text/javascript" src="/js/jquery.autocomplete.js"></script><title>Migrating to GDBus: GIO Reference Manual</title><link href="index.html" rel="home" title="GIO Reference Manual"></link><link href="migrating.html" rel="up" title="Part III. Migrating to GIO"></link><link href="ch34s07.html" rel="prev" title="Data conversion"></link><link href="ch35s02.html" rel="next" title="API comparison"></link><link rel="stylesheet" type="text/css" media="all" href="/skin/jquery.autocomplete.css"></link><link rel="stylesheet" type="text/css" media="all" href="/skin/960_24_col.css"></link><script type="text/javascript" src="/js/jquery.js"></script><script type="text/javascript" src="/js/jquery.jcarousel.min.js"></script><script type="text/javascript" src="/js/jquery.autocomplete.js"></script></head><body><div id="accessibility_access"><ul><li><a href="#container">Go to page content</a></li><li><a href="#top_bar">Go to main menu</a></li><li><a href="#s" onclick="$('#s').focus(); return false;">Go to the search field</a></li></ul></div><div id="global_domain_bar"><div class="maxwidth"><div class="tab"><a class="root" href="https://www.gnome.org/">GNOME.org</a></div></div></div><div id="header" class="container_12"><div id="logo" class="grid_3"><a title="Go to home page" href="/"><img alt="GNOME: The Free Software Desktop Project" src="/skin/gnome-logo-devcenter.png"></img></a></div><div id="top_bar" class="grid_9"><div class="left"><div class="menu-globalnav-container"><ul id="menu-globalnav" class="menu"><li class="menu-item menu-item-type-post_type menu-item-6"><a href="/about/">About</a></li><li class="menu-item menu-item-type-post_type menu-item-23"><a href="https://help.gnome.org/users/">Users</a></li><li class="menu-item menu-item-type-post_type menu-item-40"><a href="https://help.gnome.org/admin/">Administrators</a></li><li class="current-menu-item"><a href="https://developer.gnome.org/">Developers</a></li></ul></div></div><div class="right"><form role="search" method="get" id="searchform" action="/symbols/"><div><label class="hidden" for="q">Search:
+                        </label><input type="text" value="" name="q" id="s" placeholder="Search"></input></div></form><script type="text/javascript">
+$('#s').autocomplete('/symbols/lookup/',
+        { minChars:3, matchSubset:1, matchContains:1, cacheLength:10,
+          selectOnly:1, rowsLimit:25 });
+              </script></div></div></div><div class="clearfix"></div><div id="container" class="gtk-doc two_columns"><div class="content"><table cellpadding="2" cellspacing="5" class="navigation" id="top" summary="Navigation header" width="100%"><tbody><tr valign="middle">
+<td align="left" class="shortcuts" width="100%"></td>
+<td><a accesskey="h" href="index.html"><img alt="Home" border="0" height="16" src="home.png" width="16"></img></a></td>
+<td><a accesskey="u" href="migrating.html"><img alt="Up" border="0" height="16" src="up.png" width="16"></img></a></td>
+<td><a accesskey="p" href="ch34s07.html"><img alt="Prev" border="0" height="16" src="left.png" width="16"></img></a></td>
+<td><a accesskey="n" href="ch35s02.html"><img alt="Next" border="0" height="16" src="right.png" width="16"></img></a></td>
+</tr></tbody></table><div class="chapter">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="id-1.5.5"></a>Migrating to GDBus</h2></div></div></div>
+<div class="toc"><dl class="toc">
+<dt><span class="section"><a href="ch35.html#id-1.5.5.2">Conceptual differences</a></span></dt>
+<dt><span class="section"><a href="ch35s02.html">API comparison</a></span></dt>
+<dt><span class="section"><a href="ch35s03.html">Owning bus names</a></span></dt>
+<dt><span class="section"><a href="ch35s04.html">Creating proxies for well-known names</a></span></dt>
+<dt><span class="section"><a href="gdbus-example-gdbus-codegen.html">Using gdbus-codegen</a></span></dt>
+</dl></div>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="id-1.5.5.2"></a>Conceptual differences</h2></div></div></div>
+<p>
+      The central concepts of D-Bus are modelled in a very similar way
+      in dbus-glib and GDBus. Both have a objects representing connections,
+      proxies and method invocations. But there are some important
+      differences:
+      </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+          dbus-glib uses the <a class="ulink" href="http://www.freedesktop.org/wiki/Software/dbus#ReferenceImplementation.28dbus-daemonandlibdbus.29" target="_top">libdbus
+          reference implementation</a>, GDBus doesn't. Instead, it
+          relies on GIO streams as transport layer, and has its own
+          implementation for the D-Bus connection setup and
+          authentication. Apart from using streams as transport,
+          avoiding libdbus also lets GDBus avoid some thorny
+          multithreading issues.
+        </p></li>
+<li class="listitem"><p>
+          dbus-glib uses the GObject type system for method arguments and
+          return values, including a homegrown container specialization
+          mechanism. GDBus relies on the <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> type system which is
+          explicitly designed to match D-Bus types.
+        </p></li>
+<li class="listitem"><p>
+          dbus-glib models only D-Bus interfaces and does not provide
+          any types for objects. GDBus models both D-Bus interfaces
+          (via the <a class="link" href="GDBusInterface.html" title="GDBusInterface"><span class="type">GDBusInterface</span></a>, <a class="link" href="GDBusProxy.html" title="GDBusProxy"><span class="type">GDBusProxy</span></a> and
+          <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> types) and objects (via the
+          <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a>, <a class="link" href="GDBusObjectSkeleton.html" title="GDBusObjectSkeleton"><span class="type">GDBusObjectSkeleton</span></a> and <a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy"><span class="type">GDBusObjectProxy</span></a> types).
+        </p></li>
+<li class="listitem"><p>
+          GDBus includes native support for the <a class="ulink" href="http://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-properties" target="_top">org.freedesktop.DBus.Properties</a> (via the <a class="link" href="GDBusProxy.html" title="GDBusProxy"><span class="type">GDBusProxy</span></a> type) and <a class="ulink" href="http://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-objectmanager" target="_top">org.freedesktop.DBus.ObjectManager</a> D-Bus interfaces, dbus-glib doesn't.
+        </p></li>
+<li class="listitem"><p>
+          The typical way to export an object in dbus-glib involves
+          generating glue code from XML introspection data using
+          <span class="command"><strong>dbus-binding-tool</strong></span>. GDBus provides a
+          similar tool called <span class="command"><strong>gdbus-codegen</strong></span> that
+          can also generate Docbook D-Bus interface documentation.
+        </p></li>
+<li class="listitem"><p>
+          dbus-glib doesn't provide any convenience API for owning and
+          watching bus names, GDBus provides the <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a> and
+          <a class="link" href="gio-Watching-Bus-Names.html#g-bus-watch-name" title="g_bus_watch_name ()"><code class="function">g_bus_watch_name()</code></a> family of convenience functions.
+        </p></li>
+<li class="listitem"><p>
+          GDBus provides API to parse, generate and work with <a class="link" href="gio-D-Bus-Introspection-Data.html" title="D-Bus Introspection Data">Introspection
+          XML</a>, dbus-glib doesn't.
+        </p></li>
+<li class="listitem"><p>
+          GTestDBus provides API to create isolated unit tests GDBus Test Scaffolding.
+        </p></li>
+</ul></div>
+<p>
+    </p>
+</div>
+</div><div class="footer">
+<hr></hr>Generated by GTK-Doc V1.25.1</div></div><div id="footer_art" class="default"> </div></div><div class="clearfix"></div><div id="footer_grass">   </div><div id="footer"><div class="container_12"><div class="links grid_9"><div class="menu-footer-1-container"><ul id="menu-footer-1" class="menu"><li id="menu-item-88" class="menu-item menu-item-type-custom menu-item-home menu-item-88"><a href="https://www.gnome.org/">The GNOME Project</a><ul class="sub-menu"><li id="menu-item-89" class="menu-item menu-item-type-post_type menu-item-89"><a href="https://www.gnome.org/about/">About Us</a></li><li id="menu-item-90" class="menu-item menu-item-type-custom menu-item-90"><a href="https://www.gnome.org/get-involved/">Get Involved</a></li><li id="menu-item-91" class="menu-item menu-item-type-custom menu-item-91"><a href="https://www.gnome.org/teams/">Teams</a></li><li id="menu-item-92" class="menu-item menu-item-type-custom menu-item-92"><a href="https://foundation.gnome.org">The GNOME Foundation</a></li><li><a href="https://www.gnome.org/support-gnome/">Support GNOME</a></li><li><a href="https://www.gnome.org/contact/">Contact</a></li></ul></li></ul></div><div class="menu-footer-2-container"><ul id="menu-footer-2" class="menu"><li id="menu-item-99" class="menu-item menu-item-type-post_type current-menu-item page_item page-item-20 current_page_item menu-item-99"><a href="#">Resources</a><ul class="sub-menu"><li><a href="https://help.gnome.org">Documentation</a></li><li><a href="https://wiki.gnome.org">Wiki</a></li><li><a href="https://mail.gnome.org/mailman/listinfo">Mailing Lists</a></li><li><a href="https://wiki.gnome.org/GnomeIrcChannels">IRC Channels</a></li><li><a href="https://bugzilla.gnome.org/">Bug Tracker</a></li><li><a href="https://git.gnome.org/browse/">Development Code</a></li><li><a href="https://wiki.gnome.org/Jhbuild">Build Tool</a></li></ul></li></ul></div><div class="menu-footer-4-container"><ul id="menu-footer-4" class="menu"><li id="menu-item-104" class="menu-item menu-item-type-custom menu-item-104"><a href="http://www.gnome.org/news/">News</a><ul class="sub-menu"><li><a href="https://www.gnome.org/start/stable">Latest Release</a></li><li><a href="https://planet.gnome.org">Planet GNOME</a></li><li><a href="https://news.gnome.org">Development News</a></li><li><a href="https://identi.ca/gnome/">Identi.ca</a></li><li><a href="https://twitter.com/gnome">Twitter</a></li></ul></li></ul></div></div><div class="links grid_3 right"><div><ul class="menu available_languages"><li><strong>This website is available in many languages</strong><ul class="sub-menu"><li><a href="/languages" title="Switching Language">Switch Language</a></li></ul></li></ul><script type="text/javascript" src="/js/language.js"></script></div></div><div id="footnotes" class="grid_9">
+                Copyright © 2005‒2014 <strong class="gnome_logo">The GNOME Project</strong><br></br><small>Optimised for standards. Hosted by <a href="http://redhat.com">Red Hat</a>.</small></div><div class="clear"></div></div></div><script type="text/javascript">
+$(document).ready(function() {
+    // Get browser
+    $.each($.browser, function(i) {
+        $('body').addClass(i);
+        return false;
+    });
+
+    // Get OS and add it as class to body tag, this then allows forcing some
+    // customisation in the CSS rules.
+    var match = navigator.userAgent.toLowerCase().match(/(win|mac|linux)/);
+    if (match) {
+        $('body').addClass(match[0]);
+    }
+});
+</script><script type="text/javascript">
+      var _paq = _paq || [];
+      _paq.push(['disableCookies']);
+      _paq.push(["trackPageView"]);
+      _paq.push(["enableLinkTracking"]);
+
+      (function() {
+        var u=(("https:" == document.location.protocol) ? "https" : "http") + "://webstats.gnome.org/";
+        _paq.push(["setTrackerUrl", u+"piwik.php"]);
+        _paq.push(["setSiteId", "6"]);
+        var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
+        g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
+      })();
+    </script></body></html>

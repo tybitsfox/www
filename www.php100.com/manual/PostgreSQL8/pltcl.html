@@ -1,0 +1,205 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>PL/Tcl - Tcl 过程语言 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="服务器端编程" HREF="server-programming.html"><LINK REL="PREVIOUS" TITLE="从Oracle的 PL/SQL 移植" HREF="plpgsql-porting.html"><LINK REL="NEXT" TITLE="PL/Tcl 函数和参数" HREF="pltcl-functions.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="CHAPTER" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="plpgsql-porting.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="plpgsql.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="plperl.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="pltcl-functions.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A NAME="PLTCL" >Chapter 37. PL/Tcl - Tcl 过程语言</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>37.1. <A HREF="pltcl.html#PLTCL-OVERVIEW" >概述</A
+></DT
+><DT
+>37.2. <A HREF="pltcl-functions.html" >PL/Tcl 函数和参数</A
+></DT
+><DT
+>37.3. <A HREF="pltcl-data.html" >PL/Tcl 里的数据值</A
+></DT
+><DT
+>37.4. <A HREF="pltcl-global.html" >PL/Tcl 里的全局量</A
+></DT
+><DT
+>37.5. <A HREF="pltcl-dbaccess.html" >在 PL/Tcl 里面访问数据库</A
+></DT
+><DT
+>37.6. <A HREF="pltcl-trigger.html" >PL/Tcl 里的触发器过程</A
+></DT
+><DT
+>37.7. <A HREF="pltcl-unknown.html" >模块和<TT
+CLASS="FUNCTION"
+>unknown(未知)</TT
+>的命令</A
+></DT
+><DT
+>37.8. <A HREF="pltcl-procnames.html" >Tcl 过程名字</A
+></DT
+></DL
+></DIV
+><A NAME="AEN35830" ></A
+><A NAME="AEN35832" ></A
+><P
+>	PL/Tcl 是一种用于
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 数据库系统的可装载的过程化语言，
+	它让我们可以用 <A HREF="../../../www.tcl.tk/index.html" TARGET="_top" >Tcl 语言</A
+>来书写函数和触发器过程。
+  </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="PLTCL-OVERVIEW" >37.1. 概述</A
+></H1
+><P
+>	PL/Tcl 提供 C 语言里面函数开发者所拥有的大多数功能，只有一点点限制除外。
+   </P
+><P
+>	好的限制是，所有东西都是在一个安全的 Tcl 解释器里面运行的。
+	除了安全的 Tcl 一个有限的命令集外，只有很少的几个命令可以通过 SPI
+	访问数据库以及通过<TT
+CLASS="FUNCTION"
+>elog()</TT
+>生成错误信息。不象 C 函数那样，
+	（Tcl）没有办法访问数据库后端内部或者获得 OS 级的
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器进程的权限。
+	因此，任何非特权的数据库用户都可以被允许使用这种语言。
+   </P
+><P
+>	另外的实现级限制是 Tcl 过程不能用于创建新数据库类型的输入/输出函数。
+   </P
+><P
+>	有时候我们需要写一些不受安全 Tcl 限制的 Tcl 函数，比如，
+	我们可能需要一个可以发送邮件的 Tcl 函数。要处理这样的问题，
+	我们有一个<SPAN
+CLASS="APPLICATION"
+>PL/Tcl</SPAN
+>的变种，叫<TT
+CLASS="LITERAL"
+>PL/TclU</TT
+>（意思是不可信的 Tcl）。
+	这个语言和 PL/Tcl 是完全一样的，只不过使用了一个完整的 Tcl 解释器。
+	<I
+CLASS="EMPHASIS"
+>如果你使用了<SPAN
+CLASS="APPLICATION"
+>PL/TclU</SPAN
+>，那么你必须把它安装成一种不可信的过程语言</I
+>，
+	这样只有数据库超级用户可以用它创建函数。
+	<SPAN
+CLASS="APPLICATION"
+>PL/TclU</SPAN
+>函数的作者必须注意：你写的函数一定不要做任何预算外的事情，
+	因为它能干所有登录为数据库管理员的用户能干的事情。
+   </P
+><P
+>	如果在安装过程的配置步骤中声明了 Tcl 支持，
+	那么 <SPAN
+CLASS="APPLICATION"
+>PL/TCL</SPAN
+>和<SPAN
+CLASS="APPLICATION"
+>PL/TclU</SPAN
+> 的调用句柄是在制作时自动制作并安装到
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 库目录中去的。
+	要在某个特定的数据库中安装 PL/Tcl 和/或 PL/TclU，那么你可以使用 <TT
+CLASS="COMMAND"
+>createlang</TT
+> 程序。
+	比如
+	<TT
+CLASS="LITERAL"
+>createlang pltcl <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></TT
+> 或
+	<TT
+CLASS="LITERAL"
+>createlang pltclu <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></TT
+>。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="plpgsql-porting.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="pltcl-functions.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >从<SPAN
+CLASS="PRODUCTNAME"
+>Oracle</SPAN
+>的 PL/SQL 移植</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="server-programming.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >PL/Tcl 函数和参数</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

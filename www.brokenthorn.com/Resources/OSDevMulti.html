@@ -1,0 +1,642 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<title>Operating Systems Development Series</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=windows-1252" />
+		<link href="Files/reference.css" type="text/css" rel="stylesheet" />
+		<meta content="MSHTML 6.00.6000.16441" name="GENERATOR" />
+		<style type="text/css">
+			body
+			{
+				background-image: url(OSDevVga_files/watermark.htm);
+				background-color: #FFFFFF;
+				A:link: color: #666699  /* link="#666699" 	*/
+				A:visited color: 000000 /* alink="#000000"	*/
+				A:active color: 666699 	/* vlink="#666699"  */
+				margin-right: 0px;
+				margin-left: 0px;
+				margin-top: 0px;
+				margin-bottom: 0px;
+				text: #000000			/* text="#000000"	*/
+			}
+			.special
+			{
+				font-weight: 4;
+			}
+			.center
+			{
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+
+<table border=0 cellpadding=0 cellspacing=0 width="100%"> 
+<tr> 
+     <td width="60%"> 
+	<a href="http://www.brokenthorn.com"><img src="site/5.png" border=0></a> 
+     </td> 
+     <td width="40%"> 
+ 
+        <div id="ad_main"> 
+ 
+        </div> 
+ 
+     </td> 
+  </tr> 
+</table> 
+
+		<table border="0" cellpadding="3" cellspacing="0" width="100%">
+			<tbody>
+				<tr>
+					<td class="tblhdr">Operating Systems Development Series</td>
+				</tr>
+				<tr>
+					<td colspan="2" align="center"></td>
+				</tr>
+			</tbody>
+		</table>
+		<table border="0" cellpadding="5" cellspacing="0" width="100%">
+			<tbody>
+				<tr>
+					<td>
+						<p class="center"><span class="title">Operating Systems Development - Multiboot</span>
+						<br />
+						<span class="author">by Mike, 2010</span></p>
+						<p>This series is intended to demonstrate and teach operating system development from
+						the ground up.</p>
+
+						<h1>Introduction</h1>
+						<p>
+							This tutorial covers the multiboot standard and how to develop a multiboot-complient
+							operating system. While the series goes into the multiboot structure, there is more
+							to creating a multiboot complient system. By your system being multiboot complient,
+							it will be capable of being loaded by any multiboot complient boot loader. Cool, huh?
+							This means any multi boot complient bootloader can boot your OS.
+						</p>
+						<h1>Multiboot Specification</h1>
+
+						<h2>Abstract</h2>
+						<p>
+							The multiboot standard was originally created in 1995 and is overseen by the <b>Free Software Foundation</b>.
+							They provide a written specification that defines a standard way to allow <b>multi-booting</b>. <b>Multi-booting</b>
+							allows a computer system to install, and run, multiple operating systems and system environments. A <b>dual-boot</b> computer
+							system is an example of multibooting, with two operating systems installed.
+						</p>
+						<p>
+							Multibooting is made possible by another, unofficial software trick: <b>Partitioning</b>. <b>Partitioning</b> creates the effect
+							of multiple logical disks on one physical disk. Partitioning separates the storage on a storage medium (typically a hard disk) for
+							different uses. For example, the first partition can be from sector 0 to sector <i>n</i> and contain an NTFS formatted Windows operating
+							system. The other partitions can be of any file system - containing data or another operating system software.
+						</p>
+						<p>
+							Because partitioning is a software trick, it is up to the boot loader to be able to detect these partitions by reading the software
+							<b>Partition Table</b> and, typically, display a list of the partitions that contain an operating system to boot. This is the <b>boot menu</b>.
+							The Multiboot Specification defines the state of the computer when the bootloader transfers control to an operating system
+							and how data is passed to the operating system.
+						</p>
+						<p>
+							The multiboot standard can be used on disks that do not support multibooting as well. This means, if your multi-boot complient
+							bootloader can boot from a floppy disk, you can make your floppy disk OS boot from it.
+						</p>
+						<h2>Operating System Image</h2>
+						<p>
+							Typical bootloaders can be configured to boot different types of operating system images. Typically this is the Kernel or
+							another OS Loading program. The multiboot specification does not provide details on the format of the image. Because of this,
+							you can use any format that you want - flat binary, ELF, or even PE files.
+						</p>
+						<p>
+							However, this file requires an additional header - the <b>Multiboot Header</b>. This header must be located somewhere within the
+							first 8k of your image and aligned on a dword (32 bit) boundery. Any multiboot complient bootloader will be able to find this
+							header and obtain information from it. This is how the boot loader will know how to load and execute your image.
+						</p>
+						<p>
+							Here is the structure format:
+						</p>
+
+
+            <div class="code"><blockquote><pre>typedef struct _MULTIBOOT_INFO {
+
+   uint32_t magic;       //all required...
+   uint32_t flags;
+   uint32_t checksum;
+   uint32_t headerAddr;  //all optional, set if bit 16 in flags is set...
+   uint32_t loadAddr;
+   uint32_t loadEndAddr;
+   uint32_t bssEndAddr;
+   uint32_t entryPoint;
+   uint32_t modType;     //all optional, set if bit 2 in flags is set...
+   uint32_t width;
+   uint32_t height;
+   uint32_t depth;
+
+}MULTIBOOT_INFO, *PMULTIBOOT_INFO;</pre></blockquote></div>
+						<p>
+						You should make sure no padding is added. In MSVC, this can be done
+						by adding a <b>#pragma pack (push, 1)</b> and <b>#pragma pack(pop,1)</b>
+						around the structure declaration above.
+						</p>
+						<p>
+						The above is the only structure that you need to get your OS booted by a
+						multi boot complient bootloader, such as GRUB. Lets look at the members:
+						</p>
+						<p>
+						<ul>
+							<li><b>magic:</b> must always be 0x1BADB002</li>
+							<li><b>flags:</b></li>
+							<ul>
+								<li><b>Bit 0</b></li>
+								<ul>
+									<li>0: All boot modules and OS image must be aligned in page (4k) bounderies.</li>
+								</ul>
+								<li><b>Bit 1</b></li>
+								<ul>
+									<li>1: Boot loader must pass memory information to the operating system.</li>
+								</ul>
+								<li><b>Bit 2</b></li>
+								<ul>
+									<li>1: Boot loader must pass the video mode table to the operating system.</li>
+								</ul>
+								<li><b>Bit 16</b></li>
+								<ul>
+									<li>1: Offsets 12-28 of the multiboot header are valid. (That is, members header_addr through entry_addr
+									in the multiboot header are valid.) If this bit is set, the boot loader will use these values instead
+									of parsing the image format and obtaining the values from it. Multiboot complient bootloaders can provide support
+									for native executable file formats, such as ELF or PE that it can load.</li>
+
+								</ul>
+							</ul>
+							<li><b>checksum:</b> This must be a value that which, when added to <b>magic</b> and <b>flags</b> must be a 32 bit unsigned sum of 0.</li>
+							<li><b>headerAddr:</b> Address of multiboot header</li>
+							<li><b>loadAddr:</b> Base address to load to</li>
+							<li><b>loadEndAddr:</b> End load address. If 0, bootloader assumes the end is the end of the OS image file</li>
+							<li><b>bssEndAddr:</b> End of BSS segment. Bootloader null's this segment. If 0, no BSS segment is assumed</li>
+							<li><b>entryPoint:</b> Address of entry point function. Yes, thats right, the entry point of your operating system</li>
+							<li><b>modType:</b></li>
+							<ul>
+								<li>0: Linear graphics mode</li>
+								<li>1: EGA Standard text mode</li>
+								<li>Everything else is reserved</li>
+							</ul>
+							<li><b>width:</b> width of display in text columns or pixels. If 0, the bootloader assumes no preference</li>
+							<li><b>height:</b> height of display in text columns or pixels. If 0, the bootloader assumes no preference</li>
+							<li><b>depth:</b> Number of <b>Bits Per Pixels (BPP)</b> in a graphics mode. If 0, the bootloader assumes no preference</li>
+						</ul>
+						</p>
+						<p>
+						That is all there is to it. The boot loader can load and execute your operating system in two ways: By loading and reading
+						its executable image format (ELF and PE are examples) or by using the information found in this structure.
+						</p>
+						<p>
+						The boot loader looks for this structure in your image. Because of this, you need to fill out and create this structure.
+						</p>
+						<h2>Implementing the Multi boot Header</h2>
+						<p>
+						There are different solutions for implimenting the multiboot header into your operating system. Different
+						solutions for different toolchains. Lets look at some of them.
+						</p>
+						<h3>Visual C++ 2005, 2008</h3>
+						<p>
+						This is a recent trick I discovered and posted on another forum. It uses some extensions provided by Microsoft Visual C++
+						to define the header in your kernel.
+						</p>
+						<p>
+						We first declare the structure, making sure there is no extra padding:
+						</p>
+<div class="code"><blockquote><pre>#pragma pack (push, 1)
+
+/**
+*   Multiboot structure
+*/
+typedef struct _MULTIBOOT_INFO {
+
+   uint32_t magic;
+   uint32_t flags;
+   uint32_t checksum;
+   uint32_t headerAddr;
+   uint32_t loadAddr;
+   uint32_t loadEndAddr;
+   uint32_t bssEndAddr;
+   uint32_t entryPoint;
+   uint32_t modType;
+   uint32_t width;
+   uint32_t height;
+   uint32_t depth;
+
+}MULTIBOOT_INFO, *PMULTIBOOT_INFO;
+
+#pragma pack(pop,1)</pre></blockquote></div>
+						<p>
+						Now all that we need to do is define this structure somewhere. Remember that this header
+						must be defined on a dword (32 bit) boundery and within the first 8K of your kernel? This trick
+						uses section alignment to insure the proper alignment of the structure. We set up the section alignment
+						in the <b>Linker Options</b> of the IDE and it is guaranteed to be dword aligned. So, all we need to do is
+						create a new program section and define the structure in it. Neat, huh?
+						</p>
+						<p>
+						Lets do that now:
+						</p>
+<div class="code"><blockquote><pre>//! Bad example:
+#pragma section(".text")
+__declspec(allocate(".text"))
+MULTIBOOT_INFO _MultibootInfo = {
+
+   MULTIBOOT_HEADER_MAGIC,
+   MULTIBOOT_HEADER_FLAGS,
+   CHECKSUM,
+   HEADER_ADDRESS,
+   LOADBASE,
+   0, //load end address
+   0, //bss end address
+   KeStartup
+};</pre></blockquote></div>
+						<p>
+						This works but is problimatic. This allocates the structure in the .text section,
+						but <i>where?</i> This is going to be a problem - Multiboot specification requires
+						the structure be located in the first 8K of the image, but MSVC is still free to place
+						it outside the 8K region.
+						</p>
+						<p>
+						To fix this problem, we must use the section naming convention. The section naming conventions
+						used in MSVC follow the format <b>name$loc</b> where <b>name</b> is the name of the section, and
+						<b>loc</b> is an alpha-numeric value that represents where, in the section, it represents. Its in
+						alphanumeric order: <b>section$a</b> is first, <b>section$b</b> is second and so on. So, by using
+						<b>.text$0</b> we are representing the beginning of the .text segment. But of course, just replacing
+						the above <b>.text</b> to <b>.text$a</b> wont work - My, or my no, that would be too easy. :)
+						</p>
+						<p>
+						Instead, we define our own section - lets call it <b>.a$0</b>. We can create this as a code segment
+						and merge it into the .text section:
+						</p>
+<div class="code"><blockquote><pre>//! Complete example
+#pragma code_seg(".a$0")
+__declspec(allocate(".a$0"))
+MULTIBOOT_INFO _MultibootInfo = {
+
+   MULTIBOOT_HEADER_MAGIC,
+   MULTIBOOT_HEADER_FLAGS,
+   CHECKSUM,
+   HEADER_ADDRESS,
+   LOADBASE,
+   0, //load end address
+   0, //bss end address
+   KeStartup
+};
+
+#pragma comment(linker, "/merge:.text=.a")</pre></blockquote></div>
+
+						<p>
+						Thats all that there is to it.
+						<b>KeStartup</b> is your entry point function,
+						<b>OADBASE</b> is the base address of your kernel (like 1MB for example),
+						<b>HEADER_ADDRESS</b> is the address of the multiboot header 
+						(which happens to be <b>LOADBASE+0x400</b> do to .text
+						always starting at offset 0x400), magic is <b>0x1BADB002</b>,
+						flags of <b>0x00010003</b> and the checksum being
+						<b>-(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)</b>.
+						</p>
+						<p>
+						Here is the complete example:
+						</p>
+
+<div class="code"><blockquote><pre>#pragma pack (push, 1)
+
+/**
+*   Multiboot structure
+*/
+typedef struct _MULTIBOOT_INFO {
+
+   uint32_t magic;
+   uint32_t flags;
+   uint32_t checksum;
+   uint32_t headerAddr;
+   uint32_t loadAddr;
+   uint32_t loadEndAddr;
+   uint32_t bssEndAddr;
+   uint32_t entryPoint;
+   uint32_t modType;
+   uint32_t width;
+   uint32_t height;
+   uint32_t depth;
+
+}MULTIBOOT_INFO, *PMULTIBOOT_INFO;
+
+#pragma pack(pop,1)
+
+/**
+*   Kernel entry
+*/
+void KeStartup ( PMULTIBOOT_INFO* loaderBlock ) {
+
+   __halt ();
+}
+
+//! loading address
+#define LOADBASE                     0x100000
+
+//! header offset will always be this
+#define   ALIGN                           0x400
+#define   HEADER_ADDRESS         LOADBASE+ALIGN
+
+#define MULTIBOOT_HEADER_MAGIC        0x1BADB002
+#define MULTIBOOT_HEADER_FLAGS        0x00010003
+#define STACK_SIZE                    0x4000    
+#define CHECKSUM                      -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
+
+#pragma code_seg(".a$0")
+__declspec(allocate(".a$0"))
+MULTIBOOT_INFO _MultibootInfo = {
+
+   MULTIBOOT_HEADER_MAGIC,
+   MULTIBOOT_HEADER_FLAGS,
+   CHECKSUM,
+   HEADER_ADDRESS,
+   LOADBASE,
+   0, //load end address
+   0, //bss end address
+   KeStartup
+};
+
+#pragma comment(linker, "/merge:.text=.a")</pre></blockquote></div>
+					<p>
+					Assuming this kernel has the base address of 1MB, and is compiled with Visual C++
+					to produce a valid PE executable, this should be bootable by any multiboot complient bootloader.
+					</p>
+
+<h2>Machine State</h2>
+
+<p>When the bootloader executes our operating system, the registers must be the following values:
+
+<ul>
+<li><b>EAX</b> - Magic Number. Must be 0x2BADB002. This will indicate to the kernel that our boot loader is multiboot standard</li>
+<li><b>EBX</b> - Containes the physical address of the Multiboot information structure</li>
+<li><b>CS</b> - Must be a 32-bit read/execute code segment with an offset of `0' and a limit of `0xFFFFFFFF'. The exact value is undefined.</li>
+<li><b>DS,ES,FS,GS,SS</b> - Must be a 32-bit read/write data segment with an offset of `0' and a limit of `0xFFFFFFFF'. The exact values are all undefined.</li>
+<li><b>A20 gate</b> must be enabled</li>
+<li><b>CR0</b> - Bit 31 (PG) bit must be cleared (paging disabled) and Bit 0 (PE) bit must be set (Protected Mode enabled). Other bits undefined</li>
+</ul>
+
+<p>
+All other registers are undefined. Most of this is already done in our existing boot loader. The only additional two things we must add are for the EAX register and EBX.
+The most important one for us is stored in EBX. This will contain the physical address of the multiboot information structure. Lets take a look!
+</p>
+
+					<h2>Multi boot Information Structure</h2>
+
+					<p>
+					Now that our operating system is being booted by the boot loader, whats next? Multiboot complient
+					boot loaders also creates an information structure providing information to the operating system.
+					These are passed by a pointer to the structure in the <b>EBX</b> register.
+					</p>
+					<p>
+					This is possibly one of the most important structures contained
+					in the multiboot specification. The information in this
+					structure is passed to the kernel from the EBX register,
+					<b>This allows a standard way for the boot loader to pass information to the kernel.</b>
+					</p>
+					<p>
+					This is a fairly big structure but isnt to bad.
+					Not all of these members are required. The specification states
+					that the operating system must use the flags member to determin
+					what members in the structure exist and what do not.
+					</p>
+					<p>
+					Here is the entire structure format. Simular to the multi-boot header structure,
+					it is recommended to insure there is no padding added.
+					</p>
+
+<div class="code"><blockquote><pre>
+typedef struct _MULTIBOOT_INFO {
+
+	uint32_t flags;			//required
+	uint32_t memLower;		//if bit 0 in flags are set
+	uint32_t memUpper;		//if bit 0 in flags are set
+	uint32_t bootDevice;		//if bit 1 in flags are set
+	uint32_t commandLine;		//if bit 2 in flags are set
+	uint32_t moduleCount;		//if bit 3 in flags are set
+	uint32_t moduleAddress;		//if bit 3 in flags are set
+	uint32_t syms[4];		//if bits 4 or 5 in flags are set
+	uint32_t memMapLength;		//if bit 6 in flags is set
+	uint32_t memMapAddress;		//if bit 6 in flags is set
+	uint32_t drivesLength;		//if bit 7 in flags is set
+	uint32_t drivesAddress;		//if bit 7 in flags is set
+	uint32_t configTable;		//if bit 8 in flags is set
+	uint32_t apmTable;		//if bit 9 in flags is set
+	uint32_t vbeControlInfo;	//if bit 10 in flags is set
+	uint32_t vbeModeInfo;		//if bit 11 in flags is set
+	uint32_t vbeMode;		// all vbe_* set if bit 12 in flags are set
+	uint32_t vbeInterfaceSeg;
+	uint32_t vbeInterfaceOff;
+	uint32_t vbeInterfaceLength;
+
+}MULTIBOOT_INFO, *PMULTIBOOT_INFO;</pre></blockquote></div>
+						<p>
+						This structure isnt as complex as it looks. If the corrosponding bit in the flags
+						member is set, it means that the members (shown above) are valid. Because of this,
+						<b>flags</b> is, technically, the only required member, all other members are optional.
+						</p>
+						<p>
+						Lets look at the members here:
+						</p>
+						<ul>
+							<li><b>memLow, memUpper:</b> Amount of low and upper memory in KB. Low memory starts at 0, upper memory starts at 1MB.</li>
+							<li><b>bootDevice:</b> Boot device (see below)</li>
+							<li><b>commandLine:</b> Pointer to C-string containing your kernel command line</li>
+							<li><b>moduleCount:</b> The number of additional boot modules that were loaded by the boot loader</li>
+							<li><b>moduleAddress:</b> address of first <b>module structure</b> (see below)</li>
+							<li><b>syms:</b> Location of symbol table. See below</li>
+							<li><b>memMapLength:</b> Number of entries in system memory map</li>
+							<li><b>memMapAddress:</b> Address of memory map</li>
+							<li><b>drivesLength, drivesAddress:</b> see below</li>
+							<li><b>configTable:</b> Address of BIOS ROM config table (returned from GET CONFIGUATION BIOS INT call)</li>
+							<li><b>apmTable:</b> Address of <b>Advanced Power Management (APM)</b> table</li>
+							<li><b>vbeControlInfo, VbevbeModeInfo:</b> Address of <b>Video Bios Extensions (VBE)</b> structures.</b>
+							<li><b>vbeMode:</b> VBE mode</li>
+							<li><b>vbeInterfaceSeg, vbeInterfaceOff, vbeInterfaceLength:</b> Used to access VBE 2.0 protected mode interface</li>
+						</ul>
+						<p>
+							This chapter does not go over VBE nor APM so we wont cover them here. Memory map information
+							has been described in <a href="http://www.brokenthorn.com/Resources/OSDev17.html">Chapter 17</a>,
+							including the format of the <b>System Memory Map</b>.
+						</p>
+						<p>
+							The ROM configuation for <b>configTable</b> is the table obtained from <a href="http://www.ctyme.com/intr/rb-1594.htm">BIOS INT 0x15 Function 0xC0</a>.
+						</p>
+						<p>
+							Thats all there is to it. This structure isnt that bad :) There are a few members we havnt looked
+							at though: bootDevice, moduleAddress, syms, drivesLength, and drivesAddress. Lets look at those in detail.
+						</p>
+
+						<h3>bootDevice</h3>
+						<p>
+						The <b>bootDevice</b> member follows the format:
+						</p>
+						<ul>
+						<li>1st word: BIOS drive number</li>
+						<li>2nd, 3rd, 4th words: Partition</li>
+						</ul>
+						<p>
+						The BIOS drive number is the number used by the BIOS INT 0x13 services to represent the drive. The other words
+						reoresent the partitions: Words 2,3, and 4 represent Partition 1,2,and 3. Partition 1 is the top level partition,
+						partition 2 is the sub-partition in that partition and so on. Unused partitions are marked as 0xFF.
+						</p>
+						<h3>moduleAddress</h3>
+						<p>
+						This is a pointer to the first module structure. A module structure entry follows the format:
+						</p>
+
+<div class="code"><blockquote><pre>
+typedef struct _MODULE_ENTRY {
+
+	uint32_t moduleStart;
+	uint32_t moduleEnd;
+	char     string[8];
+
+}MODULE_ENTRY, *PMODULE_ENTRY;</pre></blockquote></div>
+						<p>
+						<b>moduleStart</b> and <b>moduleEnd</b> contain the start and end addresses of the loaded module.
+						"string" represents that module, typically can be a command line or path name or 0 if there is none.
+						</p>
+
+						<h3>drivesLength, drivesAddress</h3>
+						<p>
+						The <b>drivesLength</b> member contains the size of all of the drive structures. <b>drivesAddress</b> contains
+						a pointer to the first drive structure. A drive structure entry has the format:
+						</p>
+
+<div class="code"><blockquote><pre>
+typedef struct _DRIVE_ENTRY {
+
+	uint32_t size;			//size of structure
+	uint8_t driveNumber;
+	uint8_t driveMode;
+	uint16_t driveCylinders;
+	uint8_t driveHeads;
+	uint8_t driveSectors;
+	uint8_t ports [0];		//can be any number of elements
+
+}DRIVE_ENTRY, *PDRIVE_ENTRY;</pre></blockquote></div>
+						<p>
+						Lets take a closer look at each member:
+						</p>
+						<ul>
+							<li><b>driveNumber:</b> Number used by BIOS</li>
+							<li><b>driveMode:</b></li>
+							<ul>
+								<li>0: CHS</li>
+								<li>1: LBA</li>
+							</ul>
+							<li><b>driveCylinders,driveHeads,driveSectors:</b> Drive Geometry</li>
+							<li><b>ports:</b> contain a list of I/O port numbers used by the BIOS for drive access, terminated by 0</li>
+						</ul>
+						<p>
+						Thats all there is to this structure. Only one more member to cover, that strange <b>syms</b> member...lets take a look!
+						</p>
+						<h3>syms</h3>
+						<p>
+						The <b>syms</b> member is declared in the structure in this chapter as <b>uint32_t syms[4]</b> but that is not entirely
+						true. It is actually several members that occupy those bytes that follow the members:
+						</p>
+						<ul>
+							<li>syms[0] = uint32_t sym_num</li>
+							<li>syms[1] = uint32_t sym_size</li>
+							<li>syms[2] = uint32_t sym_addr</li>
+							<li>syms[3] = uint32_t sym_shndx</li>
+						</ul>
+						<p>
+						While the specifications state that any format for the operating system
+						image can be used (Such as ELF, PE, flat binary, or anything), this one is specific to ELF formats only. Technically
+						the system image (like the kernel) is able to parse itself to obtain symbolic information. However the miltiboot standard
+						allows the boot loader to pass ELF-specific symbolic information to the operating system as well through these members.
+						<b>sym_num</b> is the number of symbol entries in the ELF section header. <b>size</b> indicates the size of each entry,
+						<b>addr</b> contains the address of the symbol table in the ELF binary.
+						</p>
+
+						<h1>Conclusion</h1>
+						<p>
+						Thats all that there is to the Multi boot standard! Technically all that you need is to define
+						the <b>Multiboot Header</b> properly in order to get your system booted by any multiboot complient
+						bootloader. However, you can use the <b>multiboot information</b> structure to obtain information
+						that is normally obtained at boot time.
+						</p>
+						<p>
+						If you would like to support multi boot in the series, you must insure your kernel is loaded at
+						a <b>physical</b> address not a virtual one. This is because paging is disabled when a multiboot
+						complient bootloader passes control to your kernel. A good typical address is 1MB, which can be
+						loaded by alot of bootloaders, such as GRUB. You can, of course, enable paging and use it later on of course :)
+						</p>
+	
+						<p>Until next time,</p>
+						<p>
+							~Mike
+							<br />
+							<i>BrokenThorn Entertainment. Currently developing DoE and the <a href="http://www.brokenthorn.com/mos/site2">Neptune
+							Operating System Software Suite</a>.</i>
+
+						</p>
+						<p>
+							<i>
+								Questions or comments? Feel free to 
+								<a href="mailto:neon6000@aol.com">Contact me</a>.
+							</i>
+						</p>
+						<br />
+						<br />
+						<table border="0" width="100%">
+							<tbody>	
+								<tr>
+								<!--
+									<td>
+										<p align=left>
+											<a class="anchor" href="OSDev13.html">
+												<img src="images/left.jpg" border=0>
+											</a>
+											&nbsp;&nbsp;
+											<a class="anchor" href="OSDev13.html">
+												<font size=4>Chapter 13</font>
+											</a>
+										</p>
+									</td>
+								-->
+									<td>
+										<p class="center">
+											<span class="special">
+												<a class="anchor" 
+													href="http://www.brokenthorn.com/Resources/OSDevIndex.html">
+													Home
+												</a>
+											</span>
+										</p>
+									</td>
+									<!--
+										<td>
+											<p >
+												<a class="anchor" href="OSDev15.html">
+													<span class="special">Chapter 15</span>
+												</a>
+												&nbsp;&nbsp;
+												<a class="anchor" href="OSDev15.html">
+													<img src="images/right.jpg" border=0>
+												</a>
+											</p>
+										</td>
+									-->
+
+								</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<p>
+			<a href="http://validator.w3.org/check?uri=referer">
+				<img
+					src="http://www.w3.org/Icons/valid-xhtml10-blue"
+					alt="Valid XHTML 1.0 Strict" height="31" width="88" 
+				/>
+			</a>
+		</p>
+	</body>
+</html>

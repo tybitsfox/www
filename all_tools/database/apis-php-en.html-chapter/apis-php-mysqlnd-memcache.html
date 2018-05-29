@@ -1,0 +1,1099 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Chapter 11 Mysqlnd Memcache plugin</title>
+<link rel="stylesheet" href="mvl.css" type="text/css" />
+<meta name="generator" content="DocBook XSL Stylesheets + chunker.py v1.9.2" />
+<link rel="start" href="index.html" title="{book-title}" />
+<link rel="up" href="" title="" />
+<link rel="prev" href="apis-php-mysqlnd-mux.html" title="Chapter 10 Mysqlnd connection multiplexing plugin" />
+<link rel="next" href="apis-php-problems.html" title="Chapter 12 Common Problems with MySQL and PHP" />
+<script language="javascript" type="text/javascript">
+  function addOnload(theFunc)
+  {
+    var previous = window.onload;
+    if (typeof window.onload != 'function')
+    {
+      window.onload = theFunc;
+    }
+    else
+    {
+      window.onload = function()
+      {
+        previous();
+        theFunc();
+      }
+    }
+  }
+
+  addOnload(function()
+  {
+    var base = new Date(1463505695*1000);
+    var now = new Date();
+    var diff = ((now-base)/1000)/(24*3600);
+
+    if (diff > 90) {
+      var nodes = document.getElementsByClassName('titlepage');
+      nodes[0].innerHTML = '<p style="border: 5px #ff0000 solid; padding: 5px; margin 5px">' +
+        'This copy of the manual is more than 90 days old. We encourage you to download a ' +
+        'new version from <a href="http://dev.mysql.com">dev.mysql.com/doc</a>.</p>' + nodes[0].innerHTML;
+    }
+  });
+</script>
+<noscript></noscript>
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<div class="navheader">
+<table width="100%" summary="Navigation header">
+<tr>
+<th colspan="3" align="center">Chapter 11 Mysqlnd Memcache plugin</th>
+</tr>
+<tr>
+<td width="20%" align="left"><a accesskey="p" href="apis-php-mysqlnd-mux.html">Prev</a> </td>
+<th width="60%" align="center"></th>
+<td width="20%" align="right"> <a accesskey="n" href="apis-php-problems.html">Next</a></td>
+</tr>
+</table>
+<hr>
+</div>
+<div class="chapter">
+<div class="titlepage">
+<div>
+<div>
+<h1 class="title"><a name="apis-php-mysqlnd-memcache"></a>Chapter 11 Mysqlnd Memcache plugin</h1>
+
+</div>
+
+</div>
+
+</div>
+<div class="toc">
+<p><b>Table of Contents</b></p><dl class="toc"><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.key-features">11.1 Key Features</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.limitations">11.2 Limitations</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.name">11.3 On the name</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.quickstart">11.4 Quickstart and Examples</a></span></dt><dd><dl><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.quickstart.configuration">11.4.1 Setup</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.quickstart.usage">11.4.2 Usage</a></span></dt></dl></dd><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.setup">11.5 Installing/Configuring</a></span></dt><dd><dl><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.requirements">11.5.1 Requirements</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.installation">11.5.2 Installation</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.configuration">11.5.3 Runtime Configuration</a></span></dt></dl></dd><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.constants">11.6 Predefined Constants</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-ref.mysqlnd-memcache">11.7 Mysqlnd_memcache Functions</a></span></dt><dd><dl><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-get-config">11.7.1 <code class="literal">mysqlnd_memcache_get_config</code></a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-set">11.7.2 <code class="literal">mysqlnd_memcache_set</code></a></span></dt></dl></dd><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.changes">11.8 Change History</a></span></dt><dd><dl><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.changes-one-o">11.8.1 PECL/mysqlnd_memcache 1.0 series</a></span></dt></dl></dd></dl>
+</div>
+<p>
+    <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+    Documentation Group.</a>
+  </p><p>
+    The mysqlnd memcache plugin (<code class="literal">mysqlnd_memcache</code>) is
+    an PHP extension for transparently translating SQL into requests for
+    the MySQL InnoDB Memcached Daemon Plugin (server plugin). It
+    includes experimental support for the MySQL Cluster Memcached
+    Daemon. The server plugin provides access to data stored inside
+    MySQL InnoDB (respectively MySQL Cluster NDB) tables using the
+    Memcache protocol. This PHP extension, which supports all PHP MySQL
+    extensions that use <a class="link" href="apis-php-mysqlnd.html" title="Chapter 6 MySQL Native Driver">mysqlnd</a>,
+    will identify tables exported in this way and will translate
+    specific SELECT queries into Memcache requests.
+</p>
+<div class="figure">
+<a name="apis-php-mymemflow-figure"></a><p class="title"><b>Figure 11.1 mysqlnd_memcache data flow</b></p>
+<div class="figure-contents">
+
+<div class="mediaobject">
+<img src="images/mymemflow.png" width="813" height="276" alt="mysqlnd_memcache data flow">
+</div>
+
+</div>
+
+</div>
+<br class="figure-break">
+<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+
+<div class="admon-title">
+Note
+</div>
+<p>
+      This plugin depends on the MySQL InnoDB Memcached Daemon Plugin.
+      It is not provided to be used with a stand-alone Memcached. For a
+      generic query cache using Memcached look at the
+      <a class="link" href="apis-php-mysqlnd-qc.html" title="Chapter 8 Mysqlnd query result cache plugin">mysqlnd query cache
+      plugin</a>. For direct Memcache access look at the
+      <a class="ulink" href="http://www.php.net/book.memcache" target="_top">memcache</a> and
+      <a class="ulink" href="http://www.php.net/book.memcached" target="_top">memcached</a>
+      extensions.
+</p>
+</div>
+<p>
+    The MySQL native driver for PHP is a C library that ships together
+    with PHP as of PHP 5.3.0. It serves as a drop-in replacement for the
+    MySQL Client Library (libmysqlclient). Using mysqlnd has several
+    advantages: no extra downloads are required because it's
+    bundled with PHP, it's under the PHP license, there is lower
+    memory consumption in certain cases, and it contains new
+    functionality such as asynchronous queries.
+  </p><p>
+    The <code class="literal">mysqlnd_mmemcache</code> operates, for the most
+    part, transparently from a user perspective. The mysqlnd memcache
+    plugin supports all PHP applications, and all MySQL PHP extensions.
+    It does not change existing APIs. Therefore, it can easily be used
+    with existing PHP applications.
+  </p><p>
+    The MySQL Memcache plugins add key-value style access method for
+    data stored in InnoDB resp. NDB (MySQL Cluster) SQL tables through
+    the Memcache protocol. This type of key-value access if often faster
+    than using SQL.
+</p>
+<div class="section">
+
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd-memcache.key-features"></a>11.1 Key Features</h2>
+</div>
+</div>
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      The key features of PECL/mysqlnd_memcache are as follows.
+    </p><p>
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+            Possible performance benefits
+          </p><p>
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>
+                  Client-side: light-weight protocol.
+                </p></li><li class="listitem"><p>
+                  Server-side: no SQL parsing, direct access to the
+                  storage.
+                </p></li><li class="listitem"><p>
+                  Please, run your own benchmarks! Actual performance
+                  results are highly dependent on setup and hardware
+                  used.
+</p></li></ul>
+</div>
+<p>
+</p></li></ul>
+</div>
+<p>
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd-memcache.limitations"></a>11.2 Limitations</h2>
+
+</div>
+
+</div>
+
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      The initial version is not binary safe. Due to the way the MySQL
+      Memcache plugins works there are restrictions related to
+      separators.
+    </p><p>
+      Prepared statements and asynchronous queries are not supported.
+      Result set meta data support is limited.
+    </p><p>
+      The mapping information for tables accessible via Memcache is not
+      cached in the plugin between requests but fetched from the MySQL
+      server each time a MySQL connection is associated with a Memcache
+      connection. See
+      <a class="link" href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-set" title="11.7.2 mysqlnd_memcache_set"><code class="function">mysqlnd_memcache_set</code></a>
+      for details.
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd-memcache.name"></a>11.3 On the name</h2>
+
+</div>
+
+</div>
+
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      The shortcut <code class="literal">mysqlnd_memcache</code> stands for
+      <code class="literal">mysqlnd memcache plugin</code>. Memcache refers to
+      support of the MySQL Memcache plugins for InnoDB and NDB (MySQL
+      Cluster). The plugin is not related to the Memcached cache server.
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd-memcache.quickstart"></a>11.4 Quickstart and Examples</h2>
+
+</div>
+
+</div>
+
+</div>
+<div class="toc">
+<dl class="toc"><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.quickstart.configuration">11.4.1 Setup</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.quickstart.usage">11.4.2 Usage</a></span></dt></dl>
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      The mysqlnd memcache plugin is easy to use. This quickstart will
+      demo typical use-cases, and provide practical advice on getting
+      started.
+    </p><p>
+      It is strongly recommended to read the reference sections in
+      addition to the quickstart. The quickstart tries to avoid
+      discussing theoretical concepts and limitations. Instead, it will
+      link to the reference sections. It is safe to begin with the
+      quickstart. However, before using the plugin in mission critical
+      environments we urge you to read additionally the background
+      information from the reference sections.
+</p>
+<div class="section">
+
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd-memcache.quickstart.configuration"></a>11.4.1 Setup</h3>
+</div>
+</div>
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+        The plugin is implemented as a PHP extension. See also the
+        <a class="link" href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.installation" title="11.5.2 Installation">installation
+        instructions</a> to install this extension.
+      </p><p>
+        Compile or configure the PHP MySQL extension (API)
+        (<a class="link" href="apis-php-mysqli.html#apis-php-ref.mysqli" title="3.15 Aliases and deprecated Mysqli Functions">mysqli</a>,
+        <a class="link" href="apis-php-pdo-mysql.html" title="Chapter 4 MySQL Functions (PDO_MYSQL)">PDO_MYSQL</a>,
+        <a class="link" href="apis-php-mysql.html#apis-php-ref.mysql" title="5.5 MySQL Functions">mysql</a>). That extension
+        must use the <a class="link" href="apis-php-mysqlnd.html" title="Chapter 6 MySQL Native Driver">mysqlnd</a>
+        library as because mysqlnd_memcache is a plugin for the mysqlnd
+        library. For additional information, refer to the
+        <a class="ulink" href="http://www.php.net/memcached.installation" target="_top">mysqlnd_memcache
+        installation instructions</a>.
+      </p><p>
+        Then, load this extension into PHP and activate the plugin in
+        the PHP configuration file using the PHP configuration directive
+        named
+        <a class="link" href="apis-php-mysqlnd-memcache.html#apis-php-ini.mysqlnd-memcache.enable">mysqlnd_memcache.enable</a>.
+      </p><p>
+</p>
+<div class="example">
+<a name="idm139660439230816"></a><p class="title"><b>Example 11.1 Enabling the plugin (php.ini)</b></p>
+<div class="example-contents">
+<pre class="programlisting">
+
+; On Windows the filename is php_mysqnd_memcache.dll
+; Load the extension
+extension=mysqlnd_memcache.so
+; Enable it
+mysqlnd_memcache.enable=1
+
+</pre>
+</div>
+
+</div>
+<p><br class="example-break">
+      </p><p>
+        Follow the instructions given in the
+        <a class="ulink" href="http://dev.mysql.com/doc/en/ha-memcached.html" target="_top">MySQL
+        Reference Manual on installing the Memcache plugins</a> for
+        the MySQL server. Activate the plugins and configure Memcache
+        access for SQL tables.
+      </p><p>
+        The examples in this quickguide assume that the following table
+        exists, and that Memcache is configured with access to it.
+      </p><p>
+</p>
+<div class="example">
+<a name="idm139660439226960"></a><p class="title"><b>Example 11.2 SQL table used for the Quickstart</b></p>
+<div class="example-contents">
+<pre class="programlisting">
+
+CREATE TABLE test(
+  id CHAR(16),
+  f1 VARCHAR(255),
+  f2 VARCHAR(255),
+  f3 VARCHAR(255),
+  flags INT NOT NULL,
+  cas_column INT,
+  expire_time_column INT,
+  PRIMARY KEY(id)
+  ) ENGINE=InnoDB;
+
+INSERT INTO test (id, f1, f2, f3) VALUES (1, 'Hello', 'World', '!');
+INSERT INTO test (id, f1, f2, f3) VALUES (2, 'Lady', 'and', 'the tramp');
+
+INSERT INTO innodb_memcache.containers(
+  name, db_schema, db_table, key_columns, value_columns, 
+  flags, cas_column, expire_time_column, unique_idx_name_on_key)
+VALUES (
+  'plugin_test', 'test', 'test', 'id', 'f1,f2,f3',
+  'flags', 'cas_column', 'expire_time_column', 'PRIMARY KEY');
+
+</pre>
+</div>
+
+</div>
+<p><br class="example-break">
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd-memcache.quickstart.usage"></a>11.4.2 Usage</h3>
+
+</div>
+
+</div>
+
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+        After associating a MySQL connection with a Memcache connection
+        using
+        <a class="ulink" href="http://www.php.net/mysqnd_memcache_set" target="_top"><code class="function">mysqnd_memcache_set</code></a>
+        the plugin attempts to transparently replace SQL
+        <code class="literal">SELECT</code> statements by a memcache access. For
+        that purpose the plugin monitors all SQL statements executed and
+        tries to match the statement string against
+        <code class="constant">MYSQLND_MEMCACHE_DEFAULT_REGEXP</code>. In case of
+        a match, the mysqlnd memcache plugin checks whether the
+        <code class="literal">SELECT</code> is accessing only columns of a mapped
+        table and the <code class="literal">WHERE</code> clause is limited to a
+        single key lookup.
+      </p><p>
+        In case of the example SQL table, the plugin will use the
+        Memcache interface of the MySQL server to fetch results for a
+        SQL query like <code class="literal">SELECT f1, f2, f3 WHERE id =
+        n</code>.
+      </p><p>
+</p>
+<div class="example">
+<a name="idm139660439215936"></a><p class="title"><b>Example 11.3 Basic example.</b></p>
+<div class="example-contents">
+<pre class="programlisting">
+
+&lt;?php
+$mysqli = new mysqli("host", "user", "passwd", "database");
+$memc = new Memcached();
+$memc-&gt;addServer("host", 11211);
+mysqlnd_memcache_set($mysqli, $memc);
+
+/*
+   This is a query which queries table test using id as key in the WHERE part
+   and is accessing fields f1, f2 and f3. Therefore, mysqlnd_memcache
+   will intercept it and route it via memcache.
+*/
+$result = $mysqli-&gt;query("SELECT f1, f2, f3 FROM test WHERE id = 1");
+while ($row = $result-&gt;fetch_row()) {
+    print_r($row);
+}
+
+/*
+   This is a query which queries table test but using f1 in the WHERE clause.
+   Therefore, mysqlnd_memcache can't intercept it. This will be executed
+   using the MySQL protocol
+*/
+$mysqli-&gt;query("SELECT id FROM test WHERE f1 = 'Lady'");
+while ($row = $result-&gt;fetch_row()) {
+    print_r($row);
+}
+?&gt;
+
+    </pre><p>
+            The above example will output:
+          </p><pre class="screen">
+
+array(
+    [f1] =&gt; Hello
+    [f2] =&gt; World
+    [f3] =&gt; !
+)
+array(
+    [id] =&gt; 2
+)
+
+</pre>
+</div>
+
+</div>
+<p><br class="example-break">
+</p>
+</div>
+
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd-memcache.setup"></a>11.5 Installing/Configuring</h2>
+
+</div>
+
+</div>
+
+</div>
+<div class="toc">
+<dl class="toc"><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.requirements">11.5.1 Requirements</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.installation">11.5.2 Installation</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.configuration">11.5.3 Runtime Configuration</a></span></dt></dl>
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+</p>
+<div class="section">
+
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd-memcache.requirements"></a>11.5.1 Requirements</h3>
+</div>
+</div>
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+        PHP: this extension requires PHP 5.4+, version PHP 5.4.4 or
+        never. The required PHP extensions are
+        <a class="ulink" href="http://www.php.net/ref.pcre" target="_top">PCRE</a> (enabled
+        by default), and the
+        <a class="ulink" href="http://www.php.net/book.memcached" target="_top">memcached</a>
+        extension version 2.0.x.
+      </p><p>
+        The <code class="literal">mysqlnd_memcache</code> Memcache plugin supports
+        all PHP applications and all available PHP MySQL extensions
+        (<a class="link" href="apis-php-mysqli.html#apis-php-ref.mysqli" title="3.15 Aliases and deprecated Mysqli Functions">mysqli</a>,
+        <a class="link" href="apis-php-mysql.html#apis-php-ref.mysql" title="5.5 MySQL Functions">mysql</a>,
+        <a class="link" href="apis-php-pdo-mysql.html" title="Chapter 4 MySQL Functions (PDO_MYSQL)">PDO_MYSQL</a>). The PHP
+        MySQL extension must be configured with
+        <a class="link" href="apis-php-mysqlnd.html" title="Chapter 6 MySQL Native Driver">mysqlnd</a> support.
+      </p><p>
+        For accessing <code class="literal">InnoDB</code> tables, this PHP
+        extension requires <code class="literal">MySQL Server 5.6.6</code> or
+        newer with the InnoDB Memcache Daemon Plugin enabled.
+      </p><p>
+        For accessing <code class="literal">MySQL Cluster NDB</code> tables, this
+        PHP extension requires <code class="literal">MySQL Cluster 7.2</code> or
+        newer with the NDB Memcache API nodes enabled.
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd-memcache.installation"></a>11.5.2 Installation</h3>
+
+</div>
+
+</div>
+
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+        This <a class="ulink" href="http://pecl.php.net/" target="_top">PECL</a> extension is
+        not bundled with PHP.
+      </p><p>
+        Information for installing this PECL extension may be found in
+        the manual chapter titled
+        <a class="ulink" href="http://www.php.net/install.pecl" target="_top">Installation of
+        PECL extensions</a>. Additional information such as new
+        releases, downloads, source files, maintainer information, and a
+        CHANGELOG, can be located here:
+        <a class="ulink" href="http://pecl.php.net/package/mysqlnd_memcache" target="_top">http://pecl.php.net/package/mysqlnd_memcache</a>
+      </p><p>
+        A <acronym class="acronym">DLL</acronym> for this <acronym class="acronym">PECL</acronym>
+        extension is currently unavailable. See also the
+        <a class="ulink" href="http://www.php.net/install.windows.building" target="_top">building
+        on Windows</a> section.
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd-memcache.configuration"></a>11.5.3 Runtime Configuration</h3>
+
+</div>
+
+</div>
+
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+The behaviour of these functions is affected by settings in <code class="filename">php.ini</code>.
+</p><p>
+</p>
+<div class="table">
+<a name="idm139660439184736"></a><p class="title"><b>Table 11.1 Mysqlnd_memcache Configure Options</b></p>
+<div class="table-contents">
+<table class="table" summary="Mysqlnd_memcache Configure Options" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th scope="col">Name</th><th scope="col">Default</th><th scope="col">Changeable</th><th scope="col">Changelog</th></tr></thead><tbody><tr><td scope="row"><a class="link" href="apis-php-mysqlnd-memcache.html#apis-php-ini.mysqlnd-memcache.enable">mysqlnd_memcache.enable</a></td><td>1</td><td><code class="constant">PHP_INI_SYSTEM</code></td><td>Available since 1.0.0</td></tr></tbody></table>
+</div>
+
+</div>
+<p><br class="table-break">
+      </p><p>
+        Here's a short explanation of the configuration directives.
+      </p><p>
+</p>
+<div class="variablelist">
+<dl class="variablelist"><dt><a name="apis-php-ini.mysqlnd-memcache.enable"></a><span class="term">
+              <em class="parameter"><code>mysqlnd_memcache.enable</code></em>
+              <span class="type">integer</span>
+            </span></dt><dd><p>
+                Enables or disables the plugin. If disabled, the
+                extension will not plug into
+                <a class="link" href="apis-php-mysqlnd.html" title="Chapter 6 MySQL Native Driver">mysqlnd</a> to proxy
+                internal <a class="link" href="apis-php-mysqlnd.html" title="Chapter 6 MySQL Native Driver">mysqlnd</a>
+                C API calls.
+
+</p>
+<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+
+<div class="admon-title">
+Note
+</div>
+<p>
+                    This option is mainly used by developers to build
+                    this extension statically into PHP. General users
+                    are encouraged to build this extension as a shared
+                    object, and to unload it completely when it is not
+                    needed.
+</p>
+</div>
+<p>
+</p></dd></dl>
+</div>
+<p>
+</p>
+</div>
+
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd-memcache.constants"></a>11.6 Predefined Constants</h2>
+
+</div>
+
+</div>
+
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+The constants below are defined by this extension, and
+will only be available when the extension has either
+been compiled into PHP or dynamically loaded at runtime.
+</p><p>
+      <span class="emphasis"><em>MySQL Memcache Plugin related</em></span>
+    </p><p>
+</p>
+<div class="variablelist">
+<dl class="variablelist"><dt><a name="apis-php-constant.mysqlnd-memcache-default-regexp"></a><span class="term">
+            <code class="constant">MYSQLND_MEMCACHE_DEFAULT_REGEXP</code>
+            (<span class="type">string</span>)
+          </span></dt><dd><p class="simpara">
+      Default regular expression (PCRE style) used for matching <code class="literal">SELECT</code>
+      statements that will be mapped into a MySQL Memcache Plugin access point, if possible.
+     </p><p class="simpara">
+      It is also possible to use <a class="link" href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-set" title="11.7.2 mysqlnd_memcache_set"><code class="function">mysqlnd_memcache_set</code></a>, but the default
+      approach is using this regular expression for pattern matching.
+</p></dd></dl>
+</div>
+<p>
+    </p><p>
+      <span class="emphasis"><em>Assorted</em></span>
+    </p><p>
+      The version number of this plugin can be obtained by using
+      <code class="constant">MYSQLND_MEMCACHE_VERSION</code> or
+      <code class="constant">MYSQLND_MEMCACHE_VERSION_ID</code>.
+      <code class="constant">MYSQLND_MEMCACHE_VERSION</code> is the string
+      representation of the numerical version number
+      <code class="constant">MYSQLND_MEMCACHE_VERSION_ID</code>, which is an
+      integer such as 10000. Developers can calculate the version number
+      as follows.
+    </p><p>
+</p>
+<div class="informaltable">
+<table class="informaltable" summary="Unknown PHP API feature." border="1"><colgroup><col><col></colgroup><thead><tr><th scope="col">Version (part)</th><th scope="col">Example</th></tr></thead><tbody><tr><td scope="row">Major*10000</td><td>1*10000 = 10000</td></tr><tr><td scope="row">Minor*100</td><td>0*100 = 0</td></tr><tr><td scope="row">Patch</td><td>0 = 0</td></tr><tr><td scope="row">MYSQLND_MEMCACHE_VERSION_ID</td><td>10000</td></tr></tbody></table>
+</div>
+<p>
+    </p><p>
+</p>
+<div class="variablelist">
+<dl class="variablelist"><dt><a name="apis-php-constant.mysqlnd-memcache-version"></a><span class="term">
+            <code class="constant">MYSQLND_MEMCACHE_VERSION</code>
+            (<span class="type">string</span>)
+          </span></dt><dd>
+      Plugin version string, for example, <span class="quote">“<span class="quote">1.0.0-alpha</span>”</span>.
+     </dd><dt><a name="apis-php-constant.mysqlnd-memcache-version-id"></a><span class="term">
+            <code class="constant">MYSQLND_MEMCACHE_VERSION_ID</code>
+            (<span class="type">integer</span>)
+          </span></dt><dd>
+      Plugin version number, for example, 10000.
+</dd></dl>
+</div>
+<p>
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-ref.mysqlnd-memcache"></a>11.7 Mysqlnd_memcache Functions</h2>
+
+</div>
+
+</div>
+
+</div>
+<div class="toc">
+<dl class="toc"><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-get-config">11.7.1 <code class="literal">mysqlnd_memcache_get_config</code></a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-set">11.7.2 <code class="literal">mysqlnd_memcache_set</code></a></span></dt></dl>
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+</p>
+<div class="section">
+
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-function.mysqlnd-memcache-get-config"></a>11.7.1 <code class="literal">mysqlnd_memcache_get_config</code></h3>
+</div>
+</div>
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+            <code class="literal">mysqlnd_memcache_get_config</code>
+          </p><p>
+            Returns information about the plugin configuration
+</p></li></ul>
+</div>
+<p>
+        <span class="bold"><strong>Description</strong></span>
+      </p><code class="methodsynopsis"><span class="type">array </span><span class="methodname">mysqlnd_memcache_get_config</span>(<span class="methodparam"><span class="type">mixed </span><span class="parameter">connection</span></span>);</code><p>
+        This function returns an array of all mysqlnd_memcache related
+        configuration information that is attached to the MySQL
+        connection. This includes MySQL, the Memcache object provided
+        via
+        <a class="link" href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-set" title="11.7.2 mysqlnd_memcache_set"><code class="function">mysqlnd_memcache_set</code></a>,
+        and the table mapping configuration that was automatically
+        collected from the MySQL Server.
+      </p><p>
+        <span class="bold"><strong>Parameters</strong></span>
+</p>
+<div class="variablelist">
+<dl class="variablelist"><dt><span class="term">
+            <em class="parameter"><code>connection</code></em>
+          </span></dt><dd><p>
+              A handle to a MySQL Server using one of the MySQL API
+              extensions for PHP, which are
+              <a class="link" href="apis-php-pdo-mysql.html" title="Chapter 4 MySQL Functions (PDO_MYSQL)">PDO_MYSQL</a>,
+              <a class="link" href="apis-php-mysqli.html" title="Chapter 3 MySQL Improved Extension">mysqli</a> or
+              <a class="link" href="apis-php-mysql.html" title="Chapter 5 Original MySQL API">ext/mysql</a>.
+</p></dd></dl>
+</div>
+<p>
+        <span class="bold"><strong>Return Values</strong></span>
+      </p><p>
+        An array of mysqlnd_memcache configuration information on
+        success, otherwise <code class="constant">FALSE</code>.
+      </p><p>
+        The returned array has these elements:
+      </p><p>
+</p>
+<div class="table">
+<a name="idm139660439113824"></a><p class="title"><b>Table 11.2 <a class="link" href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-get-config" title="11.7.1 mysqlnd_memcache_get_config"><code class="function">mysqlnd_memcache_get_config</code></a>
+array structure</b></p>
+<div class="table-contents">
+<table class="table" summary="mysqlnd_memcache_get_config
+            array structure" border="1"><colgroup><col><col></colgroup><thead><tr><th scope="col">Array Key</th><th scope="col">Description</th></tr></thead><tbody><tr><td scope="row">memcached</td><td>Instance of Memcached associated to this MySQL connection by
+                  <a class="link" href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-set" title="11.7.2 mysqlnd_memcache_set"><code class="function">mysqlnd_memcache_set</code></a>.
+                  You can use this to change settings of the memcache
+                  connection, or directly by querying the server on this
+                  connection.</td></tr><tr><td scope="row">pattern</td><td>The PCRE regular expression used to match the SQL query sent to the
+                  server. Queries matching this pattern will be further
+                  analyzed to decide whether the query can be
+                  intercepted and sent via the memcache interface or
+                  whether the query is sent using the general MySQL
+                  protocol to the server. The pattern is either the
+                  default pattern
+                  (<code class="literal">MYSQLND_MEMCACHE_DEFAULT_REGEXP</code>)
+                  or it is set via
+                  <a class="link" href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-set" title="11.7.2 mysqlnd_memcache_set"><code class="function">mysqlnd_memcache_set</code></a>.</td></tr><tr><td scope="row">mappings</td><td>An associative array with a list of all configured containers as they
+                  were discovered by this plugin. The key for these
+                  elements is the name of the container in the MySQL
+                  configuration. The value is described below. The
+                  contents of this field is created by querying the
+                  MySQL Server during association to MySQL and a
+                  memcache connection using
+                  <a class="link" href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-set" title="11.7.2 mysqlnd_memcache_set"><code class="function">mysqlnd_memcache_set</code></a>.</td></tr><tr><td scope="row">mapping_query</td><td>An SQL query used during
+                  <a class="link" href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-set" title="11.7.2 mysqlnd_memcache_set"><code class="function">mysqlnd_memcache_set</code></a>
+                  to identify the available containers and mappings. The
+                  result of that query is provided in the mappings
+element.</td></tr></tbody></table>
+</div>
+
+</div>
+<p><br class="table-break">
+
+</p>
+<div class="table">
+<a name="idm139660439096160"></a><p class="title"><b>Table 11.3 Mapping entry structure</b></p>
+<div class="table-contents">
+<table class="table" summary="Mapping entry structure" border="1"><colgroup><col><col></colgroup><thead><tr><th scope="col">Array Key</th><th scope="col">Description</th></tr></thead><tbody><tr><td scope="row">prefix</td><td>A prefix used while accessing data via memcache. With the MySQL InnoDB
+                  Memcache Deamon plugin, this usually begins with @@
+                  and ends with a configurable separator. This prefix is
+                  placed in front of the key value while using the
+                  memcache protocol.</td></tr><tr><td scope="row">schema_name</td><td>Name of the schema (database) which contains the table being accessed.</td></tr><tr><td scope="row">table_name</td><td>Name of the table which contains the data accessible via memcache
+                  protocol.</td></tr><tr><td scope="row">id_field_name</td><td>Name of the database field (column) with the id used as key when
+                  accessing the table via memcache. Often this is the
+                  database field having a primary key.</td></tr><tr><td scope="row">separator</td><td>The separator used to split the different field values. This is needed
+                  as memcache only provides access to a single value
+                  while MySQL can map multiple columns to this value.
+
+<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<div class="admon-title">
+Note
+</div>
+<p>
+                      The separator, which can be set in the MySQL
+                      Server configuration, should not be part of any
+                      value retrieved via memcache because proper
+                      mapping can't be guaranteed.
+</p>
+</div>
+</td></tr><tr><td scope="row">fields</td><td>An array with the name of all fields available for this mapping.</td></tr></tbody></table>
+</div>
+
+</div>
+<p><br class="table-break">
+      </p><p>
+        <span class="bold"><strong>Examples</strong></span>
+      </p><p>
+</p>
+<div class="example">
+<a name="idm139660439081216"></a><p class="title"><b>Example 11.4 <a class="link" href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-get-config" title="11.7.1 mysqlnd_memcache_get_config"><code class="function">mysqlnd_memcache_get_config</code></a>
+example</b></p>
+<div class="example-contents">
+<pre class="programlisting">
+
+&lt;?php
+$mysqli = new mysqli("host", "user", "passwd", "database");
+$memc = new Memcached();
+$memc-&gt;addServer("host", 11211);
+mysqlnd_memcache_set($mysqli, $memc);
+
+var_dump(mysqlnd_memcache_get_config($mysqli));
+?&gt;
+
+    </pre><p>
+            The above example will output:
+          </p><pre class="screen">
+
+array(4) {
+  ["memcached"]=&gt;
+  object(Memcached)#2 (0) {
+  }
+  ["pattern"]=&gt;
+  string(125) "/^\s*SELECT\s*(.+?)\s*FROM\s*`?([a-z0-9_]+)`?\s*WHERE\s*`?([a-z0-9_]+)`?\s*=\s*(?(?=["'])["']([^"']*)["']|([0-9e\.]*))\s*$/is"
+  ["mappings"]=&gt;
+  array(1) {
+    ["mymem_test"]=&gt;
+    array(6) {
+      ["prefix"]=&gt;
+      string(13) "@@mymem_test."
+      ["schema_name"]=&gt;
+      string(4) "test"
+      ["table_name"]=&gt;
+      string(10) "mymem_test"
+      ["id_field_name"]=&gt;
+      string(2) "id"
+      ["separator"]=&gt;
+      string(1) "|"
+      ["fields"]=&gt;
+      array(3) {
+        [0]=&gt;
+        string(2) "f1"
+        [1]=&gt;
+        string(2) "f2"
+        [2]=&gt;
+        string(2) "f3"
+      }
+    }
+  }
+  ["mapping_query"]=&gt;
+  string(209) "    SELECT c.name,
+                          CONCAT('@@', c.name, (SELECT value FROM innodb_memcache.config_options WHERE name = 'table_map_delimiter')) AS key_prefix, 
+                          c.db_schema, 
+                          c.db_table, 
+                          c.key_columns, 
+                          c.value_columns, 
+                          (SELECT value FROM innodb_memcache.config_options WHERE name = 'separator') AS sep 
+                     FROM innodb_memcache.containers c"
+}
+
+</pre>
+</div>
+
+</div>
+<p><br class="example-break">
+      </p><p>
+        <span class="bold"><strong>See Also</strong></span>
+      </p><p>
+        </p><table border="0" summary="Simple list" class="simplelist"><tr><td><a class="link" href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-set" title="11.7.2 mysqlnd_memcache_set"><code class="function">mysqlnd_memcache_set</code></a>
+
+          </td></tr></table><p>
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-function.mysqlnd-memcache-set"></a>11.7.2 <code class="literal">mysqlnd_memcache_set</code></h3>
+
+</div>
+
+</div>
+
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+            <code class="literal">mysqlnd_memcache_set</code>
+          </p><p>
+            Associate a MySQL connection with a Memcache connection
+</p></li></ul>
+</div>
+<p>
+        <span class="bold"><strong>Description</strong></span>
+      </p><code class="methodsynopsis"><span class="type">bool </span><span class="methodname">mysqlnd_memcache_set</span>(<span class="methodparam"><span class="type">mixed </span><span class="parameter">mysql_connection</span></span>,<br>                          <span class="methodparam"><span class="type">Memcached </span><span class="parameter">memcache_connection</span></span>,<br>                          <span class="methodparam"><span class="type">string </span><span class="parameter">pattern</span></span>,<br>                          <span class="methodparam"><span class="type">callback </span><span class="parameter">callback</span></span>);</code><p>
+        Associate <em class="parameter"><code>mysql_connection</code></em> with
+        <em class="parameter"><code>memcache_connection</code></em> using
+        <em class="parameter"><code>pattern</code></em> as a PCRE regular expression, and
+        <em class="parameter"><code>callback</code></em> as a notification callback or to
+        unset the association of
+        <em class="parameter"><code>mysql_connection</code></em>.
+      </p><p>
+        While associating a MySQL connection with a Memcache connection,
+        this function will query the MySQL Server for its configuration.
+        It will automatically detect whether the server is configured to
+        use the InnoDB Memcache Daemon Plugin or MySQL Cluster NDB
+        Memcache support. It will also query the server to automatically
+        identify exported tables and other configuration options. The
+        results of this automatic configuration can be retrieved using
+        <a class="link" href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-get-config" title="11.7.1 mysqlnd_memcache_get_config"><code class="function">mysqlnd_memcache_get_config</code></a>.
+      </p><p>
+        <span class="bold"><strong>Parameters</strong></span>
+</p>
+<div class="variablelist">
+<dl class="variablelist"><dt><span class="term">
+            <em class="parameter"><code>mysql_connection</code></em>
+          </span></dt><dd><p>
+              A handle to a MySQL Server using one of the MySQL API
+              extensions for PHP, which are
+              <a class="link" href="apis-php-pdo-mysql.html" title="Chapter 4 MySQL Functions (PDO_MYSQL)">PDO_MYSQL</a>,
+              <a class="link" href="apis-php-mysqli.html" title="Chapter 3 MySQL Improved Extension">mysqli</a> or
+              <a class="link" href="apis-php-mysql.html" title="Chapter 5 Original MySQL API">ext/mysql</a>.
+            </p></dd><dt><span class="term">
+            <em class="parameter"><code>memcache_connection</code></em>
+          </span></dt><dd><p>
+              A
+              <a class="ulink" href="http://www.php.net/book.memcached" target="_top">Memcached</a>
+              instance with a connection to the MySQL Memcache Daemon
+              plugin. If this parameter is omitted, then
+              <em class="parameter"><code>mysql_connection</code></em> will be
+              unassociated from any memcache connection. And if a
+              previous association exists, then it will be replaced.
+            </p></dd><dt><span class="term">
+            <em class="parameter"><code>pattern</code></em>
+          </span></dt><dd><p>
+              A regular expression in
+              <a class="ulink" href="http://www.php.net/book.pcre" target="_top">Perl Compatible
+              Regular Expression</a> syntax used to identify
+              potential Memcache-queries. The query should have three
+              sub patterns. The first subpattern contains the requested
+              field list, the second the name of the ID column from the
+              query and the third the requested value. If this parameter
+              is omitted or os set to <code class="constant">NULL</code>, then a
+              default pattern will be used.
+            </p></dd><dt><span class="term">
+            <em class="parameter"><code>callback</code></em>
+          </span></dt><dd><p>
+              A callback which will be used whenever a query is being
+              sent to MySQL. The callback will receive a single
+              <span class="type">boolean</span> parameter telling if a query was sent
+              via Memcache.
+</p></dd></dl>
+</div>
+<p>
+        <span class="bold"><strong>Return Values</strong></span>
+      </p><p>
+        <code class="constant">TRUE</code> if the association or disassociation
+        is successful, otherwise <code class="constant">FALSE</code> if there is
+        an error.
+      </p><p>
+        <span class="bold"><strong>Examples</strong></span>
+      </p><p>
+</p>
+<div class="example">
+<a name="idm139660439027920"></a><p class="title"><b>Example 11.5 <a class="link" href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-set" title="11.7.2 mysqlnd_memcache_set"><code class="function">mysqlnd_memcache_set</code></a>
+            example with
+            <a class="ulink" href="http://www.php.net/var_dump" target="_top"><code class="function">var_dump</code></a>
+as a simple debugging callback.</b></p>
+<div class="example-contents">
+<pre class="programlisting">
+
+&lt;?php
+$mysqli = new mysqli("host", "user", "passwd", "database");
+$memc = new Memcached();
+$memc-&gt;addServer("host", 11211);
+mysqlnd_memcache_set($mysqli, $memc, NULL, 'var_dump');
+
+/* This query will be intercepted and executed via Memcache protocol */
+echo "Sending query for id via Memcache: ";
+$mysqli-&gt;query("SELECT f1, f2, f3 FROM test WHERE id = 1");
+
+/* f1 is not configured as valid key field, this won't be sent via Memcache */
+echo "Sending query for f1 via Memcache: ";
+$mysqli-&gt;query("SELECT id FROM test WHERE f1 = 1");
+
+mysqlnd_memcache_set($mysqli);
+
+/* Now the regular MySQL protocol will be used */
+echo "var_dump won't be invoked: ";
+$mysqli-&gt;query("SELECT f1, f2, f3 WHERE id = 1");
+
+?&gt;
+
+    </pre><p>
+            The above example will output:
+          </p><pre class="screen">
+
+Sending query for id via Memcache: bool(true)
+Sending query for f1 via Memcache: bool(false)
+var_dump won't be invoked: 
+
+</pre>
+</div>
+
+</div>
+<p><br class="example-break">
+      </p><p>
+        <span class="bold"><strong>See Also</strong></span>
+      </p><p>
+        </p><table border="0" summary="Simple list" class="simplelist"><tr><td><a class="link" href="apis-php-mysqlnd-memcache.html#apis-php-function.mysqlnd-memcache-get-config" title="11.7.1 mysqlnd_memcache_get_config"><code class="function">mysqlnd_memcache_get_config</code></a>
+
+          </td></tr></table><p>
+</p>
+</div>
+
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd-memcache.changes"></a>11.8 Change History</h2>
+
+</div>
+
+</div>
+
+</div>
+<div class="toc">
+<dl class="toc"><dt><span class="section"><a href="apis-php-mysqlnd-memcache.html#apis-php-mysqlnd-memcache.changes-one-o">11.8.1 PECL/mysqlnd_memcache 1.0 series</a></span></dt></dl>
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      This change history is a high level summary of selected changes
+      that may impact applications and/or break backwards compatibility.
+    </p><p>
+      See also the <code class="filename">CHANGES</code> file in the source
+      distribution for a complete list of changes.
+</p>
+<div class="section">
+
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd-memcache.changes-one-o"></a>11.8.1 PECL/mysqlnd_memcache 1.0 series</h3>
+</div>
+</div>
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+        1.0.0-alpha
+
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+      Release date: TBD
+     </li><li class="listitem">
+      Motto/theme: Basic mapping of SQL SELECT to a MySQL Memcache plugin access.
+</li></ul>
+</div>
+<p>
+      </p><p>
+        The initial release does map basic SQL SELECT statements to a
+        MySQL Memcache plugin access. This bares potential performance
+        benefits as the direct key-value access to MySQL storage using
+        the Memcache protocol is usually faster than using SQL access.
+</p>
+</div>
+
+</div>
+
+</div>
+
+<div class="copyright-footer">
+
+</div>
+<div class="navfooter">
+<hr>
+<table width="100%" summary="Navigation footer">
+<tr>
+<td width="40%" align="left"><a accesskey="p" href="apis-php-mysqlnd-mux.html">Prev</a></td>
+<td width="20%" align="center"><a accesskey="u" href="">Up</a></td>
+<td width="40%" align="right"> <a accesskey="n" href="apis-php-problems.html">Next</a></td>
+</tr>
+<tr>
+<td width="40%" align="left" valign="top">Chapter 10 Mysqlnd connection multiplexing plugin</td>
+<td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
+<td width="40%" align="right" valign="top">Chapter 12 Common Problems with MySQL and PHP</td>
+</tr>
+</table>
+</div>
+</body>
+</html>

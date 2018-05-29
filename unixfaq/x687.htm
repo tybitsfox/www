@@ -1,0 +1,235 @@
+<html><head><title>调制解调器控制范例程序</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="范例程序" href="./c665.htm"><link rel="PREVIOUS" title="守护程序工具函数" href="./x682.htm"><link rel="NEXT" title="事务控制范例程序" href="./x690.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x682.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 7. 范例程序</td><td align="right" valign="bottom" width="10%"><a href="./x690.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN687">调制解调器控制范例程序</a></h1><pre class="PROGRAMLISTING">     /* 发出一些简单调制解调器命令
+      * 需要串行设备的设备名 (最好是拨出设备,
+      * 或者是非调制解调器控制设备) 作为它唯一的参数.
+      * 如果你没有可共使用的拨出设备, 那么以CFLAGS_TO_SET取代CLOCAL。
+      */
+    
+     #include &lt;stdio.h&gt;
+     #include &lt;stdlib.h&gt;
+     #include &lt;fcntl.h&gt;
+     #include &lt;unistd.h&gt;
+     #include &lt;sys/types.h&gt;
+     #include &lt;sys/time.h&gt;
+     #include &lt;sys/ioctl.h&gt;   /* 也许需要；和系统有关 */
+     #include &lt;termios.h&gt;
+     #include &lt;errno.h&gt;
+     #include &lt;string.h&gt;
+     #include &lt;ctype.h&gt;
+    
+     #define CFLAGS_TO_SET (CREAD | HUPCL)
+     #define CFLAGS_TO_CLEAR (CSTOPB | PARENB | CLOCAL)
+    
+     enum flowmode { NoFlow, HardFlow, SoftFlow };
+    
+     /* 和系统有关 */
+     #define CFLAGS_HARDFLOW (CRTSCTS)
+    
+    
+     #define EXAMPLE_BAUD B19200
+     #define EXAMPLE_FLOW HardFlow
+    
+    
+     static void die(const char *msg)
+     {
+         fprintf(stderr, "%s\n", msg);
+         exit(1);
+     }
+    
+     static int close_and_complain(int fd, const char *msg, int err)
+     {
+         fprintf(stderr, "%s: %s\n", msg, strerror(err));
+         if (fd &gt;= 0)
+             close(fd);
+         errno = err;
+         return -1;
+     }
+    
+    
+     int open_port(const char *name, speed_t baud, enum flowmode flow)
+     {
+         int flags;
+         struct termios attr;
+    
+         int fd = open(name, O_RDWR | O_NONBLOCK | O_NOCTTY);
+    
+         if (fd &lt; 0)
+             return close_and_complain(-1, "open", errno);
+    
+         /* 设定一些不明确是否敏感的值 */
+    
+         if (tcgetattr(fd, &amp;attr) &lt; 0)
+             return close_and_complain(fd, "tcgetattr", errno);
+    
+         /* 无特殊输入或输出处理 */
+    
+         attr.c_iflag = (flow == SoftFlow) ? (IXON | IXOFF) : 0;
+         attr.c_oflag = 0;
+    
+         /* 设定8位字符宽和一些杂项控制模式 */
+    
+         attr.c_cflag &amp;= ~(CSIZE | CFLAGS_TO_CLEAR | CFLAGS_HARDFLOW);
+         attr.c_cflag |= (CS8 | CFLAGS_TO_SET);
+         if (flow == HardFlow)
+             attr.c_cflag |= CFLAGS_HARDFLOW;
+    
+         /* 本机模式 */
+    
+         attr.c_lflag &amp;= ~(ICANON | ECHO | ECHOE | ECHOK | ISIG);
+    
+         /* 特殊字符 -- 许多已被先前的设定取消 */
+    
+         {
+             int i;
+     #ifdef _POSIX_VDISABLE
+             attr.c_cc[0] = _POSIX_VDISABLE;
+     #else
+             attr.c_cc[0] = fpathconf(fd, _PC_VDISABLE);
+     #endif
+             for (i = 1; i &lt; NCCS; i++)
+                 attr.c_cc[i] = attr.c_cc[0];
+         }
+    
+         attr.c_cc[VSTART] = 0x11;
+         attr.c_cc[VSTOP] = 0x13;
+    
+         /* 对read()函数的计时控制 */
+    
+         attr.c_cc[VMIN] = 1;
+         attr.c_cc[VTIME] = 0;
+    
+         /* 波特律 */
+    
+         cfsetispeed(&amp;attr, baud);
+         cfsetospeed(&amp;attr, baud);
+    
+         /* 写入设定 */
+    
+         if (tcsetattr(fd, TCSANOW, &amp;attr) &lt; 0)
+             return close_and_complain(fd, "tcsetattr", errno);
+    
+         /* 如果系统记住了先前的O_NONBLOCK设定，就取消它 */
+    
+         flags = fcntl(fd, F_GETFL, 0);
+         if (flags &lt; 0)
+             return close_and_complain(fd, "fcntl(GETFL)", errno);
+         if (fcntl(fd, F_SETFL, flags &amp; ~O_NONBLOCK) &lt; 0)
+             return close_and_complain(fd, "fcntl(SETFL)", errno);
+    
+         return fd;
+     }
+    
+     /* 一些简单的计时工具函数 */
+    
+     /* 向*TV加 SECS 和USECS */
+    
+     static void timeradd(struct timeval *tv, long secs, long usecs)
+     {
+         tv-&gt;tv_sec += secs;
+         if ((tv-&gt;tv_usec += usecs) &gt;= 1000000)
+         {
+             tv-&gt;tv_sec += tv-&gt;tv_usec / 1000000;
+             tv-&gt;tv_usec %= 1000000;
+         }
+     }
+    
+     /* 设定 *RES = *A - *B, 返回结果的符号 */
+    
+     static int timersub(struct timeval *res,
+                         const struct timeval *a, const struct timeval *b)
+     {
+         long sec = a-&gt;tv_sec - b-&gt;tv_sec;
+         long usec = a-&gt;tv_usec - b-&gt;tv_usec;
+    
+         if (usec &lt; 0)
+             usec += 1000000, --sec;
+    
+         res-&gt;tv_sec = sec;
+         res-&gt;tv_usec = usec;
+    
+         return (sec &lt; 0) ? (-1) : ((sec == 0 &amp;&amp; usec == 0) ? 0 : 1);
+     }
+    
+    
+     /* 这个函数不试图处理非正常的字符串 (比如 ababc)
+      * 超时以微妙计
+      * 一个更通常的做法是使用alarm()函数处理超时.
+      * 这个函数为简便起见不使用信号处理并试图提供一种替换方法
+      */
+    
+     int expect(int fd, const char *str, int timeo)
+     {
+         int matchlen = 0;
+         int len = strlen(str);
+         struct timeval now,end,left;
+         fd_set fds;
+         char c;
+    
+         gettimeofday(&amp;end, NULL);
+         timeradd(&amp;end, timeo/1000, timeo%1000);
+    
+         while (matchlen &lt; len)
+         {
+             gettimeofday(&amp;now, NULL);
+             if (timersub(&amp;left, &amp;end, &amp;now) &lt;= 0)
+                 return -1;
+    
+             FD_ZERO(&amp;fds);
+             FD_SET(fd, &amp;fds);
+             if (select(fd+1, &amp;fds, NULL, NULL, &amp;left) &lt;= 0)
+                 return -1;
+    
+             if (read(fd, &amp;c, 1) != 1)
+                 return -1;
+    
+             if (isprint((unsigned char)c) || c == '\n' || c == '\r')
+                 putchar(c);
+             else
+                 printf("\\x%02x", c);
+    
+             if (c == str[matchlen])
+                 ++matchlen;
+             else
+                 matchlen = 0;
+         }
+    
+         return 0;
+     }
+    
+    
+     int main(int argc, char **argv)
+     {
+         int fd;
+         unsigned char c;
+    
+         if (argc &lt; 2)
+             die("no port specified");
+    
+         setvbuf(stdout, NULL, _IONBF, 0);
+    
+         fd = open_port(argv[1], EXAMPLE_BAUD, EXAMPLE_FLOW);
+         if (fd &lt; 0)
+             die("cannot open port");
+    
+         write(fd, "AT\r", 3);
+         if (expect(fd, "OK", 5000) &lt; 0)
+         {
+             write(fd, "AT\r", 3);
+             if (expect(fd, "OK", 5000) &lt; 0)
+             {
+                 tcflush(fd, TCIOFLUSH);
+                 close(fd);
+                 die("no response to AT");
+             }
+         }
+    
+         write(fd, "ATI4\r", 5);
+         expect(fd, "OK", 10000);
+    
+         putchar('\n');
+    
+         tcflush(fd, TCIOFLUSH);
+         close(fd);
+    
+         return 0;
+     }
+    </pre></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x682.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x690.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">守护程序工具函数</td><td align="center" valign="top" width="34%"><a href="./c665.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">事务控制范例程序</td></tr></tbody></table></div></body></html>

@@ -1,0 +1,677 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>客户端连接缺省 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="服务器配置" HREF="runtime-config.html"><LINK REL="PREVIOUS" TITLE="自动清理" HREF="runtime-config-autovacuum.html"><LINK REL="NEXT" TITLE="锁管理" HREF="runtime-config-locks.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="runtime-config-autovacuum.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="runtime-config.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 17. 服务器配置</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="runtime-config.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="runtime-config-locks.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="RUNTIME-CONFIG-CLIENT" >17.10. 客户端连接缺省</A
+></H1
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="RUNTIME-CONFIG-CLIENT-STATEMENT" >17.10.1. 语句行为</A
+></H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A NAME="GUC-SEARCH-PATH" ><TT
+CLASS="VARNAME"
+>search_path</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>        这个变量声明模式的搜索顺序，在一个被引用对象（表，数据类型，函数等）只是一个简单名字，
+	没有附加模式部分时需要这样的搜索。
+        如果在另外一个模式里有一个相同的对象名，那么使用在这个搜索路径中找到的第一个。
+	一个没有在搜索路径中任何一个模式里出现的对象只能通过其所在模式的全称（打点的）名字来声明。
+       </P
+><P
+>        <TT
+CLASS="VARNAME"
+>search_path</TT
+> 的值必需是一个逗号分隔的模式名的列表。
+        如果列表项之一是特殊值 <TT
+CLASS="LITERAL"
+>$user</TT
+>，
+	那么该模式和 <TT
+CLASS="FUNCTION"
+>SESSION_USER</TT
+> 所代换的名字一样 &mdash; 如果存在这个模式的话。
+        （如果没有，那么忽略 <TT
+CLASS="LITERAL"
+>$user</TT
+>。）
+       </P
+><P
+>        系统表模式，<TT
+CLASS="LITERAL"
+>pg_catalog</TT
+>，总是被搜索，不管我们有没有在路径里提到它。
+	如果我们在路径中提到它，那么将按照指定的顺序搜索。
+        如果 <TT
+CLASS="LITERAL"
+>pg_catalog</TT
+> 没有在路径中，那么它将在任何路径项<I
+CLASS="EMPHASIS"
+>之前</I
+>得到搜索。
+	我们还要注意的是，临时表模式，<TT
+CLASS="LITERAL"
+>pg_temp_<TT
+CLASS="REPLACEABLE"
+><I
+>nnn</I
+></TT
+></TT
+>，也隐含在任何这些项之前得到搜索。
+       </P
+><P
+>        如果创建对象时没有声明特定的目标模式，那么它将被放到搜索路径中的第一个模式。如果搜索路径是空的，那么会报告一个错误。
+       </P
+><P
+>        这个参数的缺省值是 <TT
+CLASS="LITERAL"
+>'$user, public'</TT
+>
+	（如果没有叫 <TT
+CLASS="LITERAL"
+>public</TT
+> 的模式，那么第二部分将被忽略）。
+        这样就支持共享使用一个数据库（这个时候没有用户拥有私有模式，
+        并且所有人都共享使用 <TT
+CLASS="LITERAL"
+>public</TT
+>），私有的每用户的模式，
+	以及这些的组合。其它效果可以通过（全局或者每用户地）修改搜索路径设置获取。
+       </P
+><P
+>        搜索路径当前的有效值可以用 SQL 函数 <TT
+CLASS="FUNCTION"
+>current_schemas()</TT
+> 检查。
+	它和检查 <TT
+CLASS="VARNAME"
+>search_path</TT
+> 的值并不太一样，
+        因为 <TT
+CLASS="FUNCTION"
+>current_schemas()</TT
+> 显示的是在 <TT
+CLASS="VARNAME"
+>search_path</TT
+> 里出现的请求如何被分析。
+       </P
+><P
+>        有关模式处理的更多信息，参阅 <A HREF="ddl-schemas.html" >Section 5.7</A
+>。
+       </P
+></DD
+><DT
+><A NAME="GUC-DEFAULT-TABLESPACE" ><TT
+CLASS="VARNAME"
+>default_tablespace</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>	这个变量声明当 <TT
+CLASS="COMMAND"
+>CREATE</TT
+> 命令没有明确声明表空间时，
+	所创建之对象（表和索引等）的缺省表空间。
+       </P
+><P
+>	数值要么是一个表空间的名字，要么是一个空串，表明使用当前数据库的缺省表空间。
+	如果这个数值和任意现存表空间的名字不匹配，那么 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	将自动使用当前数据库的缺省表空间。
+       </P
+><P
+>	有关表空间的更多的信息，参阅 <A HREF="manage-ag-tablespaces.html" >Section 19.6</A
+>。
+       </P
+></DD
+><DT
+><A NAME="GUC-CHECK-FUNCTION-BODIES" ><TT
+CLASS="VARNAME"
+>check_function_bodies</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	这个参数通常是开。如果设置为 <TT
+CLASS="LITERAL"
+>off</TT
+>，那么就关闭在
+	<A HREF="sql-createfunction.html" ><I
+>CREATE FUNCTION</I
+></A
+> 时候的函数体字串的合法性检查。
+	关闭合法性检查有时候会有用，比如可以避免在从转储中恢复函数定义的时候类似前向引用的问题。
+       </P
+></DD
+><DT
+><A NAME="GUC-DEFAULT-TRANSACTION-ISOLATION" ><TT
+CLASS="VARNAME"
+>default_transaction_isolation</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>        每个 SQL 事务都有一个隔离级别，可以是<SPAN
+CLASS="QUOTE"
+>"读未提交"</SPAN
+>，
+	<SPAN
+CLASS="QUOTE"
+>"读已提交"</SPAN
+>，<SPAN
+CLASS="QUOTE"
+>"可重复读"</SPAN
+>或者是<SPAN
+CLASS="QUOTE"
+>"可串性化"</SPAN
+>。
+	这个参数控制每个新的事务的隔离级别。缺省是读已提交。
+       </P
+><P
+>	参考 <A HREF="mvcc.html" >Chapter 12</A
+> 和
+	<A HREF="sql-set-transaction.html" ><I
+>SET TRANSACTION</I
+></A
+> 获取更多信息。
+       </P
+></DD
+><DT
+><A NAME="GUC-DEFAULT-TRANSACTION-READ-ONLY" ><TT
+CLASS="VARNAME"
+>default_transaction_read_only</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>        只读的 SQL 事务不能修改非临时表。这个参数控制每个新事务的只读状态。
+        缺省是 <TT
+CLASS="LITERAL"
+>off</TT
+>（读/写）。
+       </P
+><P
+>	参考 <A HREF="sql-set-transaction.html" ><I
+>SET TRANSACTION</I
+></A
+> 获取更多信息。
+       </P
+></DD
+><DT
+><A NAME="GUC-STATEMENT-TIMEOUT" ><TT
+CLASS="VARNAME"
+>statement_timeout</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	退出任何使用了超过此参数指定时间（毫秒）的语句。
+	如果 <TT
+CLASS="VARNAME"
+>log_min_error_statement</TT
+> 设置为 <TT
+CLASS="LITERAL"
+>ERROR</TT
+> 或者更低，
+	那么也会记录超时的日志。
+	零值（缺省）关闭这个计时器。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="RUNTIME-CONFIG-CLIENT-FORMAT" >17.10.2. 区域和格式化</A
+></H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A NAME="GUC-DATESTYLE" ><TT
+CLASS="VARNAME"
+>DateStyle</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>        设置日期和时间值的显示格式，以及有歧义的输入值的解析规则。
+	由于历史原因，这个变量包含两个独立的部分：输出格式声明（<TT
+CLASS="LITERAL"
+>ISO</TT
+>，
+	<TT
+CLASS="LITERAL"
+>Postgres</TT
+>，<TT
+CLASS="LITERAL"
+>SQL</TT
+>，或者 <TT
+CLASS="LITERAL"
+>German</TT
+>）以及日志字段顺序声明（<TT
+CLASS="LITERAL"
+>DMY</TT
+>，
+	<TT
+CLASS="LITERAL"
+>MDY</TT
+>，或者 <TT
+CLASS="LITERAL"
+>YMD</TT
+>）。
+	这两个可以独立设置或者一起设置。关键字 <TT
+CLASS="LITERAL"
+>Euro</TT
+> 和 <TT
+CLASS="LITERAL"
+>European</TT
+> 是 <TT
+CLASS="LITERAL"
+>DMY</TT
+> 的同义词；
+	关键字 <TT
+CLASS="LITERAL"
+>US</TT
+>，<TT
+CLASS="LITERAL"
+>NonEuro</TT
+>，和 <TT
+CLASS="LITERAL"
+>NonEuropean</TT
+> 是 <TT
+CLASS="LITERAL"
+>MDY</TT
+> 的同义词。
+	参阅 <A HREF="datatype-datetime.html" >Section 8.5</A
+> 获取更多信息。缺省是 <TT
+CLASS="LITERAL"
+>ISO, US</TT
+>。
+       </P
+></DD
+><DT
+><A NAME="GUC-TIMEZONE" ><TT
+CLASS="VARNAME"
+>timezone</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>        设置用于显示和解析时间戳的时区。缺省是 'unknown'，意味着使用系统环境声明的时区。
+        参阅 <A HREF="datatype-datetime.html" >Section 8.5</A
+> 获取更多信息。
+       </P
+></DD
+><DT
+><A NAME="GUC-AUSTRALIAN-TIMEZONES" ><TT
+CLASS="VARNAME"
+>australian_timezones</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>        如果设置为开，那么<TT
+CLASS="LITERAL"
+>ACST</TT
+>，<TT
+CLASS="LITERAL"
+>CST</TT
+>，<TT
+CLASS="LITERAL"
+>CST</TT
+>，
+        <TT
+CLASS="LITERAL"
+>EST</TT
+>，和 <TT
+CLASS="LITERAL"
+>SAT</TT
+> 都解释成澳大利亚时区，而不是南/北美时区和周六。
+	缺省是 <TT
+CLASS="LITERAL"
+>off</TT
+>。
+       </P
+></DD
+><DT
+><A NAME="GUC-EXTRA-FLOAT-DIGITS" ><TT
+CLASS="VARNAME"
+>extra_float_digits</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	这个参数为浮点数值调整显示的数据位数，浮点类型包括 <TT
+CLASS="TYPE"
+>float4</TT
+>，
+	<TT
+CLASS="TYPE"
+>float8</TT
+>，和几何数据类型。
+	参数值加在标准的数据位数上（<TT
+CLASS="LITERAL"
+>FLT_DIG</TT
+> 或者 <TT
+CLASS="LITERAL"
+>DBL_DIG</TT
+> 中合适的）。
+	数值可以设置为最高 2，以包括部分关键的数据位；这个功能对转储那些需要精确恢复的浮点数据特别有用。
+	或者你也可以把它设置位负数以消除不需要的数据位。
+       </P
+></DD
+><DT
+><A NAME="GUC-CLIENT-ENCODING" ><TT
+CLASS="VARNAME"
+>client_encoding</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>        设置客户端编码（字符集）。缺省使用数据库编码。
+       </P
+></DD
+><DT
+><A NAME="GUC-LC-MESSAGES" ><TT
+CLASS="VARNAME"
+>lc_messages</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>        设置信息显示的语言。可接受的值是系统相关的；参阅 <A HREF="charset.html#LOCALE" >Section 21.1</A
+> 获取更多信息。
+	如果这个变量设置为空字串（缺省值），那么其值以一种系统相关的方式从服务器的执行环境中继承过来。
+       </P
+><P
+>        在一些系统上，这个区域范畴并不存在。设置这个变量仍然是允许的，
+        但是将不会有任何效果。同样，也有可能是所期望的语言的翻译信息不存在。在这种情况下，你仍然能看到英文信息。
+       </P
+></DD
+><DT
+><A NAME="GUC-LC-MONETARY" ><TT
+CLASS="VARNAME"
+>lc_monetary</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>        为格式化金额数量设置区域。比如为 <TT
+CLASS="FUNCTION"
+>to_char</TT
+> 族函数设置。
+        可接受的值是系统相关的；参阅 <A HREF="charset.html#LOCALE" >Section 21.1</A
+> 获取更多信息。
+	如果这个变量设置为空字串（缺省值），那么其值是以一种系统相关的方式从服务器的执行环境中继承过来的。
+       </P
+></DD
+><DT
+><A NAME="GUC-LC-NUMERIC" ><TT
+CLASS="VARNAME"
+>lc_numeric</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>        设置用于格式化数字的区域，比如那些用于 <TT
+CLASS="FUNCTION"
+>to_char</TT
+>
+        族函数的。可接受的值是系统相关的；参阅 <A HREF="charset.html#LOCALE" >Section 21.1</A
+>
+        获取更多信息。如果这个变量设置为空字串（缺省值），那么其值以一种系统相关的方法从服务器的执行环境中继承过来。
+       </P
+></DD
+><DT
+><A NAME="GUC-LC-TIME" ><TT
+CLASS="VARNAME"
+>lc_time</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>        设置用于格式化日期和时间值的区域。（目前，这个设置什么事也没干，但将来可能会有用。）
+        <TT
+CLASS="FUNCTION"
+>to_char</TT
+> 族函数的。
+	可接受的值是系统相关的；参阅 <A HREF="charset.html#LOCALE" >Section 21.1</A
+> 获取更多信息。
+	如果这个变量设置为空字串（缺省值），那么其值是以一种系统相关的方式从服务器的执行环境中继承过来的。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="RUNTIME-CONFIG-CLIENT-OTHER" >17.10.3. 其它缺省</A
+></H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A NAME="GUC-EXPLAIN-PRETTY-PRINT" ><TT
+CLASS="VARNAME"
+>explain_pretty_print</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	决定 <TT
+CLASS="COMMAND"
+>EXPLAIN VERBOSE</TT
+> 是使用缩进格式还是使用非缩进格式显示详细的查询树转储。
+	缺省是 <TT
+CLASS="LITERAL"
+>on</TT
+>。
+       </P
+></DD
+><DT
+><A NAME="GUC-DYNAMIC-LIBRARY-PATH" ><TT
+CLASS="VARNAME"
+>dynamic_library_path</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>        如果需要打开一个可以动态装载的模块并且在 <TT
+CLASS="COMMAND"
+>CREATE FUNCTION</TT
+> 或者
+	<TT
+CLASS="COMMAND"
+>LOAD</TT
+> 命令里面声明的名字没有目录部分（也就是说名字里不包含斜杠），
+	那么系统将搜索这个目录以查找声明的文件。
+       </P
+><P
+>        用于 <TT
+CLASS="VARNAME"
+>dynamic_library_path</TT
+>
+	的数值必须是一个冒号分隔（或者是在 Windows 上分号分隔）的绝对路径名字列表。
+	如果一个路径名字以特殊变量 <TT
+CLASS="LITERAL"
+>$libdir</TT
+>（<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>编译好的库目录）开头，
+        那么就替换为<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>发布提供的模块安装路径。
+	这是标准 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 发布提供的模块安装的目录。
+	（使用 <TT
+CLASS="LITERAL"
+>pg_config --pkglibdir</TT
+> 打印这个目录的名字。）
+        比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>dynamic_library_path = '/usr/local/lib/postgresql:/home/my_project/lib:$libdir'</PRE
+><P>
+	或者是在 windows 环境里：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>dynamic_library_path = 'C:\tools\postgresql;H:\my_project\lib;$libdir'</PRE
+><P>
+       </P
+><P
+>	这个参数的缺省值是 <TT
+CLASS="LITERAL"
+>'$libdir'</TT
+>。
+	如果把这个值设置为一个空字串，则关闭自动路径搜索。
+       </P
+><P
+>	这个参数可以在运行时由超级用户修改，但是这么修改的设置只能保持到这个客户端连接的结束，
+	因此这个方法应该保留给开发用途使用。
+	我们建议的设置这个参数的方法是在 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 配置文件里设置。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="runtime-config-autovacuum.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="runtime-config-locks.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >自动清理</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="runtime-config.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >锁管理</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

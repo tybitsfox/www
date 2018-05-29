@@ -1,0 +1,296 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>WAL 配置 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="可靠性和预写式日志" HREF="wal.html"><LINK REL="PREVIOUS" TITLE="预写式日志（WAL）" HREF="wal-intro.html"><LINK REL="NEXT" TITLE="WAL 内部" HREF="wal-internals.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="wal-intro.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="wal.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 26. 可靠性和预写式日志</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="wal.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="wal-internals.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="WAL-CONFIGURATION" >26.3. <SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 配置</A
+></H1
+><P
+>	有几个与 <SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 相关的参数会影响数据库性能。
+	本节讨论它们的使用。参阅
+	<A HREF="runtime-config.html" >Chapter 17</A
+> 获取有关服务器配置参数的一般信息。
+  </P
+><P
+>	<I
+CLASS="FIRSTTERM"
+>检查点（Checkpoints）</I
+> <A NAME="AEN24144" ></A
+>是事务序列中的点，
+	我们保证在该点之前的所有信息都写到数据文件中去了。
+	在检查点时，所有脏数据页都冲刷到磁盘并且向日志文件中写入一条特殊的检查点记录。
+	在发生崩溃的时候，崩溃恢复过程查找最后的检查点记录，判断应该从日志中的哪个点（称做 redo 记录）开始做 REDO 操作，
+	该记录前对数据文件的任何修改都被认为已经在磁盘上了。
+	因此，在检查点完成之后，任何在包含 redo 记录点之前的日志段都不再需要，
+	因此可以循环使用或者删除。（在进行 <SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 归档的时候，
+	这些日志在循环利用或者删除之前必须先归档。）
+  </P
+><P
+>	服务器的后端写进程将每隔这段时间就自动执行一个检查点。
+	每隔 <A HREF="runtime-config-wal.html#GUC-CHECKPOINT-SEGMENTS" >checkpoint_segments</A
+> 个日志段就创建一个检查点，
+	或者每隔 <A HREF="runtime-config-wal.html#GUC-CHECKPOINT-TIMEOUT" >checkpoint_timeout</A
+> 秒创建一个。
+	以先到为准。缺省设置分别是 3 个段和 300 秒。
+	我们也可以用 SQL 命令 <TT
+CLASS="COMMAND"
+>CHECKPOINT</TT
+>
+	强制一个检查点。
+  </P
+><P
+>	减少 <TT
+CLASS="VARNAME"
+>checkpoint_segments</TT
+> 和/或
+	<TT
+CLASS="VARNAME"
+>checkpoint_timeout</TT
+> 会令检查点更频繁一些。
+	这样就允许更快的崩溃后恢复（因为需要重做的工作更少）。不过，
+	我们必须在这个目的和更频繁地冲刷脏数据页所带来的额外开销之间取得平衡。
+	并且，如果设置了 <A HREF="runtime-config-wal.html#GUC-FULL-PAGE-WRITES" >full_page_writes</A
+> （缺省），
+	那么还有其它的因素需要考虑。
+	为了保证数据页的一致性，在每个检查点之后的第一次数据页的变化会导致对整个页面内容的日志记录。
+	因此，检查点时间间隔短了会导致输出到 WAL 日志中的数据的增加，会抵销一部分缩短间隔的目标，
+	并且怎么着都会产生更多的磁盘 I/O。
+  </P
+><P
+>   检查点开销相当高，首先是因为它需要写出所有当前脏的缓冲区，其实是因为他们导致上面讨论的额外的后继 WAL 流量。
+   因此把检查点参数设置得足够高，让检查点发生的频率降低是明智的。要对你的检查点参数的一个简单自检，可以设置
+   <A HREF="runtime-config-wal.html#GUC-CHECKPOINT-WARNING" >checkpoint_warning</A
+> 参数。如果检查点发生的间隔接近 <TT
+CLASS="VARNAME"
+>checkpoint_warning</TT
+> 秒，
+   那么将向服务器日志输出一条消息，建议你增加 <TT
+CLASS="VARNAME"
+>checkpoint_segments</TT
+> 的数值。
+   偶尔出现的这样的警告并不会导致警告，但是如果它出现得太频繁，那么就应该增加检查点控制参数。
+   如果你没有把 <TT
+CLASS="VARNAME"
+>checkpoint_segments</TT
+> 设置得足够大，
+   那么批量操作的时候，比如大批的 <TT
+CLASS="COMMAND"
+>COPY</TT
+> 传输会导致出现大量类似的警告消息。
+  </P
+><P
+>	至少会有一个 WAL 段文件，而且通常不会超过 2 * <TT
+CLASS="VARNAME"
+>checkpoint_segments</TT
+> + 1
+	个文件。每个段文件通常 16MB 大（当然你可以在制作服务器的时候修改它）。
+	你可以用这些信息来估计 <SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 需要的空间。
+	通常，如果一个旧的日志段文件不再需要了，那么它将得到循环使用（重命名为顺序的下一个可用段）。
+	如果由于短期的日志输出峰值，导致了超过 2 * <TT
+CLASS="VARNAME"
+>checkpoint_segments</TT
+> + 1 个段文件，
+	那么到系统再次回到这个限制之内的时候，多于的段文件会被删除，而不是循环使用。
+  </P
+><P
+>	有两个常用的内部 <SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 函数：
+	<TT
+CLASS="FUNCTION"
+>LogInsert</TT
+> 和 <TT
+CLASS="FUNCTION"
+>LogFlush</TT
+>。
+	<TT
+CLASS="FUNCTION"
+>LogInsert</TT
+> 用于向共享内存中的
+	<SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 缓冲区里加一条新的记录。如果没有空间存放新记录，
+	那么<TT
+CLASS="FUNCTION"
+>LogInsert</TT
+> 就不得不写出（向内核缓存里写）一些填满了的<SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+>缓冲。
+	我们可不想这样，因为 <TT
+CLASS="FUNCTION"
+>LogInsert</TT
+> 用于每次数据库低层修改（比如，记录插入），
+	都要花在受影响的数据页上持有一个排它锁的时间，因为该操作需要越快越好；更糟糕的是，
+	写 <SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 缓冲可能还会强制创建新的日志段，
+	它花的时间甚至更多。通常，<SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 缓冲区应该由一个 <TT
+CLASS="FUNCTION"
+>LogFlush</TT
+> 请求来写和冲刷，
+	在大部分时候它都是发生在事务提交的时候以确保事务记录被冲刷到永久存储器上去了。在那些日志输入量比较大的系统上，
+	<TT
+CLASS="FUNCTION"
+>LogFlush</TT
+> 请求可能不够频繁，这样就不能避免
+	<TT
+CLASS="FUNCTION"
+>LogInsert</TT
+> 进行写操作。在这样的系统上，我们应该通过修改配置参数
+	<A HREF="runtime-config-wal.html#GUC-WAL-BUFFERS" >wal_buffers</A
+> 的值来增加
+	<SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 缓冲区的数量。缺省的
+	<SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 缓冲区数量是 8。增加这个数值将造成对应的共享内存使用量的增加。
+	如果设置了 <A HREF="runtime-config-wal.html#GUC-FULL-PAGE-WRITES" >full_page_writes</A
+>，并且系统相当繁忙，
+	把这个数值设置得高一些将有助于在紧随每个检查点的时间里平滑响应时间。
+  </P
+><P
+>	<A HREF="runtime-config-wal.html#GUC-COMMIT-DELAY" >commit_delay</A
+> 定义了后端在使用
+	<TT
+CLASS="FUNCTION"
+>LogInsert</TT
+> 向日志中写了一条已提交的记录之后，
+	在执行一次 <TT
+CLASS="FUNCTION"
+>LogFlush</TT
+> 之前休眠的毫秒数。
+	这样的延迟可以允许其它的后端把它们提交的记录追加到日志中，这样就可以用一次日志同步把所有日志冲刷到日志中。
+	如果没有打开<TT
+CLASS="VARNAME"
+>fsync</TT
+>或者当前少于
+	<A HREF="runtime-config-wal.html#GUC-COMMIT-SIBLINGS" >commit_siblings</A
+>
+	个其它后端处于活跃事务状态的时候则不会发生休眠；
+	这样就避免了在其它事务一时半会不会提交的情况下睡眠。
+	请注意在大多数平台上，休眠要求的分辩率是十毫秒，
+	所以任何介于 1 和 10000 微秒之间的非零 <TT
+CLASS="VARNAME"
+>commit_delay</TT
+>
+	的作用都是一样的。
+	适用这些参数的比较好的数值还不太清楚；我们鼓励你多做试验。
+  </P
+><P
+>	<A HREF="runtime-config-wal.html#GUC-WAL-SYNC-METHOD" >wal_sync_method</A
+> 参数决定<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	如何请求内核强制将 <SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 更新输出到磁盘。只要满足可靠性，那么所有选项应该都是一样的，但是哪个最快则可能和平台密切相关。
+	请注意如果你关闭了 <TT
+CLASS="VARNAME"
+>fsync</TT
+>，那么这个参数就无所谓了。
+  </P
+><P
+>	打开 <A HREF="runtime-config-developer.html#GUC-WAL-DEBUG" >wal_debug</A
+> 配置参数（前提是 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>编译的时候打开了这个支持）
+	将导致每次 <TT
+CLASS="FUNCTION"
+>LogInsert</TT
+> 和 <TT
+CLASS="FUNCTION"
+>LogFlush</TT
+>
+	<SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 调用都被记录到服务器日志。这个选项以后可能会被更通用的机制取代。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="wal-intro.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="wal-internals.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >预写式日志（<SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+>）</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="wal.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >WAL 内部</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

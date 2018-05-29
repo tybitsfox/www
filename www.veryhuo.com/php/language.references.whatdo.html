@@ -1,0 +1,40 @@
+<HTML><HEAD><TITLE>引用做什么</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="引用的解释" HREF="language.references.html"><LINK REL="PREVIOUS" TITLE="引用的解释" HREF="language.references.html"><LINK REL="NEXT" TITLE="引用不是什么" HREF="language.references.arent.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="sect1" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="language.references.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 14. 引用的解释</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="language.references.arent.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="sect1"><H1 CLASS="sect1"><A NAME="language.references.whatdo"></A>引用做什么</H1><P>&#13; PHP 的引用允许你用两个变量来指向同一个内容。意思是，当你这样做时：
+<DIV CLASS="informalexample"><A NAME="AEN5904"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$a </font><font color="#007700">=&amp; </font><font color="#0000BB">$b<br />?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P></P></DIV>
+这意味着 <TT CLASS="varname">$a</TT> 和 <TT CLASS="varname">$b</TT> 指向了同一个变量。
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+<TT CLASS="varname">$a</TT> 和 <TT CLASS="varname">$b</TT> 在这里是完全相同的，这并不是
+<TT CLASS="varname">$a</TT> 指向了 <TT CLASS="varname">$b</TT> 或者相反，而是
+<TT CLASS="varname">$a</TT> 和 <TT CLASS="varname">$b</TT> 指向了同一个地方。
+</P></BLOCKQUOTE></DIV>
+</P><P>&#13; 同样的语法可以用在函数中，它返回引用，以及用在 <TT CLASS="literal">new</TT>
+运算符中（PHP 4.0.4 以及以后版本）：
+<DIV CLASS="informalexample"><A NAME="AEN5918"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$bar </font><font color="#007700">=&amp; new </font><font color="#0000BB">fooclass</font><font color="#007700">();<br /></font><font color="#0000BB">$foo </font><font color="#007700">=&amp; </font><font color="#0000BB">find_var </font><font color="#007700">(</font><font color="#0000BB">$bar</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P></P></DIV>
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+不用 <TT CLASS="literal">&#38;</TT> 运算符导致对象生成了一个拷贝。如果你在类中用
+<TT CLASS="literal">$this</TT>，它将作用于该类当前的实例。没有用 <TT CLASS="literal">&#38;</TT>
+的赋值将拷贝这个实例（例如对象）并且 <TT CLASS="literal">$this</TT>
+将作用于这个拷贝上，这并不总是想要的结果。由于性能和内存消耗的问题，通常你只想工作在一个实例上面。
+</P><P>&#13; 尽管你可以用 <TT CLASS="literal">@</TT> 运算符来<SPAN CLASS="emphasis"><I CLASS="emphasis">关闭</I></SPAN>构造函数中的任何错误信息，例如用
+<TT CLASS="literal">@new</TT>，但用 <TT CLASS="literal">&#38;new</TT> 语句时这不起效果。这是
+Zend 引擎的一个限制并且会导致一个解析错误。
+</P></BLOCKQUOTE></DIV><P>&#13; 引用做的第二件事是用引用传递变量。这是通过在函数内建立一个本地变量并且该变量在呼叫范围内引用了同一个内容来实现的。例如：
+<DIV CLASS="informalexample"><A NAME="AEN5932"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#007700">function </font><font color="#0000BB">foo </font><font color="#007700">(&amp;</font><font color="#0000BB">$var</font><font color="#007700">)<br />{<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$var</font><font color="#007700">++;<br />}<br /><br /></font><font color="#0000BB">$a</font><font color="#007700">=</font><font color="#0000BB">5</font><font color="#007700">;<br /></font><font color="#0000BB">foo </font><font color="#007700">(</font><font color="#0000BB">$a</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P></P></DIV>
+将使 <TT CLASS="varname">$a</TT> 变成 6。这是因为在 <TT CLASS="varname">foo</TT> 函数中变量
+<TT CLASS="varname">$var</TT> 指向了和 <TT CLASS="varname">$a</TT> 指向的同一个内容。更多详细解释见<A HREF="language.references.pass.html">引用传递</A>。
+</P><P>&#13; 引用做的第三件事是<A HREF="language.references.return.html">引用返回</A>。
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="language.references.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="language.references.arent.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">引用的解释</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="language.references.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">引用不是什么</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

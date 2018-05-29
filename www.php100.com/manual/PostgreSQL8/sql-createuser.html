@@ -1,0 +1,435 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>CREATE USER PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="CREATE TYPE" HREF="sql-createtype.html"><LINK REL="NEXT" TITLE="CREATE VIEW" HREF="sql-createview.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-createtype.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-createtype.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-createview.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-createview.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-CREATEUSER" >CREATE USER</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN44251" ></A
+><H2
+>Name</H2
+>CREATE USER&nbsp;--&nbsp;创建一个新的数据库用户帐户</DIV
+><A NAME="AEN44254" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN44256" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>CREATE USER <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> [ [ WITH ] <TT
+CLASS="REPLACEABLE"
+><I
+>option</I
+></TT
+> [ ... ] ]
+
+这里 <TT
+CLASS="REPLACEABLE"
+><I
+>option</I
+></TT
+> 可以是∶
+
+      SYSID <TT
+CLASS="REPLACEABLE"
+><I
+>uid</I
+></TT
+>
+    | CREATEDB | NOCREATEDB
+    | CREATEUSER | NOCREATEUSER
+    | IN GROUP <TT
+CLASS="REPLACEABLE"
+><I
+>groupname</I
+></TT
+> [, ...]
+    | [ ENCRYPTED | UNENCRYPTED ] PASSWORD '<TT
+CLASS="REPLACEABLE"
+><I
+>password</I
+></TT
+>'
+    | VALID UNTIL '<TT
+CLASS="REPLACEABLE"
+><I
+>abstime</I
+></TT
+>'</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN44265" ></A
+><H2
+>描述</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>CREATE USER</TT
+> 向一个 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	数据库集群增加一个新用户。
+	参考 <A HREF="user-manag.html" >Chapter 18</A
+> 和 <A HREF="client-authentication.html" >Chapter 20</A
+> 获取关于管理用户和认证的信息。
+	要执行这条命令，你必须是一个数据库超级用户。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN44272" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+></DT
+><DD
+><P
+>	新用户名
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>uid</I
+></TT
+></DT
+><DD
+><P
+>	<TT
+CLASS="LITERAL"
+>SYSID</TT
+> 子句可以用于选择新用户的
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 用户标识。
+	通常这是不必要的，但是如果你想恢复一个孤儿对象的所有者，也许这个很有用。
+       </P
+><P
+>	如果没有声明这个，缺省使用已分配的最高用户标识加一（最小是 100）。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>CREATEDB</TT
+><BR><TT
+CLASS="LITERAL"
+>NOCREATEDB</TT
+></DT
+><DD
+><P
+> 
+	这个子句定义用户的创建数据库权限。
+	如果声明了<TT
+CLASS="LITERAL"
+>CREATEDB</TT
+>，
+	被定义的用户将允许创建其自己的数据库。
+	而使用<TT
+CLASS="LITERAL"
+>NOCREATEDB</TT
+>将否决该用户的创建数据库的能力。
+	如果没有声明，缺省是<TT
+CLASS="LITERAL"
+>NOCREATEDB</TT
+>。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>CREATEUSER</TT
+><BR><TT
+CLASS="LITERAL"
+>NOCREATEUSER</TT
+></DT
+><DD
+><P
+>	该子句决定一个用户是否能创建一个新的用户。
+	<TT
+CLASS="LITERAL"
+>CREATEUSER</TT
+> 将把此用户变成数据库超级用户，可以跨越所有访问限制。省略这个参数将置用户的这个属性为
+	<TT
+CLASS="LITERAL"
+>NOCREATEUSER</TT
+>。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>groupname</I
+></TT
+></DT
+><DD
+><P
+>        一个组名称，把这个用户设为该组成员。
+	你可以列出多个组名字。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>password</I
+></TT
+></DT
+><DD
+><P
+>	设置用户的口令，如果你不准备使用口令认证，
+	那么你可以省略这个选项，但如果你想切换到一个口令认证的服务器，那么该用户将不能联接。
+	此口令可以稍后再次设置或者修改，使用
+	<A HREF="sql-alteruser.html" ><I
+>ALTER USER</I
+></A
+>。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>ENCRYPTED</TT
+><BR><TT
+CLASS="LITERAL"
+>UNENCRYPTED</TT
+></DT
+><DD
+><P
+>	<TT
+CLASS="LITERAL"
+>ENCRYPTED/UNENCRYPTED</TT
+> 控制口令在数据库中是否以加密形式存储在系统表中。
+	（如果两个都没有设置，那么缺省的特性是由配置参数 <A HREF="runtime-config-connection.html#GUC-PASSWORD-ENCRYPTION" >password_encryption</A
+> 决定的。）
+	如果提供的字串已经是 MD5 加密的格式，那么就照原样存储，
+	不管声明的是 <TT
+CLASS="LITERAL"
+>ENCRYPTED</TT
+> 还是 <TT
+CLASS="LITERAL"
+>UNENCRYPTED</TT
+>
+	（因为系统无法解密制定的加密口令字串）。
+	这样就允许在转储/恢复的过程中重载加密后的口令。
+        </P
+><P
+>	请注意老的客户端可能缺少 MD5 认证机制，我们需要这个认证机制处理存储为密文的口令。
+	</P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>abstime</I
+></TT
+></DT
+><DD
+><P
+>	<TT
+CLASS="LITERAL"
+>VALID UNTIL</TT
+>（有效期）子句设置一个绝对时间，
+	过了该时间后用户的口令将不再有效。
+	如果省略这个子句，登陆将总是有效的。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN44336" ></A
+><H2
+>注意</H2
+><P
+>	使用 <A HREF="sql-alteruser.html" ><I
+>ALTER USER</I
+></A
+>
+	修改用户的口令和权限，
+	<A HREF="sql-dropuser.html" ><I
+>DROP USER</I
+></A
+> 删除一个用户。
+	使用 <A HREF="sql-altergroup.html" ><I
+>ALTER GROUP</I
+></A
+>
+	从组中增加或删除用户。
+  </P
+><P
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	里有一个程序 <A HREF="app-createuser.html" ><I
+><I
+>createuser</I
+></I
+></A
+>
+	与<TT
+CLASS="COMMAND"
+>CREATE USER</TT
+> 有相同的功能（实际上，它调用这条命令），
+	但是可以在命令行上运行。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN44346" ></A
+><H2
+>例子</H2
+><P
+>        创建一个没有口令的用户：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE USER jonathan</PRE
+><P>
+  </P
+><P
+>        创建一个有口令的用户：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE USER davide WITH PASSWORD 'jw8s0F4'</PRE
+><P>
+  </P
+><P
+>	创建一个有口令的用户，其帐号在 2004 年底失效。
+	注意当 2005 年走过一秒后，该帐号将不再有效：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE USER miriam WITH PASSWORD 'jw8s0F4' VALID UNTIL '2005-01-01';</PRE
+><P>
+  </P
+><P
+> 
+        创建一个拥有创建数据库权限的用户：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE USER manuel WITH PASSWORD 'jw8s0F4' CREATEDB</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN44356" ></A
+><H2
+>兼容性</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>CREATE USER</TT
+> 语句是 
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 扩展。
+	SQL 标准把用户的定义交给具体实现处理。
+  </P
+><P
+>   <TT
+CLASS="LITERAL"
+>VALID UNTIL</TT
+> 子句只是为一个口令定义一个失效时间，
+   而不是给用户帐号定义这个时间。特别要注意的是，如果以非口令认证的方式登录，
+   那么，失效时间不是强制执行的。  
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN44363" ></A
+><H2
+>又见</H2
+><A HREF="sql-alteruser.html" ><I
+>ALTER USER</I
+></A
+>, <A HREF="sql-dropuser.html" ><I
+>DROP USER</I
+></A
+>, <A HREF="app-createuser.html" ><SPAN
+CLASS="APPLICATION"
+>createuser</SPAN
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-createtype.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-createview.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >CREATE TYPE</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >CREATE VIEW</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

@@ -1,0 +1,313 @@
+<HTML
+><HEAD
+><TITLE
+>表达式</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="PL/pgSQL - SQL 过程语言"
+HREF="plpgsql.html"><LINK
+REL="PREVIOUS"
+TITLE="声明"
+HREF="plpgsql-declarations.html"><LINK
+REL="NEXT"
+TITLE="基本语句"
+HREF="plpgsql-statements.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plpgsql-declarations.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plpgsql.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 36. <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> - <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 过程语言</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plpgsql.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plpgsql-statements.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="PLPGSQL-EXPRESSIONS"
+>36.5. 表达式</A
+></H1
+><P
+>	所有在<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>
+	语句里使用的表达式都是用服务器的普通<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>执行器进行处理的。
+	实际上，类似下面的查询
+</P><PRE
+CLASS="SYNOPSIS"
+>SELECT <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+></PRE
+><P>
+	
+	是使用 <SPAN
+CLASS="ACRONYM"
+>SPI</SPAN
+> 管理器执行的。
+	在计算之前，出现<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>变量标识符的地方先被参数代替，
+	然后变量的实际值放在参数数组里传递给执行器。
+	这样就允许<TT
+CLASS="COMMAND"
+>SELECT</TT
+>的执行计划只需要准备一次，并且在随后的计算中复用。
+    </P
+><P
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的主分析器做的类型检查对常量数值的代换有一些副作用。
+	详细说来就是下面这两个函数做的事情有些区别：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION logfunc1 (logtxt text) RETURNS timestamp AS $$
+    BEGIN
+        INSERT INTO logtable VALUES (logtxt, 'now');
+        RETURN 'now';
+    END;
+$$ LANGUAGE plpgsql;</PRE
+><P>
+
+	和
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION logfunc2 (logtxt text) RETURNS timestamp AS $$
+    DECLARE
+        curtime timestamp;
+    BEGIN
+        curtime := 'now';
+        INSERT INTO logtable VALUES (logtxt, curtime);
+        RETURN curtime;
+    END;
+$$ LANGUAGE plpgsql;</PRE
+><P>
+    </P
+><P
+>	在 <TT
+CLASS="FUNCTION"
+>logfunc1()</TT
+> 的实例里，
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的主分析器在为
+	<TT
+CLASS="COMMAND"
+>INSERT</TT
+> 准备执行计划的时候知道字串 <TT
+CLASS="LITERAL"
+>'now'</TT
+>
+	应该解释成 <TT
+CLASS="TYPE"
+>timestamp</TT
+> 类型，因为 <TT
+CLASS="CLASSNAME"
+>logtable</TT
+>
+	的目标字段就是该类型。所以，它会在这个时候从这个字串中计算一个常量，
+	然后在该服务器的整个生存期中的所有 <TT
+CLASS="FUNCTION"
+>logfunc1</TT
+>
+	调用中使用这个常量。不消说，这可不是程序员想要的。
+    </P
+><P
+>	在<TT
+CLASS="FUNCTION"
+>logfunc2</TT
+>里，
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	的主分析器并不知道 <TT
+CLASS="LITERAL"
+>now</TT
+> 应该转换成什么类型，
+	因此它返回一个包含字符串 <TT
+CLASS="LITERAL"
+>now</TT
+> 的类型为 <TT
+CLASS="TYPE"
+>text</TT
+> 的数据值。
+	在随后给局部变量<TT
+CLASS="VARNAME"
+>curtime</TT
+>赋值时，
+	<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>解释器通过调用
+        <TT
+CLASS="FUNCTION"
+>text_out</TT
+>和<TT
+CLASS="FUNCTION"
+>timestamp_in</TT
+>
+	把这个字符串转换成 <TT
+CLASS="TYPE"
+>timestamp</TT
+> 类型的变量。
+	因此，计算出的时戳就会按照程序员希望的那样在每次执行的时候都更新。
+    </P
+><P
+>	记录变量的易变性天性在这种结合上提出了一个问题。
+	在一个记录变量在语句或者表达式中使用时，
+	该字段的数据类型在同一个表达式的不同调用期间不能修改，
+	因为该表达式准备使用的是运行第一次到达该表达式时出现的数据类型。
+	在写处理超过一个表的事件的触发器过程的时候一定要把这个记住。（必要时可以用<TT
+CLASS="COMMAND"
+>EXECUTE</TT
+>绕开这个问题。）
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plpgsql-declarations.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plpgsql-statements.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>声明</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="plpgsql.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>基本语句</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

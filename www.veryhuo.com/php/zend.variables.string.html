@@ -1,0 +1,51 @@
+<HTML><HEAD><TITLE>Strings</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Creating Variables" HREF="zend.variables.html"><LINK REL="PREVIOUS" TITLE="Doubles (Floats)" HREF="zend.variables.float.html"><LINK REL="NEXT" TITLE="Booleans" HREF="zend.variables.boolean.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="section" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="zend.variables.float.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 33. Creating Variables</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="zend.variables.boolean.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="section"><H1 CLASS="section"><A NAME="zend.variables.string"></A>Strings</H1><P>&#13; Strings need slightly more effort. As mentioned earlier, all strings
+that will be associated with Zend's internal data structures need to be
+allocated using Zend's own memory-management functions. Referencing of static
+strings or strings allocated with standard routines is not allowed. To assign
+strings, you have to access the structure <TT CLASS="envar">str</TT> in
+the <TT CLASS="envar">zval.value</TT> container. The corresponding type
+is <TT CLASS="literal">IS_STRING</TT>:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">zval *new_string;
+char *string_contents = "This is a new string variable";
+
+MAKE_STD_ZVAL(new_string);
+
+new_string-&#62;type = IS_STRING;
+new_string-&#62;value.str.len = strlen(string_contents);
+new_string-&#62;value.str.val = estrdup(string_contents);</PRE></TD></TR></TABLE>
+Note the usage of Zend's <B CLASS="function">estrdup()</B> here.
+Of course, you can also use the predefined macro
+<TT CLASS="literal">ZVAL_STRING</TT>:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">zval *new_string;
+char *string_contents = "This is a new string variable";
+
+MAKE_STD_ZVAL(new_string);
+ZVAL_STRING(new_string, string_contents, 1);</PRE></TD></TR></TABLE>
+<TT CLASS="literal">ZVAL_STRING</TT> accepts a third parameter that
+indicates whether the supplied string contents should be duplicated (using
+<B CLASS="function">estrdup()</B>). Setting this parameter
+to <TT CLASS="literal">1</TT> causes the string to be
+duplicated; <TT CLASS="literal">0</TT> simply uses the supplied pointer for the
+variable contents. This is most useful if you want to create a new variable
+referring to a string that's already allocated in Zend internal memory.
+</P><P>&#13; If you want to truncate the string at a certain position or you
+already know its length, you can use <TT CLASS="literal">ZVAL_STRINGL(zval,
+string, length, duplicate)</TT>, which accepts an explicit
+string length to be set for the new string. This macro is faster
+than <TT CLASS="literal">ZVAL_STRING</TT> and also binary-safe.
+</P><P>&#13; To create empty strings, set the string length to <TT CLASS="literal">0</TT> and
+use <TT CLASS="literal">empty_string</TT> as contents:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">new_string-&#62;type = IS_STRING;
+new_string-&#62;value.str.len = 0;
+new_string-&#62;value.str.val = empty_string;</PRE></TD></TR></TABLE>
+Of course, there's a macro for this as
+well (<TT CLASS="literal">ZVAL_EMPTY_STRING</TT>):
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">MAKE_STD_ZVAL(new_string);
+ZVAL_EMPTY_STRING(new_string);</PRE></TD></TR></TABLE>
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="zend.variables.float.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="zend.variables.boolean.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Doubles (Floats)</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="zend.variables.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Booleans</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

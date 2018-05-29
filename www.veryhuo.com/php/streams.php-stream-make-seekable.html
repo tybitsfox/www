@@ -1,0 +1,44 @@
+<HTML><HEAD><TITLE>php_stream_make_seekable</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Streams Common API Reference" HREF="stream.common-api.html"><LINK REL="PREVIOUS" TITLE="php_stream_copy_to_mem" HREF="streams.php-stream-copy-to-mem.html"><LINK REL="NEXT" TITLE="php_stream_cast" HREF="streams.php-stream-cast.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="streams.php-stream-copy-to-mem.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="streams.php-stream-cast.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="streams.php-stream-make-seekable"></A>php_stream_make_seekable</H1><DIV CLASS="refnamediv"><A NAME="AEN124374"></A><P> (no version information, might be only in CVS)</P>php_stream_make_seekable&nbsp;--&nbsp;Convert a stream into a stream is seekable</DIV><DIV CLASS="refsect1"><A NAME="AEN124377"></A><H2>Description</H2>int <B CLASS="methodname">php_stream_make_seekable</B> ( php_stream * origstream, php_stream ** newstream, int flags)<BR></BR><P>&#13; <B CLASS="function">php_stream_make_seekable()</B> checks if <TT CLASS="parameter"><I>origstream</I></TT> is
+seekable. If it is not, it will copy the data into a new temporary stream.
+If successful, <TT CLASS="parameter"><I>newstream</I></TT> is always set to the stream that is valid to use, even if the original
+stream was seekable.
+</P><P>&#13; <TT CLASS="parameter"><I>flags</I></TT> allows you to specify your preference for the seekable stream that is
+returned: use <TT CLASS="constant"><B>PHP_STREAM_NO_PREFERENCE</B></TT> to use the default seekable stream
+(which uses a dynamically expanding memory buffer, but switches to temporary file backed storage
+when the stream size becomes large), or use <TT CLASS="constant"><B>PHP_STREAM_PREFER_STDIO</B></TT> to
+use "regular" temporary file backed storage.
+</P><P>&#13; <DIV CLASS="table"><A NAME="AEN124400"></A><P><B>表格 43-1. <B CLASS="function">php_stream_make_seekable()</B> return values</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">Value</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Meaning</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_STREAM_UNCHANGED</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Original stream was seekable anyway. <TT CLASS="parameter"><I>newstream</I></TT> is set to the value
+of <TT CLASS="parameter"><I>origstream</I></TT>.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_STREAM_RELEASED</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Original stream was not seekable and has been released. <TT CLASS="parameter"><I>newstream</I></TT> is set to the
+new seekable stream. You should not access <TT CLASS="parameter"><I>origstream</I></TT> anymore.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_STREAM_FAILED</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">An error occurred while attempting conversion. <TT CLASS="parameter"><I>newstream</I></TT> is set to NULL;
+<TT CLASS="parameter"><I>origstream</I></TT> is still valid.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_STREAM_CRITICAL</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">An error occurred while attempting conversion that has left <TT CLASS="parameter"><I>origstream</I></TT> in
+an indeterminate state. <TT CLASS="parameter"><I>newstream</I></TT> is set to NULL and it is highly recommended
+that you close <TT CLASS="parameter"><I>origstream</I></TT>.
+</TD></TR></TBODY></TABLE></DIV>
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+If you need to seek and write to the stream, it does not make sense to use this function, because the stream
+it returns is not guaranteed to be bound to the same resource as the original stream.
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+If you only need to seek forwards, there is no need to call this function, as the streams API will emulate
+forward seeks when the whence parameter is <TT CLASS="constant"><B>SEEK_CUR</B></TT>.
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+If <TT CLASS="parameter"><I>origstream</I></TT> is network based, this function will block until the whole contents
+have been downloaded.
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+NEVER call this function with an <TT CLASS="parameter"><I>origstream</I></TT> that is reference by a file pointer
+in a PHP script! This function may cause the underlying stream to be closed which could cause a crash
+when the script next accesses the file pointer!
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+In many cases, this function can only succeed when <TT CLASS="parameter"><I>origstream</I></TT> is a newly opened
+stream with no data buffered in the stream layer. For that reason, and because this function is complicated to
+use correctly, it is recommended that you use <B CLASS="function">php_stream_open_wrapper()</B> and pass in
+<TT CLASS="constant"><B>PHP_STREAM_MUST_SEEK</B></TT> in your options instead of calling this function directly.
+</P></BLOCKQUOTE></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="streams.php-stream-copy-to-mem.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="streams.php-stream-cast.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">php_stream_copy_to_mem</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="stream.common-api.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">php_stream_cast</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

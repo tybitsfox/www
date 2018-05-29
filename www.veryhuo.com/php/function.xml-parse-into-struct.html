@@ -1,0 +1,102 @@
+<HTML><HEAD><TITLE>xml_parse_into_struct</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="XML 语法解析函数库" HREF="ref.xml.html"><LINK REL="PREVIOUS" TITLE="xml_get_error_code" HREF="function.xml-get-error-code.html"><LINK REL="NEXT" TITLE="xml_parse" HREF="function.xml-parse.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.xml-get-error-code.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.xml-parse.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.xml-parse-into-struct"></A>xml_parse_into_struct</H1><DIV CLASS="refnamediv"><A NAME="AEN117595"></A><P> (PHP 3&#62;= 3.0.8, PHP 4 )</P>xml_parse_into_struct&nbsp;--&nbsp;将 XML 数据解析到数组中</DIV><DIV CLASS="refsect1"><A NAME="AEN117598"></A><H2>描述</H2>int <B CLASS="methodname">xml_parse_into_struct</B> ( resource parser, string data, array &#38;values [, array &#38;index])<BR></BR><P>&#13; 该函数将 XML 文件解析到两个对应的数组中，<TT CLASS="parameter"><I>index</I></TT> 参数含有指向 <TT CLASS="parameter"><I>values</I></TT> 数组中对应值的指针。最后两个数组参数可由指针传递给函数。
+</P><P>&#13; 以下范例显示了由该函数生成的数组的内部结构。我们简单地将一个 <TT CLASS="literal">note</TT> 嵌入到一个 <TT CLASS="literal">para</TT> 标记中，解析后我们可以打印出生成的数组的结构：
+<DIV CLASS="informalexample"><A NAME="AEN117621"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$simple </font><font color="#007700">= </font><font color="#DD0000">"&lt;para&gt;&lt;note&gt;simple note&lt;/note&gt;&lt;/para&gt;"</font><font color="#007700">;<br /></font><font color="#0000BB">$p </font><font color="#007700">= </font><font color="#0000BB">xml_parser_create</font><font color="#007700">();<br /></font><font color="#0000BB">xml_parse_into_struct</font><font color="#007700">(</font><font color="#0000BB">$p</font><font color="#007700">,</font><font color="#0000BB">$simple</font><font color="#007700">,</font><font color="#0000BB">$vals</font><font color="#007700">,</font><font color="#0000BB">$index</font><font color="#007700">);<br /></font><font color="#0000BB">xml_parser_free</font><font color="#007700">(</font><font color="#0000BB">$p</font><font color="#007700">);<br />echo </font><font color="#DD0000">"Index array\n"</font><font color="#007700">;<br /></font><font color="#0000BB">print_r</font><font color="#007700">(</font><font color="#0000BB">$index</font><font color="#007700">);<br />echo </font><font color="#DD0000">"\nVals array\n"</font><font color="#007700">;<br /></font><font color="#0000BB">print_r</font><font color="#007700">(</font><font color="#0000BB">$vals</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P>&#13; 运行以上代码，我们得到的输出将是：
+</P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">Index array
+Array
+(
+    [PARA] =&#62; Array
+        (
+            [0] =&#62; 0
+            [1] =&#62; 2
+        )
+
+    [NOTE] =&#62; Array
+        (
+            [0] =&#62; 1
+        )
+
+)
+
+Vals array
+Array
+(
+    [0] =&#62; Array
+        (
+            [tag] =&#62; PARA
+            [type] =&#62; open
+            [level] =&#62; 1
+        )
+
+    [1] =&#62; Array
+        (
+            [tag] =&#62; NOTE
+            [type] =&#62; complete
+            [level] =&#62; 2
+            [value] =&#62; simple note
+        )
+
+    [2] =&#62; Array
+        (
+            [tag] =&#62; PARA
+            [type] =&#62; close
+            [level] =&#62; 1
+        )
+
+)</PRE></TD></TR></TABLE><P></P></DIV>
+</P><P>&#13; 如果您的 XML 文档很复杂，基于该文档的事件处理（Event-driven）解析（基于 expat 扩展库）也会对应的变得复杂。该函数生成的并非 DOM 风格的对象，而是横向的树状结构。因此，我们能够方便的建立表达 XML 文件数据的对象。我们假设以下 XML 文件表示一个关于氨基酸信息的小型数据库：
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN117626"></A><P><B>例子 1. moldb.xml - 分子信息的小型数据库</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="xml">&#60;?xml version="1.0"?&#62;
+&#60;moldb&#62;
+
+    &#60;molecule&#62;
+        &#60;name&#62;Alanine&#60;/name&#62;
+        &#60;symbol&#62;ala&#60;/symbol&#62;
+        &#60;code&#62;A&#60;/code&#62;
+        &#60;type&#62;hydrophobic&#60;/type&#62;
+    &#60;/molecule&#62;
+
+    &#60;molecule&#62;
+        &#60;name&#62;Lysine&#60;/name&#62;
+        &#60;symbol&#62;lys&#60;/symbol&#62;
+        &#60;code&#62;K&#60;/code&#62;
+        &#60;type&#62;charged&#60;/type&#62;
+    &#60;/molecule&#62;
+
+&#60;/moldb&#62;</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+以下是解析该文档并生成相应对象的代码：
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN117629"></A><P><B>例子 2.
+parsemoldb.php - 将 moldb.xml 解析到分子（molecular）对象的数组中
+</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /><br /></font><font color="#007700">class </font><font color="#0000BB">AminoAcid </font><font color="#007700">{<br />&nbsp;&nbsp;&nbsp;&nbsp;var </font><font color="#0000BB">$name</font><font color="#007700">;&nbsp;&nbsp;</font><font color="#FF8000">// aa name<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">var </font><font color="#0000BB">$symbol</font><font color="#007700">;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// three letter symbol<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">var </font><font color="#0000BB">$code</font><font color="#007700">;&nbsp;&nbsp;</font><font color="#FF8000">// one letter code<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">var </font><font color="#0000BB">$type</font><font color="#007700">;&nbsp;&nbsp;</font><font color="#FF8000">// hydrophobic, charged or neutral<br />&nbsp;&nbsp;&nbsp;&nbsp;<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">function </font><font color="#0000BB">AminoAcid </font><font color="#007700">(</font><font color="#0000BB">$aa</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach (</font><font color="#0000BB">$aa </font><font color="#007700">as </font><font color="#0000BB">$k</font><font color="#007700">=&gt;</font><font color="#0000BB">$v</font><font color="#007700">)<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">$k </font><font color="#007700">= </font><font color="#0000BB">$aa</font><font color="#007700">[</font><font color="#0000BB">$k</font><font color="#007700">];<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />}<br /><br />function </font><font color="#0000BB">readDatabase</font><font color="#007700">(</font><font color="#0000BB">$filename</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// read the xml database of aminoacids<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$data </font><font color="#007700">= </font><font color="#0000BB">implode</font><font color="#007700">(</font><font color="#DD0000">""</font><font color="#007700">,</font><font color="#0000BB">file</font><font color="#007700">(</font><font color="#0000BB">$filename</font><font color="#007700">));<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$parser </font><font color="#007700">= </font><font color="#0000BB">xml_parser_create</font><font color="#007700">();<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">xml_parser_set_option</font><font color="#007700">(</font><font color="#0000BB">$parser</font><font color="#007700">,</font><font color="#0000BB">XML_OPTION_CASE_FOLDING</font><font color="#007700">,</font><font color="#0000BB">0</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">xml_parser_set_option</font><font color="#007700">(</font><font color="#0000BB">$parser</font><font color="#007700">,</font><font color="#0000BB">XML_OPTION_SKIP_WHITE</font><font color="#007700">,</font><font color="#0000BB">1</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">xml_parse_into_struct</font><font color="#007700">(</font><font color="#0000BB">$parser</font><font color="#007700">,</font><font color="#0000BB">$data</font><font color="#007700">,</font><font color="#0000BB">$values</font><font color="#007700">,</font><font color="#0000BB">$tags</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">xml_parser_free</font><font color="#007700">(</font><font color="#0000BB">$parser</font><font color="#007700">);<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// loop through the structures<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">foreach (</font><font color="#0000BB">$tags </font><font color="#007700">as </font><font color="#0000BB">$key</font><font color="#007700">=&gt;</font><font color="#0000BB">$val</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (</font><font color="#0000BB">$key </font><font color="#007700">== </font><font color="#DD0000">"molecule"</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$molranges </font><font color="#007700">= </font><font color="#0000BB">$val</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// each contiguous pair of array entries are the <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// lower and upper range for each molecule definition<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">for (</font><font color="#0000BB">$i</font><font color="#007700">=</font><font color="#0000BB">0</font><font color="#007700">; </font><font color="#0000BB">$i </font><font color="#007700">&lt; </font><font color="#0000BB">count</font><font color="#007700">(</font><font color="#0000BB">$molranges</font><font color="#007700">); </font><font color="#0000BB">$i</font><font color="#007700">+=</font><font color="#0000BB">2</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$offset </font><font color="#007700">= </font><font color="#0000BB">$molranges</font><font color="#007700">[</font><font color="#0000BB">$i</font><font color="#007700">] + </font><font color="#0000BB">1</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$len </font><font color="#007700">= </font><font color="#0000BB">$molranges</font><font color="#007700">[</font><font color="#0000BB">$i </font><font color="#007700">+ </font><font color="#0000BB">1</font><font color="#007700">] - </font><font color="#0000BB">$offset</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$tdb</font><font color="#007700">[] = </font><font color="#0000BB">parseMol</font><font color="#007700">(</font><font color="#0000BB">array_slice</font><font color="#007700">(</font><font color="#0000BB">$values</font><font color="#007700">, </font><font color="#0000BB">$offset</font><font color="#007700">, </font><font color="#0000BB">$len</font><font color="#007700">));<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} else {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />&nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">$tdb</font><font color="#007700">;<br />}<br /><br />function </font><font color="#0000BB">parseMol</font><font color="#007700">(</font><font color="#0000BB">$mvalues</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;for (</font><font color="#0000BB">$i</font><font color="#007700">=</font><font color="#0000BB">0</font><font color="#007700">; </font><font color="#0000BB">$i </font><font color="#007700">&lt; </font><font color="#0000BB">count</font><font color="#007700">(</font><font color="#0000BB">$mvalues</font><font color="#007700">); </font><font color="#0000BB">$i</font><font color="#007700">++)<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$mol</font><font color="#007700">[</font><font color="#0000BB">$mvalues</font><font color="#007700">[</font><font color="#0000BB">$i</font><font color="#007700">][</font><font color="#DD0000">"tag"</font><font color="#007700">]] = </font><font color="#0000BB">$mvalues</font><font color="#007700">[</font><font color="#0000BB">$i</font><font color="#007700">][</font><font color="#DD0000">"value"</font><font color="#007700">];<br />&nbsp;&nbsp;&nbsp;&nbsp;return new </font><font color="#0000BB">AminoAcid</font><font color="#007700">(</font><font color="#0000BB">$mol</font><font color="#007700">);<br />}<br /><br /></font><font color="#0000BB">$db </font><font color="#007700">= </font><font color="#0000BB">readDatabase</font><font color="#007700">(</font><font color="#DD0000">"moldb.xml"</font><font color="#007700">);<br />echo </font><font color="#DD0000">"** Database of AminoAcid objects:\n"</font><font color="#007700">;<br /></font><font color="#0000BB">print_r</font><font color="#007700">(</font><font color="#0000BB">$db</font><font color="#007700">);<br /><br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+在执行完 <TT CLASS="filename">parsemoldb.php</TT> 后，变量 <TT CLASS="varname">$db</TT> 将包含有一个由 <B CLASS="classname">AminoAcid</B> 对象组成的数组，该脚本的输出如下：
+<DIV CLASS="informalexample"><A NAME="AEN117635"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">** Database of AminoAcid objects:
+Array
+(
+    [0] =&#62; aminoacid Object
+        (
+            [name] =&#62; Alanine
+            [symbol] =&#62; ala
+            [code] =&#62; A
+            [type] =&#62; hydrophobic
+        )
+
+    [1] =&#62; aminoacid Object
+        (
+            [name] =&#62; Lysine
+            [symbol] =&#62; lys
+            [code] =&#62; K
+            [type] =&#62; charged
+        )
+
+)</PRE></TD></TR></TABLE><P></P></DIV>
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.xml-get-error-code.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.xml-parse.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">xml_get_error_code</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.xml.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">xml_parse</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

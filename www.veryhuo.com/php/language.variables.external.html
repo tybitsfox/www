@@ -1,0 +1,110 @@
+<HTML><HEAD><TITLE>PHP 的外部变量</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="变量" HREF="language.variables.html"><LINK REL="PREVIOUS" TITLE="可变变量" HREF="language.variables.variable.html"><LINK REL="NEXT" TITLE="常量" HREF="language.constants.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="sect1" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="language.variables.variable.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 7. 变量</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="language.constants.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="sect1"><H1 CLASS="sect1"><A NAME="language.variables.external"></A>PHP 的外部变量</H1><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="language.variables.external.form"></A>HTML 表单（GET 和 POST）</H2><P>&#13; 当一个表单体交给 PHP
+脚本时，表单中的信息会自动在脚本中可用。有很多方法访问此信息，例如：
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN4339"></A><P><B>例子 7-8. 一个简单的 HTML 表单</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="html">&#60;form action="foo.php" method="POST"&#62;
+    Name:  &#60;input type="text" name="username"&#62;&#60;br&#62;
+    Email: &#60;input type="text" name="email"&#62;&#60;br&#62;
+    &#60;input type="submit" name="submit" value="Submit me!"&#62;
+&#60;/form&#62;</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; 根据特定的设置和个人的喜好，有很多种方法访问 HTML
+表单中的数据。例如：
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN4344"></A><P><B>例子 7-9. 从一个简单的 POST HTML 表单访问数据</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="html">&#60;?php
+// 自 PHP 4.1.0 起可用
+
+   print $_POST['username'];
+   print $_REQUEST['username'];
+
+   import_request_variables('p', 'p_');
+   print $p_username;
+
+// 自 PHP 3 起可用。自 PHP 5.0.0 起，这些较长的预定义变量
+// 可用 register_long_arrays 指令关闭。
+
+   print $HTTP_POST_VARS['username'];
+
+// 如果 PHP 指令 register_globals = on 时可用。不过自
+// PHP 4.2.0 起默认值为 register_globals = off。
+// 不提倡使用/依赖此种方法。
+
+   print $username;
+?&#62;</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; 使用 GET 表单也类似，只不过要用适当的 GET 预定义变量。GET
+也适用于
+QUERY_STRING（URL 中在“?”之后的信息）。因此，举例说，<TT CLASS="literal">http://www.example.com/test.php?id=3</TT>
+包含有可用 <TT CLASS="varname">$_GET['id']</TT>
+访问的 GET 数据。参见
+<A HREF="reserved.variables.html#reserved.variables.request">$_REQUEST</A> 和
+<A HREF="function.import-request-variables.html"><B CLASS="function">import_request_variables()</B></A>。
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+<A HREF="language.variables.predefined.html#language.variables.superglobals">超全局变量数组</A>，和
+<TT CLASS="varname">$_POST</TT> 以及 <TT CLASS="varname">$_GET</TT> 一样，自
+PHP 4.1.0 起可用。
+</P></BLOCKQUOTE></DIV><P>&#13; 如同所示，在 PHP 4.2.0 之前 <A HREF="configuration.directives.html#ini.register-globals">register_globals</A>
+的默认值是
+<SPAN CLASS="emphasis"><I CLASS="emphasis">on</I></SPAN>。在 PHP 3 中其值总是 on。PHP
+社区鼓励大家不要依赖此指令，建议在编码时假定其为
+<SPAN CLASS="emphasis"><I CLASS="emphasis">off</I></SPAN>。
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+<A HREF="ref.info.html#ini.magic-quotes-gpc">magic_quotes_gpc</A>
+配置指令影响到
+Get，Post 和 Cookie 的值。如果打开，值 (It's "PHP!")
+会自动转换成 (It\'s \"PHP!\")。数据库的插入就需要转义。参见
+<A HREF="function.addslashes.html"><B CLASS="function">addslashes()</B></A>，<A HREF="function.stripslashes.html"><B CLASS="function">stripslashes()</B></A> 和
+<A HREF="ref.sybase.html#ini.magic-quotes-sybase">magic_quotes_sybase</A>。
+</P></BLOCKQUOTE></DIV><P>&#13; PHP 也懂得表单变量上下文中的数组（参见<A HREF="faq.html.html">相关常见问题</A>）。例如可以将相关的变量编成组，或者用此特性从多选输入框中取得值。例如，将一个表单 POST 给自己并在提交时显示数据：
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN4370"></A><P><B>例子 7-10. 更复杂的表单变量</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#007700">if (isset(</font><font color="#0000BB">$_POST</font><font color="#007700">[</font><font color="#DD0000">'action'</font><font color="#007700">]) &amp;&amp; </font><font color="#0000BB">$_POST</font><font color="#007700">[</font><font color="#DD0000">'action'</font><font color="#007700">] == </font><font color="#DD0000">'submitted'</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;print </font><font color="#DD0000">'&lt;pre&gt;'</font><font color="#007700">;<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">print_r</font><font color="#007700">(</font><font color="#0000BB">$_POST</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;print </font><font color="#DD0000">'&lt;a href="'</font><font color="#007700">. </font><font color="#0000BB">$_SERVER</font><font color="#007700">[</font><font color="#DD0000">'PHP_SELF'</font><font color="#007700">] .</font><font color="#DD0000">'"&gt;Please try again&lt;/a&gt;'</font><font color="#007700">;<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;print </font><font color="#DD0000">'&lt;/pre&gt;'</font><font color="#007700">;<br />} else {<br /></font><font color="#0000BB">?&gt;<br /></font>&lt;form action="<font color="#0000BB">&lt;?php </font><font color="#007700">echo </font><font color="#0000BB">$_SERVER</font><font color="#007700">[</font><font color="#DD0000">'PHP_SELF'</font><font color="#007700">]; </font><font color="#0000BB">?&gt;</font>" method="POST"&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;Name:&nbsp;&nbsp;&lt;input type="text" name="personal[name]"&gt;&lt;br&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;Email: &lt;input type="text" name="personal[email]"&gt;&lt;br&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;Beer: &lt;br&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;&lt;select multiple name="beer[]"&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;option value="warthog"&gt;Warthog&lt;/option&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;option value="guinness"&gt;Guinness&lt;/option&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;option value="stuttgarter"&gt;Stuttgarter Schwabenbr漉&lt;/option&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;&lt;/select&gt;&lt;br&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;&lt;input type="hidden" name="action" value="submitted"&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;&lt;input type="submit" name="submit" value="submit me!"&gt;<br />&lt;/form&gt;<br /><font color="#0000BB">&lt;?php<br /></font><font color="#007700">}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; 在 PHP 3 中，变量使用中的数组仅限于一维数组。在
+PHP 4 中，没有此种限制。
+</P><DIV CLASS="sect3"><H3 CLASS="sect3"><A NAME="language.variables.external.form.submit"></A>IMAGE SUBMIT 变量名</H3><P>&#13; 当提交表单时，可以用一幅图像代替标准的提交按钮，用类似这样的标记：
+</P><DIV CLASS="informalexample"><A NAME="AEN4377"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="html">&#60;input type="image" src="image.gif" name="sub"&#62;</PRE></TD></TR></TABLE><P></P></DIV><P>&#13; 当用户点击到图像中的某处时，相应的表单会被传送到服务器，并加上两个变量
+sub_x 和 sub_y。它们包含了用户点击图像的坐标。有经验的用户可能会注意到被浏览器发送的实际变量名包含的是一个点而不是下划线，但
+PHP 自动将点转换成了下划线。
+</P></DIV></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="language.variables.external.cookies"></A>HTTP Cookies</H2><P>&#13; PHP 透明地支持 <A HREF="http://www.netscape.com/newsref/std/cookie_spec.html" TARGET="_top">Netscape 规范</A>定义中的
+HTTP cookies。Cookies
+是一种在远端浏览器端存储数据并能追踪或识别再次访问的用户的机制。可以用
+<A HREF="function.setcookie.html"><B CLASS="function">setcookie()</B></A>
+函数设定 cookies。Cookies 是
+HTTP 信息头中的一部分，因此
+SetCookie 函数必须在向浏览器发送任何输出之前调用。对于
+<A HREF="function.header.html"><B CLASS="function">header()</B></A> 函数也有同样的限制。Cookie
+数据会在相应的 cookie 数据数组中可用，例如
+<TT CLASS="varname">$_COOKIE</TT>，<TT CLASS="varname">$HTTP_COOKIE_VARS</TT> 和
+<TT CLASS="varname">$_REQUEST</TT>。更多细节和例子见
+<A HREF="function.setcookie.html"><B CLASS="function">setcookie()</B></A> 手册页面。
+</P><P>&#13; 如果要将多个值赋给一个 cookie 变量，必须将其赋成数组。例如：
+</P><DIV CLASS="informalexample"><A NAME="AEN4391"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />&nbsp;&nbsp;setcookie</font><font color="#007700">(</font><font color="#DD0000">"MyCookie[foo]"</font><font color="#007700">, </font><font color="#DD0000">"Testing 1"</font><font color="#007700">, </font><font color="#0000BB">time</font><font color="#007700">()+</font><font color="#0000BB">3600</font><font color="#007700">);<br />&nbsp;&nbsp;</font><font color="#0000BB">setcookie</font><font color="#007700">(</font><font color="#DD0000">"MyCookie[bar]"</font><font color="#007700">, </font><font color="#DD0000">"Testing 2"</font><font color="#007700">, </font><font color="#0000BB">time</font><font color="#007700">()+</font><font color="#0000BB">3600</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P></P></DIV><P>&#13; 这将会建立两个单独的 cookie，尽管 MyCookie
+在脚本中是一个单一的数组。如果想在仅仅一个 cookie
+中设定多个值，考虑先在值上使用
+<A HREF="function.serialize.html"><B CLASS="function">serialize()</B></A> 或
+<A HREF="function.explode.html"><B CLASS="function">explode()</B></A>。
+</P><P>&#13; 注意在浏览器中一个 cookie 会替换掉上一个同名的
+cookie，除非路径或者域不同。因此对于购物框程序可以保留一个计数器并一起传递，例如：
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN4397"></A><P><B>例子 7-11. 一个 <A HREF="function.setcookie.html"><B CLASS="function">setcookie()</B></A> 的示例</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#007700">if (isset(</font><font color="#0000BB">$_COOKIE</font><font color="#007700">[</font><font color="#DD0000">'count'</font><font color="#007700">])) {<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$count </font><font color="#007700">= </font><font color="#0000BB">$_COOKIE</font><font color="#007700">[</font><font color="#DD0000">'count'</font><font color="#007700">] + </font><font color="#0000BB">1</font><font color="#007700">;<br />} else {<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$count </font><font color="#007700">= </font><font color="#0000BB">1</font><font color="#007700">;<br />}<br /></font><font color="#0000BB">setcookie</font><font color="#007700">(</font><font color="#DD0000">"count"</font><font color="#007700">, </font><font color="#0000BB">$count</font><font color="#007700">, </font><font color="#0000BB">time</font><font color="#007700">()+</font><font color="#0000BB">3600</font><font color="#007700">);<br /></font><font color="#0000BB">setcookie</font><font color="#007700">(</font><font color="#DD0000">"Cart[$count]"</font><font color="#007700">, </font><font color="#0000BB">$item</font><font color="#007700">, </font><font color="#0000BB">time</font><font color="#007700">()+</font><font color="#0000BB">3600</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="language.variables.external.dot-in-names"></A>变量名中的点</H2><P>&#13; 通常，PHP 不会改变传递给脚本中的变量名。然而应该注意到点（dot，period，full
+stop）不是 PHP 变量名中的合法字符。至于原因，看看：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$varname</font><font color="#007700">.</font><font color="#0000BB">ext</font><font color="#007700">;&nbsp;&nbsp;</font><font color="#FF8000">/* 非法变量名 */<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE>
+这时，解析器看到是一个名为
+<TT CLASS="varname">$varname</TT>
+的变量，后面跟着一个字符串连接运算符，后面跟着一个裸字符串（例如没有加引号的字符串，且不匹配任何已知的健名或保留字）'ext'。很明显这不是想要的结果。
+</P><P>&#13; 出于此原因，要注意 PHP
+将会自动将变量名中的点替换成下划线。
+</P></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="language.variables.determining-type-of"></A>确定变量类型</H2><P>&#13; 因为 PHP 会判断变量类型并在需要时进行转换（通常情况下），因此在某一时刻给定的变量是何种类型并不明显。PHP
+包括几个函数可以判断变量的类型，例如：<A HREF="function.gettype.html"><B CLASS="function">gettype()</B></A>，<A HREF="function.is-array.html"><B CLASS="function">is_array()</B></A>，<A HREF="function.is-float.html"><B CLASS="function">is_float()</B></A>，<A HREF="function.is-int.html"><B CLASS="function">is_int()</B></A>，<A HREF="function.is-object.html"><B CLASS="function">is_object()</B></A> 和
+<A HREF="function.is-string.html"><B CLASS="function">is_string()</B></A>。参见<A HREF="language.types.html">类型</A>一章。
+</P></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="language.variables.variable.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="language.constants.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">可变变量</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="language.variables.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">常量</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

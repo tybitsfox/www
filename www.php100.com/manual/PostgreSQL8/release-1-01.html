@@ -1,0 +1,258 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>版本 1.01 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="版本" HREF="release.html"><LINK REL="PREVIOUS" TITLE="版本 1.02" HREF="release-1-02.html"><LINK REL="NEXT" TITLE="版本 1.0" HREF="release-1-0.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="release-1-02.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="release.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Appendix E. 版本</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="release.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="release-1-0.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="RELEASE-1-01" >E.63. 版本 1.01</A
+></H1
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>发布日期: </B
+>1996-02-23</P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN78589" >E.63.1. 从 v1.0 迁移到 v1.01</A
+></H2
+><P
+>1996-02-23</P
+><P
+>下面信息是给那些希望将数据库从 postgres95 1.0 向
+ postgres95 1.01 迁移的用户的一些有用信息．</P
+><P
+>如果你是刚刚安装完成 postgres95 1.01 并且没有需要迁移的旧数据库，
+那么你不需要阅读下面部分．</P
+><P
+>如果要把postgres95 版本 1.0 的数据库向 postgres95 版本 1.01 迁移，
+需要进行下面的步骤：</P
+><DIV
+CLASS="PROCEDURE"
+><OL
+TYPE="1"
+><LI
+><P
+>把文件 src/Makefile.global 里的变量 NAMEDATALEN 定义为16，
+OIDNAMELEN 定义为 20．</P
+></LI
+><LI
+><P
+>决定自己是否需要以主机为基础的认证（HBA）．</P
+><OL
+CLASS="SUBSTEPS"
+TYPE="a"
+><LI
+><P
+>如果你需要这么做，
+你必须在顶级数据目录（通常是你的环境变量$PGDATA的值）里创建一个名为
+         "pg_hba" 的文件．我们在例子语法里用 src/libpq/pg_hba 代表．</P
+></LI
+><LI
+><P
+>如果你不需要这样以主机为基础的认证，
+你可以把 src/Makefile.global 里的下面这行注释掉
+</P><PRE
+CLASS="PROGRAMLISTING"
+>        HBA = 1</PRE
+><P></P
+><P
+>要注意缺省时以主机为基础的认证（HBA）是打开的，
+而且如果你不做上面所说的步骤A或B中的其
+中一步，其他主机上（out-of-the-box）的1.01版本将不允许你与1.0的数据库联接．</P
+></LI
+></OL
+></LI
+><LI
+><P
+>编译和安装 1.01，但是不要执行 initdb 步骤．</P
+></LI
+><LI
+><P
+>在进行下一步之前，宕掉1.0的postmaster进程，然后备份你现有的 $PGDATA 目录．</P
+></LI
+><LI
+><P
+>把你的 PGDATA 环境变量设置为你的 1.0 的库（的位置），
+但是把路径设置成1.01的可执行文件路径．</P
+></LI
+><LI
+><P
+>把文件 $PGDATA/PG_VERSION 从5.0修改成5.1</P
+></LI
+><LI
+><P
+>运行新的1.01的postmaster．</P
+></LI
+><LI
+><P
+>把1.01的新的内建的函数和操作符追加到1.0的数据库中去．
+这一步是通过在你的1.0的库上运行1.01的服务
+     器，并且对之运行下面的查询来实现的．
+假如我们把下面查询拷贝到一个文件 1.0_to_1.01.sql 里去，那么我
+     们可以通过psql很容易完整升级工作．假设你的1.0数据库名为"testdb"：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>        % psql testdb -f 1.0_to_1.01.sql</PRE
+><P>
+
+然后执行下面命令（可以从下面剪切和拷贝）：
+
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>-- add builtin functions that are new to 1.01
+
+create function int4eqoid (int4, oid) returns bool as 'foo'
+language 'internal';
+create function oideqint4 (oid, int4) returns bool as 'foo'
+language 'internal';
+create function char2icregexeq (char2, text) returns bool as 'foo'
+language 'internal';
+create function char2icregexne (char2, text) returns bool as 'foo'
+language 'internal';
+create function char4icregexeq (char4, text) returns bool as 'foo'
+language 'internal';
+create function char4icregexne (char4, text) returns bool as 'foo'
+language 'internal';
+create function char8icregexeq (char8, text) returns bool as 'foo'
+language 'internal';
+create function char8icregexne (char8, text) returns bool as 'foo'
+language 'internal';
+create function char16icregexeq (char16, text) returns bool as 'foo'
+language 'internal';
+create function char16icregexne (char16, text) returns bool as 'foo'
+language 'internal';
+create function texticregexeq (text, text) returns bool as 'foo'
+language 'internal';
+create function texticregexne (text, text) returns bool as 'foo'
+language 'internal';
+
+-- add builtin functions that are new to 1.01
+
+create operator = (leftarg = int4, rightarg = oid, procedure = int4eqoid);
+create operator = (leftarg = oid, rightarg = int4, procedure = oideqint4);
+create operator ~* (leftarg = char2, rightarg = text, procedure = char2icregexeq);
+create operator !~* (leftarg = char2, rightarg = text, procedure = char2icregexne);
+create operator ~* (leftarg = char4, rightarg = text, procedure = char4icregexeq);
+create operator !~* (leftarg = char4, rightarg = text, procedure = char4icregexne);
+create operator ~* (leftarg = char8, rightarg = text, procedure = char8icregexeq);
+create operator !~* (leftarg = char8, rightarg = text, procedure = char8icregexne);
+create operator ~* (leftarg = char16, rightarg = text, procedure = char16icregexeq);
+create operator !~* (leftarg = char16, rightarg = text, procedure = char16icregexne);
+create operator ~* (leftarg = text, rightarg = text, procedure = texticregexeq);
+create operator !~* (leftarg = text, rightarg = text, procedure = texticregexne);</PRE
+><P></P
+></LI
+></OL
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN78621" >E.63.2. 修改列表</A
+></H2
+><P
+></P><PRE
+CLASS="PROGRAMLISTING"
+>不兼容性：
+ * 1.01 is backwards compatible with 1.0 database provided the user
+   follow the steps outlined in the MIGRATION_from_1.0_to_1.01 file.
+   If those steps are not taken, 1.01 is not compatible with 1.0 database.
+
+增强:
+ * added PQdisplayTuples() to libpq and changed monitor and psql to use it
+ * added NeXT port (requires SysVIPC implementation)
+ * added CAST .. AS ... syntax
+ * added ASC and DESC keywords
+ * added 'internal' as a possible language for CREATE FUNCTION
+   internal functions are C functions which have been statically linked
+   into the postgres backend.
+ * a new type "name" has been added for system identifiers (table names,
+   attribute names, etc.)  This replaces the old char16 type.   The
+   of name is set by the NAMEDATALEN #define in src/Makefile.global
+ * a readable reference manual that describes the query language.
+ * added host-based access control.  A configuration file ($PGDATA/pg_hba)
+   is used to hold the configuration data.  If host-based access control
+   is not desired, comment out HBA=1 in src/Makefile.global.
+ * changed regex handling to be uniform use of Henry Spencer's regex code
+   regardless of platform.  The regex code is included in the distribution
+ * added functions and operators for case-insensitive regular expressions. 
+   The operators are ~* and !~*.
+ * pg_dump uses COPY instead of SELECT loop for better performance
+
+臭虫修补∶
+ * fixed an optimizer bug that was causing core dumps when 
+   functions calls were used in comparisons in the WHERE clause
+ * changed all uses of getuid to geteuid so that effective uids are used
+ * psql now returns non-zero status on errors when using -c
+ * applied public patches 1-14</PRE
+><P></P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="release-1-02.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="release-1-0.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >版本 1.02</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="release.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >版本 1.0</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

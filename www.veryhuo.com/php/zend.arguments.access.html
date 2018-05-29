@@ -1,0 +1,149 @@
+<HTML><HEAD><TITLE>Accessing Arguments</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Accepting Arguments" HREF="zend.arguments.html"><LINK REL="PREVIOUS" TITLE="Dealing with a Variable Number of Arguments/Optional Parameters" HREF="zend.arguments.variable.html"><LINK REL="NEXT" TITLE="Dealing with Arguments Passed by Reference" HREF="zend.arguments.by-reference.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="section" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="zend.arguments.variable.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 32. Accepting Arguments</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="zend.arguments.by-reference.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="section"><H1 CLASS="section"><A NAME="zend.arguments.access"></A>Accessing Arguments</H1><P>&#13; To access arguments, it's necessary for each argument to have a
+clearly defined type. Again, PHP's extremely dynamic nature
+introduces some quirks. Because PHP never does any kind of type
+checking, it's possible for a caller to pass any kind of data to
+your functions, whether you want it or not. If you expect an
+integer, for example, the caller might pass an array, and vice
+versa - PHP simply won't notice.
+</P><P>&#13; To work around this, you have to use a set of API functions to
+force a type conversion on every argument that's being passed (see
+<A HREF="zend.arguments.access.html#tab.arg-conv">表格 32-1</A>).
+</P><P>&#13; <SPAN CLASS="emphasis"><I CLASS="emphasis">Note:</I></SPAN> All conversion functions expect a
+<TT CLASS="envar">**zval</TT> as parameter.
+</P><DIV CLASS="table"><A NAME="tab.arg-conv"></A><P><B>表格 32-1. Argument Conversion Functions</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Function</TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Description</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">convert_to_boolean_ex()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Forces conversion to a Boolean type. Boolean values remain
+untouched. Longs, doubles, and strings containing
+<TT CLASS="literal">0</TT> as well as NULL values will result in
+Boolean <TT CLASS="literal">0</TT> (FALSE). Arrays and objects are
+converted based on the number of entries or properties,
+respectively, that they have. Empty arrays and objects are
+converted to FALSE; otherwise, to TRUE. All other values
+result in a Boolean <TT CLASS="literal">1</TT> (TRUE).
+</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">convert_to_long_ex()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Forces conversion to a long, the default integer type. NULL
+values, Booleans, resources, and of course longs remain
+untouched. Doubles are truncated. Strings containing an
+integer are converted to their corresponding numeric
+representation, otherwise resulting in <TT CLASS="literal">0</TT>.
+Arrays and objects are converted to <TT CLASS="literal">0</TT> if
+empty, <TT CLASS="literal">1</TT> otherwise.
+</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">convert_to_double_ex()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Forces conversion to a double, the default floating-point
+type. NULL values, Booleans, resources, longs, and of course
+doubles remain untouched. Strings containing a number are
+converted to their corresponding numeric representation,
+otherwise resulting in <TT CLASS="literal">0.0</TT>. Arrays and
+objects are converted to <TT CLASS="literal">0.0</TT> if empty,
+<TT CLASS="literal">1.0</TT> otherwise.
+</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">convert_to_string_ex()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Forces conversion to a string. Strings remain untouched. NULL
+values are converted to an empty string. Booleans containing
+TRUE are converted to <TT CLASS="literal">"1"</TT>, otherwise
+resulting in an empty string. Longs and doubles are converted
+to their corresponding string representation. Arrays are
+converted to the string <TT CLASS="literal">"Array"</TT> and
+objects to the string <TT CLASS="literal">"Object"</TT>.
+</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">convert_to_array_ex(value)</TT></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Forces conversion to an array. Arrays remain untouched.
+Objects are converted to an array by assigning all their
+properties to the array table. All property names are used as
+keys, property contents as values. NULL values are converted
+to an empty array. All other values are converted to an array
+that contains the specific source value in the element with
+the key <TT CLASS="literal">0</TT>.
+</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">convert_to_object_ex(value)</TT></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Forces conversion to an object. Objects remain untouched.
+NULL values are converted to an empty object. Arrays are
+converted to objects by introducing their keys as properties
+into the objects and their values as corresponding property
+contents in the object. All other types result in an object
+with the property <TT CLASS="literal">scalar</TT> , having the
+corresponding source value as content.
+</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">convert_to_null_ex(value)</TT></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Forces the type to become a NULL value, meaning empty.</TD></TR></TBODY></TABLE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+You can find a demonstration of the behavior in
+<TT CLASS="filename">cross_conversion.php</TT> on the accompanying
+CD-ROM. <A HREF="zend.arguments.access.html#fig.cross-convert">图形 32-2</A> shows the output.
+</P></BLOCKQUOTE></DIV><DIV CLASS="figure"><A NAME="fig.cross-convert"></A><P><B>图形 32-2. Cross-conversion behavior of PHP.</B></P><P><IMG SRC="figures/Extending_Zend_4_cross_converter.png"></P></DIV><P>&#13; Using these functions on your arguments will ensure type safety
+for all data that's passed to you. If the supplied type doesn't
+match the required type, PHP forces dummy contents on the
+resulting value (empty strings, arrays, or objects,
+<TT CLASS="literal">0</TT> for numeric values, <TT CLASS="literal">FALSE</TT>
+for Booleans) to ensure a defined state.
+</P><P>&#13; Following is a quote from the sample module discussed
+previously, which makes use of the conversion functions:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">zval **parameter;
+
+if((ZEND_NUM_ARGS() != 1) || (zend_get_parameters_ex(1, &#38;parameter) != SUCCESS))
+{
+    WRONG_PARAM_COUNT;
+}
+
+convert_to_long_ex(parameter);
+
+RETURN_LONG(Z_LVAL_P(parameter));</PRE></TD></TR></TABLE>
+After retrieving the parameter pointer, the parameter value is
+converted to a long (an integer), which also forms the return value of
+this function. Understanding access to the contents of the value requires a
+short discussion of the <TT CLASS="envar">zval</TT> type, whose definition is shown in <A HREF="zend.arguments.access.html#example.zval-typedef">例子 32-2</A>.
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="example.zval-typedef"></A><P><B>例子 32-2. PHP/Zend <TT CLASS="envar">zval</TT> type definition.</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">typedef pval zval;
+     
+typedef struct _zval_struct zval;
+
+typedef union _zvalue_value {
+	long lval;					/* long value */
+	double dval;				/* double value */
+	struct {
+		char *val;
+		int len;
+	} str;
+	HashTable *ht;				/* hash table value */
+	struct {
+		zend_class_entry *ce;
+		HashTable *properties;
+	} obj;
+} zvalue_value;
+
+struct _zval_struct {
+	/* Variable information */
+	zvalue_value value;		/* value */
+	unsigned char type;	/* active type */
+	unsigned char is_ref;
+	short refcount;
+};</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE><P>&#13; Actually, <TT CLASS="envar">pval</TT> (defined in <TT CLASS="filename">php.h</TT>) is
+only an alias of <TT CLASS="envar">zval</TT> (defined in <TT CLASS="filename">zend.h</TT>),
+which in turn refers to <TT CLASS="envar">_zval_struct</TT>. This is a most interesting
+structure. <TT CLASS="envar">_zval_struct</TT> is the "master" structure, containing
+the value structure, type, and reference information. The substructure
+<TT CLASS="envar">zvalue_value</TT> is a union that contains the variable's contents.
+Depending on the variable's type, you'll have to access different members of
+this union. For a description of both structures, see
+<A HREF="zend.arguments.access.html#tab.struct-zval">表格 32-2</A>,
+<A HREF="zend.arguments.access.html#tab.struct-zvalue-value">表格 32-3</A> and
+<A HREF="zend.arguments.access.html#tab.ztype-constants">表格 32-4</A>.
+</P><DIV CLASS="table"><A NAME="tab.struct-zval"></A><P><B>表格 32-2. Zend <TT CLASS="envar">zval</TT> Structure</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE">Entry</TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Description</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">value</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Union containing this variable's contents. See
+<A HREF="zend.arguments.access.html#tab.struct-zvalue-value">表格 32-3</A> for a description.
+</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">type</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Contains this variable's type. For a list of available
+types, see <A HREF="zend.arguments.access.html#tab.ztype-constants">表格 32-4</A>.
+</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">is_ref</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; 0 means that this variable is not a reference; 1 means that this variable is a reference to another variable.
+</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">refcount</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; The number of references that exist for this variable. For
+every new reference to the value stored in this variable,
+this counter is increased by 1. For every lost reference,
+this counter is decreased by 1. When the reference counter
+reaches 0, no references exist to this value anymore, which
+causes automatic freeing of the value.
+</TD></TR></TBODY></TABLE></DIV><DIV CLASS="table"><A NAME="tab.struct-zvalue-value"></A><P><B>表格 32-3. Zend <TT CLASS="envar">zvalue_value</TT> Structure</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE">Entry</TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Description</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">lval</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Use this property if the variable is of the
+type <TT CLASS="literal">IS_LONG</TT>,
+<TT CLASS="literal">IS_BOOLEAN</TT>, or <TT CLASS="literal">IS_RESOURCE</TT>.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">dval</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Use this property if the variable is of the
+type <TT CLASS="literal">IS_DOUBLE</TT>.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">str</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; This structure can be used to access variables of
+the type <TT CLASS="literal">IS_STRING</TT>. The member <TT CLASS="envar">len</TT> contains the
+string length; the member <TT CLASS="envar">val</TT> points to the string itself. Zend
+uses C strings; thus, the string length contains a trailing
+<TT CLASS="literal">0x00</TT>.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">ht</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">This entry points to the variable's hash table entry if the variable is an array.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">obj</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Use this property if the variable is of the
+type <TT CLASS="literal">IS_OBJECT</TT>.</TD></TR></TBODY></TABLE></DIV><DIV CLASS="table"><A NAME="tab.ztype-constants"></A><P><B>表格 32-4. Zend Variable Type Constants</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE">Constant</TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Description</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">IS_NULL</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Denotes a NULL (empty) value.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">IS_LONG</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">A long (integer) value.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">IS_DOUBLE</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">A double (floating point) value.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">IS_STRING</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">A string.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">IS_ARRAY</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Denotes an array.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">IS_OBJECT</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">An object.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">IS_BOOL</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">A Boolean value.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">IS_RESOURCE</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">A resource (for a discussion of resources, see the
+appropriate section below).</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">IS_CONSTANT</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">A constant (defined) value.</TD></TR></TBODY></TABLE></DIV><P>&#13; To access a long you access <TT CLASS="envar">zval.value.lval</TT>, to
+access a double you use <TT CLASS="envar">zval.value.dval</TT>, and so on.
+Because all values are stored in a union, trying to access data
+with incorrect union members results in meaningless output.
+</P><P>&#13; Accessing arrays and objects is a bit more complicated and
+is discussed later.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="zend.arguments.variable.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="zend.arguments.by-reference.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Dealing with a Variable Number of Arguments/Optional Parameters</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="zend.arguments.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Dealing with Arguments Passed by Reference</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

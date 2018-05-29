@@ -1,0 +1,262 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>SPI_cursor_open PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="接口函数" HREF="spi.html#SPI-INTERFACE"><LINK REL="PREVIOUS" TITLE="SPI_execp" HREF="spi-spi-execp.html"><LINK REL="NEXT" TITLE="SPI_cursor_find" HREF="spi-spi-cursor-find.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="spi-spi-execp.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="spi-spi-execp.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="spi-spi-cursor-find.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="spi-spi-cursor-find.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SPI-SPI-CURSOR-OPEN" >SPI_cursor_open</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN37349" ></A
+><H2
+>Name</H2
+>SPI_cursor_open&nbsp;--&nbsp;用 <TT
+CLASS="FUNCTION"
+>SPI_prepare</TT
+> 创建的规划设置一个游标</DIV
+><A NAME="AEN37353" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN37355" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>Portal SPI_cursor_open(const char * <TT
+CLASS="PARAMETER"
+>name</TT
+>, void * <TT
+CLASS="PARAMETER"
+>plan</TT
+>,
+                       Datum * <TT
+CLASS="PARAMETER"
+>values</TT
+>, const char * <TT
+CLASS="PARAMETER"
+>nulls</TT
+>,
+                       bool <TT
+CLASS="PARAMETER"
+>read_only</TT
+>)</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN37362" ></A
+><H2
+>描述</H2
+><P
+>   <TT
+CLASS="FUNCTION"
+>SPI_cursor_open</TT
+> 设置一个游标（内部叫入口），
+   这个游标可以执行 <TT
+CLASS="FUNCTION"
+>SPI_prepare</TT
+> 准备的规划。
+   参数和对应的<TT
+CLASS="FUNCTION"
+>SPI_execute_plan</TT
+>参数具有相同的含义。
+  </P
+><P
+>   使用游标而不是直接执行规划有两个优点。首先，结果行可以每次检索一小部分，
+   避免那些返回大量数据行的查询造成的内存缺乏。
+   第二，一个入口可以在当前过程之外存货（实际上，它可以活到当前事务的结尾）。
+   给过程的调用者返回一个入口名是一种返回行结果集的方法。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN37369" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>const char * <TT
+CLASS="PARAMETER"
+>name</TT
+></TT
+></DT
+><DD
+><P
+>      入口的名字，或者是用 <TT
+CLASS="SYMBOL"
+>NULL</TT
+>，让系统选择一个名字
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>void * <TT
+CLASS="PARAMETER"
+>plan</TT
+></TT
+></DT
+><DD
+><P
+>      执行规划（<TT
+CLASS="FUNCTION"
+>SPI_prepare</TT
+> 返回的东西）
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>Datum * <TT
+CLASS="PARAMETER"
+>values</TT
+></TT
+></DT
+><DD
+><P
+>     一个实际参数值的数组。必须和规划的参数个数等长。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>const char *<TT
+CLASS="PARAMETER"
+>nulls</TT
+></TT
+></DT
+><DD
+><P
+>      一个描述那些参数是空值的数组。必须和规划的参数个数等长。
+      <TT
+CLASS="LITERAL"
+>n</TT
+> 表示一个空值（在 <TT
+CLASS="PARAMETER"
+>values</TT
+> 里对应的元素将被忽略）；
+      一个空白表示一个非空值（在 <TT
+CLASS="PARAMETER"
+>values</TT
+> 里的条目是有效的）。
+     </P
+><P
+>      如果 <TT
+CLASS="PARAMETER"
+>nulls</TT
+> 是 <TT
+CLASS="SYMBOL"
+>NULL</TT
+> 那么 <TT
+CLASS="FUNCTION"
+>SPI_cursor_open</TT
+> 假设没有参数是空。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>bool <TT
+CLASS="PARAMETER"
+>read_only</TT
+></TT
+></DT
+><DD
+><P
+>      对于只读的执行为 <TT
+CLASS="LITERAL"
+>true</TT
+>。
+     </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN37412" ></A
+><H2
+>返回值</H2
+><P
+>   指向包含入口游标的指针，或者是错误的时候是 <TT
+CLASS="SYMBOL"
+>NULL</TT
+>。
+  </P
+><P
+>  成功时，
+   <TT
+CLASS="VARNAME"
+>SPI_processed</TT
+> 和
+   <TT
+CLASS="VARNAME"
+>SPI_tuptable</TT
+> 的设置与
+   <TT
+CLASS="FUNCTION"
+>SPI_execute</TT
+> 同。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="spi-spi-execp.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="spi-spi-cursor-find.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >SPI_execp</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="spi.html#SPI-INTERFACE" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >SPI_cursor_find</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

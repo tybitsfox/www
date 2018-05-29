@@ -1,0 +1,336 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>开发 PL/pgSQL 的一些提示 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="PL/pgSQL - SQL 过程语言" HREF="plpgsql.html"><LINK REL="PREVIOUS" TITLE="PL/pgSQL - SQL 过程语言" HREF="plpgsql.html"><LINK REL="NEXT" TITLE="PL/pgSQL的结构" HREF="plpgsql-structure.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="plpgsql.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="plpgsql.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 36. <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> - <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 过程语言</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="plpgsql.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="plpgsql-structure.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="PLPGSQL-DEVELOPMENT-TIPS" >36.2. 开发 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 的一些提示</A
+></H1
+><P
+>	用<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>
+	做开发的一个好方法是简单地使用你喜欢的文本编辑器创建你的函数，然后在另外一个控制台里，
+	用 <TT
+CLASS="COMMAND"
+>psql</TT
+> 装载这些函数。如果你用这种方法，
+	那么用 <TT
+CLASS="COMMAND"
+>CREATE OR REPLACE FUNCTION</TT
+> 写函数是个好主意。这样，你就可以重载文件以更新函数定义。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE OR REPLACE FUNCTION testfunc(integer) RETURNS integer AS $$
+    ....
+END;
+$$ LANGUAGE plpgsql;</PRE
+><P>
+   </P
+><P
+>	在运行 <TT
+CLASS="COMMAND"
+>psql</TT
+> 的时候，你可以用下面命令装载或者重载这样的函数定义文件
+</P><PRE
+CLASS="PROGRAMLISTING"
+>\i filename.sql</PRE
+><P>
+	然后马上发出 SQL 命令测试该函数。
+   </P
+><P
+>	另外一个开发<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>程序的好方法是用一种 GUI 的数据库访问工具，并且是实现了过程语言开发设施的那种。
+	这种工具中的一种就是 <SPAN
+CLASS="APPLICATION"
+>pgaccess</SPAN
+>，当然还有其他的。
+	这些工具通常提供了一些很有用的功能，比如逃逸单引号，令重建和调试函数更简单等。
+   </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="PLPGSQL-QUOTE-TIPS" >36.2.1. 处理引号</A
+></H2
+><P
+>	<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 函数的代码都是在 <TT
+CLASS="COMMAND"
+>CREATE FUNCTION</TT
+> 里以一个字串文本的方式声明的。
+	如果你用两边包围单引号的常规方式写字串文本，那么任何函数体内的单引号都必须写双份；类似的是反斜杠也必须双份。
+	双份引号非常乏味，在更复杂的场合下，代码可能会让人难以理解，
+	因为你很容易发现自己需要半打甚至更多相连的引号。
+	我们建议你用<SPAN
+CLASS="QUOTE"
+>"美元符包围"</SPAN
+>的字串文本来写函数体。
+	（参阅 <A HREF="sql-syntax.html#SQL-SYNTAX-DOLLAR-QUOTING" >Section 4.1.2.2</A
+>）。
+	使用美元符包围的时候，你从不需要对任何引号写双份，
+	只需要为每层引号包围嵌套选择一个不同的美元符号包围分隔符即可。
+	比如，你可能这么写 <TT
+CLASS="COMMAND"
+>CREATE FUNCTION</TT
+> 命令
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE OR REPLACE FUNCTION testfunc(integer) RETURNS integer AS $PROC$
+          ....
+$PROC$ LANGUAGE plpgsql;</PRE
+><P>
+	在这个函数体里，你可以在 SQL 命令里使用单引号包围文本字串，
+	用 <TT
+CLASS="LITERAL"
+>$$</TT
+> 分隔那些你用来当成字串组装的 SQL 命令的片断。
+	如果你需要对包含 <TT
+CLASS="LITERAL"
+>$$</TT
+> 的文本进行引号包围，你可以使用 <TT
+CLASS="LITERAL"
+>$Q$</TT
+> 等等。
+    </P
+><P
+>	下面的图表显示了你不使用美元符包围的时候该如何写单引号。
+	这个表在把美元符引号之前的引号包围的代码转换成某种可以理解的形式应该会有用。
+    </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>1 个单引号</DT
+><DD
+><P
+>	开始/结束函数体，比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION foo() RETURNS integer AS '
+	....
+' LANGUAGE plpgsql;</PRE
+><P>
+      在函数体内部的任何位置，问号都<I
+CLASS="EMPHASIS"
+>必须</I
+>成对出现。
+     </P
+></DD
+><DT
+>2 个单引号</DT
+><DD
+><P
+>	对于函数体内的字串文本，比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>a_output := ''Blah'';
+SELECT * FROM users WHERE f_name=''foobar'';</PRE
+><P>
+	在美元符包围的方法里，你只要写
+</P><PRE
+CLASS="PROGRAMLISTING"
+>a_output := 'Blah';
+SELECT * FROM users WHERE f_name='foobar';</PRE
+><P>
+      两种情况都是 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 分析器期望看到的东西。
+     </P
+></DD
+><DT
+>4 个单引号</DT
+><DD
+><P
+>	如果你在函数体里的字串里面需要一个单引号，比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>a_output := a_output || '' AND name LIKE ''''foobar'''' AND xyz''</PRE
+><P>
+	<TT
+CLASS="LITERAL"
+>a_output</TT
+> 会是：<TT
+CLASS="LITERAL"
+> AND name LIKE 'foobar' AND xyz</TT
+>。
+     </P
+><P
+>      使用美元符包围的方法，你可以写
+</P><PRE
+CLASS="PROGRAMLISTING"
+>a_output := a_output || $$ AND name LIKE 'foobar' AND xyz$$</PRE
+><P>
+      要小心这样的美元包围的分隔符并不是只有 <TT
+CLASS="LITERAL"
+>$$</TT
+>。
+     </P
+></DD
+><DT
+>6 个单引号</DT
+><DD
+><P
+>	如果一个在函数体里的字串中的单引号与该字串常量结尾前后相连，
+	比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>a_output := a_output || '' AND name LIKE ''''foobar''''''</PRE
+><P>
+	<TT
+CLASS="LITERAL"
+>a_output</TT
+> 的值将是：<TT
+CLASS="LITERAL"
+> AND name LIKE 'foobar'</TT
+>。
+     </P
+><P
+>      用美元符包围的方法，这些是
+</P><PRE
+CLASS="PROGRAMLISTING"
+>a_output := a_output || $$ AND name LIKE 'foobar'$$</PRE
+><P>
+     </P
+></DD
+><DT
+>10 个单引号</DT
+><DD
+><P
+>	如果你想要在字串常量里有两个单引号（它们在一起是 8 个了），
+	并且这两个单引号和该字串常量的结尾相连（又加 2 个）。
+	你可能只有在写一个生成其它函数的函数的时候，象
+	<A HREF="plpgsql-porting.html#PLPGSQL-PORTING-EX2" >Example 36-6</A
+> 里那样，才需要这么干。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>a_output := a_output || '' if v_'' ||
+    referrer_keys.kind || '' like ''''''''''
+    || referrer_keys.key_string || ''''''''''
+    then return ''''''  || referrer_keys.referrer_type
+    || ''''''; end if;'';</PRE
+><P>
+	<TT
+CLASS="LITERAL"
+>a_output</TT
+> 的数值会是：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>if v_... like ''...'' then return ''...''; end if;</PRE
+><P>
+     </P
+><P
+>      使用美元符包围的方法，变成
+</P><PRE
+CLASS="PROGRAMLISTING"
+>a_output := a_output || $$ if v_$$ || referrer_keys.kind || $$ like '$$
+    || referrer_keys.key_string || $$'
+    then return '$$  || referrer_keys.referrer_type
+    || $$'; end if;$$;</PRE
+><P>
+      我们假设只需要在 <TT
+CLASS="LITERAL"
+>a_output</TT
+> 里放单引号，
+      因为在使用前它会被重新引号包围。
+     </P
+></DD
+></DL
+></DIV
+><P
+>    另外一个方法是用反斜杠逃逸函数体里面的单引号，而不是写双份。
+    用这个方法，你会发现自己写了很多类似 <TT
+CLASS="LITERAL"
+>\'\'</TT
+> 这样的东西，
+    而不是 <TT
+CLASS="LITERAL"
+>''''</TT
+>。有些人认为这样简单些，有些人却不这么看。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="plpgsql.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="plpgsql-structure.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> - <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 过程语言</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="plpgsql.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>的结构</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

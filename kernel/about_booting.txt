@@ -1,0 +1,53 @@
+关于使用as汇编器直接写出引导程序的实现：
+关于引导程序的写法，在赵炯的文章中使用了老式的as86和ld86来实现的，这是
+为了与原先linus先生编写该代码的环境相对应，现在的AT＆T as汇编器已经可以
+轻松的直接写出这种引导代码了。在杨文博的书中分别使用了nasm和AT&T as汇编
+实现了引导代码的编写，但是为了实现段空间定位，他使用了一个连接脚本实现
+，并且配上了一个makefile来自动完成编译、链接到镜像文件的生成。通过我的
+测试,在使用as汇编时可以直接在汇编源代码中实现连接脚本进行段定位的功能，
+这无疑简化了引导代码的编写。代码如下：
+#boot.s 源代码：
+.code16
+.text
+BOOTSRG = 0x7c0   #只需添加本行和下一行的代码，在配合链接时指定.text段地
+#址即可实现脚本定位的功能。
+	jmp $BOOTSEG,$go
+go:
+	mov %cs,%ax
+	mov %ax,%ds
+	mov %ax,%es
+	mov %ax,%ss
+	mov $0x800,%sp
+	call disp_1
+	jmp .
+disp_1:
+	mov $msg,%ax
+	mov %ax,%bp
+	mov $16,%cx
+	mov $0x1301,%ax
+	mov $0xc,%bx
+	mov $0x1206,%dx
+	int $0x10
+	ret
+msg:	.ascii "hello OS world "
+.org	510
+.word	0xaa55
+
+#makefile 源代码：
+boot.img:boot.bin
+	dd bs=512 if=boot.bin of=boot.img count=1
+	dd bs=512 if=/dev/zero of=boot.img seek=1 count=2879
+boot.bin:boot.elf
+	objcopy -R .pdr -R .comment -R .note -S -O binary boot.elf boot.bin
+boot.elf:boot.o
+	ld -o boot.elf boot.o -Ttext 0
+boot.o:boot.s
+	as -o boot.o boot.s
+clean:
+	rm boot.o boot.elf boot.bin
+
+这样就可以使用as轻松完成一个16位引导程序的编写了。
+
+
+
+

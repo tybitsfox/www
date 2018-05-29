@@ -1,0 +1,101 @@
+oracle 11g 本机应用（单位台式机）
+
+1、sqlplus登录：
+(1)sqlplus sys/password@orcl as sysdba --管理员用户使用tns别名登陆
+或者：
+sqlplus
+提示输入用户名:
+sys
+提示输入密码：
+password as sysdba
+(2)无登陆状态进入sqlplus:
+sqlplus /nolog
+此时查看用户：show user; 为空。使用sys账号连接：
+SQL>connect sys/password as sysdba
+ 新建用户
+SQL>  create user tkp1 identified by tkp1;
+授权
+SQL>  grant connect,resource to tkp1;
+退出sqlplus
+SQL>  quit
+以tkp1用进入到sqlplus
+c:\>  sqlplus tkp1/tkp1
+查看所有用户
+SQL> select * from all_users;
+退出
+SQL>  quit
+以sysdba身份进入删除tkp1用户
+c:\> sqlplus system/tukeping
+SQL> drop user tkp1 cascade;
+创建表空间
+SQL> create tablespace test1 datafile 'd:\oracle\tablespace\tabletest1.dbf' size 50M;
+创建名为tkp1的用户，其缺省表空间为test1
+SQL> create user tkp1 identified by tkp1 default tablespace test1;
+查看系统能给的所有权限
+SQL>select name from sys.system_privilege_map;
+查看当前连接用户的所有权限
+SQL> select * from user_sys_privs;
+移除tkp1的sysdba权限
+SQL> revoke sysdba from tkp1;
+SQL>commit;
+关闭oracle数据库
+SQL>shutdown immediate;
+开启oracle数据库
+SQL>startup 
+
+
+drop user xxx cascade;(删除用户下面的所有对象，注意关键字cascade)
+drop tablespace xxx INCLUDING CONTENTS;(删除表空间）
+create user user1 identified by password default tablespace users temporary temp；(创建user1，密码为password,使用的表空间为tablespace)
+grant connect,resource,dba to user1;(赋予权限）
+connect sys/密码 as sysdba; 
+ALTER USER "SCOTT" IDENTIFIED BY "*******" （修改SCOTT用户密码）
+ALTER USER "SCOTT" ACCOUNT UNLOCK（为SCOTT用户解锁）
+1.查看所有用户： 
+select * from dba_user; 
+select * from all_users; 
+select * from user_users;
+2.查看用户系统权限： 
+select * from dba_sys_privs; 
+select * from all_sys_privs; 
+select * from user_sys_privs;
+3.查看用户对象权限： 
+select * from dba_tab_privs; 
+select * from all_tab_privs; 
+select * from user_tab_privs;
+4.查看所有角色： 
+select * from dba_roles;
+5.查看用户所拥有的角色： 
+select * from dba_role_privs; 
+select * from user_role_privs; 
+显示当前连接用户:show user;
+ALTER   USER   test   DEFAULT   TABLESPACE   users   QUOTA   UNLIMITED   ON   users; (修改用户默认表空间)
+ALTER   USER   test   TEMPORARY   TABLESPACE   temp;(修改用户临时空间) 
+
+
+SQL>grant dba to maiyo; 为用户maiyo赋予dba权限
+更改用户密码
+SQL>alter user maiyo identified by password;
+解锁用户
+SQL>alter user hr account unlock; 解锁hr用户；
+查看已创建用户
+SQL>select username from dba_users(或all_users);
+查看用户状态
+SQL>select username,account_status from dba_users where username='HR';
+查看用户表
+SQL>select table_name from user_tables;
+查看表结构
+SQL> desc mytable;
+创建表
+SQL>create table mytable(emp_id number(10),name varchar2(20),age number(3));
+更改表
+SQL>alter table mytable add(psd number(10));添加列
+SQL>alter table mytable drop column age;删除age列
+SQL>drop table mytable;删除表
+插入表数据
+SQL>insert into mytable(emp_id,name,age) values(1,'maiyo',24);
+更改表数据
+SQL>update mytable set age = 25 where name = 'maiyo';
+删除表数据
+SQL>delete mytable where name = 'maiyo';
+<a href='#header'>返回</a>

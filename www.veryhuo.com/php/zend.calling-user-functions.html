@@ -1,0 +1,95 @@
+<HTML><HEAD><TITLE>Calling User Functions</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Zend API" HREF="zend.html"><LINK REL="PREVIOUS" TITLE="Startup and Shutdown Functions" HREF="zend.startup-and-shutdown.html"><LINK REL="NEXT" TITLE="Initialization File Support" HREF="zend.ini-file-support.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="chapter" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="zend.startup-and-shutdown.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="zend.ini-file-support.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="chapter"><H1><A NAME="zend.calling-user-functions">章 38. Calling User Functions</A></H1><P>&#13; You can call user functions from your own modules, which is very
+handy when implementing callbacks; for example, for array walking, searching, or
+simply for event-based programs.
+</P><P>&#13; User functions can be called with the
+function <B CLASS="function">call_user_function_ex()</B>. It requires a hash value
+for the function table you want to access, a pointer to an object (if you want
+to call a method), the function name, return value, number of arguments,
+argument array, and a flag indicating whether you want to perform zval separation.
+</P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">ZEND_API int call_user_function_ex(HashTable *function_table, zval *object,
+zval *function_name, zval **retval_ptr_ptr,
+int param_count, zval **params[],
+int no_separation);</PRE></TD></TR></TABLE><P>&#13; Note that you don't have to specify both
+<TT CLASS="envar">function_table</TT> and <TT CLASS="envar">object</TT>; either
+will do. If you want to call a method, you have to supply the
+object that contains this method, in which case
+<B CLASS="function">call_user_function()</B>automatically sets the
+function table to this object's function table. Otherwise, you only
+need to specify <TT CLASS="envar">function_table</TT> and can set
+<TT CLASS="envar">object</TT> to <TT CLASS="literal">NULL</TT>.
+</P><P>&#13; Usually, the default function table is the "root" function table
+containing all function entries. This function table is part of the
+compiler globals and can be accessed using the macro
+<TT CLASS="literal">CG</TT>. To introduce the compiler globals to your
+function, call the macro <TT CLASS="literal">TSRMLS_FETCH</TT> once.
+</P><P>&#13; The function name is specified in a <TT CLASS="envar">zval</TT>
+container. This might be a bit surprising at first, but is quite a
+logical step, since most of the time you'll accept function names
+as parameters from calling functions within your script, which in
+turn are contained in <TT CLASS="envar">zval</TT> containers again. Thus,
+you only have to pass your arguments through to this function. This
+<TT CLASS="envar">zval</TT> must be of type <TT CLASS="literal">IS_STRING</TT>.
+</P><P>&#13; The next argument consists of a pointer to the return value. You
+don't have to allocate memory for this container; the function will
+do so by itself. However, you have to destroy this container (using
+<B CLASS="function">zval_dtor()</B>) afterward!
+</P><P>&#13; Next is the parameter count as integer and an array containing all
+necessary parameters. The last argument specifies whether the
+function should perform zval separation - this should always be set
+to <TT CLASS="literal">0</TT>. If set to <TT CLASS="literal">1</TT>, the
+function consumes less memory but fails if any of the parameters
+need separation.
+</P><P>&#13; <A HREF="zend.calling-user-functions.html#example.call-user-func">例子 38-1</A> shows a small demonstration of
+calling a user function. The code calls a function that's supplied
+to it as argument and directly passes this function's return value
+through as its own return value. Note the use of the constructor
+and destructor calls at the end - it might not be necessary to do
+it this way here (since they should be separate values, the
+assignment might be safe), but this is bulletproof.
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="example.call-user-func"></A><P><B>例子 38-1. Calling user functions.</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">zval **function_name;
+zval *retval;
+
+if((ZEND_NUM_ARGS() != 1) || (zend_get_parameters_ex(1, &#38;function_name) != SUCCESS))
+{
+    WRONG_PARAM_COUNT;
+}
+
+if((*function_name)-&#62;type != IS_STRING)
+{
+    zend_error(E_ERROR, "Function requires string argument");
+}
+
+TSRMSLS_FETCH();
+
+if(call_user_function_ex(CG(function_table), NULL, *function_name, &#38;retval, 0, NULL, 0) != SUCCESS)
+{
+    zend_error(E_ERROR, "Function call failed");
+}
+
+zend_printf("We have %i as type&#60;br&#62;", retval-&#62;type);
+
+*return_value = *retval;
+zval_copy_ctor(return_value);
+zval_ptr_dtor(&#38;retval);</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">&#60;?php
+
+dl("call_userland.so");
+
+function test_function()
+{
+
+    print("We are in the test function!&#60;br&#62;");
+
+    return("hello");
+
+}
+
+$return_value = call_userland("test_function");
+
+print("Return value: \"$return_value\"&#60;br&#62;");
+?&#62;</PRE></TD></TR></TABLE><P><IMG SRC="figures/Extending_Zend_11_userland.png"></P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="zend.startup-and-shutdown.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="zend.ini-file-support.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Startup and Shutdown Functions</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="zend.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Initialization File Support</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

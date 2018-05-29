@@ -1,0 +1,81 @@
+<html><head><title>范例程序</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="PREVIOUS" title="我能在一个运行着的程序中生成堆栈映象吗？" href="./x657.htm"><link rel="NEXT" title="读取进程表 - SUNOS 4 版" href="./x670.htm"></head><body class="CHAPTER" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x657.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%"></td><td align="right" valign="bottom" width="10%"><a href="./x670.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="CHAPTER"><h1><a name="AEN665">Chapter 7. 范例程序</a></h1><div class="TOC"><dl><dt><b>Table of Contents</b></dt><dt><a href="./c665.htm#AEN667">捕获 SIGCHLD 信号</a></dt><dt><a href="./x670.htm">读取进程表 - SUNOS 4 版</a></dt><dt><a href="./x673.htm">读取进程表 - SYSV 版</a></dt><dt><a href="./x676.htm">读取进程表 - AIX 4.2 版</a></dt><dt><a href="./x679.htm">使用popen函数和ps命令读取进程表</a></dt><dt><a href="./x682.htm">守护程序工具函数</a></dt><dt><a href="./x687.htm">调制解调器控制范例程序</a></dt><dt><a href="./x690.htm">事务控制范例程序</a></dt></dl></div><div class="SECT1"><h1 class="SECT1"><a name="AEN667">捕获 SIGCHLD 信号</a></h1><pre class="PROGRAMLISTING">     #include &lt;sys/types.h&gt;  /* 在任何其它 sys 下的头文件之前引用这个头文件 */
+     #include &lt;sys/wait.h&gt;   /* waitpid()和一些不同的宏所需的头文件 */
+     #include &lt;signal.h&gt;     /* 信号函数的头文件 */
+     #include &lt;stdio.h&gt;      /* fprintf函数的头文件 */
+     #include &lt;unistd.h&gt;     /* fork函数的头文件 */   
+     void sig_chld(int);     /* 我们的 SIGCHLD 信号处理函数的原形(prototype) */
+    
+     int main()
+     {
+         struct sigaction act;
+         pid_t pid;
+    
+         /* 设定sig_chld函数作为我们SIGCHLD信号的处理函数 */
+         act.sa_handler = sig_chld;
+    
+         /* 在这个范例程序里，我们不想阻塞其它信号 */
+         sigemptyset(&amp;amp;act.sa_mask);
+    
+         /*
+          * 我们只关心被终止的子进程，而不是被中断
+          * 的子进程 (比如用户在终端上按Control-Z)
+          */
+         act.sa_flags = SA_NOCLDSTOP;
+    
+         /*
+          * 使这些设定的值生效. 如果我们是写一个真实的应用程序，
+          * 我们也许应该保存这些原有值，而不是传递一个NULL。
+          */
+         if (sigaction(SIGCHLD, &amp;act, NULL) &lt; 0)
+         {
+             fprintf(stderr, "sigaction failed\n");
+             return 1;
+         }
+    
+         /* fork */
+         switch (pid = fork())
+         {
+         case -1:
+             fprintf(stderr, "fork failed\n");
+             return 1;
+    
+         case 0:                         /* 是子进程，直接结束 */
+             _exit(7);                   /* 退出状态 = 7 */
+    
+         default:                        /* 父进程 */
+             sleep(10);                  /* 给子进程完成的时间 */
+         }
+    
+         return 0;
+     }
+    
+     /*
+      * 信号处理函数 -- 只有当接收到一个SIGCHLD信号才被调用，
+      * 即有一个子进程终止
+      */
+     void sig_chld(int signo)
+     {
+         int status, child_val;
+    
+         /* 非阻塞地等待任何子进程结束 */
+         if (waitpid(-1, &amp;status, WNOHANG) &lt; 0)
+         {
+             /*
+              * 不建议在信号处理函数中调用标准输入/输出函数，
+              * 但在一个类似这个的玩具程序里或许没问题
+              */
+             fprintf(stderr, "waitpid failed\n");
+             return;
+         }
+    
+         /*
+          * 我们现在有保存在‘status’变量中的子进程退出信息并可以使用
+          * wait.h中定义的宏对其进行操作
+          */
+         if (WIFEXITED(status))                /* 子进程是正常退出吗? */
+         {
+             child_val = WEXITSTATUS(status); /* 获取子进程的退出状态 */
+             printf("child's exited normally with status %d\n", child_val);
+         }
+     }
+    </pre></div></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x657.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x670.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">我能在一个运行着的程序中生成堆栈映象吗？</td><td align="center" valign="top" width="34%">&nbsp;</td><td align="right" valign="top" width="33%">读取进程表 - SUNOS 4 版</td></tr></tbody></table></div></body></html>

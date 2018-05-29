@@ -1,0 +1,211 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>RELEASE SAVEPOINT PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="REINDEX" HREF="sql-reindex.html"><LINK REL="NEXT" TITLE="RESET" HREF="sql-reset.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-reindex.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-reindex.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-reset.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-reset.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-RELEASE-SAVEPOINT" >RELEASE SAVEPOINT</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN47218" ></A
+><H2
+>Name</H2
+>RELEASE SAVEPOINT&nbsp;--&nbsp;删除一个前面定义的保存点</DIV
+><A NAME="AEN47221" ></A
+><A NAME="AEN47223" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN47226" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>RELEASE [ SAVEPOINT ] <TT
+CLASS="REPLACEABLE"
+><I
+>savepoint_name</I
+></TT
+></PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47229" ></A
+><H2
+>描述</H2
+><P
+>   <TT
+CLASS="COMMAND"
+>RELEASE SAVEPOINT</TT
+>  删除一个当前事务前面定义的保存点。
+  </P
+><P
+>   把一个保存点删除就令其无法作为回滚点使用，除此之外它没有其它用户可见的行为。
+   它并不能撤销在保存点建立起来之后执行的命令的影响。
+   （要撤销那些命令，参阅 <A HREF="sql-rollback-to.html" ><I
+>ROLLBACK TO</I
+></A
+>。）
+   在不再需要的时候删除一个保存点可以令系统在事务结束之前提前回收一些资源。
+  </P
+><P
+>   <TT
+CLASS="COMMAND"
+>RELEASE SAVEPOINT</TT
+> 也删除所有在指定的保存点建立之后的所有保存点。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47237" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>savepoint_name</I
+></TT
+></DT
+><DD
+><P
+>      要删除的保存点的名字。
+     </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47245" ></A
+><H2
+>注意</H2
+><P
+>   声明一个以前没有定义的保存点名字是一个错误。
+  </P
+><P
+>   如果事务在回滚状态，我们不能释放一个保存点。
+  </P
+><P
+>   如果多个保存点拥有同样的名字，只有最近定义的那个才被释放。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47250" ></A
+><H2
+>例子</H2
+><P
+>   建立并稍后删除一个保存点：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>BEGIN;
+    INSERT INTO table1 VALUES (3);
+    SAVEPOINT my_savepoint;
+    INSERT INTO table1 VALUES (4);
+    RELEASE SAVEPOINT my_savepoint;
+COMMIT;</PRE
+><P>
+   上面的事务将同时插入 3 和 4。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47254" ></A
+><H2
+>兼容性</H2
+><P
+>   这条命令遵循 SQL:2003 标准。 标准声明关键字 <TT
+CLASS="LITERAL"
+>SAVEPOINT</TT
+> 是必须的。
+   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 允许省略 <TT
+CLASS="LITERAL"
+>SAVEPOINT</TT
+> 关键字。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47260" ></A
+><H2
+>又见</H2
+><A HREF="sql-begin.html" ><I
+>BEGIN</I
+></A
+>, <A HREF="sql-commit.html" ><I
+>COMMIT</I
+></A
+>, <A HREF="sql-rollback.html" ><I
+>ROLLBACK</I
+></A
+>, <A HREF="sql-rollback-to.html" ><I
+>ROLLBACK TO</I
+></A
+>, <A HREF="sql-savepoint.html" ><I
+>SAVEPOINT</I
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-reindex.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-reset.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >REINDEX</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >RESET</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

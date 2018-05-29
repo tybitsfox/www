@@ -1,0 +1,77 @@
+<HTML><HEAD><TITLE>Skin development</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="微软 HTML 帮助版本" HREF="chmonly.html"><LINK REL="PREVIOUS" TITLE="Integrating the PHP Manual" HREF="chm.integration.html"><LINK REL="NEXT" TITLE="Page Elements" HREF="chm.skins.elements.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="chapter" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="chm.integration.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="chm.skins.elements.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="chapter"><H1><A NAME="chm.skins">章 62. Skin development</A></H1><DIV CLASS="TOC"><DL><DT><B>目录</B></DT><DT><A HREF="chm.skins.html#chm.skins.display">Page Display Process</A></DT><DT><A HREF="chm.skins.elements.html">Page Elements</A></DT><DT><A HREF="chm.skins.css.html">CSS classes</A></DT></DL></DIV><P>&#13; This edition of the PHP Manual allows users to choose from skins to
+display the contents, as well as develop custom skins to meet some
+special needs. We decided to support skins because we realized that
+one skin cannot satisfy everybodies needs in a such heavily used
+edition.
+</P><P>&#13; We included two skins by default inside the CHM. These cannot be modified
+or removed, so if you have the CHM, you have these two skins inside. The
+Low skin is optimized for small window display, the High skin is a
+variation of the Low one with some graphics added to spice it up.
+</P><P>&#13; A skin must have at least two files, a skin loader JavaScript file and
+a CSS file. The two inline skins have these files inside the CHM. The
+skin loader JS should at least load in the CSS file and display the
+page contents to the viewer. Theoretically there are two kinds of skins:
+CSS skins and Full skins. CSS skins only modify the CSS and does not
+amend the page layout. Full skins also modify the page layout. We have
+included sample skins for both the CSS skin type and the Full skin type
+(<TT CLASS="literal">"greenlinks"</TT> and <TT CLASS="literal">"headernostalgia"</TT>
+respectively).
+</P><P>&#13; <DIV CLASS="warning"><P></P><TABLE CLASS="warning" BORDER="1" WIDTH="100%"><TR><TD ALIGN="CENTER"><B>警告</B></TD></TR><TR><TD ALIGN="LEFT"><P>&#13; Note that though the current skin development methods are quite final,
+there may be heavy changes in used CSS classes or page elements while
+we refine the skin development ideas. As this edition is currently in
+development stage, the information described herein is not to be
+considered completely stable.
+</P></TD></TR></TABLE></DIV>
+</P><DIV CLASS="sect1"><H1 CLASS="sect1"><A NAME="chm.skins.display"></A>Page Display Process</H1><P>&#13; If you are going to develop your own skin, you should know how one
+page is loaded and displayed to the user, and how a skin fits in
+this process. For these paragraphs, we assume that you have put
+your CHM into <TT CLASS="filename">c:\phpmanual</TT>, so it's accessible
+as <TT CLASS="filename">c:\phpmanual\php_manual_LANG.chm</TT> (where LANG
+is the language code), and you would like to see the function page
+of "echo", which is <TT CLASS="filename">function.echo.html</TT> inside
+the CHM. See the <A HREF="chm.integration.html">sections about
+integration</A> for more information on CHM contents.
+<P></P><UL><LI><P>&#13; First of all the HTML content is loaded in from
+<TT CLASS="filename">function.echo.html</TT> from inside the CHM.
+</P></LI><LI><P>&#13; At the top of this file, there is a HTML <TT CLASS="literal">&#60;script&#62;</TT>
+tag, which loads in the <TT CLASS="filename">_script.js</TT> file from the
+CHM. This file contains all the JS code needed to move on with the process.
+Most importantly this JS defines many variables (like where the CHM
+is, or what is the actual page viewed) and many functions to print
+out the context menu or handle online functions.
+</P></LI><LI><P>&#13; At last <TT CLASS="filename">_script.js</TT> loads in the preferences
+file from outside the CHM (<TT CLASS="filename">c:\phpmanual\php_manual_prefs.js</TT>
+in our example). This JS file defines the preference variables, and
+calls back <TT CLASS="literal">prefHandler()</TT> which is also defined in
+<TT CLASS="filename">_script.js</TT>.
+</P></LI><LI><P>&#13; That function loads in the skin JS file as the preferences
+dictate. The skin JS file should load in the needed CSS
+file, and define a <TT CLASS="literal">displayPage()</TT> function,
+which displays the page if called.
+</P></LI><LI><P>&#13; The HTML file (<TT CLASS="filename">function.echo.html</TT> in this
+example) also contains a function call to load in the user notes,
+which simply puts the notes into this HTML file using DHTML to
+be displayed as if they were here before...
+</P></LI><LI><P>&#13; The HTML file also contains a body onload attribute which
+calls the skin-defined <TT CLASS="literal">displayPage()</TT> function
+to show the page to the user. This is the last function called,
+it should present the page in it's complete form to the user.
+</P></LI></UL>
+Every action is synchronized with calling back a function in
+the previously loaded file when the JS is in memory. The notes
+loading and skin JS loading is only synchronized with the page's
+onload event (which as the Microsoft documentation says only fires
+if the page is completely loaded).
+</P><P>&#13; This load and callback chain may seem to be too complicated, but
+so far this seemed to be the best way to do as many things as
+possible parallel, while also synchronize some calls.
+</P><P>&#13; As you can see your skin JavaScript file is loaded in by
+<TT CLASS="filename">_script.js</TT> and it's <TT CLASS="literal">displayPage()</TT>
+function is called by the body onload event.
+</P></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="chm.integration.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="chm.skins.elements.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Integrating the PHP Manual</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="chmonly.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Page Elements</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

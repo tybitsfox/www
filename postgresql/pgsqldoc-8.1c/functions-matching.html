@@ -1,0 +1,4117 @@
+<HTML
+><HEAD
+><TITLE
+>模式匹配</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="函数和操作符"
+HREF="functions.html"><LINK
+REL="PREVIOUS"
+TITLE="位串函数和操作符"
+HREF="functions-bitstring.html"><LINK
+REL="NEXT"
+TITLE="数据类型格式化函数"
+HREF="functions-formatting.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="functions-bitstring.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="functions.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 9. 函数和操作符</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="functions.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="functions-formatting.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="FUNCTIONS-MATCHING"
+>9.7. 模式匹配</A
+></H1
+><A
+NAME="AEN8869"
+></A
+><P
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 提供了三种实现模式匹配
+	的方法：<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>　<TT
+CLASS="FUNCTION"
+>LIKE</TT
+>
+	操作符，更近一些的 <TT
+CLASS="FUNCTION"
+>SIMILAR TO</TT
+> 操作符（SQL:1999 里添加进来的），
+	和<SPAN
+CLASS="ACRONYM"
+>POSIX</SPAN
+>-风格正则表达式。
+	另外还有一个模式匹配函数 <TT
+CLASS="FUNCTION"
+>substring</TT
+> 可以用，
+	它可以使用 <TT
+CLASS="FUNCTION"
+>SIMILAR TO</TT
+> 风格的或者 POSIX 风格的正则表达式。
+  </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>	如果你的模式匹配的要求比这些还多，或者想写一些模式驱动的
+	替换和转换，请考虑用 Perl 或 Tcl 写一个用户定义函数。
+   </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="FUNCTIONS-LIKE"
+>9.7.1. <TT
+CLASS="FUNCTION"
+>LIKE</TT
+></A
+></H2
+><A
+NAME="AEN8885"
+></A
+><PRE
+CLASS="SYNOPSIS"
+><TT
+CLASS="REPLACEABLE"
+><I
+>string</I
+></TT
+> LIKE <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+> ESCAPE <TT
+CLASS="REPLACEABLE"
+><I
+>escape-character</I
+></TT
+> </SPAN
+>]
+<TT
+CLASS="REPLACEABLE"
+><I
+>string</I
+></TT
+> NOT LIKE <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+> ESCAPE <TT
+CLASS="REPLACEABLE"
+><I
+>escape-character</I
+></TT
+> </SPAN
+>]</PRE
+><P
+>	每个 <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> 定义一个字串的集合。
+	如果该 <TT
+CLASS="REPLACEABLE"
+><I
+>string</I
+></TT
+> 包含在
+	<TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> 代表的字串集合里，那么
+	<TT
+CLASS="FUNCTION"
+>LIKE</TT
+> 表达式返回真。
+	（和我们想象的一样，如果 <TT
+CLASS="FUNCTION"
+>LIKE</TT
+>
+	返回真，那么 <TT
+CLASS="FUNCTION"
+>NOT LIKE</TT
+> 表达式返回假，
+	反之亦然。一个等效的表达式是
+	<TT
+CLASS="LITERAL"
+>NOT
+	（<TT
+CLASS="REPLACEABLE"
+><I
+>string</I
+></TT
+> LIKE
+	<TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>)</TT
+>.）
+   </P
+><P
+>	如果 <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> 不包含百分号
+	或者下划线，那么该模式只代表它本身；
+	这时候 <TT
+CLASS="FUNCTION"
+>LIKE</TT
+> 的行为就象等号操作符。
+	在 <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> 里的下划线
+	（<TT
+CLASS="LITERAL"
+>_</TT
+>）代表（匹配）任何单个字符；
+	而一个百分号（<TT
+CLASS="LITERAL"
+>%</TT
+>）匹配任何零或更多
+	字符长的字串。
+   </P
+><P
+>	下面是一些例子∶
+</P><PRE
+CLASS="PROGRAMLISTING"
+>'abc' LIKE 'abc'    <I
+CLASS="LINEANNOTATION"
+>true</I
+>
+'abc' LIKE 'a%'     <I
+CLASS="LINEANNOTATION"
+>true</I
+>
+'abc' LIKE '_b_'    <I
+CLASS="LINEANNOTATION"
+>true</I
+>
+'abc' LIKE 'c'      <I
+CLASS="LINEANNOTATION"
+>false</I
+></PRE
+><P>
+    </P
+><P
+>	<TT
+CLASS="FUNCTION"
+>LIKE</TT
+> 模式匹配总是覆盖整个字串。
+	要匹配在字串内部任何位置的序列，该模式必须以百分号开头和结尾。
+   </P
+><P
+>	要匹配文本的下划线或者百分号，而不是匹配其它字符，
+	在<TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> 里相应的字符必须
+	前导逃逸字符。缺省的逃逸字符是反斜杠，但是你可以用
+	<TT
+CLASS="LITERAL"
+>ESCAPE</TT
+> 子句指定一个。
+	要匹配逃逸字符本身，写两个逃逸字符。
+   </P
+><P
+>	请注意反斜杠在字串文本里已经有特殊含义了，所以如果你写一个
+	包含反斜杠的模式常量，那你就要在 SQL 语句里写两个反斜杠。
+	因此，写一个匹配单个反斜杠的模式实际上要在语句里写四个反斜杠。
+	你可以通过用 <TT
+CLASS="LITERAL"
+>ESCAPE</TT
+> 选择一个不同的逃逸字符
+	来避免这样；这样反斜杠就不再是  <TT
+CLASS="FUNCTION"
+>LIKE</TT
+> 的特殊字符了。
+	但仍然是字符文本分析器的特殊字符，所以你还是需要两个反斜杠。)
+   </P
+><P
+>	我们也可以通过写成 <TT
+CLASS="LITERAL"
+>ESCAPE ''</TT
+> 的方式
+	有效地关闭逃逸机制，这时，我们就不能关闭下划线和百分号的特殊含义。
+   </P
+><P
+>	关键字 <TT
+CLASS="TOKEN"
+>ILIKE</TT
+> 可以用于替换 <TT
+CLASS="TOKEN"
+>LIKE</TT
+>，
+	令该匹配就当前的区域设置是大小写无关的。
+	这个特性不是 SQL 标准，是 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 扩展。
+   </P
+><P
+>	操作符 <TT
+CLASS="LITERAL"
+>~~</TT
+> 等效于 <TT
+CLASS="FUNCTION"
+>LIKE</TT
+>，
+	而 <TT
+CLASS="LITERAL"
+>~~*</TT
+> 对应 <TT
+CLASS="FUNCTION"
+>ILIKE</TT
+>。
+	还有 <TT
+CLASS="LITERAL"
+>!~~</TT
+> 和 <TT
+CLASS="LITERAL"
+>!~~*</TT
+> 操作符
+	分别代表 <TT
+CLASS="FUNCTION"
+>NOT LIKE</TT
+> 和
+	<TT
+CLASS="FUNCTION"
+>NOT ILIKE</TT
+>。所有这些操作符都是
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 特有的。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="FUNCTIONS-SIMILARTO-REGEXP"
+>9.7.2. <TT
+CLASS="FUNCTION"
+>SIMILAR TO</TT
+> 正则表达式</A
+></H2
+><A
+NAME="AEN8945"
+></A
+><A
+NAME="AEN8947"
+></A
+><A
+NAME="AEN8949"
+></A
+><A
+NAME="AEN8951"
+></A
+><PRE
+CLASS="SYNOPSIS"
+><TT
+CLASS="REPLACEABLE"
+><I
+>string</I
+></TT
+> SIMILAR TO <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>ESCAPE <TT
+CLASS="REPLACEABLE"
+><I
+>escape-character</I
+></TT
+></SPAN
+>]
+<TT
+CLASS="REPLACEABLE"
+><I
+>string</I
+></TT
+> NOT SIMILAR TO <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>ESCAPE <TT
+CLASS="REPLACEABLE"
+><I
+>escape-character</I
+></TT
+></SPAN
+>]</PRE
+><P
+>	<TT
+CLASS="FUNCTION"
+>SIMILAR TO</TT
+> 根据自己的模式是否匹配给定字串而返回真或者假。
+	它和 <TT
+CLASS="FUNCTION"
+>LIKE</TT
+> 非常类似，只不过它使用 SQL 标准定义的正则表达式理解模式。
+	SQL 标准的正则表达式是在 <TT
+CLASS="FUNCTION"
+>LIKE</TT
+>
+	表示法和普通的正则表达式表示法之间古怪的交叉。
+    </P
+><P
+>	类似 <TT
+CLASS="FUNCTION"
+>LIKE</TT
+>，<TT
+CLASS="FUNCTION"
+>SIMILAR TO</TT
+>
+	操作符只有在它的模式匹配整个字串的时候才能成功；这一点和普通的
+	正则表达式的习惯不同，在普通的正则表达式里，模式匹配字串的任意
+	部分。
+	和 <TT
+CLASS="FUNCTION"
+>LIKE</TT
+> 类似的地方还有，<TT
+CLASS="FUNCTION"
+>SIMILAR TO</TT
+>
+	使用 <TT
+CLASS="LITERAL"
+>_</TT
+> 和 <TT
+CLASS="LITERAL"
+>%</TT
+> 作为分别代表任意字串和任意字串字符
+	的通配符。（这些和 POSIX 正则表达式里的 <TT
+CLASS="LITERAL"
+>.</TT
+> 和 <TT
+CLASS="LITERAL"
+>.*</TT
+> 兼容）
+    </P
+><P
+>	除了这些从 <TT
+CLASS="FUNCTION"
+>LIKE</TT
+> 借用的功能之外，
+	<TT
+CLASS="FUNCTION"
+>SIMILAR TO</TT
+> 支持下面这些从 POSIX 正则表达式借用的
+	模式匹配元字符：
+
+    <P
+></P
+></P><UL
+><LI
+><P
+>       <TT
+CLASS="LITERAL"
+>|</TT
+> 标识选择（两个候选之一）。
+      </P
+></LI
+><LI
+><P
+>       <TT
+CLASS="LITERAL"
+>*</TT
+> 表示重复前面的项零次或更多次。
+      </P
+></LI
+><LI
+><P
+>       <TT
+CLASS="LITERAL"
+>+</TT
+> 表示重复前面的项一次或更多次。
+      </P
+></LI
+><LI
+><P
+>	可以使用圆括弧 <TT
+CLASS="LITERAL"
+>()</TT
+> 把项组合成一个逻辑项。
+      </P
+></LI
+><LI
+><P
+>	一个方括弧表达式 <TT
+CLASS="LITERAL"
+>[...]</TT
+> 声明一个字符表，
+	就像 POSIX 正则表达式一样。
+      </P
+></LI
+></UL
+><P>
+
+	请注意没有提供范围重复（<TT
+CLASS="LITERAL"
+>?</TT
+> 和 <TT
+CLASS="LITERAL"
+>{...}</TT
+>），
+	尽管它们在 POSIX 里有。同时，点（<TT
+CLASS="LITERAL"
+>.</TT
+>）不是元字符。
+    </P
+><P
+>	和 <TT
+CLASS="FUNCTION"
+>LIKE</TT
+> 一样，反斜杠关闭所有这些元字符的特殊含义；
+	当然我们也可以用 <TT
+CLASS="LITERAL"
+>ESCAPE</TT
+> 声明另外一个逃逸字符。
+    </P
+><P
+>	一些例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>'abc' SIMILAR TO 'abc'      <I
+CLASS="LINEANNOTATION"
+>true</I
+>
+'abc' SIMILAR TO 'a'	<I
+CLASS="LINEANNOTATION"
+>false</I
+>
+'abc' SIMILAR TO '%(b|d)%'  <I
+CLASS="LINEANNOTATION"
+>true</I
+>
+'abc' SIMILAR TO '(b|c)%'   <I
+CLASS="LINEANNOTATION"
+>false</I
+></PRE
+><P>
+    </P
+><P
+>	带三个参数的<TT
+CLASS="FUNCTION"
+>substring</TT
+>，
+	<TT
+CLASS="FUNCTION"
+>substring(<TT
+CLASS="REPLACEABLE"
+><I
+>string</I
+></TT
+> from
+	<TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> for <TT
+CLASS="REPLACEABLE"
+><I
+>escape-character</I
+></TT
+>)</TT
+>，
+	提供了一个从字串中抽取一个匹配 SQL 正则表达式模式的子字串的函数。
+	和<TT
+CLASS="LITERAL"
+>SIMILAR TO</TT
+>一样，声明的模式必须匹配整个数据串，否则函数失效并
+	返回 NULL。为了标识在成功的时候应该返回的模式部分，模式
+	必须出现后跟双引号（<TT
+CLASS="LITERAL"
+>"</TT
+>）的两个逃逸字符。匹配这两个标记
+	之间的模式的字串将被返回。
+    </P
+><P
+>	一些例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>substring('foobar' from '%#"o_b#"%' FOR '#')   <I
+CLASS="LINEANNOTATION"
+>oob</I
+>
+substring('foobar' from '#"o_b#"%' FOR '#')    <I
+CLASS="LINEANNOTATION"
+>NULL</I
+></PRE
+><P>
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="FUNCTIONS-POSIX-REGEXP"
+>9.7.3. <SPAN
+CLASS="ACRONYM"
+>POSIX</SPAN
+> 正则表达式</A
+></H2
+><A
+NAME="AEN9021"
+></A
+><P
+>	<A
+HREF="functions-matching.html#FUNCTIONS-POSIX-TABLE"
+>Table 9-11</A
+>  列出了所有可用的
+	用于 POSIX 正则表达式的操作符。
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-POSIX-TABLE"
+></A
+><P
+><B
+>Table 9-11. 正则表达式匹配操作符</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>操作符</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>例子</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>~</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>匹配正则表达式，大小写相关</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>'thomas' ~ '.*thomas.*'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>~*</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>匹配正则表达式，大小写无关</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>'thomas' ~* '.*Thomas.*'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>!~</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>不匹配正则表达式，大小写相关</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>'thomas' !~ '.*Thomas.*'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>!~*</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>不匹配正则表达式，大小写无关</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>'thomas' !~* '.*vadim.*'</TT
+></TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	<SPAN
+CLASS="ACRONYM"
+>POSIX</SPAN
+> 正则表达式提供了比 <TT
+CLASS="FUNCTION"
+>LIKE</TT
+>
+	和 <TT
+CLASS="FUNCTION"
+>SIMILAR TO</TT
+> 操作符
+	更强大的模式匹配的方法。许多 Unix 工具，比如
+	<TT
+CLASS="COMMAND"
+>egrep</TT
+>，
+	<TT
+CLASS="COMMAND"
+>sed</TT
+>，或 <TT
+CLASS="COMMAND"
+>awk</TT
+>
+	使用一种与我们这里描述的类似的模式匹配语言。
+   </P
+><P
+>	正则表达式是一个字符序列，它是定义一个字串集合
+	（一个<I
+CLASS="FIRSTTERM"
+>正则集合</I
+>）的缩写。
+	如果一个字串是正则表达式描述的正则集合中的一员时，
+	我们就说这个字串匹配该正则表达式。
+	和 <TT
+CLASS="FUNCTION"
+>LIKE</TT
+> 一样，模式字符准确地匹配字串字符，
+	除非在正则表达式语言里有特殊字符 &mdash; 不过正则表达式用的
+	特殊字符和 <TT
+CLASS="FUNCTION"
+>LIKE</TT
+> 用的不同。
+	和 <TT
+CLASS="FUNCTION"
+>LIKE</TT
+> 不一样的是，正则表达式
+	可以匹配字串里的任何位置，除非该正则表达式明确地挂接在字串
+	的开头或者结尾。
+   </P
+><P
+>	一些例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>'abc' ~ 'abc'    <I
+CLASS="LINEANNOTATION"
+>true</I
+>
+'abc' ~ '^a'     <I
+CLASS="LINEANNOTATION"
+>true</I
+>
+'abc' ~ '(b|d)'  <I
+CLASS="LINEANNOTATION"
+>true</I
+>
+'abc' ~ '^(b|c)' <I
+CLASS="LINEANNOTATION"
+>false</I
+></PRE
+><P>
+    </P
+><P
+>	带两个参数的<TT
+CLASS="FUNCTION"
+>substring</TT
+>，<TT
+CLASS="FUNCTION"
+>substring(<TT
+CLASS="REPLACEABLE"
+><I
+>string</I
+></TT
+> from
+	<TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>)</TT
+>，提供了从字串中抽取一个匹配 POSIX 正则表达式模式的
+	子字串的方法。如果没有匹配它返回 NULL，否则就是文本中匹配模式的那部分。
+	但是如果该模式包含任何圆括弧，那么将返回匹配第一对子表达式（对应第一个左圆括弧的）
+	的文本。如果你想在表达式里使用圆括弧而又不想导致这个例外，那么你可以在整个表达式外边放上一对儿圆括弧。
+	如果你需要在想抽取的子表达式前有圆括弧，参阅描述的非捕获性圆括弧。
+    </P
+><P
+>	一些例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>substring('foobar' from 'o.b')     <I
+CLASS="LINEANNOTATION"
+>oob</I
+>
+substring('foobar' from 'o(.)b')   <I
+CLASS="LINEANNOTATION"
+>o</I
+></PRE
+><P>
+    </P
+><P
+>     <TT
+CLASS="FUNCTION"
+>regexp_replace</TT
+> 函数提供了将匹配 POSIX 正则表达式模式地子字串替换为信的文本的功能。
+     它的语法是
+     <TT
+CLASS="FUNCTION"
+>regexp_replace</TT
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>source</I
+></TT
+>,
+     <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>replacement</I
+></TT
+>
+     [<SPAN
+CLASS="OPTIONAL"
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>flags</I
+></TT
+> </SPAN
+>])。
+     如果没有匹配 <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> 的子字串，那么返回不加修改的 <TT
+CLASS="REPLACEABLE"
+><I
+>source</I
+></TT
+> 字串。
+     如果有匹配，则返回的 <TT
+CLASS="REPLACEABLE"
+><I
+>source</I
+></TT
+> 字串里面的对应子字串将被 <TT
+CLASS="REPLACEABLE"
+><I
+>replacement</I
+></TT
+>
+     字串替换掉。<TT
+CLASS="REPLACEABLE"
+><I
+>replacement</I
+></TT
+> 字串可以包含 <TT
+CLASS="LITERAL"
+>\</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>，
+     这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> 是 <TT
+CLASS="LITERAL"
+>1</TT
+> 到 <TT
+CLASS="LITERAL"
+>9</TT
+>，
+     表明源字串里匹配模式里第 <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> 个圆括弧子表达式的部分将插入在该位置，
+     并且它可以包含 <TT
+CLASS="LITERAL"
+>\&amp;</TT
+> 表示应该插入匹配整个模式的字串。
+     如果你需要放一个文本反斜杠在替换文本里，那么写 <TT
+CLASS="LITERAL"
+>\\</TT
+>。
+     （和通常一样，记得在文本常量字串里写双反斜杠。）
+    </P
+><P
+>    Some examples:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>regexp_replace('foobarbaz', 'b..', 'X')
+                                   <I
+CLASS="LINEANNOTATION"
+>fooXbaz</I
+>
+regexp_replace('foobarbaz', 'b..', 'X', 'g')
+                                   <I
+CLASS="LINEANNOTATION"
+>fooXX</I
+>
+regexp_replace('foobarbaz', 'b(..)', 'X\\1Y', 'g')
+                                   <I
+CLASS="LINEANNOTATION"
+>fooXarYXazY</I
+></PRE
+><P>
+   </P
+><P
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的正则表达式是使用 Henry Spencer
+	写的一个包来实现的。下面的正则表达式的大部分描述都是从他的手册页里面
+	逐字拷贝过来的。
+   </P
+><DIV
+CLASS="SECT3"
+><H3
+CLASS="SECT3"
+><A
+NAME="POSIX-SYNTAX-DETAILS"
+>9.7.3.1. 正则表达式</A
+></H3
+><P
+>	正则表达式（<SPAN
+CLASS="QUOTE"
+>"RE"</SPAN
+>），在<SPAN
+CLASS="ACRONYM"
+>POSIX</SPAN
+>1003.2 中定义，
+	它有两种形式：<I
+CLASS="FIRSTTERM"
+>扩展的</I
+><SPAN
+CLASS="ACRONYM"
+>RE</SPAN
+>或者是<SPAN
+CLASS="ACRONYM"
+>ERE</SPAN
+>
+	（基本上就是那些在 <TT
+CLASS="COMMAND"
+>egrep</TT
+> 里的），
+	<SPAN
+CLASS="QUOTE"
+>"基本"</SPAN
+>的<SPAN
+CLASS="ACRONYM"
+>RE</SPAN
+>或者是<SPAN
+CLASS="ACRONYM"
+>BRE</SPAN
+>
+	（基本上就是那些在 <TT
+CLASS="COMMAND"
+>ed</TT
+>里的）。
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 两种形式都实现了，并且还做了一些POSIX里面没有的，
+	但是因为在类似 Perl 或者 Tcl 这样的语言中得到广泛应用的一些扩展。
+	使用了那些非POSIX扩展的 <SPAN
+CLASS="ACRONYM"
+>RE</SPAN
+> 叫<I
+CLASS="FIRSTTERM"
+>高级</I
+> <SPAN
+CLASS="ACRONYM"
+>RE</SPAN
+>，
+	或者我们文档里说的 <SPAN
+CLASS="ACRONYM"
+>ARE</SPAN
+>。ARE 几乎完全是 ERE 的超集，但是
+	BRE 有几个符号上的不兼容（以及更多的限制）。我们首先描述 ARE 和 ERE 形式，
+	描述那些只适用于 ARE 的特性，然后描述 BRE 的区别是什么。
+   </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	我们可以通过设置运行时参数<A
+HREF="runtime-config-compatible.html#GUC-REGEX-FLAVOR"
+>regex_flavor</A
+>来选择 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 接受的正则表达式的形式。
+	通常的设置是<TT
+CLASS="LITERAL"
+>advanced（高级）</TT
+>，但是我们可以选择 <TT
+CLASS="LITERAL"
+>extended</TT
+>
+	和 7.4 以前的<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>版本做到最大的向下兼容。
+    </P
+></BLOCKQUOTE
+></DIV
+><P
+>	（现代）的 RE 是一个或多个非空的 <I
+CLASS="FIRSTTERM"
+>分支</I
+>，
+	由 <TT
+CLASS="LITERAL"
+>|</TT
+> 分隔。它匹配任何匹配其中一个分支的东西。
+   </P
+><P
+>	一个分支是一个或多个<I
+CLASS="FIRSTTERM"
+>有修饰的原子</I
+>或者<I
+CLASS="FIRSTTERM"
+>约束</I
+>
+	连接而成。一个原子匹配第一个，然后后面的原子匹配第二个，
+	以此类推。
+   </P
+><P
+>	一个有修饰的原子是一个<I
+CLASS="FIRSTTERM"
+>原子</I
+>，
+	后面可能跟着一个量词。没有量词的时候，它匹配一个原子，
+	有量词的时候，它可以匹配若干个原子。<I
+CLASS="FIRSTTERM"
+>原子</I
+>可以是在
+	<A
+HREF="functions-matching.html#POSIX-ATOMS-TABLE"
+>Table 9-12</A
+>里面显示的任何可能。
+	可能的量词和他们的含义在 <A
+HREF="functions-matching.html#POSIX-QUANTIFIERS-TABLE"
+>Table 9-13</A
+>
+	里显示。
+   </P
+><P
+>	一个 <I
+CLASS="FIRSTTERM"
+>constraint</I
+> 匹配一个空字串，但只是在满足特定条件下才匹配。
+	约束可以在能够使用原子的地方使用，只是她不能跟着量词。最简单的原子在 <A
+HREF="functions-matching.html#POSIX-CONSTRAINTS-TABLE"
+>Table 9-14</A
+> 里显示；
+	更多的约束稍后描述。
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="POSIX-ATOMS-TABLE"
+></A
+><P
+><B
+>Table 9-12. 正则表达式原子</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>原子</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>(</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>re</I
+></TT
+><TT
+CLASS="LITERAL"
+>)</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>（这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>re</I
+></TT
+> 是任何正则表达式）
+	匹配一个对 <TT
+CLASS="REPLACEABLE"
+><I
+>re</I
+></TT
+> 的匹配，有可报告的匹配信息</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>(?:</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>re</I
+></TT
+><TT
+CLASS="LITERAL"
+>)</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 同上，但是匹配不会被报告
+	（一个<SPAN
+CLASS="QUOTE"
+>"不捕获"</SPAN
+>圆括弧）
+	（只在 ARE 中有）</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>.</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>匹配任意单个字符 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>[</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>chars</I
+></TT
+><TT
+CLASS="LITERAL"
+>]</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 一个 <I
+CLASS="FIRSTTERM"
+>方括弧表达式</I
+>，
+	匹配任意的<TT
+CLASS="REPLACEABLE"
+><I
+>字符</I
+></TT
+>（参阅 <A
+HREF="functions-matching.html#POSIX-BRACKET-EXPRESSIONS"
+>Section 9.7.3.2</A
+>
+	获取更多细节）</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>k</I
+></TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> （这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>k</I
+></TT
+> 是非字母数字字符）
+	匹配一个当作普通字符看待的特定字符，
+	比如，<TT
+CLASS="LITERAL"
+>\\</TT
+> 匹配一个反斜杠</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>c</I
+></TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>c</I
+></TT
+> 是一个字母数字
+	（可能跟着其它字符），它是一个<I
+CLASS="FIRSTTERM"
+>逃逸</I
+>，
+	参阅 <A
+HREF="functions-matching.html#POSIX-ESCAPE-SEQUENCES"
+>Section 9.7.3.3</A
+>（仅存在于 ARE；
+	在 ERE 和 BRE 中，它匹配 <TT
+CLASS="REPLACEABLE"
+><I
+>c</I
+></TT
+>）
+       </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>{</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 如果后面跟着一个字符，而不是数字，
+	那么就匹配左花括弧<TT
+CLASS="LITERAL"
+>{</TT
+>；如果跟着一个数字，
+	那么它是<TT
+CLASS="REPLACEABLE"
+><I
+>范围</I
+></TT
+>的开始（见下面）
+	</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="REPLACEABLE"
+><I
+>x</I
+></TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>x</I
+></TT
+> 是一个没有其它特征的单个字符，
+	则匹配该字符</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	RE 不能以 <TT
+CLASS="LITERAL"
+>\</TT
+> 结尾。
+   </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	要记住反斜杠（<TT
+CLASS="LITERAL"
+>\</TT
+>）在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 字串文本中已经有特殊含义了。
+	要写一个包含反斜杠的模式，你必须在语句里写两个反斜杠。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>'123' ~ '^\\d{3}' <I
+CLASS="LINEANNOTATION"
+>true</I
+></PRE
+><P>
+    </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="TABLE"
+><A
+NAME="POSIX-QUANTIFIERS-TABLE"
+></A
+><P
+><B
+>Table 9-13. 正则表达式量词</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>量词</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>匹配</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>*</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 一个匹配 0 或者更多个原子的序列 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>+</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 一个匹配 1 或者更多个原子的序列 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>?</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 一个匹配 0 个或者 1 个原子的序列 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>{</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+><TT
+CLASS="LITERAL"
+>}</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 一个正好匹配 <TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+> 个原子的序列</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>{</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+><TT
+CLASS="LITERAL"
+>,}</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 一个匹配<TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+> 个或者更多原子的序列 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>       <TT
+CLASS="LITERAL"
+>{</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+><TT
+CLASS="LITERAL"
+>,</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+><TT
+CLASS="LITERAL"
+>}</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 一个匹配 <TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+> 到 <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> 个（包含两端）
+	原子的序列；<TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+> 不能比 <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> 大</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>*?</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>*</TT
+> 的非贪婪模式 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>+?</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>+</TT
+> 的非贪婪模式</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>??</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>?</TT
+> 的非贪婪模式</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>{</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+><TT
+CLASS="LITERAL"
+>}?</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>{</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+><TT
+CLASS="LITERAL"
+>}</TT
+> 的非贪婪模式</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>{</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+><TT
+CLASS="LITERAL"
+>,}?</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>{</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+><TT
+CLASS="LITERAL"
+>,}</TT
+> 的非贪婪模式</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>       <TT
+CLASS="LITERAL"
+>{</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+><TT
+CLASS="LITERAL"
+>,</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+><TT
+CLASS="LITERAL"
+>}?</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>{</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+><TT
+CLASS="LITERAL"
+>,</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+><TT
+CLASS="LITERAL"
+>}</TT
+> 的非贪婪模式</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	<TT
+CLASS="LITERAL"
+>{</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>...</I
+></TT
+><TT
+CLASS="LITERAL"
+>}</TT
+> 的形式被称作<I
+CLASS="FIRSTTERM"
+>范围</I
+>。
+	一个范围内的数字 <TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+> 和 <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> 都是无符号十进制整数，
+	允许的数值从 0 到 255（闭区间）。
+ </P
+><P
+>	<I
+CLASS="FIRSTTERM"
+>非贪婪</I
+>的量词（只在 ARE 中可用）匹配对应的正常
+	（<I
+CLASS="FIRSTTERM"
+>贪婪</I
+>）模式，区别是它寻找最少的匹配，而不是最多的匹配。
+	参阅 <A
+HREF="functions-matching.html#POSIX-MATCHING-RULES"
+>Section 9.7.3.5</A
+> 获取细节。
+ </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	一个量词不能紧跟在另外一个量词后面。量词不能是表达式或者子表达式的开头，
+	也不能跟在 <TT
+CLASS="LITERAL"
+>^</TT
+> 或者 <TT
+CLASS="LITERAL"
+>|</TT
+> 后面。
+    </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="TABLE"
+><A
+NAME="POSIX-CONSTRAINTS-TABLE"
+></A
+><P
+><B
+>Table 9-14. 正则表达式约束</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>约束</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>^</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 匹配字串的开头 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>$</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 匹配字串的结尾 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>(?=</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>re</I
+></TT
+><TT
+CLASS="LITERAL"
+>)</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <I
+CLASS="FIRSTTERM"
+>正前瞻</I
+> 匹配任何匹配 <TT
+CLASS="REPLACEABLE"
+><I
+>re</I
+></TT
+> 的
+	子字串起始点（只在 ARE 中有）
+ 	</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>(?!</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>re</I
+></TT
+><TT
+CLASS="LITERAL"
+>)</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <I
+CLASS="FIRSTTERM"
+>负前瞻</I
+> 匹配任何不匹配 <TT
+CLASS="REPLACEABLE"
+><I
+>re</I
+></TT
+>
+	的子字串的起始点。（只在 ARE 中有）</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	前瞻约束不能包含<I
+CLASS="FIRSTTERM"
+>后引用</I
+>
+	（参阅 <A
+HREF="functions-matching.html#POSIX-ESCAPE-SEQUENCES"
+>Section 9.7.3.3</A
+>），并且在里面的所有圆括弧
+	都被认为是不捕获的。
+   </P
+></DIV
+><DIV
+CLASS="SECT3"
+><H3
+CLASS="SECT3"
+><A
+NAME="POSIX-BRACKET-EXPRESSIONS"
+>9.7.3.2. 方括弧表达式</A
+></H3
+><P
+>	<I
+CLASS="FIRSTTERM"
+>方括弧表达式</I
+>是一个包围在
+	<TT
+CLASS="LITERAL"
+>[]</TT
+> 里的字符列表。它通常匹配任意单个
+	列表中的字符（又见下文）。
+	如果列表以 <TT
+CLASS="LITERAL"
+>^</TT
+> 开头，它匹配
+	任意单个（又见下文）不在该列表中的字符。
+	如果该列表中两个字符用<TT
+CLASS="LITERAL"
+>-</TT
+>隔开，
+	那它就是那两个字符（包括在内）之间的所有字符范围的缩写，
+	比如，在 <SPAN
+CLASS="ACRONYM"
+>ASCII</SPAN
+> 里
+	 <TT
+CLASS="LITERAL"
+>[0-9]</TT
+> 包含任何十进制数字。
+	两个范围共享一个终点是非法的，比如，
+	<TT
+CLASS="LITERAL"
+>a-c-e</TT
+>。这个范围与字符集关系密切，
+	可移植的程序不应该依靠它们。
+   </P
+><P
+>	想在列表中包含文本 <TT
+CLASS="LITERAL"
+>]</TT
+>，可以让它做
+	列表的首字符（可能会在一个 <TT
+CLASS="LITERAL"
+>^</TT
+> 后面）。
+	想在列表中包含文本 <TT
+CLASS="LITERAL"
+>-</TT
+>，可以让它做
+	列表的首字符或者末字符，或者一个范围的第二个终点。
+	想在列表中把文本<TT
+CLASS="LITERAL"
+>-</TT
+>当做范围的起点，
+	把它用 <TT
+CLASS="LITERAL"
+>[.</TT
+> 和 <TT
+CLASS="LITERAL"
+>.]</TT
+>
+	包围起来，这样它就成为一个集合元素（见下文）。
+	除了这些字符本身，和一些用 <TT
+CLASS="LITERAL"
+>[</TT
+>
+	的组合（见下段），以及逃逸（只在 ARE 中有效）以外，所有其它特殊字符
+	在方括弧表达式里都失去它们的特殊含义。
+	特别是，在 ERE 和 BRE 规则下 <TT
+CLASS="LITERAL"
+>\</TT
+> 不是特殊的，
+	但在 ARE 里，它是特殊的（还是引入一个逃逸）。
+   </P
+><P
+>	在一个方括弧表达式里，一个集合元素（一个字符，一个当做
+	一个字符的多字符序列，或者一个表示上面两种情况的集合序列）
+	包含在 <TT
+CLASS="LITERAL"
+>[.</TT
+> 和 <TT
+CLASS="LITERAL"
+>.]</TT
+>
+	里面的时候表示该集合元素的字符序列。该序列是该方括弧列表
+	的一个元素。因此一个包含多字符集合元素的方括弧表达式就
+	可以匹配多于一个字符，比如，如果集合序列包含一个
+	 <TT
+CLASS="LITERAL"
+>ch</TT
+> 集合元素，
+	那么 RE <TT
+CLASS="LITERAL"
+>[[.ch.]]*c</TT
+> 匹配
+	<TT
+CLASS="LITERAL"
+>chchcc</TT
+> 的头五个字符。
+	（译注：其实把 [. 和 .] 括起来的当一个字符看就行了。）
+   </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 目前没有多字符集合元素。这些信息描述了将来可能有的行为。
+    </P
+></BLOCKQUOTE
+></DIV
+><P
+>	在方括弧表达式里，在<TT
+CLASS="LITERAL"
+>[=</TT
+> 和
+	 <TT
+CLASS="LITERAL"
+>=]</TT
+> 里包围的集合元素是一个等效表，
+	代表等于这里所有集合元素的字符序列，包括它本身。
+	（如果没有其它等效集合元素，那么就好象封装元素是
+	 <TT
+CLASS="LITERAL"
+>[.</TT
+> 和 <TT
+CLASS="LITERAL"
+>.]</TT
+>。）
+	比如，如果 <TT
+CLASS="LITERAL"
+>o</TT
+> 和 <TT
+CLASS="LITERAL"
+>^</TT
+>
+	是一个等效表的成员，那么
+	<TT
+CLASS="LITERAL"
+>[[=o=]]</TT
+>，<TT
+CLASS="LITERAL"
+>[[=^=]]</TT
+>，和
+	<TT
+CLASS="LITERAL"
+>[o^]</TT
+> 都是同义的。一个等效表不能是一个范围的
+	端点。
+   </P
+><P
+>	在方括弧表达式里，在 <TT
+CLASS="LITERAL"
+>[:</TT
+> 和
+	 <TT
+CLASS="LITERAL"
+>:]</TT
+> 里面封装的字符表名字代表
+	属于该表的所有字符的列表。
+	标准的字符表名字是：<TT
+CLASS="LITERAL"
+>alnum</TT
+>，
+	<TT
+CLASS="LITERAL"
+>alpha</TT
+>，<TT
+CLASS="LITERAL"
+>blank</TT
+>，
+	<TT
+CLASS="LITERAL"
+>cntrl</TT
+>，<TT
+CLASS="LITERAL"
+>digit</TT
+>，
+	<TT
+CLASS="LITERAL"
+>graph</TT
+>，<TT
+CLASS="LITERAL"
+>lower</TT
+>，
+	<TT
+CLASS="LITERAL"
+>print</TT
+>，<TT
+CLASS="LITERAL"
+>punct</TT
+>，
+	<TT
+CLASS="LITERAL"
+>space</TT
+>，<TT
+CLASS="LITERAL"
+>upper</TT
+>，
+	<TT
+CLASS="LITERAL"
+>xdigit</TT
+>。
+	它们代表在
+    <SPAN
+CLASS="CITEREFENTRY"
+><SPAN
+CLASS="REFENTRYTITLE"
+>ctype</SPAN
+></SPAN
+> 里定义的字符表。
+	本地化设置可能会提供其他的表。字符表不能用做一个范围的端点。
+   </P
+><P
+>	在方括弧表达式里有两个特例：方括弧表达式
+	<TT
+CLASS="LITERAL"
+>[[:&lt;:]]</TT
+> 和
+	<TT
+CLASS="LITERAL"
+>[[:&gt;:]]</TT
+> 是约束，分别匹配一个单词开头和结束的空串。
+	单词定义为一个单词字符序列，前面和后面都没有其它单词字符。
+	单词字符是一个字母数字（和
+    <SPAN
+CLASS="CITEREFENTRY"
+><SPAN
+CLASS="REFENTRYTITLE"
+>ctype</SPAN
+></SPAN
+> 里定义的一样）
+	或者一个下划线。这是一个扩展，兼容<SPAN
+CLASS="ACRONYM"
+>POSIX</SPAN
+>1003.2，
+	但那里面并没有说明，
+	而且在准备移植到其他系统里去的软件里一定要小心使用。
+	通常下面描述的约束逃逸更好些（他们并非更标准，但是肯定更容易敲入）。
+   </P
+></DIV
+><DIV
+CLASS="SECT3"
+><H3
+CLASS="SECT3"
+><A
+NAME="POSIX-ESCAPE-SEQUENCES"
+>9.7.3.3. 正则表达式逃逸</A
+></H3
+><P
+>	<I
+CLASS="FIRSTTERM"
+>逃逸</I
+>是以 <TT
+CLASS="LITERAL"
+>\</TT
+> 开头，后面跟着一个字母数字字符得特殊序列。
+	逃逸有好几种变体：字符项，表缩写，约束逃逸，以及后引用。在 ARE 里，
+	如果一个 <TT
+CLASS="LITERAL"
+>\</TT
+> 后面跟着一个字母数字，但是并未组成一个合法的逃逸，
+	那么它是非法的。在 ERE 里则没有逃逸：在方括弧表达式之外，一个跟着字母数字字符
+	的 <TT
+CLASS="LITERAL"
+>\</TT
+> 只是表示该字符是一个普通的字符，而在一个方括弧表达式里，
+	<TT
+CLASS="LITERAL"
+>\</TT
+> 是一个普通的字符。（后者实际上是 ERE 和 ARE 之间的不兼容。）
+   </P
+><P
+>	<I
+CLASS="FIRSTTERM"
+>字符项逃逸</I
+>用于方便我们声明RE里那些不可打印的字符。
+	它们在 <A
+HREF="functions-matching.html#POSIX-CHARACTER-ENTRY-ESCAPES-TABLE"
+>Table 9-15</A
+> 里列出。
+   </P
+><P
+>	<I
+CLASS="FIRSTTERM"
+>表缩写逃逸</I
+>用来提供一些常用的字符表缩写。
+	他们在 <A
+HREF="functions-matching.html#POSIX-CLASS-SHORTHAND-ESCAPES-TABLE"
+>Table 9-16</A
+> 里显示。
+   </P
+><P
+>	<I
+CLASS="FIRSTTERM"
+>约束逃逸</I
+>是一个约束，如果满足特定的条件，
+	它匹配该空字串。它们在 <A
+HREF="functions-matching.html#POSIX-CONSTRAINT-ESCAPES-TABLE"
+>Table 9-17</A
+>
+	里显示。
+   </P
+><P
+>	<I
+CLASS="FIRSTTERM"
+>后引用</I
+> （<TT
+CLASS="LITERAL"
+>\</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>）匹配数字
+	<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> 指定的前面的圆括弧子表达式匹配的同一个字串
+	（参阅 <A
+HREF="functions-matching.html#POSIX-CONSTRAINT-BACKREF-TABLE"
+>Table 9-18</A
+>）。比如，
+	<TT
+CLASS="LITERAL"
+>([bc])\1</TT
+>匹配<TT
+CLASS="LITERAL"
+>bb</TT
+>或者<TT
+CLASS="LITERAL"
+>cc</TT
+>，
+	但是不匹配<TT
+CLASS="LITERAL"
+>bc</TT
+>或者<TT
+CLASS="LITERAL"
+>cb</TT
+>。RE里子表达式必须完全在后引用前面。
+	非捕获圆括弧并不定义子表达式。
+   </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	请注意，如果把模式当作一个 SQL 字串常量输入，那么逃逸前导的
+	<TT
+CLASS="LITERAL"
+>\</TT
+> 需要成倍地写。
+    </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="TABLE"
+><A
+NAME="POSIX-CHARACTER-ENTRY-ESCAPES-TABLE"
+></A
+><P
+><B
+>Table 9-15. 正则表达式字符项逃逸</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>逃逸</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\a</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 警笛（铃声）字符，和 C 里一样 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\b</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 退格，和 C 里一样 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\B</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\</TT
+> 的同义词，用于减少反斜杠加倍的需要
+       </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\c</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>X</I
+></TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> （这里 <TT
+CLASS="REPLACEABLE"
+><I
+>X</I
+></TT
+> 是任意字符）字符的
+	低 5 位和 <TT
+CLASS="REPLACEABLE"
+><I
+>X</I
+></TT
+> 里的相同，其它位都是 0
+       </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\e</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 集合序列名字是 <TT
+CLASS="LITERAL"
+>ESC</TT
+> 的字符，
+	如果不是，则是八进制值为 033 的字符</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\f</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 进纸，和 C 里一样 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\n</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 新行，和 C 里一样 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\r</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 回车，和 C 里一样 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\t</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 水平制表符，和 C 里一样 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\u</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>wxyz</I
+></TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> （这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>wxyz</I
+></TT
+> 和恰好四位十六进制位）
+	本机字节序的 UTF16 （Unicode，16 位） 字符 <TT
+CLASS="LITERAL"
+>U+</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>wxyz</I
+></TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\U</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>stuvwxyz</I
+></TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> （这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>stuvwxyz</I
+></TT
+> 是恰好八位十六进制位）
+	为那种假想中的 Unicode 32 位扩展保留的
+       </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\v</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 垂直制表符，和 C 里一样 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\x</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>hhh</I
+></TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> （这里 <TT
+CLASS="REPLACEABLE"
+><I
+>hhh</I
+></TT
+> 是一个十六进制序列）
+	十六进制值为 <TT
+CLASS="LITERAL"
+>0x</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>hhh</I
+></TT
+> 的字符
+	（不管用了几个十六进制位，都是一个字符）
+       </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\0</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 值为  <TT
+CLASS="LITERAL"
+>0</TT
+> 的字符 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>xy</I
+></TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> （这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>xy</I
+></TT
+> 是恰好两个八进制位，
+	并且不是一个 <I
+CLASS="FIRSTTERM"
+>后引用</I
+>）八进制值为 <TT
+CLASS="LITERAL"
+>0</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>xy</I
+></TT
+>
+	的字符
+       </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>xyz</I
+></TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> （这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>xyz</I
+></TT
+> 是恰好三位八进制位，
+	并且不是一个 <I
+CLASS="FIRSTTERM"
+>后引用</I
+>）
+	八进制值为 <TT
+CLASS="LITERAL"
+>0</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>xy</I
+></TT
+>的字符
+       </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	十六进制位是 <TT
+CLASS="LITERAL"
+>0</TT
+>-<TT
+CLASS="LITERAL"
+>9</TT
+>，<TT
+CLASS="LITERAL"
+>a</TT
+>-<TT
+CLASS="LITERAL"
+>f</TT
+>，和
+	<TT
+CLASS="LITERAL"
+>A</TT
+>-<TT
+CLASS="LITERAL"
+>F</TT
+>。八进制位是 <TT
+CLASS="LITERAL"
+>0</TT
+>-<TT
+CLASS="LITERAL"
+>7</TT
+>。
+   </P
+><P
+>	字符项逃逸总是被当作普通字符。比如，<TT
+CLASS="LITERAL"
+>\135</TT
+> 是 ASCII 中的 <TT
+CLASS="LITERAL"
+>]</TT
+>，
+	但 <TT
+CLASS="LITERAL"
+>\135</TT
+> 并不终止一个方括弧表达式。
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="POSIX-CLASS-SHORTHAND-ESCAPES-TABLE"
+></A
+><P
+><B
+>Table 9-16. 正则表达式表缩写逃逸</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>逃逸</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\d</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>[[:digit:]]</TT
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\s</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>[[:space:]]</TT
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\w</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>[[:alnum:]_]</TT
+>
+	（注意，这里是包含下划线的）
+       </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\D</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>[^[:digit:]]</TT
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\S</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>[^[:space:]]</TT
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\W</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>[^[:alnum:]_]</TT
+>
+	（注意这里是包含下划线的）
+       </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	在方括弧表达式里，<TT
+CLASS="LITERAL"
+>\d</TT
+>，<TT
+CLASS="LITERAL"
+>\s</TT
+>，
+	和 <TT
+CLASS="LITERAL"
+>\w</TT
+> 会失去他们的外层方括弧，而 <TT
+CLASS="LITERAL"
+>\D</TT
+>，<TT
+CLASS="LITERAL"
+>\S</TT
+>，
+	和 <TT
+CLASS="LITERAL"
+>\W</TT
+> 是非法的。（也就是说，比如 <TT
+CLASS="LITERAL"
+>[a-c\d]</TT
+> 等效于
+	<TT
+CLASS="LITERAL"
+>[a-c[:digit:]]</TT
+>。同样 <TT
+CLASS="LITERAL"
+>[a-c\D]</TT
+>，它原来等效于
+	<TT
+CLASS="LITERAL"
+>[a-c^[:digit:]]</TT
+>的，也是非法的。）
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="POSIX-CONSTRAINT-ESCAPES-TABLE"
+></A
+><P
+><B
+>Table 9-17. 正则表达式约束逃逸</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>逃逸</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\A</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 只匹配字串开头，（参阅
+       <A
+HREF="functions-matching.html#POSIX-MATCHING-RULES"
+>Section 9.7.3.5</A
+> 获取它和
+       <TT
+CLASS="LITERAL"
+>^</TT
+> 区别的信息） </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\m</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 只匹配一个词的开头 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\M</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 只匹配一个词的结尾 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\y</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 只匹配一个词的开头或者结尾 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\Y</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 只匹配那些既不是词的开头也不是词的结尾的点
+       </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\Z</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 只匹配一个字串的结尾
+       （参阅 <A
+HREF="functions-matching.html#POSIX-MATCHING-RULES"
+>Section 9.7.3.5</A
+> 获取它和<TT
+CLASS="LITERAL"
+>$</TT
+>区别的信息）
+       </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	一个词的定义是上面 <TT
+CLASS="LITERAL"
+>[[:&lt;:]]</TT
+> 和 <TT
+CLASS="LITERAL"
+>[[:&gt;:]]</TT
+>
+	的声明。在方括弧表达式里，约束逃逸是非法的。
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="POSIX-CONSTRAINT-BACKREF-TABLE"
+></A
+><P
+><B
+>Table 9-18. 正则表达式后引用</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>逃逸</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> （这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+> 是一个非零十进制位）
+       一个指向第 <TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+> 个子表达式的后引用 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>\</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>mnn</I
+></TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> （这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+> 是一个非零十进制位，而
+       <TT
+CLASS="REPLACEABLE"
+><I
+>nn</I
+></TT
+> 是更多的十进制位，并且十进制数值
+       <TT
+CLASS="REPLACEABLE"
+><I
+>mnn</I
+></TT
+> 不能大于到这个位置为止的闭合捕获圆括弧的个数）
+       一个指向第 <TT
+CLASS="REPLACEABLE"
+><I
+>mnn</I
+></TT
+> 个子表达式的后引用 </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	在八进制字符项逃逸和后引用之间有一个历史继承的歧义存在，这个歧义是
+	通过启发分析解决的，像上面描述地那样。前导零总是表示这是一个八进制逃逸。
+	而单个非零数字，如果没有跟着任何其它数字，那么总是认为是后引用。
+	一个多数据位的非零开头的序列也认为是后引用——只要它在合适的子表达式后面
+	（也就是说。数值在后引用的合法范围那），否则就认为是一个八进制。
+    </P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="SECT3"
+><H3
+CLASS="SECT3"
+><A
+NAME="POSIX-METASYNTAX"
+>9.7.3.4. 正则表达式元语法</A
+></H3
+><P
+>	除了上面描述地主要语法之外，还有几种特殊形式和杂项语法。
+   </P
+><P
+>	通常，RE 的风味由 <TT
+CLASS="VARNAME"
+>regex_flavor</TT
+> 决定。但是，这个环境变量
+	可以被一个<I
+CLASS="FIRSTTERM"
+>指示器</I
+>前缀覆盖。如果一个 RE 以<TT
+CLASS="LITERAL"
+>***:</TT
+>
+	开头，那么剩下的 RE 都被当作 ARE，不管 <TT
+CLASS="VARNAME"
+>regex_flavor</TT
+> 是什么。
+	如果任何类型的 RE 以 <TT
+CLASS="LITERAL"
+>***=</TT
+>开头，
+	那么剩下的 RE 被当作一个文本串，所有的字符都被认为是一个普通字符。
+   </P
+><P
+>	一个 ARE 可以以<I
+CLASS="FIRSTTERM"
+>嵌入选项</I
+>开头：一个<TT
+CLASS="LITERAL"
+>(?</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>xyz</I
+></TT
+><TT
+CLASS="LITERAL"
+>)</TT
+>
+	序列（这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>xyz</I
+></TT
+> 是一个或多个字母字符）声明影响剩余 RE 的选项。
+	这些选项覆盖任何前面判断的选项（包括 RE 风味和大小写敏感性）。可用的选项字母
+	在 <A
+HREF="functions-matching.html#POSIX-EMBEDDED-OPTIONS-TABLE"
+>Table 9-19</A
+> 显示。
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="POSIX-EMBEDDED-OPTIONS-TABLE"
+></A
+><P
+><B
+>Table 9-19. ARE 嵌入选项字母</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>选项</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>b</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 剩下的 RE 是 BRE </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>c</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 大小写敏感匹配（覆盖操作符类型）</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>e</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 剩下的 RE 是 ERE </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>i</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 大小写不敏感匹配（参阅 <A
+HREF="functions-matching.html#POSIX-MATCHING-RULES"
+>Section 9.7.3.5</A
+>）
+	（覆盖操作符类型）
+       </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>m</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>n</TT
+> 的历史同义词 </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>n</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 新行敏感匹配（参阅 <A
+HREF="functions-matching.html#POSIX-MATCHING-RULES"
+>Section 9.7.3.5</A
+>）
+       </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>p</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 部分新行敏感匹配（参阅 <A
+HREF="functions-matching.html#POSIX-MATCHING-RULES"
+>Section 9.7.3.5</A
+>）
+       </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>q</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 重置 RE 为一个文本（<SPAN
+CLASS="QUOTE"
+>"引起"</SPAN
+>）字串，所有都是普通字符
+       </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>s</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 非新行敏感匹配（缺省） </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>t</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 紧语法（缺省，见下文） </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>w</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 反转部分新行敏感（<SPAN
+CLASS="QUOTE"
+>"怪异"</SPAN
+>）匹配（参阅
+	<A
+HREF="functions-matching.html#POSIX-MATCHING-RULES"
+>Section 9.7.3.5</A
+>）
+       </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>x</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> 扩展的语法（见下文） </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	嵌入地选项在终止其序列的 <TT
+CLASS="LITERAL"
+>)</TT
+> 发生作用。他们只在 ARE 的开始处起作用
+	（如果有，则在任何 <TT
+CLASS="LITERAL"
+>***:</TT
+> 指示器后面）。
+   </P
+><P
+>	除了通常的（<I
+CLASS="FIRSTTERM"
+>紧</I
+>）RE 语法，（这种情况下所有字符都重要），
+	还有一种<I
+CLASS="FIRSTTERM"
+>扩展</I
+>语法，可以通过声明嵌入的 <TT
+CLASS="LITERAL"
+>x</TT
+> 选项获得。
+	在扩展语法里，RE 中的空白字符被忽略，就像那些在 <TT
+CLASS="LITERAL"
+>#</TT
+> 和新行之间
+	的字符一样。这样就允许我们给一个复杂的 RE 分段和注释。不过这个基本规则
+	上有三种例外：
+
+    <P
+></P
+></P><UL
+><LI
+><P
+>	前置了 <TT
+CLASS="LITERAL"
+>\</TT
+> 的空白字符或者 <TT
+CLASS="LITERAL"
+>#</TT
+> 保留
+      </P
+></LI
+><LI
+><P
+>	方括弧里的空白或者 <TT
+CLASS="LITERAL"
+>#</TT
+> 保留
+      </P
+></LI
+><LI
+><P
+>       在多字符符号里面不能出现空白和注释，比如 <TT
+CLASS="LITERAL"
+>(?:</TT
+>。
+      </P
+></LI
+></UL
+><P>
+
+	在这里，空白是空格，水平制表符，新行，和任何属于 <TT
+CLASS="REPLACEABLE"
+><I
+>space</I
+></TT
+>
+	（空白）字符表的字符。
+   </P
+><P
+>	最后，在 ARE 里，方括弧表达式外面，序列 <TT
+CLASS="LITERAL"
+>(?#</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>ttt</I
+></TT
+><TT
+CLASS="LITERAL"
+>)</TT
+>
+	（这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>ttt</I
+></TT
+> 是任意不包含 <TT
+CLASS="LITERAL"
+>)</TT
+> 的文本）是一个注释，
+	完全被忽略。同样，这样的东西是不允许出现在多字符符号的字符中间的，
+	比如 <TT
+CLASS="LITERAL"
+>(?:</TT
+>。这样的注释是比有用的机制的更久远的历史造成的，
+	他们的用法已经废弃了；我们应该使用扩展语法代替他。
+   </P
+><P
+>	如果声明了一个初始化的 <TT
+CLASS="LITERAL"
+>***=</TT
+> 指示器，那么所有这些元语法
+	扩展都<I
+CLASS="EMPHASIS"
+>不能</I
+>使用，因为这样表示把用户输入当作一个文本字串
+	而不是 RE 对待。
+   </P
+></DIV
+><DIV
+CLASS="SECT3"
+><H3
+CLASS="SECT3"
+><A
+NAME="POSIX-MATCHING-RULES"
+>9.7.3.5. 正则表达式匹配规则</A
+></H3
+><P
+>	在 RE 可以匹配给出的字串中多于一个子字串的情况下，
+	RE 匹配字串中最靠前的那个子字串。如果 RE 可以匹配在那个位置开始
+	的多个子字串，要么是取最长的子字串，要么是最短的，具体哪种，
+	取决于 RE 是<I
+CLASS="FIRSTTERM"
+>贪婪的</I
+> 还是 <I
+CLASS="FIRSTTERM"
+>非贪婪的</I
+>。
+   </P
+><P
+>    一个 RE 是否贪婪取决于下面规则：
+    <P
+></P
+></P><UL
+><LI
+><P
+>       大多数原子，以及所有约束，都没有贪婪属性（因为它们毕竟无法匹配个数变化的文本）。
+      </P
+></LI
+><LI
+><P
+>       在一个 RE 周围加上圆括弧并不会改变其贪婪性。
+      </P
+></LI
+><LI
+><P
+>       一个带一个固定重复次数的量词
+       （<TT
+CLASS="LITERAL"
+>{</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+><TT
+CLASS="LITERAL"
+>}</TT
+> 或者 <TT
+CLASS="LITERAL"
+>{</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+><TT
+CLASS="LITERAL"
+>}?</TT
+>）
+       之量化的原子和原子自身有着同样的贪婪性（可能是没有）。
+      </P
+></LI
+><LI
+><P
+>       一个带其他普通的量词（包括
+       <TT
+CLASS="LITERAL"
+>{</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+><TT
+CLASS="LITERAL"
+>,</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+><TT
+CLASS="LITERAL"
+>}</TT
+> 中
+       <TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+> 等于 <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> 的情况）量化的原子是贪婪的（首选最长匹配）。
+      </P
+></LI
+><LI
+><P
+>       一个带非贪婪量词（包括 <TT
+CLASS="LITERAL"
+>{</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+><TT
+CLASS="LITERAL"
+>,</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+><TT
+CLASS="LITERAL"
+>}?</TT
+> 中
+       <TT
+CLASS="REPLACEABLE"
+><I
+>m</I
+></TT
+> 等于 <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> 的情况）之量化原子是非贪婪的（首选最短匹配）。
+      </P
+></LI
+><LI
+><P
+>       一个分支 &mdash; 也就是说，一个没有顶级 <TT
+CLASS="LITERAL"
+>|</TT
+> 操作的 RE &mdash;
+       和它里面的第一个有贪婪属性的量化原子有着同样的贪婪性。
+      </P
+></LI
+><LI
+><P
+>       一个由 <TT
+CLASS="LITERAL"
+>|</TT
+> 操作符连接起来的两个或者更多分支组成的 RE 总是贪婪的。
+      </P
+></LI
+></UL
+><P>
+    </P
+><P
+>    上面的规则所描述的贪婪属性不仅仅适用于独立的量化原子，
+    而且也适用于包含量化原子的分支和整个 RE。这里的意思是，
+    匹配是按照分支或者整个 RE <I
+CLASS="EMPHASIS"
+>作为一个整体</I
+>匹配最长或者最短的子字串的可能。
+    一旦整个匹配的长度确定，那么匹配任意子表达式的部分就基于该子表达式的贪婪属性进行判断，
+    在 RE 里面靠前的子表达式的优先级高于靠后的子表达式。
+   </P
+><P
+>    一个表达这些的例子：
+</P><PRE
+CLASS="SCREEN"
+>SELECT SUBSTRING('XY1234Z', 'Y*([0-9]{1,3})');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>123</TT
+>
+SELECT SUBSTRING('XY1234Z', 'Y*?([0-9]{1,3})');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>1</TT
+></PRE
+><P>
+    在第一个例子里，RE 作为整体是贪婪的，因为 <TT
+CLASS="LITERAL"
+>Y*</TT
+> 是贪婪的。
+    它可以匹配从 <TT
+CLASS="LITERAL"
+>Y</TT
+> 开始的东西，并且它匹配从这个位置开始的最长的字串，
+    也就是，<TT
+CLASS="LITERAL"
+>Y123</TT
+>。输出是这里的圆括弧包围的部分，或者说是 <TT
+CLASS="LITERAL"
+>123</TT
+>。
+    在第二个例子里， RE 总体上是一个非贪婪的 RE，因为 <TT
+CLASS="LITERAL"
+>Y*?</TT
+> 是非贪婪的。
+    它可以匹配从 <TT
+CLASS="LITERAL"
+>Y</TT
+> 开始的最短的子字串，也就是说 <TT
+CLASS="LITERAL"
+>Y1</TT
+>。
+    子表达式 <TT
+CLASS="LITERAL"
+>[0-9]{1,3}</TT
+> 是贪婪的，但是它不能修改总体匹配长度的决定；
+    因此它被迫只匹配 <TT
+CLASS="LITERAL"
+>1</TT
+>。
+   </P
+><P
+>    简单说，如果一个 RE 同时包含贪婪和非贪婪的子表达式，
+    那么总匹配长度要么是最长可能，要么是最短可能，取决于给整个 RE 赋予的贪婪属性。
+    给子表达式赋予的贪婪属性只影响在这个匹配里，各个子表达式之间相互允许<SPAN
+CLASS="QUOTE"
+>"吃进"</SPAN
+>的多少。
+   </P
+><P
+>	量词 <TT
+CLASS="LITERAL"
+>{1,1}</TT
+> 和 <TT
+CLASS="LITERAL"
+>{1,1}?</TT
+> 可以分别用于在一个子表达式或者整个 RE 上强制贪婪或者非贪婪。
+   </P
+><P
+>	匹配长度是以字符衡量的，而不是集合的元素。一个空字串会被认为比什么都不匹配长。
+	比如：<TT
+CLASS="LITERAL"
+>bb*</TT
+> 匹配 <TT
+CLASS="LITERAL"
+>abbbc</TT
+> 的中间三个字符；
+	 <TT
+CLASS="LITERAL"
+>(week|wee)(night|knights)</TT
+> 匹配 <TT
+CLASS="LITERAL"
+>weeknights</TT
+> 的所有十个字符；
+	而 <TT
+CLASS="LITERAL"
+>(.*).*</TT
+> 匹配 <TT
+CLASS="LITERAL"
+>abc</TT
+>的时候，圆括弧包围的子表达式
+	匹配所有三个字符；而如果用 <TT
+CLASS="LITERAL"
+>(a*)*</TT
+> 匹配 <TT
+CLASS="LITERAL"
+>bc</TT
+>，那么 RE 和圆括弧
+	子表达式都匹配整个字串。
+   </P
+><P
+>	如果声明了大小写无关的匹配，那么效果就好像把所有字母上的
+	大小写区别取消了一样。如果一个存在大小写差别的字母以一个
+	普通字符的形式出现在方括弧表达式外面，那么它实际上被转换成
+	一个包含大小写的方括弧表达式，也就是说，<TT
+CLASS="LITERAL"
+>x</TT
+> 变成 <TT
+CLASS="LITERAL"
+>[xX]</TT
+>。
+	如果它出现在一个方括弧表达式里面，那么它的所有大小写的同族都被加入
+	方括弧表达式中，也就是说，<TT
+CLASS="LITERAL"
+>[x]</TT
+> 变成 <TT
+CLASS="LITERAL"
+>[xX]</TT
+>，
+	而 <TT
+CLASS="LITERAL"
+>[^x]</TT
+> 变成 <TT
+CLASS="LITERAL"
+>[^xX]</TT
+>。
+   </P
+><P
+>	如果声明了新行敏感匹配，<TT
+CLASS="LITERAL"
+>.</TT
+> 和使用<TT
+CLASS="LITERAL"
+>^</TT
+>的方括弧表达式
+	将永远不会匹配新行字符（这样，匹配就绝对不会夸新行，除非 RE 明确地安排了
+	这样的情况）并且<TT
+CLASS="LITERAL"
+>^</TT
+> 和<TT
+CLASS="LITERAL"
+>$</TT
+> 除了分别匹配
+	字串开头和结尾之外，还将分别匹配新行后面和前面
+	的空字串。但是 ARE 逃逸 <TT
+CLASS="LITERAL"
+>\A</TT
+> 和 <TT
+CLASS="LITERAL"
+>\Z</TT
+> 仍然<I
+CLASS="EMPHASIS"
+>只</I
+>匹配字串的开头和结尾。
+   </P
+><P
+>	如果声明了部分新行敏感匹配，那么它影响 <TT
+CLASS="LITERAL"
+>.</TT
+> 和方括弧表达式，
+	这个时候和新行敏感匹配一样，但是不影响 <TT
+CLASS="LITERAL"
+>^</TT
+> 和 <TT
+CLASS="LITERAL"
+>$</TT
+>。
+   </P
+><P
+>	如果声明了反转新行敏感匹配，那么它影响 <TT
+CLASS="LITERAL"
+>^</TT
+> 和 <TT
+CLASS="LITERAL"
+>$</TT
+>，
+	作用和新行敏感匹配里一样，但是不影响 <TT
+CLASS="LITERAL"
+>.</TT
+> 和方括弧表达式。
+	这个没什么太多用途，只是为了对称提供的。
+   </P
+></DIV
+><DIV
+CLASS="SECT3"
+><H3
+CLASS="SECT3"
+><A
+NAME="POSIX-LIMITS-COMPATIBILITY"
+>9.7.3.6. 限制和兼容性</A
+></H3
+><P
+>	在这个实现里，对 RE 的长度没有特别的限制，但是，那些希望能够
+	有很好移植行的程序应该避免写超过 256 字节的 RE，因为 POSIX 兼容
+	的实现可以拒绝接受这样的 RE。
+   </P
+><P
+>	ARE 实际上和 POSIX ERE 不兼容的唯一的特性是在方括弧表达式里 <TT
+CLASS="LITERAL"
+>\</TT
+> 并不
+	失去它特殊的含义。所有其它 ARE 特性都使用在 POSIX ERE 里面是非法或者是
+	未定义、未声明效果的语法；指示器的 <TT
+CLASS="LITERAL"
+>***</TT
+> 就是再 POSIX
+	的 BRE 和 ERE 之外的语法。
+   </P
+><P
+>	许多 ARE 扩展都是从 Perl 那里借来的，但是有些我做了修改，清理了
+	一下，以及一些Perl里没有出现的扩展。要注意的不兼容包括 <TT
+CLASS="LITERAL"
+>\b</TT
+>，
+	<TT
+CLASS="LITERAL"
+>\B</TT
+>，对结尾的新行缺乏特别的处理，对那些新行敏感匹配的附加的
+	补齐方括弧表达式，在前瞻约束里对圆括弧和方括弧引用的限制，以及最长/最短
+	匹配（而不是第一匹配）语义。
+   </P
+><P
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 7.4 之前的版本里的 ARE 和 ERE 存在两个非常
+	显著的不兼容：
+
+    <P
+></P
+></P><UL
+><LI
+><P
+>	在 ARE 里，后面跟着一个字母数字的 <TT
+CLASS="LITERAL"
+>\</TT
+> 要么是一个逃逸，要么是错误，
+	但是在以前的版本里，她只是写那个字母数字的另外一种方法。这个应该不是什么问题，
+	因为在以前的版本里没有什么原因让我们写这样的序列。
+      </P
+></LI
+><LI
+><P
+>	在 ARE 里，<TT
+CLASS="LITERAL"
+>\</TT
+>在 <TT
+CLASS="LITERAL"
+>[]</TT
+>里还是一个特殊字符，
+	因此在方括弧表达式里的一个文本 <TT
+CLASS="LITERAL"
+>\</TT
+> 必须写成 <TT
+CLASS="LITERAL"
+>\\</TT
+>。
+      </P
+></LI
+></UL
+><P>
+
+	虽然这些区别对大多数应用都来说都可能不是问题，
+	但必要时你可以通过设置 <TT
+CLASS="VARNAME"
+>regex_flavor</TT
+> 为 <TT
+CLASS="LITERAL"
+>extended</TT
+> 来避免这些问题。
+   </P
+></DIV
+><DIV
+CLASS="SECT3"
+><H3
+CLASS="SECT3"
+><A
+NAME="POSIX-BASIC-REGEXES"
+>9.7.3.7. 基本正则表达式</A
+></H3
+><P
+>	BRE 在几个方面和 ERE 不太一样。<TT
+CLASS="LITERAL"
+>|</TT
+>，<TT
+CLASS="LITERAL"
+>+</TT
+>，和 <TT
+CLASS="LITERAL"
+>?</TT
+>
+	都是普通字符，它们没有等效的功能替换。范围的分隔符是 <TT
+CLASS="LITERAL"
+>\{</TT
+> 和 <TT
+CLASS="LITERAL"
+>\}</TT
+>，
+	因为 <TT
+CLASS="LITERAL"
+>{</TT
+> 和 <TT
+CLASS="LITERAL"
+>}</TT
+> 本身是普通字符。嵌套的子表达式的圆括弧是
+	<TT
+CLASS="LITERAL"
+>\(</TT
+> 和 <TT
+CLASS="LITERAL"
+>\)</TT
+>，因为 <TT
+CLASS="LITERAL"
+>(</TT
+> 和 <TT
+CLASS="LITERAL"
+>)</TT
+> 自身是普通字符。
+	除非在 RE 开头或者是圆括弧封装的子表达式开头，<TT
+CLASS="LITERAL"
+>^</TT
+> 都是普通字符，
+	除非在 RE 结尾或者是圆括弧封装的子表达式的结尾，<TT
+CLASS="LITERAL"
+>$</TT
+> 是一个普通字符，
+	而如果 <TT
+CLASS="LITERAL"
+>*</TT
+> 出现在 RE 开头或者是圆括弧封装的子表达式开头
+	（前面可能有 <TT
+CLASS="LITERAL"
+>^</TT
+> ），那么它是个普通字符。
+	最后，可以用单数字的后引用，以及 <TT
+CLASS="LITERAL"
+>\&lt;</TT
+> 和 <TT
+CLASS="LITERAL"
+>\&gt;</TT
+> 分别是 <TT
+CLASS="LITERAL"
+>[[:&lt;:]]</TT
+> 和
+	<TT
+CLASS="LITERAL"
+>[[:&gt;:]]</TT
+>的同义词；没有其它的逃逸。
+   </P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="functions-bitstring.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="functions-formatting.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>位串函数和操作符</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="functions.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>数据类型格式化函数</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

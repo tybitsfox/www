@@ -1,0 +1,53 @@
+<HTML><HEAD><TITLE>sqlite_open</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="SQLite" HREF="ref.sqlite.html"><LINK REL="PREVIOUS" TITLE="sqlite_num_rows" HREF="function.sqlite-num-rows.html"><LINK REL="NEXT" TITLE="sqlite_popen" HREF="function.sqlite-popen.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.sqlite-num-rows.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.sqlite-popen.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.sqlite-open"></A>sqlite_open</H1><DIV CLASS="refnamediv"><A NAME="AEN101567"></A><P> (no version information, might be only in CVS)</P>sqlite_open&nbsp;--&nbsp;Opens a SQLite database. Will create the database if it does not exist</DIV><DIV CLASS="refsect1"><A NAME="AEN101570"></A><H2>Description</H2>resource <B CLASS="methodname">sqlite_open</B> ( string filename [, int mode [, string &#38;error_message]])<BR></BR><P>&#13; Returns a resource (database handle) on success, <TT CLASS="constant"><B>FALSE</B></TT> on error.
+</P><P>&#13; The <TT CLASS="parameter"><I>filename</I></TT> parameter is the name of the
+database. It can be a relative or absolute path to the file that sqlite
+will use to store your data. If the file does not exist, sqlite will
+attempt to create it. You <SPAN CLASS="emphasis"><I CLASS="emphasis">MUST</I></SPAN> have write
+permissions to the file if you want to insert data or modify the database
+schema.
+</P><P>&#13; The <TT CLASS="parameter"><I>mode</I></TT> parameter specifies the mode of the file and is
+intended to be used to open the database in read-only mode.
+Presently, this parameter is ignored by the sqlite library. The default
+value for mode is the octal value <TT CLASS="literal">0666</TT> and this is the
+recommended value to use if you need access to the
+<TT CLASS="parameter"><I>errmessage</I></TT> parameter.
+</P><P>&#13; <TT CLASS="parameter"><I>errmessage</I></TT> is passed by reference and is set to
+hold a descriptive error message explaining why the database could not be
+opened if there was an error.
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN101596"></A><P><B>例子 1. <B CLASS="function">sqlite_open()</B> example</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#007700">if (</font><font color="#0000BB">$db </font><font color="#007700">= </font><font color="#0000BB">sqlite_open</font><font color="#007700">(</font><font color="#DD0000">'mysqlitedb'</font><font color="#007700">, </font><font color="#0000BB">0666</font><font color="#007700">, </font><font color="#0000BB">$sqliteerror</font><font color="#007700">)) { <br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">sqlite_query</font><font color="#007700">(</font><font color="#0000BB">$db</font><font color="#007700">, </font><font color="#DD0000">'CREATE TABLE foo (bar varchar(10))'</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">sqlite_query</font><font color="#007700">(</font><font color="#0000BB">$db</font><font color="#007700">, </font><font color="#DD0000">"INSERT INTO foo VALUES ('fnord')"</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$result </font><font color="#007700">= </font><font color="#0000BB">sqlite_query</font><font color="#007700">(</font><font color="#0000BB">$db</font><font color="#007700">, </font><font color="#DD0000">'select bar from foo'</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">var_dump</font><font color="#007700">(</font><font color="#0000BB">sqlite_fetch_array</font><font color="#007700">(</font><font color="#0000BB">$result</font><font color="#007700">)); <br />} else {<br />&nbsp;&nbsp;&nbsp;&nbsp;die(</font><font color="#0000BB">$sqliteerror</font><font color="#007700">);<br />}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><DIV CLASS="tip"><BLOCKQUOTE CLASS="tip"><P><B>提示: </B>
+On Unix platforms, SQLite is sensitive to scripts that use the fork() system call. If you
+do have such a script, it is recommended that you close the handle prior
+to forking and then re-open it in the child and/or parent.
+For more information on this issue, see
+<A HREF="http://sqlite.org/c_interface.html" TARGET="_top">The C language interface
+to the SQLite library</A> in the section entitled
+<TT CLASS="literal">Multi-Threading And SQLite</TT>.
+</P></BLOCKQUOTE></DIV><DIV CLASS="tip"><BLOCKQUOTE CLASS="tip"><P><B>提示: </B>
+It is not recommended to work with SQLite databases mounted on NFS
+partitions. Since NFS is notoriously bad when it comes to locking you
+may find that you cannot even open the database at all, and if it
+succeeds, the locking behaviour may be undefined.
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Starting with SQLite library version 2.8.2, you can specify
+<TT CLASS="literal">:memory:</TT> as the <TT CLASS="parameter"><I>filename</I></TT> to
+create a database that lives only in the memory of the computer.
+This is useful mostly for temporary processing, as the in-memory
+database will be destroyed when the process ends. It can also be
+useful when coupled with the <TT CLASS="literal">ATTACH DATABASE</TT> SQL
+statement to load other databases and move and query data between them.
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+SQLite is <A HREF="features.safe-mode.html#ini.safe-mode">安全模式</A> and open_basedir aware.
+</P></BLOCKQUOTE></DIV><P>&#13; See also <A HREF="function.sqlite-popen.html"><B CLASS="function">sqlite_popen()</B></A>,
+<A HREF="function.sqlite-close.html"><B CLASS="function">sqlite_close()</B></A> and
+<A HREF="function.sqlite-query.html"><B CLASS="function">sqlite_query()</B></A>.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.sqlite-num-rows.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.sqlite-popen.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">sqlite_num_rows</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.sqlite.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">sqlite_popen</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>SPI_saveplan PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="接口函数" HREF="spi.html#SPI-INTERFACE"><LINK REL="PREVIOUS" TITLE="SPI_cursor_close" HREF="spi-spi-cursor-close.html"><LINK REL="NEXT" TITLE="接口支持函数" HREF="spi-interface-support.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="spi-spi-cursor-close.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="spi-spi-cursor-close.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="spi.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="spi-interface-support.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SPI-SPI-SAVEPLAN" >SPI_saveplan</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN37561" ></A
+><H2
+>Name</H2
+>SPI_saveplan&nbsp;--&nbsp;保存一个规划</DIV
+><A NAME="AEN37564" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN37566" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>void * SPI_saveplan(void * <TT
+CLASS="PARAMETER"
+>plan</TT
+>)</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN37569" ></A
+><H2
+>描述</H2
+><P
+>   <TT
+CLASS="FUNCTION"
+>SPI_saveplan</TT
+> 在内存里保存一个传递进来的规划（用 <TT
+CLASS="FUNCTION"
+>SPI_prepare</TT
+> 准备的），
+   避免它被 <TT
+CLASS="FUNCTION"
+>SPI_finish</TT
+> 和事务管理器释放，并且返回一个指向保存的规划的指针。
+   这样就给你在当前绘画里的随后的调用中复用这个准备好的规划的能力。
+   你可以在一个局部变量里保存这个指针。在准备一个规划或者在 <TT
+CLASS="FUNCTION"
+>SPI_execute_plan</TT
+> 里使用一个已经准备好的规划的时候，
+   一定要检查这个指针是否为 <TT
+CLASS="SYMBOL"
+>NULL</TT
+>。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN37577" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>void * <TT
+CLASS="PARAMETER"
+>plan</TT
+></TT
+></DT
+><DD
+><P
+>      要保存的规划
+     </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN37586" ></A
+><H2
+>返回值</H2
+><P
+>   指向保存的规划的指针；如果不成功则为 <TT
+CLASS="SYMBOL"
+>NULL</TT
+>。
+   出错的时候，像下面这样设置 <TT
+CLASS="VARNAME"
+>SPI_result</TT
+>：
+
+   <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="SYMBOL"
+>SPI_ERROR_ARGUMENT</TT
+></DT
+><DD
+><P
+>       如果 <TT
+CLASS="PARAMETER"
+>plan</TT
+> 是 <TT
+CLASS="SYMBOL"
+>NULL</TT
+>
+      </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>SPI_ERROR_UNCONNECTED</TT
+></DT
+><DD
+><P
+>       如果从一个未连接的过程中调用
+      </P
+></DD
+></DL
+></DIV
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN37604" ></A
+><H2
+>注意</H2
+><P
+>   如果会话过程中，准备好的规划引用的一个对象（一个表，函数，等等）被删除，
+   那么 <TT
+CLASS="FUNCTION"
+>SPI_execute_plan</TT
+> 执行此规划的结果将不可预期。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="spi-spi-cursor-close.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="spi-interface-support.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >SPI_cursor_close</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="spi.html#SPI-INTERFACE" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >接口支持函数</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

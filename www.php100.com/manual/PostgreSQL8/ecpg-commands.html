@@ -1,0 +1,173 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>运行 SQL 命令 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="ecpg - 在 C 里嵌入 SQL" HREF="ecpg.html"><LINK REL="PREVIOUS" TITLE="关闭连接" HREF="ecpg-disconnect.html"><LINK REL="NEXT" TITLE="选取一个连接" HREF="ecpg-set-connection.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="ecpg-disconnect.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="ecpg.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 30. <SPAN
+CLASS="APPLICATION"
+>ecpg</SPAN
+> - 在 C 里嵌入 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="ecpg.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="ecpg-set-connection.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="ECPG-COMMANDS" >30.4. 运行 SQL 命令</A
+></H1
+><P
+>	在嵌入的 SQL 应用中可以运行任何 SQL 命令。下面是一些如何使用它们的例子。
+  </P
+><P
+>	创建一个表：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL CREATE TABLE foo (number integer, ascii char(16));
+EXEC SQL CREATE UNIQUE INDEX num1 ON foo(number);
+EXEC SQL COMMIT;</PRE
+><P>
+  </P
+><P
+>	插入一些行：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL INSERT INTO foo (number, ascii) VALUES (9999, 'doodad');
+EXEC SQL COMMIT;</PRE
+><P>
+  </P
+><P
+>	删除一些行：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL DELETE FROM foo WHERE number = 9999;
+EXEC SQL COMMIT;</PRE
+><P>
+  </P
+><P
+>	单行 select：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL SELECT foo INTO :FooBar FROM table1 WHERE ascii = 'doodad';</PRE
+><P>
+  </P
+><P
+>	使用游标的 select：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL DECLARE foo_bar CURSOR FOR
+    SELECT number, ascii FROM foo
+    ORDER BY ascii;
+EXEC SQL FETCH foo_bar INTO :FooBar, DooDad;
+...
+EXEC SQL CLOSE foo_bar;
+EXEC SQL COMMIT;</PRE
+><P>
+  </P
+><P
+>	更新：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL UPDATE foo
+    SET ascii = 'foobar'
+    WHERE number = 9999;
+EXEC SQL COMMIT;</PRE
+><P>
+  </P
+><P
+>	形如 <TT
+CLASS="LITERAL"
+>:<TT
+CLASS="REPLACEABLE"
+><I
+>something</I
+></TT
+></TT
+>
+	这样的记号是<I
+CLASS="FIRSTTERM"
+>宿主变量</I
+>，也就是说，
+	它们指向 C 程序里的变量。我们在下一节里解释这些话题。
+  </P
+><P
+>	在缺省模式下，语句只有在发出了 <TT
+CLASS="COMMAND"
+>EXEC SQL COMMIT</TT
+>
+	的时候才提交。嵌入的 SQL 接口也支持事务的自动提交（类似 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 的行为），
+	方法是通过给 <TT
+CLASS="COMMAND"
+>ecpg</TT
+> （见下文） 增加命令行选项
+	<TT
+CLASS="OPTION"
+>-t</TT
+>，或者是通过 <TT
+CLASS="LITERAL"
+>EXEC SQL SET AUTOCOMMIT TO ON</TT
+> 语句。
+	在自动提交模式里，每条命令都是自动提交的，除非它们包围在一个明确的事务块里。
+	这个模式可以用 <TT
+CLASS="LITERAL"
+>EXEC SQL SET AUTOCOMMIT TO OFF</TT
+> 明确地关闭。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="ecpg-disconnect.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="ecpg-set-connection.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >关闭连接</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="ecpg.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >选取一个连接</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

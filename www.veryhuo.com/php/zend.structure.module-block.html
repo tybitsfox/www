@@ -1,0 +1,148 @@
+<HTML><HEAD><TITLE>Declaration of the Zend Module Block</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Source Discussion" HREF="zend.structure.html"><LINK REL="PREVIOUS" TITLE="Declaration of the Zend Function Block" HREF="zend.structure.function-block.html"><LINK REL="NEXT" TITLE="Creation of get_module" HREF="zend.structure.get-module.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="section" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="zend.structure.function-block.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 31. Source Discussion</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="zend.structure.get-module.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="section"><H1 CLASS="section"><A NAME="zend.structure.module-block"></A>Declaration of the Zend Module Block</H1><P>&#13; This block is stored in the structure
+<TT CLASS="envar">zend_module_entry</TT> and contains all necessary
+information to describe the contents of this module to Zend. You can
+see the internal definition of this module in
+<A HREF="zend.structure.module-block.html#example.zend-module-entry">例子 31-2</A>.
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="example.zend-module-entry"></A><P><B>例子 31-2. Internal declaration of <TT CLASS="envar">zend_module_entry</TT>.</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">typedef struct _zend_module_entry zend_module_entry;
+     
+    struct _zend_module_entry {
+    unsigned short size;
+    unsigned int zend_api;
+    unsigned char zend_debug;
+    unsigned char zts;
+    char *name;
+    zend_function_entry *functions;
+    int (*module_startup_func)(INIT_FUNC_ARGS);
+    int (*module_shutdown_func)(SHUTDOWN_FUNC_ARGS);
+    int (*request_startup_func)(INIT_FUNC_ARGS);
+    int (*request_shutdown_func)(SHUTDOWN_FUNC_ARGS);
+    void (*info_func)(ZEND_MODULE_INFO_FUNC_ARGS);
+    char *version;
+
+[ Rest of the structure is not interesting here ]
+
+};</PRE></TD></TR></TABLE><DIV CLASS="informaltable"><A NAME="AEN122169"></A><P></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH WIDTH="37%" ALIGN="LEFT" VALIGN="MIDDLE">Entry</TH><TH WIDTH="63%" ALIGN="LEFT" VALIGN="MIDDLE">Description</TH></TR></THEAD><TBODY><TR><TD WIDTH="37%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="envar">size</TT>, <TT CLASS="envar">zend_api</TT>,
+<TT CLASS="envar">zend_debug</TT> and <TT CLASS="envar">zts</TT>
+</TD><TD WIDTH="63%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Usually filled with the
+<TT CLASS="literal">"STANDARD_MODULE_HEADER"</TT>, which fills these
+four members with the size of the whole zend_module_entry, the
+<TT CLASS="literal">ZEND_MODULE_API_NO</TT>, whether it is a debug
+build or normal build (<TT CLASS="literal">ZEND_DEBUG</TT>) and if
+ZTS is enabled (<TT CLASS="literal">USING_ZTS</TT>).
+</TD></TR><TR><TD WIDTH="37%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">name</TT></TD><TD WIDTH="63%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Contains the module name (for example, <TT CLASS="literal">"File
+functions"</TT>, <TT CLASS="literal">"Socket functions"</TT>,
+<TT CLASS="literal">"Crypt"</TT>, etc.). This name will show up in
+<A HREF="function.phpinfo.html"><B CLASS="function">phpinfo()</B></A>, in the section "Additional
+Modules."
+</TD></TR><TR><TD WIDTH="37%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">functions</TT></TD><TD WIDTH="63%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Points to the Zend function block, discussed in the preceding
+section.
+</TD></TR><TR><TD WIDTH="37%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">module_startup_func</TT></TD><TD WIDTH="63%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; This function is called once upon module initialization and can
+be used to do one-time initialization steps (such as initial
+memory allocation, etc.). To indicate a failure during
+initialization, return <TT CLASS="literal">FAILURE</TT>; otherwise,
+<TT CLASS="literal">SUCCESS</TT>. To mark this field as unused, use
+<TT CLASS="literal">NULL</TT>. To declare a function, use the macro
+<TT CLASS="literal">ZEND_MINIT</TT>.
+</TD></TR><TR><TD WIDTH="37%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">module_shutdown_func</TT></TD><TD WIDTH="63%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; This function is called once upon module shutdown and can be
+used to do one-time deinitialization steps (such as memory
+deallocation). This is the counterpart to
+<B CLASS="function">module_startup_func()</B>. To indicate a failure
+during deinitialization, return <TT CLASS="literal">FAILURE</TT>;
+otherwise, <TT CLASS="literal">SUCCESS</TT>. To mark this field as
+unused, use <TT CLASS="literal">NULL</TT>. To declare a function, use
+the macro <TT CLASS="literal">ZEND_MSHUTDOWN</TT>.
+</TD></TR><TR><TD WIDTH="37%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">request_startup_func</TT></TD><TD WIDTH="63%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; This function is called once upon every page request and can be
+used to do one-time initialization steps that are required to
+process a request. To indicate a failure here, return
+<TT CLASS="literal">FAILURE</TT>; otherwise,
+<TT CLASS="literal">SUCCESS</TT>. <SPAN CLASS="emphasis"><I CLASS="emphasis">Note:</I></SPAN> As
+dynamic loadable modules are loaded only on page requests, the
+request startup function is called right after the module
+startup function (both initialization events happen at the same
+time). To mark this field as unused, use
+<TT CLASS="literal">NULL</TT>. To declare a function, use the macro
+<TT CLASS="literal">ZEND_RINIT</TT>.
+</TD></TR><TR><TD WIDTH="37%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">request_shutdown_func</TT></TD><TD WIDTH="63%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; This function is called once after every page request and works
+as counterpart to <B CLASS="function">request_startup_func()</B>. To
+indicate a failure here, return <TT CLASS="literal">FAILURE</TT>;
+otherwise, <TT CLASS="literal">SUCCESS</TT>.
+<SPAN CLASS="emphasis"><I CLASS="emphasis">Note:</I></SPAN> As dynamic loadable modules are
+loaded only on page requests, the request shutdown function is
+immediately followed by a call to the module shutdown handler
+(both deinitialization events happen at the same time). To mark
+this field as unused, use <TT CLASS="literal">NULL</TT>. To declare a
+function, use the macro <TT CLASS="literal">ZEND_RSHUTDOWN</TT>.
+</TD></TR><TR><TD WIDTH="37%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">info_func</TT></TD><TD WIDTH="63%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; When <A HREF="function.phpinfo.html"><B CLASS="function">phpinfo()</B></A> is called in a script, Zend
+cycles through all loaded modules and calls this function.
+Every module then has the chance to print its own "footprint"
+into the output page. Generally this is used to dump
+environmental or statistical information. To mark this field as
+unused, use <TT CLASS="literal">NULL</TT>. To declare a function, use
+the macro <TT CLASS="literal">ZEND_MINFO</TT>.
+</TD></TR><TR><TD WIDTH="37%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">version</TT></TD><TD WIDTH="63%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; The version of the module. You can use
+<TT CLASS="literal">NO_VERSION_YET</TT> if you don't want to give the
+module a version number yet, but we really recommend that you
+add a version string here. Such a version string can look like
+this (in chronological order): <TT CLASS="literal">"2.5-dev"</TT>,
+<TT CLASS="literal">"2.5RC1"</TT>, <TT CLASS="literal">"2.5"</TT> or
+<TT CLASS="literal">"2.5pl3"</TT>.
+</TD></TR><TR><TD WIDTH="37%" ALIGN="LEFT" VALIGN="MIDDLE">Remaining structure elements</TD><TD WIDTH="63%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; These are used internally and can be prefilled by using the
+macro <TT CLASS="literal">STANDARD_MODULE_PROPERTIES_EX</TT>. You
+should not assign any values to them. Use
+<TT CLASS="literal">STANDARD_MODULE_PROPERTIES_EX</TT> only if you
+use global startup and shutdown functions; otherwise, use
+<TT CLASS="literal">STANDARD_MODULE_PROPERTIES</TT> directly.
+</TD></TR></TBODY></TABLE><P></P></DIV></DIV></TD></TR></TABLE><P>&#13; In our example, this structure is implemented as follows:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">zend_module_entry firstmod_module_entry =
+{
+    STANDARD_MODULE_HEADER,
+    "First Module",
+    firstmod_functions,
+    NULL, NULL, NULL, NULL, NULL,
+    NO_VERSION_YET,
+    STANDARD_MODULE_PROPERTIES,
+};</PRE></TD></TR></TABLE>
+This is basically the easiest and most minimal set of values you
+could ever use. The module name is set to <TT CLASS="literal">First
+Module</TT>, then the function list is referenced, after which
+all startup and shutdown functions are marked as being unused.
+</P><P>&#13; For reference purposes, you can find a list of the macros involved
+in declared startup and shutdown functions in
+<A HREF="zend.structure.module-block.html#tab.init-shutdown">表格 31-3</A>. These are
+not used in our basic example yet, but will be demonstrated later
+on. You should make use of these macros to declare your startup and
+shutdown functions, as these require special arguments to be passed
+(<TT CLASS="literal">INIT_FUNC_ARGS</TT> and
+<TT CLASS="literal">SHUTDOWN_FUNC_ARGS</TT>), which are automatically
+included into the function declaration when using the predefined
+macros. If you declare your functions manually and the PHP
+developers decide that a change in the argument list is necessary,
+you'll have to change your module sources to remain compatible.
+</P><DIV CLASS="table"><A NAME="tab.init-shutdown"></A><P><B>表格 31-3. Macros to Declare Startup and Shutdown Functions</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD WIDTH="41%" ALIGN="LEFT" VALIGN="MIDDLE">Macro</TD><TD WIDTH="59%" ALIGN="LEFT" VALIGN="MIDDLE">Description</TD></TR><TR><TD WIDTH="41%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">ZEND_MINIT(module)</TT></TD><TD WIDTH="59%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Declares a function for module startup. The generated name will
+be <TT CLASS="literal">zend_minit_&#60;module&#62;</TT> (for example,
+<TT CLASS="literal">zend_minit_first_module</TT>). Use in
+conjunction with <TT CLASS="literal">ZEND_MINIT_FUNCTION</TT>.
+</TD></TR><TR><TD WIDTH="41%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">ZEND_MSHUTDOWN(module)</TT></TD><TD WIDTH="59%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Declares a function for module shutdown. The generated name
+will be <TT CLASS="literal">zend_mshutdown_&#60;module&#62;</TT> (for
+example, <TT CLASS="literal">zend_mshutdown_first_module</TT>). Use
+in conjunction with <TT CLASS="literal">ZEND_MSHUTDOWN_FUNCTION</TT>.
+</TD></TR><TR><TD WIDTH="41%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">ZEND_RINIT(module)</TT></TD><TD WIDTH="59%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Declares a function for request startup. The generated name
+will be <TT CLASS="literal">zend_rinit_&#60;module&#62;</TT> (for
+example, <TT CLASS="literal">zend_rinit_first_module</TT>). Use in
+conjunction with <TT CLASS="literal">ZEND_RINIT_FUNCTION</TT>.
+</TD></TR><TR><TD WIDTH="41%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">ZEND_RSHUTDOWN(module)</TT></TD><TD WIDTH="59%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Declares a function for request shutdown. The generated name
+will be <TT CLASS="literal">zend_rshutdown_&#60;module&#62;</TT> (for
+example, <TT CLASS="literal">zend_rshutdown_first_module</TT>). Use
+in conjunction with <TT CLASS="literal">ZEND_RSHUTDOWN_FUNCTION</TT>.
+</TD></TR><TR><TD WIDTH="41%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">ZEND_MINFO(module)</TT></TD><TD WIDTH="59%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Declares a function for printing module information, used when
+<A HREF="function.phpinfo.html"><B CLASS="function">phpinfo()</B></A> is called. The generated name will
+be <TT CLASS="literal">zend_info_&#60;module&#62;</TT> (for example,
+<TT CLASS="literal">zend_info_first_module</TT>). Use in conjunction
+with <TT CLASS="literal">ZEND_MINFO_FUNCTION</TT>.
+</TD></TR></TBODY></TABLE></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="zend.structure.function-block.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="zend.structure.get-module.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Declaration of the Zend Function Block</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="zend.structure.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Creation of <B CLASS="function">get_module()</B></TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

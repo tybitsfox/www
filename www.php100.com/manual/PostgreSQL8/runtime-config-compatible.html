@@ -1,0 +1,391 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>版本和平台兼容性 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="服务器配置" HREF="runtime-config.html"><LINK REL="PREVIOUS" TITLE="锁管理" HREF="runtime-config-locks.html"><LINK REL="NEXT" TITLE="预置的选项" HREF="runtime-config-preset.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="runtime-config-locks.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="runtime-config.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 17. 服务器配置</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="runtime-config.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="runtime-config-preset.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="RUNTIME-CONFIG-COMPATIBLE" >17.12. 版本和平台兼容性</A
+></H1
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="RUNTIME-CONFIG-COMPATIBLE-VERSION" >17.12.1. 以前的 PostgreSQL 版本</A
+></H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A NAME="GUC-ADD-MISSING-FROM" ><TT
+CLASS="VARNAME"
+>add_missing_from</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	如果为开，查询引用的表将自动增加到 <TT
+CLASS="LITERAL"
+>FROM</TT
+> 里 －如果还没有出现这个子句的话。
+	这个行为不是 SQL 的标准，并且很多人不喜欢它，
+	因为它会隐藏错误（比如该引用别名的时候引用了表名）。
+	缺省是 <TT
+CLASS="LITERAL"
+>off</TT
+>。这个变量可以设置为开以便和 8.1 之前的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	版本兼容，因为那些版本的行为是缺省允许。
+       </P
+><P
+>	请注意，即使打开了这个变量，那么查询每次隐含地 <TT
+CLASS="LITERAL"
+>FROM</TT
+> 项引用也都会触发一个警号信息。
+	我们鼓励用户更新他们的应用，不要依赖这个行为，
+	方法是在查询的 <TT
+CLASS="LITERAL"
+>FROM</TT
+> 子句（或者是它的 <TT
+CLASS="LITERAL"
+>USING</TT
+> 子句，如果是
+	<TT
+CLASS="COMMAND"
+>DELETE</TT
+> 的话）里添加所有查询需要的表引用。
+       </P
+></DD
+><DT
+><A NAME="GUC-REGEX-FLAVOR" ><TT
+CLASS="VARNAME"
+>regex_flavor</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>        正则表达式<SPAN
+CLASS="QUOTE"
+>"风味"</SPAN
+>可以设置为 <TT
+CLASS="LITERAL"
+>advanced</TT
+>，<TT
+CLASS="LITERAL"
+>extended</TT
+>，
+        或者 <TT
+CLASS="LITERAL"
+>basic</TT
+>。通常的缺省是 <TT
+CLASS="LITERAL"
+>advanced</TT
+>。<TT
+CLASS="LITERAL"
+>extended</TT
+>
+        设置对于和 7.4 以前的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 精确的向下兼容很有用。
+	参阅 <A HREF="functions-matching.html#POSIX-SYNTAX-DETAILS" >Section 9.7.3.1</A
+> 获取细节。
+       </P
+></DD
+><DT
+><A NAME="GUC-SQL-INHERITANCE" ><TT
+CLASS="VARNAME"
+>sql_inheritance</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>        这个选项控制继承语义，尤其是在缺省时是否在各种命令里把子表包括进来。
+        版本 7.1 以前是不包括的。如果你需要老特性，你可以把这个变量设为 <TT
+CLASS="LITERAL"
+>off</TT
+>，
+	但是从长远看来，我们建议你修改你的应用以使用 <TT
+CLASS="LITERAL"
+>ONLY</TT
+> 关键字来排除子表。
+	参考 <A HREF="ddl-inherit.html" >Section 5.8</A
+>
+        获取关于继承的更多信息。
+       </P
+></DD
+><DT
+><A NAME="GUC-DEFAULT-WITH-OIDS" ><TT
+CLASS="VARNAME"
+>default_with_oids</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	如果既没有声明 <TT
+CLASS="LITERAL"
+>WITH OIDS</TT
+>，又没有声明 <TT
+CLASS="LITERAL"
+>WITHOUT OIDS</TT
+>，
+	那么这个选项控制 <TT
+CLASS="COMMAND"
+>CREATE TABLE</TT
+> 和 <TT
+CLASS="COMMAND"
+>CREATE TABLE AS</TT
+>
+	是否在新创建的表中包含一个 OID 字段。它还决定 <TT
+CLASS="COMMAND"
+>SELECT INTO</TT
+> 创建的表里面是否包含 OID。
+	在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 8.1 <TT
+CLASS="VARNAME"
+>default_with_oids</TT
+> 缺省为假。
+	以前版本的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>，它的缺省为打开。
+       </P
+><P
+>	在用户表中使用 OID 被认为是废弃了，因此大多数安装应该关闭这个变量。
+	特定的需要 OID 的表应该在创建表的时候声明 <TT
+CLASS="LITERAL"
+>WITH OIDS</TT
+>。
+	为了兼容不遵循这个特性的旧应用，这个变量可以为之打开。
+       </P
+></DD
+><DT
+><A NAME="GUC-ESCAPE-STRING-WARNING" ><TT
+CLASS="VARNAME"
+>escape_string_warning</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	打开的时候，如果在普通的字串文本里（<TT
+CLASS="LITERAL"
+>'...'</TT
+> 语法）出现了一个反斜扛
+	（<TT
+CLASS="LITERAL"
+>\</TT
+>），那么就会发出一个警告。
+	缺省是 <TT
+CLASS="LITERAL"
+>off</TT
+>。
+       </P
+><P
+>	应该使用逃逸字串语法（<TT
+CLASS="LITERAL"
+>E'...'</TT
+>）来做逃逸，
+	因为在将来的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本里，
+	普通的字串对待反斜扛文本的行为将是标准兼容的。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="RUNTIME-CONFIG-COMPATIBLE-CLIENTS" >17.12.2. 平台和客户端兼容性</A
+></H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A NAME="GUC-TRANSFORM-NULL-EQUALS" ><TT
+CLASS="VARNAME"
+>transform_null_equals</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>        如果打开，那么下面这样的表达式 <TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>expr</I
+></TT
+> = NULL</TT
+>
+	（或者 <TT
+CLASS="LITERAL"
+>NULL = <TT
+CLASS="REPLACEABLE"
+><I
+>expr</I
+></TT
+></TT
+>）被当做
+	<TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>expr</I
+></TT
+> IS NULL</TT
+>，处理，也就是说，
+        如果 <TT
+CLASS="REPLACEABLE"
+><I
+>expr</I
+></TT
+> 得出 NULL 值则返回真，否则返回假。
+        <TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>expr</I
+></TT
+> = NULL</TT
+> 正确的 SQL 标准兼容的行为总是返回 NULL（未知）。
+	因此这个选项缺省时是 <TT
+CLASS="LITERAL"
+>off</TT
+>。
+       </P
+><P
+>        不过，在<SPAN
+CLASS="PRODUCTNAME"
+>Microsoft Access</SPAN
+>里的过滤表单生成的查询好像使用的是
+        <TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>expr</I
+></TT
+> = NULL</TT
+> 测试空值，
+        因此，如果你使用这个界面访问数据库，你可能想把这个选项打开。
+        因为形如 <TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>expr</I
+></TT
+> = NULL</TT
+> 的表达式总是返回 NULL （使用正确的代换），因此它们并不常用，
+        而且在一般的应用中也不常见，因此这个选项实际上没有什么害处。
+        但是新用户常常在涉及 NULL 的表达式语义上感到胡涂，因此缺省时不打开这个选项。
+       </P
+><P
+>        请注意这个选项只影响 <TT
+CLASS="LITERAL"
+>= NULL</TT
+> 形式，
+        不包括其它比较操作符或者其它与一些涉及等号操作符的表达式计算（比如 <TT
+CLASS="LITERAL"
+>IN</TT
+>）。
+	因此，这个选项不是垃圾程序的狗皮膏药。
+       </P
+><P
+>        请参考 <A HREF="functions-comparison.html" >Section 9.2</A
+> 获取相关信息。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="runtime-config-locks.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="runtime-config-preset.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >锁管理</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="runtime-config.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >预置的选项</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

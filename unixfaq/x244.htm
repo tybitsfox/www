@@ -1,0 +1,34 @@
+<html><head><title>system函数，pclose函数，waitpid函数的返回值是什么？</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="进程控制" href="./c46.htm"><link rel="PREVIOUS" title="给定一个进程号，我怎样知道它是个正在运行的程序？" href="./x221.htm"><link rel="NEXT" title="我怎样找出一个进程的存储器使用情况？" href="./x250.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x221.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 1. 进程控制</td><td align="right" valign="bottom" width="10%"><a href="./x250.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN244">1.10. system函数，pclose函数，waitpid函数的返回值是什么？</a></h1><p>     ‘system()’，‘pclose()’或者‘waitpid()’的返回值不象是我进程的退出值
+     (exit value)
+     (译者注：退出值指调用exit() 或_exit()时给的参数)... 或者退出值左移了8
+     位...这是怎么搞的？
+    </p><p>手册页是对的，你也是对的! 如果查阅手册页的‘waitpid()’你会发现进程的返回
+值被编码了。正常情况下，进程的返回值在高16位，而余下的位用来作其它事。
+如果你希望可移植，你就不能凭借这个，而建议是你该使用提供的宏。这些宏总
+是在‘wait()’或‘wstat’的文档中说明了。
+    </p><p>为了不同目的定义的宏(在‘&lt;sys/wait.h&gt;’)包括(stat是‘waitpid()’返回的值)：
+    </p><pre class="PROGRAMLISTING">`WIFEXITED(stat)'
+     如果子进程正常退出则返回非0
+
+`WEXITSTATUS(stat)'
+     子进程返回的退出码
+
+`WIFSIGNALED(stat)'
+     如果子进程由与信号而 终止则返回非0
+
+`WTERMSIG(stat)'
+     终止子进程的信号代码
+
+`WIFSTOPPED(stat)'
+     如果子进程暂停(stopped)则返回非0
+
+`WSTOPSIG(stat)'
+     使子进程暂停的信号代码
+
+`WIFCONTINUED(stat)'
+     如果状态是表示子进程继续执行则返回非0
+
+`WCOREDUMP(stat)'
+     如果‘WIFSIGNALED(stat)’为非0，而如果这个进程产生一个内存映射文件
+     (core dump)则返回非0
+    </pre></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x221.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x250.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">给定一个进程号，我怎样知道它是个正在运行的程序？</td><td align="center" valign="top" width="34%"><a href="./c46.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">我怎样找出一个进程的存储器使用情况？</td></tr></tbody></table></div></body></html>

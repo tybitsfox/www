@@ -1,0 +1,195 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>管理数据库 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="服务器管理" HREF="admin.html"><LINK REL="PREVIOUS" TITLE="函数和触发器" HREF="perm-functions.html"><LINK REL="NEXT" TITLE="创建数据库" HREF="manage-ag-createdb.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="CHAPTER" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="perm-functions.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="user-manag.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="client-authentication.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="manage-ag-createdb.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A NAME="MANAGING-DATABASES" >Chapter 19. 管理数据库</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>19.1. <A HREF="managing-databases.html#MANAGE-AG-OVERVIEW" >概述</A
+></DT
+><DT
+>19.2. <A HREF="manage-ag-createdb.html" >创建数据库</A
+></DT
+><DT
+>19.3. <A HREF="manage-ag-templatedbs.html" >模板数据库</A
+></DT
+><DT
+>19.4. <A HREF="manage-ag-config.html" >数据库配置</A
+></DT
+><DT
+>19.5. <A HREF="manage-ag-dropdb.html" >删除数据库</A
+></DT
+><DT
+>19.6. <A HREF="manage-ag-tablespaces.html" >表空间</A
+></DT
+></DL
+></DIV
+><A NAME="AEN21194" ></A
+><P
+>	每个正在运行的<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>服务器实例都管理着一个或多个数据库。
+	因此，在组织<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>（<SPAN
+CLASS="QUOTE"
+>"数据库对象"</SPAN
+>）对象的层次中，数据库位于最顶层。
+	本章描述数据库的属性，以及如何创建，管理，和删除它们。
+ </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="MANAGE-AG-OVERVIEW" >19.1. 概述</A
+></H1
+><A NAME="AEN21202" ></A
+><P
+>	数据库是一些<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>对象（<SPAN
+CLASS="QUOTE"
+>"数据库对象"</SPAN
+>）的命名集合；
+	通常每个数据库对象（表，函数等等）属于并且只属于一个数据库。
+	（不过有几个系统表，比如 <TT
+CLASS="LITERAL"
+>pg_database</TT
+>，属于整个集群并且可以在集群之内的每个数据库里访问。）
+	更准确地说，一个数据库是一个模式的集合，而模式包含表，函数等等。
+	因此完整的层次是这样的：服务器，数据库，模式，表（或者其他类型对象，比如函数）。
+ </P
+><P
+>	在与数据库服务器联接的时候，应用应该在它的联接请求里面带有它想与之联接的数据库名称。
+	不允许在一次联接里面对多个数据库访问．（不过没有限制一个应用与同一个或者其他数据库可以建立的联接数量．）
+	数据库是物理上相互隔离的，
+	对它们的访问控制是在联接层次进行控制的。如果一个<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	服务器实例用于承载那些应该分隔并且相互之间并不知晓的用户和项目，
+	那么我们建议把它们放在不同的数据库里。如果项目或者用户是相互关联的，
+	并且可以相互使用对方的资源，那么应该把它们放在同一个数据库里，
+	但可能是不同的模式里。模式只是一个纯粹的逻辑结构，谁能访问某个模式由权限系统控制。
+	有关管理模式的更多信息在 <A HREF="ddl-schemas.html" >Section 5.7</A
+> 里。
+ </P
+><P
+>   数据库是使用 <TT
+CLASS="COMMAND"
+>CREATE DATABASE</TT
+> 命令创建的（参阅 <A HREF="manage-ag-createdb.html" >Section 19.2</A
+>），
+   用 <TT
+CLASS="COMMAND"
+>DROP DATABASE</TT
+> 命令删除（参阅 <A HREF="manage-ag-dropdb.html" >Section 19.5</A
+>）。
+   要判断现有数据库的集合，检查系统表 <TT
+CLASS="STRUCTNAME"
+>pg_database</TT
+>，比如
+</P><PRE
+CLASS="SYNOPSIS"
+>SELECT datname FROM pg_database;</PRE
+><P>
+   <A HREF="app-psql.html" ><SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+></A
+> 程序的 <TT
+CLASS="LITERAL"
+>\l</TT
+> 元命令和 <TT
+CLASS="OPTION"
+>-l</TT
+> 命令行选项也可以用来列出现存数据库。
+  </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 标准把数据库称作<SPAN
+CLASS="QUOTE"
+>"目录（catalog）"</SPAN
+>，不过这两个东西实际上没有什么区别。
+  </P
+></BLOCKQUOTE
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="perm-functions.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="manage-ag-createdb.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >函数和触发器</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="admin.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >创建数据库</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

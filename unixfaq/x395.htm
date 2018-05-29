@@ -1,0 +1,59 @@
+<html><head><title>有名管道(FIFO)能做什么？</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="一般文件操作(包括管道和套接字)" href="./c300.htm"><link rel="PREVIOUS" title="我如何像shell里一样扩展在文件名里的'~'？" href="./x389.htm"><link rel="NEXT" title="终端输入/输出" href="./c432.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x389.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 2. 一般文件操作(包括管道和套接字)</td><td align="right" valign="bottom" width="10%"><a href="./c432.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN395">2.10. 有名管道(FIFO)能做什么？</a></h1><div class="SECT2"><h2 class="SECT2"><a name="AEN397">2.10.1. 什么是有名管道？</a></h2><p>有名管道是一个能在互不相关进程之间传送数据的特殊文件。一个或多个进程向
+内写入数据，在另一端由一个进程负责读出。有名管道是在文件系统中可见的，
+也就是说ls可以直接看到。(有名管道又称FIFO，也就是先入先出。)
+      </p><p>有名管道可以将无关的进程联系起来，而无名的普通管道一般只能将父子进程联
+系起来――除非你很努力地去尝试――当然也能联系两个无关进程。有名管道是
+严格单向的，尽管在一些系统中无名管道是双向的。
+      </p></div><div class="SECT2"><h2 class="SECT2"><a name="AEN401">2.10.2. 我如何建立一个有名管道？</a></h2><p>在shell下交互地建立一个有名管道，你可以用mknod或mkfifo命令。在有些系统
+中，mknod产生的文件可能在/etc目录下，也就是说，可能不在你的目录下出现，
+所以请查看你系统中的man手册。[译者注：在Linux下，可以看一下fifo(4)]
+      </p><p>要在程序中建立一个有名管道：
+      </p><pre class="PROGRAMLISTING">   /* 明确设置umask，因为你不知道谁会读写管道 */
+   umask(0);
+   if (mkfifo("test_fifo", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP))
+   {
+       perror("mkfifo");
+       exit(1);
+   }
+      </pre><p>也可以使用mknod。[译者注：在Linux下不推荐使用mknod，因为其中有许多臭虫
+在NFS下工作更要小心，能使用mkfifo就不要用mknod，因为mkfifo()是POSIX.1
+标准。]
+      </p><pre class="PROGRAMLISTING">   /* 明确设置umask，因为你不知道谁会读写管道 */
+   umask(0);
+   if (mknod("test_fifo",
+              S_IFIFO | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+              0))
+   {
+       perror("mknod");
+       exit(1);
+   }
+      </pre></div><div class="SECT2"><h2 class="SECT2"><a name="AEN408">2.10.3. 我如何使用一个有名管道？</a></h2><p>使用有名管道十分简单：你如同使用一个普通文件一样打开它，用read()和
+write()进行操作。但对管道使用open()时可能引起阻塞，下面一些常用规律可
+以参考。
+      </p><p></p><ul><li><p>   如果你同时用读写方式(O_RDWR)方式打开，则不会引起阻塞。
+          </p></li><li><p>   如果你用只读方式(O_RDONLY)方式打开，则open()会阻塞一直到有写方打开管道，
+   除非你指定了O_NONBLOCK，来保证打开成功。
+          </p></li><li><p>   同样以写方式(O_WRONLY)打开也会阻塞到有读方打开管道，不同的是如果
+     O_NONBLOCK被指定open()会以失败告终。
+          </p></li></ul><p>当对有名管道进行读写的时，注意点和操作普通管道和套接字时一样：当写入方
+关闭连接时read()返回EOF，如果没有听众write()会得到一个SIGPIPE的信号，
+对此信号进行屏蔽或忽略会引发一个EPIPE错误退出。
+      </p></div><div class="SECT2"><h2 class="SECT2"><a name="AEN419">2.10.4. 能否在NFS上使用有名管道？</a></h2><p>不能，在NFS协议中没有相关功能。(你可能可以在一个NFS文件系统中用有名管
+道联系两个同在客户端的进程。)
+      </p></div><div class="SECT2"><h2 class="SECT2"><a name="AEN422">2.10.5. 能否让多个进程同时向有名管道内写入数据？</a></h2><p>如果每次写入的数据少于PIPE_BUF的大小，那么就不会出现数据交叉的情况。但
+由于对写入的多少没有限制，而read()操作会读取尽可能多的数据，因此你不能
+知道数据到底是谁写入的。
+      </p><p>PIPE_BUF的大小根据POSIX标准不能小于512，一些系统里在&lt;limits.h&gt;中被定
+义，[译者注：Linux中不是，其值是4096。]这可以通过pathconf()或fpathconf()
+对单独管道进行咨询得到。
+      </p></div><div class="SECT2"><h2 class="SECT2"><a name="AEN426">2.10.6. 有名管道的应用</a></h2><p>    “我如何时间服务器和多个客户端的双向交流？”
+      </p><p>一对多的形式经常出现，只要每次客户端向服务器发出的指令小于PIPE_BUF，它
+们就可以通过一个有名管道向服务器发送数据。客户端可以很容易地知道服务器
+传发数据的管道名。
+      </p><p>但问题在于，服务器不能用一个管道来和所有客户打交道。如果不止一个客户在
+读一个管道，是无法确保每个客户都得到自己对应的回复。
+      </p><p>一个办法就是每个客户在向服务器发送信息前都建立自己的读入管道，或让服务
+器在得到数据后建立管道。使用客户的进程号(pid)作为管道名是一种常用的方
+法。客户可以先把自己的进程号告诉服务器，然后到那个以自己进程号命名的管
+道中读取回复。
+      </p></div></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x389.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./c432.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">我如何像shell里一样扩展在文件名里的'~'？</td><td align="center" valign="top" width="34%"><a href="./c300.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">终端输入/输出</td></tr></tbody></table></div></body></html>

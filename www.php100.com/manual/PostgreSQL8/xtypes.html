@@ -1,0 +1,348 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>用户定义类型 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="扩展 SQL" HREF="extend.html"><LINK REL="PREVIOUS" TITLE="用户定义聚集" HREF="xaggr.html"><LINK REL="NEXT" TITLE="用户定义操作符" HREF="xoper.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="xaggr.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="extend.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 32. 扩展 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="extend.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="xoper.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="XTYPES" >32.11. 用户定义类型</A
+></H1
+><A NAME="AEN32745" ></A
+><P
+>	正如 <A HREF="extend-type-system.html" >Section 32.2</A
+> 所说，
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 可以扩展为支持新数据类型。
+	本节描述如何定义新的基本类型，这些类型是那些定义在 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语言之下的数据类型。
+	创建一个新的基本类型要求实现函数在一种低层语言的类型上操作，通常是 C。
+  </P
+><P
+>	本节的例子可以在源码发布中 <TT
+CLASS="FILENAME"
+>src/tutorial</TT
+> 目录的
+	<TT
+CLASS="FILENAME"
+>complex.sql</TT
+> 和 <TT
+CLASS="FILENAME"
+>complex.c</TT
+>
+	里找到。
+  </P
+><P
+>  <A NAME="AEN32757" ></A
+>
+  <A NAME="AEN32759" ></A
+>
+	一个用户定义的类型总是有输入和输出函数。
+	<A NAME="AEN32761" ></A
+>
+	<A NAME="AEN32764" ></A
+>
+	这些函数决定该类型如何在字串里出现（让用户输入和输出给用户）以及类型如何在存储器里组织。
+	输入函数以一个以空（null）结尾的字符串为参数并且返回该类型的内部（内存里）的表现形式。
+	输出类型以该类型的内部表现形式为参数并且返回一个以空（null）结尾的字符串。
+    </P
+><P
+>	假设我们要定义一个类型 <TT
+CLASS="TYPE"
+>complex</TT
+> 用来表示复数。
+	通常，我们选用下面的 C 结构来在存储器里表现复数：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct Complex {
+    double      x;
+    double      y;
+} Complex;</PRE
+><P>
+	对于该类型的外部表现形式，，我们选择形如 <TT
+CLASS="LITERAL"
+>(x,y)</TT
+>
+	的字串。
+    </P
+><P
+>    输入输出函数通常并不难写，尤其是输出函数。但是，
+    在定义你的外部（字符串）表现形式时，要注意你最后必须为该表现形式写一个完整而且健壮的分析器作为你的输入函数。比如：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>PG_FUNCTION_INFO_V1(complex_in);
+
+Datum
+complex_in(PG_FUNCTION_ARGS)
+{
+    char       *str = PG_GETARG_CSTRING(0);
+    double      x,
+                y;
+    Complex    *result;
+
+    if (sscanf(str, " ( %lf , %lf )", &amp;x, &amp;y) != 2)
+        ereport(ERROR,
+                (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+                 errmsg("invalid input syntax for complex: \"%s\"",
+                        str)));
+
+    result = (Complex *) palloc(sizeof(Complex));
+    result-&gt;x = x;
+    result-&gt;y = y;
+    PG_RETURN_POINTER(result);
+}</PRE
+><P>
+
+        输出函数可以简单的就是：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>PG_FUNCTION_INFO_V1(complex_out);
+
+Datum
+complex_out(PG_FUNCTION_ARGS)
+{
+    Complex    *complex = (Complex *) PG_GETARG_POINTER(0);
+    char       *result;
+
+    result = (char *) palloc(100);
+    snprintf(result, 100, "(%g,%g)", complex-&gt;x, complex-&gt;y);
+    PG_RETURN_CSTRING(result);
+}</PRE
+><P>
+    </P
+><P
+>	你应该把你的输入和输出函数做的互为逆（函数）。如果你不这样做，
+	你就可能在需要把数据输出来在装载回去时碰到很严重的问题，当涉及到浮点数时，这是非常普遍的问题。
+       </P
+><P
+>  另外，一个用户定义类型可以提供二进制输入和输出过程。
+  二进制 I/O 通常更快，但是没有文本 I/O 移植性好。
+  因为对于文本 I/O 而言，完全是由你来定义外部的二进制形式是如何的。
+  大多数内置的数据类型都尽可能提供一个与机器无关的二进制形式。
+  对于 <TT
+CLASS="TYPE"
+>complex</TT
+>，我们将把二进制 I/O 建立在 <TT
+CLASS="TYPE"
+>float8</TT
+> 的基础上。
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>PG_FUNCTION_INFO_V1(complex_recv);
+
+Datum
+complex_recv(PG_FUNCTION_ARGS)
+{
+    StringInfo  buf = (StringInfo) PG_GETARG_POINTER(0);
+    Complex    *result;
+
+    result = (Complex *) palloc(sizeof(Complex));
+    result-&gt;x = pq_getmsgfloat8(buf);
+    result-&gt;y = pq_getmsgfloat8(buf);
+    PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(complex_send);
+
+Datum
+complex_send(PG_FUNCTION_ARGS)
+{
+    Complex    *complex = (Complex *) PG_GETARG_POINTER(0);
+    StringInfoData buf;
+
+    pq_begintypsend(&amp;buf);
+    pq_sendfloat8(&amp;buf, complex-&gt;x);
+    pq_sendfloat8(&amp;buf, complex-&gt;y);
+    PG_RETURN_BYTEA_P(pq_endtypsend(&amp;buf));
+}</PRE
+><P>
+ </P
+><P
+>	要定义 <TT
+CLASS="TYPE"
+>complex</TT
+>
+	类型，我们要在创建该类型前先创建用户定义的 I/O 函数：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION complex_in(cstring)
+    RETURNS complex
+    AS '<TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION complex_out(complex)
+    RETURNS cstring
+    AS '<TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION complex_recv(internal)
+   RETURNS complex
+   AS '<TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>'
+   LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION complex_send(complex)
+   RETURNS bytea
+   AS '<TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>'
+   LANGUAGE C IMMUTABLE STRICT;</PRE
+><P>
+	请注意输入和输出函数的声明必须引用还没定义的类型。
+	这是允许的，但是会导致一些警告，你可以忽略这些警告。
+	必须先定义输入函数。
+ </P
+><P
+>	最后，我们可以声明数据类型：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TYPE complex (
+   internallength = 16,
+   input = complex_in,
+   output = complex_out,
+   receive = complex_recv,
+   send = complex_send,
+   alignment = double
+);</PRE
+><P>
+ </P
+><P
+>	当你定义一种新的基本类型时，
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 自动提供对该类型的数组的支持。
+	<A NAME="AEN32790" ></A
+>
+	因为历史原因，
+	数组类型的类型名是与类型同名字串前面加个下划线字符(<TT
+CLASS="LITERAL"
+>_</TT
+>)。
+    </P
+><P
+>  一旦数据类型存在，我们就可以声明额外的函数以提供在该数据类型上的有用的操作。
+  然后就可以在这些函数上定义操作符，如果需要，还可以创建操作符表支持该数据类型的索引。
+  这些额外的层在后面的章节介绍。
+ </P
+><P
+>   <A NAME="AEN32796" ></A
+>
+	如果你的数据类型的大小可能超过几百个字节(内部形式)，
+	那么你应该很仔细地把它们标记为可 TOAST 的（参阅 <A HREF="storage-toast.html" >Section 50.2</A
+>）。
+	要做到这一点，
+	该类型地内部形式必需遵循变长数据内部形式地标准布局：
+	头四个字节必需是一个 <TT
+CLASS="TYPE"
+>int32</TT
+>，包含数据地全长（包括长度自身）。
+        在该类型上操作的 C 函数必须通过使用 <TT
+CLASS="FUNCTION"
+>PG_DETOAST_DATUM</TT
+>
+	小心地解开它们处理的任何“烘烤”过的数值（这些细节通常都可以通过定义类型相关的 <TT
+CLASS="FUNCTION"
+>GETARG</TT
+> 宏掩盖）。
+	最后，在使用 <TT
+CLASS="COMMAND"
+>CREATE TYPE</TT
+> 命令的时候，
+	声明内部长度为 <TT
+CLASS="LITERAL"
+>variable</TT
+> 并且选择恰当的存储选项。
+ </P
+><P
+>  更多的细节请参阅 <A HREF="sql-createtype.html" ><I
+>CREATE TYPE</I
+></A
+> 命令的描述。
+ </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="xaggr.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="xoper.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >用户定义聚集</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="extend.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >用户定义操作符</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

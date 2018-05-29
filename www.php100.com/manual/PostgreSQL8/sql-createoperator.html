@@ -1,0 +1,577 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>CREATE OPERATOR PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="CREATE LANGUAGE" HREF="sql-createlanguage.html"><LINK REL="NEXT" TITLE="CREATE OPERATOR CLASS" HREF="sql-createopclass.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-createlanguage.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-createlanguage.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-createopclass.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-createopclass.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-CREATEOPERATOR" >CREATE OPERATOR</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN42296" ></A
+><H2
+>Name</H2
+>CREATE OPERATOR&nbsp;--&nbsp;定义一个新的操作符</DIV
+><A NAME="AEN42299" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN42301" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>CREATE OPERATOR <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> (
+    PROCEDURE = <TT
+CLASS="REPLACEABLE"
+><I
+>funcname</I
+></TT
+>
+    [, LEFTARG = <TT
+CLASS="REPLACEABLE"
+><I
+>lefttype</I
+></TT
+> ] [, RIGHTARG = <TT
+CLASS="REPLACEABLE"
+><I
+>righttype</I
+></TT
+> ]
+    [, COMMUTATOR = <TT
+CLASS="REPLACEABLE"
+><I
+>com_op</I
+></TT
+> ] [, NEGATOR = <TT
+CLASS="REPLACEABLE"
+><I
+>neg_op</I
+></TT
+> ]
+    [, RESTRICT = <TT
+CLASS="REPLACEABLE"
+><I
+>res_proc</I
+></TT
+> ] [, JOIN = <TT
+CLASS="REPLACEABLE"
+><I
+>join_proc</I
+></TT
+> ]
+    [, HASHES ] [, MERGES ]
+    [, SORT1 = <TT
+CLASS="REPLACEABLE"
+><I
+>left_sort_op</I
+></TT
+> ] [, SORT2 = <TT
+CLASS="REPLACEABLE"
+><I
+>right_sort_op</I
+></TT
+> ]
+    [, LTCMP = <TT
+CLASS="REPLACEABLE"
+><I
+>less_than_op</I
+></TT
+> ] [, GTCMP = <TT
+CLASS="REPLACEABLE"
+><I
+>greater_than_op</I
+></TT
+> ]
+)</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42315" ></A
+><H2
+>描述</H2
+><P
+>   <TT
+CLASS="COMMAND"
+>CREATE OPERATOR</TT
+> 定义一个新的操作符，
+   <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>。
+	定义该操作符的用户成为其所有者。如果给出了一个模式名，那么该操作符将在指定的模式中创建。
+	否则它会在当前模式中创建。
+  </P
+><P
+>	操作符 <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>
+	是一个最多<TT
+CLASS="SYMBOL"
+>NAMEDATALEN</TT
+>-1
+	长的（缺省为 63 个）下列字符组成的字串：
+<P
+CLASS="LITERALLAYOUT"
+>+&nbsp;-&nbsp;*&nbsp;/&nbsp;&lt;&nbsp;&gt;&nbsp;=&nbsp;~&nbsp;!&nbsp;@&nbsp;#&nbsp;%&nbsp;^&nbsp;&amp;&nbsp;|&nbsp;`&nbsp;?</P
+>
+
+	你选择名字的时候有几个限制：
+   <P
+></P
+></P><UL
+><LI
+><P
+>	<TT
+CLASS="LITERAL"
+>$</TT
+> 不能定义为单字符操作符，
+	但是它们可以是一个多字符操作符的名称的一部分。
+     </P
+></LI
+><LI
+><P
+>	<TT
+CLASS="LITERAL"
+>--</TT
+> 和 <TT
+CLASS="LITERAL"
+>/*</TT
+> 不能在操作符名字的任何地方出现，
+	因为它们会被认为是一个注释的开始。
+     </P
+></LI
+><LI
+><P
+>	一个多字符的操作符名字不能以 <TT
+CLASS="LITERAL"
+>+</TT
+> 或 <TT
+CLASS="LITERAL"
+>-</TT
+> 结尾，
+	除非该名字还包含至少下面字符之一：
+<P
+CLASS="LITERALLAYOUT"
+>~&nbsp;!&nbsp;@&nbsp;#&nbsp;%&nbsp;^&nbsp;&amp;&nbsp;|&nbsp;`&nbsp;?</P
+>
+     例如， <TT
+CLASS="LITERAL"
+>@-</TT
+>  是一个允许的操作符名，
+     但 <TT
+CLASS="LITERAL"
+>*-</TT
+> 不是。
+     这个限制允许 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+     分析 SQL-有问题的查询而不要求在符号之间有空白。
+     </P
+></LI
+></UL
+><P>
+  </P
+><P
+>   操作符 <TT
+CLASS="LITERAL"
+>!=</TT
+> 在输入时映射成 <TT
+CLASS="LITERAL"
+>&lt;&gt;</TT
+>， 因此这两个名称总是相等的。
+  </P
+><P
+>	至少需要定义一个<TT
+CLASS="LITERAL"
+>LEFTARG</TT
+>或<TT
+CLASS="LITERAL"
+>RIGHTARG</TT
+>。
+	对于双目操作符来说，两者都需要定义。
+	对右目操作符来说，只需要定义<TT
+CLASS="LITERAL"
+>LEFTARG</TT
+>，
+	而对于左目操作符来说，只需要定义<TT
+CLASS="LITERAL"
+>RIGHTARG</TT
+>。
+  </P
+><P
+>   同样，<TT
+CLASS="REPLACEABLE"
+><I
+>funcname</I
+></TT
+> 过程必须已经用
+   <TT
+CLASS="COMMAND"
+>CREATE FUNCTION</TT
+> 定义过，
+   而且必须定义为接受正确数量的指定类型参数（一个或是两个）。
+  </P
+><P
+>   其它子句声明可选的操作符优化子句。他们的含义在 <A HREF="xoper-optimization.html" >Section 32.13</A
+> 里定义。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42353" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+></DT
+><DD
+><P
+>	要定义的操作符名字。可用的字符见上文。
+	其名字可以用模式修饰，比如 <TT
+CLASS="LITERAL"
+>CREATE OPERATOR myschema.+ (...)</TT
+>。
+	如果没有模式，则在当前模式中创建操作符。同一个模式中的两个操作符可以有一样的名字，只要他们操作不同的数据类型。这叫做 <I
+CLASS="FIRSTTERM"
+>重载</I
+>。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>funcname</I
+></TT
+></DT
+><DD
+><P
+>	用于实现该操作符的函数。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>lefttype</I
+></TT
+></DT
+><DD
+><P
+>	如果存在的话，操作符左手边的参数数据类型。
+	如果是左目操作符，这个参数可以省略。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>righttype</I
+></TT
+></DT
+><DD
+><P
+>	如果存在的话，操作符右手边的参数数据类型。
+	如果是右目操作符，这个参数可以省略。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>com_op</I
+></TT
+></DT
+><DD
+><P
+>	该操作符对应的交换（commutator）操作符。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>neg_op</I
+></TT
+></DT
+><DD
+><P
+>	对应的负操作符。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>res_proc</I
+></TT
+></DT
+><DD
+><P
+>	此操作符约束选择性计算函数。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>join_proc</I
+></TT
+></DT
+><DD
+><P
+>	此操作符连接选择性计算函数。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>HASHES</TT
+></DT
+><DD
+><P
+>	表明此操作符支持哈希（散列）连接。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>MERGES</TT
+></DT
+><DD
+><P
+>       表明此操作符可以支持一个融合连接。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>left_sort_op</I
+></TT
+></DT
+><DD
+><P
+>	如果此操作符支持融合连接（join），此操作符的左手边数据的排序操作符。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>right_sort_op</I
+></TT
+></DT
+><DD
+><P
+>	如果此操作符支持融合连接（join），此操作符的右手边数据的排序操作符。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>less_than_op</I
+></TT
+></DT
+><DD
+><P
+>	如果这个操作符可以支持融合连接，那么这就是比较这个操作符的输入数据类型的小于操作符。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>greater_than_op</I
+></TT
+></DT
+><DD
+><P
+>       如果这个操作符不支持融合连接，那么这就是比较输入这个操作符的数据类型的大于操作符。
+       </P
+></DD
+></DL
+></DIV
+><P
+>   要在 <TT
+CLASS="REPLACEABLE"
+><I
+>com_op</I
+></TT
+> 或者其它可选参数里给出一个模式修饰的操作符名，使用 <TT
+CLASS="LITERAL"
+>OPERATOR()</TT
+>
+   语法，比如
+</P><PRE
+CLASS="PROGRAMLISTING"
+>COMMUTATOR = OPERATOR(myschema.===) ,</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42432" ></A
+><H2
+>注意</H2
+><P
+>	请参阅 <A HREF="xoper.html" >Section 32.12</A
+> 中操作符章节获取更多信息。
+   </P
+><P
+>	请使用 <A HREF="sql-dropoperator.html" ><I
+>DROP OPERATOR</I
+></A
+> 从数据库中删除用户定义操作符。
+	用 <A HREF="sql-alteroperator.html" ><I
+>ALTER OPERATOR</I
+></A
+> 修改一个数据库里的操作符。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42439" ></A
+><H2
+>例子</H2
+><P
+>  下面命令定义一个新操作符，面积相等，用于 <TT
+CLASS="TYPE"
+>box</TT
+> 数据类型。
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE OPERATOR === (
+    LEFTARG = box,
+    RIGHTARG = box,
+    PROCEDURE = area_equal_procedure,
+    COMMUTATOR = ===,
+    NEGATOR = !==,
+    RESTRICT = area_restriction_procedure,
+    JOIN = area_join_procedure,
+    HASHES,
+    SORT1 = &lt;&lt;&lt;,
+    SORT2 = &lt;&lt;&lt;
+    -- 因为给出了排序操作符，索引隐含地有 MERGES。
+    -- LTCMP 和 GTCMP 分别假设是 &lt; 和 &gt;
+);</PRE
+><P>  
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42444" ></A
+><H2
+>兼容性</H2
+><P
+>    <TT
+CLASS="COMMAND"
+>CREATE OPERATOR</TT
+>
+    是 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 扩展。
+	在<SPAN
+CLASS="ACRONYM"
+>SQL92</SPAN
+>中没有
+    <TT
+CLASS="COMMAND"
+>CREATE OPERATOR</TT
+>
+	语句。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42451" ></A
+><H2
+>又见</H2
+><A HREF="sql-alteroperator.html" ><I
+>ALTER OPERATOR</I
+></A
+>, <A HREF="sql-createopclass.html" ><I
+>CREATE OPERATOR CLASS</I
+></A
+>, <A HREF="sql-dropoperator.html" ><I
+>DROP OPERATOR</I
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-createlanguage.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-createopclass.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >CREATE LANGUAGE</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >CREATE OPERATOR CLASS</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

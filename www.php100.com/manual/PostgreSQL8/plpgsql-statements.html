@@ -1,0 +1,795 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>基本语句 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="PL/pgSQL - SQL 过程语言" HREF="plpgsql.html"><LINK REL="PREVIOUS" TITLE="表达式" HREF="plpgsql-expressions.html"><LINK REL="NEXT" TITLE="控制结构" HREF="plpgsql-control-structures.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="plpgsql-expressions.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="plpgsql.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 36. <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> - <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 过程语言</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="plpgsql.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="plpgsql-control-structures.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="PLPGSQL-STATEMENTS" >36.6. 基本语句</A
+></H1
+><P
+>	本节以及随后的一节里，我们描述所有 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>
+	明确可以理解的语句类型。任何无法识别为这样类型的语句将被做为 SQL 
+	命令看待，并且被发送到主数据库引擎执行（在将语句中用到的任何
+	<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 变量进行替换之后）。因此，
+	举例来说，SQL <TT
+CLASS="COMMAND"
+>INSERT</TT
+>，<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>，和
+	<TT
+CLASS="COMMAND"
+>DELETE</TT
+> 命令可能被认为是 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>
+	语句，但是它们并未在此明确列出。
+   </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="PLPGSQL-STATEMENTS-ASSIGNMENT" >36.6.1. 赋值</A
+></H2
+><P
+>        给一个变量或行/记录赋值用下面方法：
+</P><PRE
+CLASS="SYNOPSIS"
+><TT
+CLASS="REPLACEABLE"
+><I
+>identIFier</I
+></TT
+> := <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+>;</PRE
+><P>
+	如上所述，这样的语句中的表达式是用一个发送到主数据库引擎的 SQL
+	<TT
+CLASS="COMMAND"
+>SELECT</TT
+> 命令计算的。该表达式必须生成单一的数值。
+    </P
+><P
+>	如果表达式的结果数据类型和变量数据类型不一致，
+	或者变量具有已知的尺寸/精度（象 <TT
+CLASS="TYPE"
+>char(20)</TT
+>），
+	结果值将隐含地被<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>解释器用结果类型的输出函数和变量类型的输入函数转换。
+	要注意的是，如果结果数值的字串形式不是输入函数可以接受的形式，
+	那么这样做可能导致类型输入函数产生的运行时错误。
+    </P
+><P
+>	例子∶
+</P><PRE
+CLASS="PROGRAMLISTING"
+>user_id := 20;
+tax := subtotal * 0.06;</PRE
+><P>
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="PLPGSQL-SELECT-INTO" >36.6.2. <TT
+CLASS="LITERAL"
+>SELECT INTO</TT
+></A
+></H2
+><A NAME="AEN34763" ></A
+><P
+>	生成多个列（但只有一行）的<TT
+CLASS="COMMAND"
+>SELECT</TT
+>命令的结果可以赋予一个记录变量，
+	行类型变量，或者一个标量变量的列表。这是用下面方法实现的：
+
+</P><PRE
+CLASS="SYNOPSIS"
+>SELECT INTO <TT
+CLASS="REPLACEABLE"
+><I
+>target</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>select_expressions</I
+></TT
+> FROM ...;</PRE
+><P>
+
+	这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>target</I
+></TT
+> 可以是一个记录变量，
+	行变量，或者一个用逗号分隔的简单变量和记录/行字段的列表。
+	<TT
+CLASS="REPLACEABLE"
+><I
+>select_expressions</I
+></TT
+> 和命令的剩余部分和普通 SQL 一样。
+    </P
+><P
+>	请注意这个构造和 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 普通的<TT
+CLASS="COMMAND"
+>SELECT INTO</TT
+>构造的解释是不一样的，
+	后者的<TT
+CLASS="LITERAL"
+>INTO</TT
+>目标是一个新创建的表。
+	（如果你想在 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 函数里从一个<TT
+CLASS="COMMAND"
+>SELECT</TT
+>
+	的结果中创建一个表，那么使用 <TT
+CLASS="COMMAND"
+>CREATE TABLE ... AS SELECT</TT
+> 语法。）
+    </P
+><P
+>	如果将一行或者一个变量列表用做目标，那么选出的数值必需精确匹配目标的结构，
+	否则就会产生运行时错误。如果目标是一个记录变量，那么它自动将自己配置成命令结果列的行类型。
+    </P
+><P
+>	除了<TT
+CLASS="COMMAND"
+>INTO</TT
+>子句，剩下的<TT
+CLASS="COMMAND"
+>SELECT</TT
+>语句和普通的 SQL <TT
+CLASS="COMMAND"
+>SELECT</TT
+>命令完全一样，
+	并且你可以使用<TT
+CLASS="COMMAND"
+>SELECT</TT
+>的全部能力。
+    </P
+><P
+>     <TT
+CLASS="LITERAL"
+>INTO</TT
+> 子句几乎可以出现在 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 语句的任何地方。
+     习惯上它是跟在 <TT
+CLASS="LITERAL"
+>SELECT</TT
+> 后面，就像上面写的那样，
+     或者就在 <TT
+CLASS="LITERAL"
+>FROM</TT
+> 之前 &mdash; 也就是说，在 <TT
+CLASS="REPLACEABLE"
+><I
+>select_expressions</I
+></TT
+>
+     列表之前或者之后。
+    </P
+><P
+>	如果命令返回零行，则给目标赋与空值。
+	如果命令返回多行，那么将第一行赋与目标并抛弃其它的行。
+	（请注意：除非你用了<TT
+CLASS="LITERAL"
+>ORDER BY</TT
+>，否则<SPAN
+CLASS="QUOTE"
+>"第一行"</SPAN
+>是不明确的。）
+    </P
+><P
+>	<TT
+CLASS="LITERAL"
+>INTO</TT
+>子句可以出现在<TT
+CLASS="COMMAND"
+>SELECT</TT
+>命令里的几乎任何地方。
+    </P
+><P
+>     在一个 <TT
+CLASS="COMMAND"
+>SELECT INTO</TT
+> 语句之后，你可以检查特殊变量 <TT
+CLASS="LITERAL"
+>FOUND</TT
+>
+     （参阅 <A HREF="plpgsql-statements.html#PLPGSQL-STATEMENTS-DIAGNOSTICS" >Section 36.6.5</A
+>）来判断一个赋值是否成功，
+     也就是说，查询至少返回一行。例如：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT INTO myrec * FROM emp WHERE empname = myname;
+IF NOT FOUND THEN
+    RAISE EXCEPTION 'employee % not found', myname;
+END IF;</PRE
+><P>
+    </P
+><P
+>	要测试一个记录/行结果是否为空，你可以使用 <TT
+CLASS="LITERAL"
+>IS NULL</TT
+>
+	条件。不过，这个时候没有任何办法来判断是否有额外的行被抛弃。下面是一个例子，处理没有返回行的情况：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>DECLARE
+    users_rec RECORD;
+BEGIN
+    SELECT INTO users_rec * FROM users WHERE user_id=3;
+
+    IF users_rec.homepage IS NULL THEN
+        -- 用户没有输入主页，返回"http://"
+        RETURN 'http://';
+    END IF;
+END;</PRE
+><P>
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="PLPGSQL-STATEMENTS-PERFORM" >36.6.3. 执行一个没有结果的表达式或者命令</A
+></H2
+><P
+>	有时候我们希望计算一个表达式或者一个命令，但是却丢弃其结果（通常因为我们经常调用一些存在有用的副作用但是不存在有用结果值的函数）。
+	要在 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 里干这件事，
+	你可以使用<TT
+CLASS="COMMAND"
+>PERFORM</TT
+>语句：
+
+</P><PRE
+CLASS="SYNOPSIS"
+>PERFORM <TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+>;</PRE
+><P>
+
+	这条语句执行一个 <TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+>并且丢弃结果。
+	<TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+> 的写法和你平常写 SQL <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 命令是一样的，
+	只是把开头的关键字 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 替换成 <TT
+CLASS="COMMAND"
+>PERFORM</TT
+>。
+	<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 的变量和平常一样代换到命令中。
+	同样，如果命令生成至少一行，那么特殊的变量 <TT
+CLASS="LITERAL"
+>FOUND</TT
+> 设置为真，如果没有生成行，则为假。
+    </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	我们可能希望没有<TT
+CLASS="LITERAL"
+>INTO</TT
+>子句的<TT
+CLASS="COMMAND"
+>SELECT</TT
+>也能满足这样的需要，
+	但是目前可以接受的唯一的方法是<TT
+CLASS="COMMAND"
+>PERFORM</TT
+>。
+    </P
+></BLOCKQUOTE
+></DIV
+><P
+>	一个例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>PERFORM create_mv('cs_session_page_requests_mv', my_query);</PRE
+><P>
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="PLPGSQL-STATEMENTS-EXECUTING-DYN" >36.6.4. 执行动态命令</A
+></H2
+><P
+>	你经常会希望在你的<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>函数里生成动态命令。
+	也就是那些每次执行的时候都会涉及不同表或不同数据类型的命令。
+	在这样的情况下，<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 试图为命令缓冲执行计划的一般企图将不再合适。
+	为了处理这样的问题，我们提供了 <TT
+CLASS="COMMAND"
+>EXECUTE</TT
+> 语句：
+
+</P><PRE
+CLASS="SYNOPSIS"
+>EXECUTE <TT
+CLASS="REPLACEABLE"
+><I
+>command-string</I
+></TT
+> [ INTO <TT
+CLASS="REPLACEABLE"
+><I
+>target</I
+></TT
+> ];</PRE
+><P>
+	这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>command-string</I
+></TT
+> 
+	是一个生成字串（类型为 <TT
+CLASS="TYPE"
+>text</TT
+>）的表达式，该字串包含要执行的命令，
+	而 <TT
+CLASS="REPLACEABLE"
+><I
+>target</I
+></TT
+> 是一个记录变量，行变量，或者一个逗号分隔的简单变量和记录/行域的列表。
+    </P
+><P
+>	请特别注意在该命令字串里将不会发生任何 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 变量代换。
+	变量的数值必需在构造命令字串的时候插入该字串。
+    </P
+><P
+>	和所有其它在<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>里的命令不同，
+	一个由<TT
+CLASS="COMMAND"
+>EXECUTE</TT
+>语句运行的命令在服务器生命期内并不只准备和保存一次。
+	相反，在该语句每次运行的时候，命令都准备一次。
+	命令字串可以在过程里动态地生成以便于对各种不同的表和字段进行操作。
+    </P
+><P
+>     <TT
+CLASS="LITERAL"
+>INTO</TT
+> 子句声明 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 命令的结果应该传递到哪里。
+     如果提供了一个行变量或者一个变量列表，那么它必须和 <TT
+CLASS="COMMAND"
+>SELECT</TT
+>
+     生成的结果的结构一样（如果使用了记录变量，那么它回自动调整为匹配结果的结构）。
+     如果返回了多行，那么只有第一行将被赋予 <TT
+CLASS="LITERAL"
+>INTO</TT
+> 变量。
+     如果没有返回行，那么将给 <TT
+CLASS="LITERAL"
+>INTO</TT
+> 变量赋予 NULL。
+     如果没有声明 <TT
+CLASS="LITERAL"
+>INTO</TT
+> 子句，则抛弃 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 命令的结果。
+    </P
+><P
+>     目前 <TT
+CLASS="COMMAND"
+>EXECUTE</TT
+> 里面不支持 <TT
+CLASS="COMMAND"
+>SELECT INTO</TT
+>。
+    </P
+><P
+>     在使用动态命令的时候，你经常需要逃逸单引号。我们建议包围你的函数体内固定文本的方法是美元符包围。
+     （如果你有老的，没有使用美元符包围的代码，请参考 <A HREF="plpgsql-development-tips.html#PLPGSQL-QUOTE-TIPS" >Section 36.2.1</A
+>，
+     这样在把老代码转换成更合理的结构时，会节省你的一些精力。）
+    </P
+><P
+>     要插入到构造出来的查询中的动态数值也需要特殊的处理，
+     因为他们自己可能包含引号字符。
+     一个例子（除了特别说明之外，这里我们都假设你使用了美元符包围）：
+</P><PRE
+CLASS="SYNOPSIS"
+>EXECUTE 'UPDATE tbl SET '
+        || quote_ident(columnname)
+        || ' = '
+        || quote_literal(newvalue)
+        || ' WHERE ...';</PRE
+><P>
+    </P
+><A NAME="AEN34860" ></A
+><A NAME="AEN34863" ></A
+><P
+>	这个例子显示了函数
+	<TT
+CLASS="FUNCTION"
+>quote_ident</TT
+> 和
+	<TT
+CLASS="FUNCTION"
+>quote_literal</TT
+> 的使用。
+	为了安全，包含字段和表标识符的变量应该传递给函数 <TT
+CLASS="FUNCTION"
+>quote_ident</TT
+>。
+	那些包含数值的变量，如果其值在构造出来态命令字串里应外是文本字串，那么应该传递给 <TT
+CLASS="FUNCTION"
+>quote_literal</TT
+>。
+	它们俩都会采取合适的步骤把输入文本包围在单或双引号里并且对任何嵌入其中的特殊字符进行合适的逃逸处理。
+    </P
+><P
+>     请注意美元符包围只对包围固定文本有用。如果想象下面这样做上面的例子，那就太糟糕了
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXECUTE 'UPDATE tbl SET '
+        || quote_ident(colname)
+        || ' = $$'
+        || newvalue
+        || '$$ WHERE ...';</PRE
+><P>
+     因为如果 <TT
+CLASS="LITERAL"
+>newvalue</TT
+> 的内容碰巧有<TT
+CLASS="LITERAL"
+>$$</TT
+>，那么这段代码就有毛病了。
+     同样的问题可能出现在你选用的任何美元符包围分隔符上。
+     因此，要想安全地包围事先不知道地文本，你<I
+CLASS="EMPHASIS"
+>必须</I
+>使用 <TT
+CLASS="FUNCTION"
+>quote_literal</TT
+>。
+    </P
+><P
+>     动态命令和 <TT
+CLASS="COMMAND"
+>EXECUTE</TT
+> 的一个更大的例子在 <A HREF="plpgsql-porting.html#PLPGSQL-PORTING-EX2" >Example 36-6</A
+> 里，
+     这个例子制作病执行了一个定义新的函数的 <TT
+CLASS="COMMAND"
+>CREATE FUNCTION</TT
+> 命令。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="PLPGSQL-STATEMENTS-DIAGNOSTICS" >36.6.5. 获取结果状态</A
+></H2
+><P
+>	有好几种方法可以判断一条命令的效果。第一个方法是使用 <TT
+CLASS="LITERAL"
+>GET DIAGNOSTICS</TT
+>，它的形式如下：
+
+</P><PRE
+CLASS="SYNOPSIS"
+>GET DIAGNOSTICS <TT
+CLASS="REPLACEABLE"
+><I
+>variable</I
+></TT
+> = <TT
+CLASS="REPLACEABLE"
+><I
+>item</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+> , ... </SPAN
+>];</PRE
+><P>
+
+	这条命令允许我们检索系统状态标识符。每个 <TT
+CLASS="REPLACEABLE"
+><I
+>item</I
+></TT
+>
+	是一个关键字，表示一个将要赋予该特定变量的状态值（该变量应该和要接收的数值类型相同）。
+	当前可用的状态项有 <TT
+CLASS="VARNAME"
+>ROW_COUNT</TT
+>，
+	最后一个发送给 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 引擎的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 
+	命令处理的行的数量，和  <TT
+CLASS="VARNAME"
+>RESULT_OID</TT
+>，最后一条
+	<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令插入的最后一行的 OID。请注意
+	<TT
+CLASS="VARNAME"
+>RESULT_OID</TT
+> 只有在一个向包含 OID 的表中 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 的命令之后才有用。
+    </P
+><P
+>	一个例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>      GET DIAGNOSTICS var_integer = ROW_COUNT;</PRE
+><P>
+    </P
+><P
+>	另外一个判断命令效果的方法是一个类型为 <TT
+CLASS="TYPE"
+>boolean</TT
+> 的特殊变量 <TT
+CLASS="LITERAL"
+>FOUND</TT
+>。
+	<TT
+CLASS="LITERAL"
+>FOUND</TT
+>在每个 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 函数里开始都为假。它被下列语句设置：
+         <P
+></P
+></P><UL
+><LI
+><P
+>		一个<TT
+CLASS="COMMAND"
+>SELECT INTO</TT
+>语句如果返回一行则设置 <TT
+CLASS="LITERAL"
+>FOUND</TT
+>
+		为真，如果没有返回行则设置为假。
+           </P
+></LI
+><LI
+><P
+>		一个<TT
+CLASS="COMMAND"
+>PERFORM</TT
+>语句如果生成（或抛弃）一行，则设置 <TT
+CLASS="LITERAL"
+>FOUND</TT
+>
+		为真，如果没有生成行则为假。
+           </P
+></LI
+><LI
+><P
+>		如果至少影响了一行，那么<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>，<TT
+CLASS="COMMAND"
+>INSERT</TT
+>，和<TT
+CLASS="COMMAND"
+>DELETE</TT
+>语句设置
+		<TT
+CLASS="LITERAL"
+>FOUND</TT
+> 为真，如果没有行受影响则为假。
+           </P
+></LI
+><LI
+><P
+>		<TT
+CLASS="COMMAND"
+>FETCH</TT
+>语句如果返回行则设置 <TT
+CLASS="LITERAL"
+>FOUND</TT
+> 为真，
+		如果不返回行则为假。
+           </P
+></LI
+><LI
+><P
+>		一个<TT
+CLASS="COMMAND"
+>FOR</TT
+>语句如果迭代了一次或多次，则设置 <TT
+CLASS="LITERAL"
+>FOUND</TT
+>
+		为真，否则为假。这个规律适用于所有<TT
+CLASS="COMMAND"
+>FOR</TT
+>语句的三种变体
+		（整数<TT
+CLASS="COMMAND"
+>FOR</TT
+>循环，记录集的<TT
+CLASS="COMMAND"
+>FOR</TT
+>循环，以及动态记录集<TT
+CLASS="COMMAND"
+>FOR</TT
+>循环）。
+		只有在<TT
+CLASS="COMMAND"
+>FOR</TT
+>循环退出的时候才设置 <TT
+CLASS="LITERAL"
+>FOUND</TT
+>；
+		在循环执行的内部，<TT
+CLASS="LITERAL"
+>FOUND</TT
+> 不被<TT
+CLASS="COMMAND"
+>FOR</TT
+>语句修改，
+		但是在循环体里它可能被其他语句的执行而修改。
+           </P
+></LI
+></UL
+><P>
+
+	<TT
+CLASS="LITERAL"
+>FOUND</TT
+> 是每个 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 里的局部变量；
+	任何对它的任何修改只影响当前的函数。
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="plpgsql-expressions.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="plpgsql-control-structures.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >表达式</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="plpgsql.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >控制结构</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

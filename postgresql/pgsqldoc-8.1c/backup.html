@@ -1,0 +1,872 @@
+<HTML
+><HEAD
+><TITLE
+>备份和恢复</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="服务器管理"
+HREF="admin.html"><LINK
+REL="PREVIOUS"
+TITLE="日志文件维护"
+HREF="logfile-maintenance.html"><LINK
+REL="NEXT"
+TITLE="文件系统级别的备份"
+HREF="backup-file.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="logfile-maintenance.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="maintenance.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="monitoring.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="backup-file.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="BACKUP"
+>Chapter 23. 备份和恢复</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>23.1. <A
+HREF="backup.html#BACKUP-DUMP"
+><SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 转储</A
+></DT
+><DD
+><DL
+><DT
+>23.1.1. <A
+HREF="backup.html#BACKUP-DUMP-RESTORE"
+>从转储中恢复</A
+></DT
+><DT
+>23.1.2. <A
+HREF="backup.html#BACKUP-DUMP-ALL"
+>使用 <SPAN
+CLASS="APPLICATION"
+>pg_dumpall</SPAN
+></A
+></DT
+><DT
+>23.1.3. <A
+HREF="backup.html#BACKUP-DUMP-LARGE"
+>处理大数据库</A
+></DT
+></DL
+></DD
+><DT
+>23.2. <A
+HREF="backup-file.html"
+>文件系统级别的备份</A
+></DT
+><DT
+>23.3. <A
+HREF="backup-online.html"
+>在线备份以及即时恢复(PITR)</A
+></DT
+><DD
+><DL
+><DT
+>23.3.1. <A
+HREF="backup-online.html#BACKUP-ARCHIVING-WAL"
+>设置 WAL 归档</A
+></DT
+><DT
+>23.3.2. <A
+HREF="backup-online.html#BACKUP-BASE-BACKUP"
+>进行一次基础备份</A
+></DT
+><DT
+>23.3.3. <A
+HREF="backup-online.html#BACKUP-PITR-RECOVERY"
+>从在线备份中恢复</A
+></DT
+><DT
+>23.3.4. <A
+HREF="backup-online.html#BACKUP-TIMELINES"
+>时间线</A
+></DT
+><DT
+>23.3.5. <A
+HREF="backup-online.html#BACKUP-ONLINE-CAVEATS"
+>注意</A
+></DT
+></DL
+></DD
+><DT
+>23.4. <A
+HREF="migration.html"
+>在不同版本之间迁移</A
+></DT
+></DL
+></DIV
+><A
+NAME="AEN23117"
+></A
+><P
+>	和任何包含珍贵数据的东西一样，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	数据库也应该经常备份。尽管这个过程相当简单，
+	但是我们还是应该理解做这件事所用的一些技巧和假设。
+ </P
+><P
+>	备份 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 数据有三种完全不同的方法：
+  <P
+></P
+></P><UL
+><LI
+><P
+><SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 转储</P
+></LI
+><LI
+><P
+>文件系统级别备份</P
+></LI
+><LI
+><P
+>在线备份</P
+></LI
+></UL
+><P>
+  每种备份都有自己的优点和缺点。
+ </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="BACKUP-DUMP"
+>23.1. <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 转储</A
+></H1
+><P
+>	SQL 转储的方法采用的主意是创建一个文本文件，这个文本里面都是 SQL
+	命令，当把这个文件回馈给服务器时，将重建与转储时状态一样的数据库。
+   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 为这个用途提供了应用工具 <A
+HREF="app-pgdump.html"
+>pg_dump</A
+>。这条命令的基本用法是：
+</P><PRE
+CLASS="SYNOPSIS"
+>pg_dump <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+> &gt; <TT
+CLASS="REPLACEABLE"
+><I
+>outfile</I
+></TT
+></PRE
+><P>
+	正如你所见，<SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 把结果输出到标准输出。
+	我们下面就可以看到这样做有什么好处。
+  </P
+><P
+>	<SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 是一个普通的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	客户端应用（尽管是个相当聪明的东西。）这就意味着你可以从任何可以访问该数据库的远端主机上面进行备份工作。
+	但是请记住 <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 不会以任何特殊权限运行。具体说来，
+	就是它必须要有你想备份的表的读权限，因此，实际上你几乎总是要成为数据库超级用户。
+  </P
+><P
+>	要声明 <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 应该以哪个用户身份进行联接，使用命令行选项
+	<TT
+CLASS="OPTION"
+>-h <TT
+CLASS="REPLACEABLE"
+><I
+>host</I
+></TT
+></TT
+> 和 <TT
+CLASS="OPTION"
+>-p <TT
+CLASS="REPLACEABLE"
+><I
+>port</I
+></TT
+></TT
+>。
+	缺省主机是本地主机或你的环境变量<TT
+CLASS="ENVAR"
+>PGHOST</TT
+>声明的值。
+	类似，缺省端口是环境变量<TT
+CLASS="ENVAR"
+>PGPORT</TT
+>或（如果它不存在的话）编译好了的缺省值。
+	（服务器通常有相同的缺省，所以还算方便。）
+  </P
+><P
+>	和任何其他 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 客户端应用一样，
+	<SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 缺省时用与当前操作系统用户名同名的数据库用户名进行联接。
+	要覆盖这个名字，要么声明 <TT
+CLASS="OPTION"
+>-U</TT
+> 选项，
+	要么设置环境变量<TT
+CLASS="ENVAR"
+>PGUSER</TT
+>。
+	请注意 <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 的联接也和普通客户应用一样要通过客户认证机制（在 <A
+HREF="client-authentication.html"
+>Chapter 20</A
+>）里描述。
+  </P
+><P
+>	由 <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 创建的备份在内部是一致的，
+	也就是说，在<SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+>运行的时候对数据库的更新将不会被转储。
+	<SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 工作的时候并不阻塞其他的对数据库的操作。
+	（但是会阻塞那些需要排它锁的操作，比如 <TT
+CLASS="COMMAND"
+>VACUUM FULL</TT
+>。）
+  </P
+><DIV
+CLASS="IMPORTANT"
+><BLOCKQUOTE
+CLASS="IMPORTANT"
+><P
+><B
+>Important: </B
+>	如果你的数据库结构依赖于 OID （比如说用做外键），那么你必须告诉
+	<SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 把 OID 也倒出来。
+	要倒 OID，可以使用 <TT
+CLASS="OPTION"
+>-o</TT
+> 命令行选项。
+   </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="BACKUP-DUMP-RESTORE"
+>23.1.1. 从转储中恢复</A
+></H2
+><P
+>    <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 生成的文本文件可以由
+    <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 程序读取。
+	从转储中恢复的常用命令是
+</P><PRE
+CLASS="SYNOPSIS"
+>psql <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+> &lt; <TT
+CLASS="REPLACEABLE"
+><I
+>infile</I
+></TT
+></PRE
+><P>
+	这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>infile</I
+></TT
+> 就是你给<SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+>命令的
+	<TT
+CLASS="REPLACEABLE"
+><I
+>outfile</I
+></TT
+>参数。这条命令不会创建数据库
+	<TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+>，你必须在执行<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>
+	前自己从<TT
+CLASS="LITERAL"
+>template0</TT
+>创建（也就是说，用命令
+	<TT
+CLASS="LITERAL"
+>createdb -T template0
+	<TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></TT
+>）。
+	<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>
+	支持类似 <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 的选项用以控制数据库服务器位置和用户名。
+	参阅 <A
+HREF="app-psql.html"
+><SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+></A
+> 的手册获取更多信息。
+   </P
+><P
+>	在开始运行恢复之前，目标库和所有在转储出来的库中拥有对象的用户，
+	以及曾经在某些对象上被赋予权限的用户都必须已经存在。
+	如果这些不存在，那么恢复将失败，因为恢复过程无法把这些对象恢复成原有的所有权和/或权限。
+	（有时候你希望恢复权限，不过通常你不需要这么做。）
+   </P
+><P
+>	一旦完成恢复，在每个数据库上运行 <A
+HREF="sql-analyze.html"
+><I
+>ANALYZE</I
+></A
+> 是明智的举动，
+	这样优化器就有有用的统计数据了。你总是可以运行 <TT
+CLASS="COMMAND"
+>vacuumdb -a -z</TT
+> 
+	来 <TT
+CLASS="COMMAND"
+>VACUUM ANALYZE</TT
+> 所有数据库；这个等效于手工运行 <TT
+CLASS="COMMAND"
+>VACUUM ANALYZE</TT
+>。
+   </P
+><P
+>	<SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 和 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 可以通过管道读写，
+	这样我们就可能从一台主机上将数据库目录转储到另一台主机上，比如
+</P><PRE
+CLASS="PROGRAMLISTING"
+>pg_dump -h <TT
+CLASS="REPLACEABLE"
+><I
+>host1</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+> | psql -h <TT
+CLASS="REPLACEABLE"
+><I
+>host2</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></PRE
+><P>
+   </P
+><DIV
+CLASS="IMPORTANT"
+><BLOCKQUOTE
+CLASS="IMPORTANT"
+><P
+><B
+>Important: </B
+>	<SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+>生成的转储输出是相对于<TT
+CLASS="LITERAL"
+>template0</TT
+>的。这就意味着任何
+	加入到<TT
+CLASS="LITERAL"
+>template1</TT
+>的语言，过程等都会经由 <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+>
+	转储。结果是，在恢复的时候，如果你使用的是客户化的<TT
+CLASS="LITERAL"
+>template1</TT
+>，
+	那么你必须从<TT
+CLASS="LITERAL"
+>template0</TT
+>中创建空的数据库，就象我们上面的例子那样。
+   </P
+></BLOCKQUOTE
+></DIV
+><P
+>    有关如何有效地向 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里装载大量数据的建议，
+    请参考 <A
+HREF="populate.html"
+>Section 13.4</A
+>。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="BACKUP-DUMP-ALL"
+>23.1.2. 使用 <SPAN
+CLASS="APPLICATION"
+>pg_dumpall</SPAN
+></A
+></H2
+><P
+>	上面的方法在备份整个数据库集群的时候比较麻烦而且不方便。因此我们提供了
+	<A
+HREF="app-pg-dumpall.html"
+><SPAN
+CLASS="APPLICATION"
+>pg_dumpall</SPAN
+></A
+> 程序。
+	<SPAN
+CLASS="APPLICATION"
+>pg_dumpall</SPAN
+> 备份一个给出的集群中的每个数据库，同时还确保保留象用户和组这样的全局数据状态。
+	这个命令的基本用法是：
+</P><PRE
+CLASS="SYNOPSIS"
+>pg_dumpall &gt; <TT
+CLASS="REPLACEABLE"
+><I
+>outfile</I
+></TT
+></PRE
+><P>
+	生成的转储可以用 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 恢复：
+</P><PRE
+CLASS="SYNOPSIS"
+>psql -f <TT
+CLASS="REPLACEABLE"
+><I
+>infile</I
+></TT
+> postgres</PRE
+><P>
+	（实际上，你可以声明任意现有的数据库进行连接，但是如果你是向一个空的数据库集群装载，
+	那么 <TT
+CLASS="LITERAL"
+>postgres</TT
+> 应该是比较好的选择。）
+	恢复<SPAN
+CLASS="APPLICATION"
+>pg_dumpall</SPAN
+>的转储的时候通常需要数据库超级用户权限，因为我们需要它来恢复用户和组信息。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="BACKUP-DUMP-LARGE"
+>23.1.3. 处理大数据库</A
+></H2
+><P
+>	因为 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	允许表的大小大于你的系统允许的最大文件大小，
+	可能把表转储到一个文件会有问题，因为生成的文件很可能比你的系统允许的最大文件大。
+	因为 <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 输出到标准输出，你可以用标准的 Unix 工具绕开这个问题：
+   </P
+><DIV
+CLASS="FORMALPARA"
+><P
+><B
+>使用压缩的转储. </B
+>	使用你熟悉的压缩程序，比如说 <SPAN
+CLASS="APPLICATION"
+>gzip</SPAN
+>。
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>pg_dump <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+> | gzip &gt; <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>.gz</PRE
+><P>
+
+	用下面命令恢复：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>createdb <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+>
+gunzip -c <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>.gz | psql <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></PRE
+><P>
+
+     或者
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>cat <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>.gz | gunzip | psql <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></PRE
+><P>
+    </P
+></DIV
+><DIV
+CLASS="FORMALPARA"
+><P
+><B
+>使用 <TT
+CLASS="COMMAND"
+>split</TT
+>。. </B
+>	<TT
+CLASS="COMMAND"
+>split</TT
+> 命令允许你
+	你用下面的方法把输出分解成操作系统可以接受的大小。
+	比如，让每个块大小为 1 兆字节：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>pg_dump <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+> | split -b 1m - <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+></PRE
+><P>
+
+	用下面命令恢复：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>createdb <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+>
+cat <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>* | psql <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></PRE
+><P>
+    </P
+></DIV
+><DIV
+CLASS="FORMALPARA"
+><P
+><B
+>使用客户化转储格式. </B
+>	如果<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>是在一个安装了<SPAN
+CLASS="APPLICATION"
+>zlib</SPAN
+>
+	压缩库的系统上制作的，
+	那么客户化转储格式将在写入输出文件的时候压缩数据。
+	它会生成和使用 <TT
+CLASS="COMMAND"
+>gzip</TT
+> 类似大小的转储文件，
+	但是还附加了一个优点：你可以有选择地恢复库中的表。
+	下面的命令用客户化转储格式转储一个数据库：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>pg_dump -Fc <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+> &gt; <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+></PRE
+><P>
+
+	客户化格式的转储不是脚本，不能用于 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>，
+	而是需要使用 <SPAN
+CLASS="APPLICATION"
+>pg_restore</SPAN
+> 转储。
+	请参考 <A
+HREF="app-pgdump.html"
+>pg_dump</A
+> 和 <A
+HREF="app-pgrestore.html"
+>pg_restore</A
+>
+	的手册获取细节。
+    </P
+></DIV
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="logfile-maintenance.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="backup-file.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>日志文件维护</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="admin.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>文件系统级别的备份</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

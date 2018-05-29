@@ -1,0 +1,413 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>CREATE TABLE AS PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="CREATE TABLE" HREF="sql-createtable.html"><LINK REL="NEXT" TITLE="CREATE TABLESPACE" HREF="sql-createtablespace.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-createtable.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-createtable.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-createtablespace.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-createtablespace.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-CREATETABLEAS" >CREATE TABLE AS</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN43660" ></A
+><H2
+>Name</H2
+>CREATE TABLE AS&nbsp;--&nbsp;从一条查询的结果中定义一个新表</DIV
+><A NAME="AEN43663" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN43665" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>CREATE [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } ] TABLE <TT
+CLASS="REPLACEABLE"
+><I
+>table_name</I
+></TT
+> [ (<TT
+CLASS="REPLACEABLE"
+><I
+>column_name</I
+></TT
+> [, ...] ) ] [ [ WITH | WITHOUT ] OIDS ]
+
+    AS <TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+></PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN43670" ></A
+><H2
+>描述</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>CREATE TABLE AS</TT
+> 创建一个表并且用来自
+	<TT
+CLASS="COMMAND"
+>SELECT</TT
+> 命令计算出来的数据填充该表。
+	该表的字段和 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 输出字段的名字及类型相关。
+	（只不过你可以通过明确地给出一个字段名字列表来覆盖 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 的字段名）。
+  </P
+><P
+>	<TT
+CLASS="COMMAND"
+>CREATE TABLE AS</TT
+> 和创建视图有点象，
+	不过两者之间实在是有比较大差异：它创建一个新表并且只对
+	<TT
+CLASS="COMMAND"
+>SELECT</TT
+> 计算一次来填充这个新表。
+	新表不能跟踪 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 的源表随后做的变化。
+	相比之下，每次做查询的时候，视图都重新计算定义它的 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 语句。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN43682" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>GLOBAL</TT
+> or <TT
+CLASS="LITERAL"
+>LOCAL</TT
+></DT
+><DD
+><P
+>      忽略兼容性。请参考 <A HREF="sql-createtable.html" ><I
+>CREATE TABLE</I
+></A
+> 获取细节。
+     </P
+></DD
+></DL
+></DIV
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>TEMPORARY</TT
+> 或 <TT
+CLASS="LITERAL"
+>TEMP</TT
+></DT
+><DD
+><P
+>	如果声明了这个选项，则该表作为临时表创建。
+	参阅 <A HREF="sql-createtable.html" ><I
+>CREATE TABLE</I
+></A
+> 获取细节。
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>table_name</I
+></TT
+></DT
+><DD
+><P
+>	要创建的表名（可以是用模式修饰的）。
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>column_name</I
+></TT
+></DT
+><DD
+><P
+>      字段的名称。如果没有提供字段名字，那么就从查询的输出字段名中获取。
+      如果表是从一个 <TT
+CLASS="COMMAND"
+>EXECUTE</TT
+> 命令创建的，
+      那么就不能声明字段名列表。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>WITH OIDS</TT
+><BR><TT
+CLASS="LITERAL"
+>WITHOUT OIDS</TT
+></DT
+><DD
+><P
+>       这个选项子句声明 <TT
+CLASS="COMMAND"
+>CREATE TABLE AS</TT
+> 创建的表是否应该包含 OID。
+       如果两个子句都没有声明，那么使用配置参数 <A HREF="runtime-config-compatible.html#GUC-DEFAULT-WITH-OIDS" >default_with_oids</A
+> 的值。
+      </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+></DT
+><DD
+><P
+>	一个查询语句（也就是一条 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 命令或者一条运行准备好的
+	<TT
+CLASS="COMMAND"
+>SELECT</TT
+> 命令的 <TT
+CLASS="COMMAND"
+>EXECUTE</TT
+> 命令），请分别参考
+	<A HREF="sql-select.html" ><I
+>SELECT</I
+></A
+> 或者
+	<A HREF="sql-execute.html" ><I
+>EXECUTE</I
+></A
+>
+	获取可以使用的语法的描述。
+     </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN43730" ></A
+><H2
+>注意</H2
+><P
+>	这条命令从功能上等效于 <A HREF="sql-selectinto.html" ><I
+>SELECT INTO</I
+></A
+>，
+	但是我们更建议你用这个命令，因为它不太可能和
+	<TT
+CLASS="COMMAND"
+>SELECT ... INTO</TT
+> 语法的其它方面的使用混淆。
+	另外，<TT
+CLASS="COMMAND"
+>CREATE TABLE AS</TT
+> 提供了 <TT
+CLASS="COMMAND"
+>SELECT INTO</TT
+> 提供的功能的超集。
+  </P
+><P
+>   在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 8.0 之前，<TT
+CLASS="COMMAND"
+>CREATE TABLE AS</TT
+> 总是在它生成的表中包含 OID：
+   在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgresSQL</SPAN
+> 8.0 里，<TT
+CLASS="COMMAND"
+>CREATE TABLE AS</TT
+> 命令允许明确声明是否应该包含 OID。
+   如果没有明确声明是否应该包含 OID，那么使用配置变量 <A HREF="runtime-config-compatible.html#GUC-DEFAULT-WITH-OIDS" >default_with_oids</A
+>。
+   虽然这个变量当前缺省为真，但是将来很有可能改变。引起，那些要求 <TT
+CLASS="COMMAND"
+>CREATE TABLE AS</TT
+> 创建的表应该包含 OID
+   的应用应该明确声明 <TT
+CLASS="LITERAL"
+>WITH OIDS</TT
+> 以确保和将来的<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>版本兼容。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN43746" ></A
+><H2
+>例子</H2
+><P
+>   创建一个只包含表 <TT
+CLASS="LITERAL"
+>films</TT
+> 中最近的记录的新表 <TT
+CLASS="LITERAL"
+>films_recent</TT
+>：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE films_recent AS
+  SELECT * FROM films WHERE date_prod &gt;= '2002-01-01';</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN43752" ></A
+><H2
+>兼容性</H2
+><P
+>   <TT
+CLASS="COMMAND"
+>CREATE TABLE AS</TT
+> 由 SQL:2003 标准声明。
+   在 SQL:2003 的定义和 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的实现里面有些小的区别：
+
+   <P
+></P
+></P><UL
+COMPACT="COMPACT"
+><LI
+><P
+>      标准要求在子查询子句周围有圆括弧，在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里，
+      这些圆括弧是可选的。
+     </P
+></LI
+><LI
+><P
+>      标准定义了一个 <TT
+CLASS="LITERAL"
+>ON COMMIT</TT
+> 子句，目前 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 还没有实现。
+     </P
+></LI
+><LI
+><P
+>      标准定义了一个 <TT
+CLASS="LITERAL"
+>WITH DATA</TT
+> 子句；这个目前在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里还没有实现。
+     </P
+></LI
+></UL
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN43769" ></A
+><H2
+>又见</H2
+><A HREF="sql-createtable.html" ><I
+>CREATE TABLE</I
+></A
+>, <A HREF="sql-select.html" ><I
+>SELECT</I
+></A
+>, <A HREF="sql-selectinto.html" ><I
+>SELECT INTO</I
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-createtable.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-createtablespace.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >CREATE TABLE</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >CREATE TABLESPACE</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

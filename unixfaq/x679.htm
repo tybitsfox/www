@@ -1,0 +1,70 @@
+<html><head><title>使用popen函数和ps命令读取进程表</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="范例程序" href="./c665.htm"><link rel="PREVIOUS" title="读取进程表 - AIX 4.2 版" href="./x676.htm"><link rel="NEXT" title="守护程序工具函数" href="./x682.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x676.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 7. 范例程序</td><td align="right" valign="bottom" width="10%"><a href="./x682.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN679">使用popen函数和ps命令读取进程表</a></h1><pre class="PROGRAMLISTING">     #include &lt;stdio.h&gt;      /* FILE, sprintf, fgets, puts */
+     #include &lt;stdlib.h&gt;     /* atoi, exit, EXIT_SUCCESS */
+     #include &lt;string.h&gt;     /* strtok, strcmp */
+     #include &lt;sys/types.h&gt;  /* pid_t */
+     #include &lt;sys/wait.h&gt;   /* WIFEXITED, WEXITSTATUS */
+    
+     char *procname(pid_t pid)
+     {
+        static char line[133], command[80], *linep, *token, *cmd;
+        FILE *fp;
+        int status;
+    
+        if (0 == pid) return (char *)0;
+    
+        sprintf(command, "ps -p %d 2&gt;/dev/null", pid);
+        fp = popen(command, "r");
+        if ((FILE *)0 == fp) return (char *)0;
+    
+        /* 读取标题行 */
+        if ((char *)0 == fgets(line, sizeof line, fp))
+        {
+           pclose(fp);
+           return (char *)0;
+        }
+    
+        /* 从标题栏分析出命令名所在列。
+         * (BSD风格的系统将指示命令的"COMMAND"字符串放在第5列，SysV好象将
+         * 指示命令的“CMD”或“COMMAND”字符串放在第4列)
+         */
+        for (linep = line; ; linep = (char *)0)
+        {
+           if ((char *)0 == (token = strtok(linep, " \t\n")))
+           {
+              pclose(fp);
+              return (char *)0;
+           }
+           if (0 == strcmp("COMMAND", token) || 0 == strcmp("CMD", token))
+           { /*  我们找到COMMAND所在列 */
+              cmd = token;
+              break;
+           }
+        }
+    
+        /* 读取 ps(1) 输出行 */
+        if ((char *)0 == fgets(line, sizeof line, fp))
+        {
+           pclose(fp);
+           return (char *)0;
+        }
+    
+        /* 抓COMMAND标题下面的词 ... */
+        if ((char *)0 == (token = strtok(cmd, " \t\n")))
+        {
+           pclose(fp);
+           return (char *)0;
+        }
+    
+        status = pclose(fp);
+        if (!WIFEXITED(status) || 0 != WEXITSTATUS(status))
+          return (char *)0;
+    
+        return token;
+     }
+    
+     int main(int argc, char *argv[])
+     {
+        puts(procname(atoi(argv[1])));
+        exit(EXIT_SUCCESS);
+     }
+    </pre></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x676.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x682.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">读取进程表 - AIX 4.2 版</td><td align="center" valign="top" width="34%"><a href="./c665.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">守护程序工具函数</td></tr></tbody></table></div></body></html>

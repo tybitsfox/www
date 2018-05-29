@@ -1,0 +1,362 @@
+<HTML
+><HEAD
+><TITLE
+>PostgreSQL 源代码</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="内部"
+HREF="internals.html"><LINK
+REL="PREVIOUS"
+TITLE="自协议 2.0 以来的变化的概述"
+HREF="protocol-changes.html"><LINK
+REL="NEXT"
+TITLE="报告服务器里的错误"
+HREF="error-message-reporting.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="protocol-changes.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="protocol.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="nls.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="error-message-reporting.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="SOURCE"
+>Chapter 44. PostgreSQL 源代码</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>44.1. <A
+HREF="source.html#SOURCE-FORMAT"
+>格式</A
+></DT
+><DT
+>44.2. <A
+HREF="error-message-reporting.html"
+>报告服务器里的错误</A
+></DT
+><DT
+>44.3. <A
+HREF="error-style-guide.html"
+>错误消息风格指导</A
+></DT
+><DD
+><DL
+><DT
+>44.3.1. <A
+HREF="error-style-guide.html#AEN61329"
+>何去何从</A
+></DT
+><DT
+>44.3.2. <A
+HREF="error-style-guide.html#AEN61338"
+>格式化</A
+></DT
+><DT
+>44.3.3. <A
+HREF="error-style-guide.html#AEN61342"
+>引号</A
+></DT
+><DT
+>44.3.4. <A
+HREF="error-style-guide.html#AEN61346"
+>使用引号</A
+></DT
+><DT
+>44.3.5. <A
+HREF="error-style-guide.html#AEN61352"
+>语法和标点</A
+></DT
+><DT
+>44.3.6. <A
+HREF="error-style-guide.html#AEN61358"
+>大写字符与小写字符比较</A
+></DT
+><DT
+>44.3.7. <A
+HREF="error-style-guide.html#AEN61362"
+>避免被动语气</A
+></DT
+><DT
+>44.3.8. <A
+HREF="error-style-guide.html#AEN61368"
+>现代时与过去时的比较</A
+></DT
+><DT
+>44.3.9. <A
+HREF="error-style-guide.html#AEN61378"
+>对象类型</A
+></DT
+><DT
+>44.3.10. <A
+HREF="error-style-guide.html#AEN61383"
+>方括弧</A
+></DT
+><DT
+>44.3.11. <A
+HREF="error-style-guide.html#AEN61387"
+>组装错误信息</A
+></DT
+><DT
+>44.3.12. <A
+HREF="error-style-guide.html#AEN61392"
+>错误的原因</A
+></DT
+><DT
+>44.3.13. <A
+HREF="error-style-guide.html#AEN61396"
+>函数名</A
+></DT
+><DT
+>44.3.14. <A
+HREF="error-style-guide.html#AEN61403"
+>尽量避免的字眼</A
+></DT
+><DT
+>44.3.15. <A
+HREF="error-style-guide.html#AEN61435"
+>正确地拼写</A
+></DT
+><DT
+>44.3.16. <A
+HREF="error-style-guide.html#AEN61450"
+>本地化</A
+></DT
+></DL
+></DD
+></DL
+></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="SOURCE-FORMAT"
+>44.1. 格式</A
+></H1
+><P
+>    代码格式使用每个制表符（tab）4列的空白，
+        目前是保留制表符状态（也就是说制表符不被展开为空白）。
+    每个逻辑缩进层次都是更多的一个 tab。布局规则（花括弧定位等）遵循 BSD 传统。
+   </P
+><P
+>    虽然提交的补丁并不需要我那全遵循这些格式化规则，我们最好还是这么做。
+    你的代码将会被 <SPAN
+CLASS="APPLICATION"
+>pgindent</SPAN
+> 处理，虽然这样做不会让它看起来比其它的格式化习惯更好看。
+   </P
+><P
+>    对于使用 <SPAN
+CLASS="PRODUCTNAME"
+>Emacs</SPAN
+> 的人，把下面行（或者类似的东西）增加到你的
+    <TT
+CLASS="FILENAME"
+>~/.emacs</TT
+>
+    初始化文件里面去：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>;; check for files with a path containing "postgres" or "pgsql"
+(setq auto-mode-alist
+	(cons '("\\(postgres\\|pgsql\\).*\\.[ch]\\'" . pgsql-c-mode)
+		auto-mode-alist))
+(setq auto-mode-alist
+	(cons '("\\(postgres\\|pgsql\\).*\\.cc\\'" . pgsql-c-mode)
+		auto-mode-alist))
+
+(defun pgsql-c-mode ()
+  ;; sets up formatting for PostgreSQL C code
+  (interactive)
+  (c-mode)
+  (setq-default tab-width 4)
+  (c-set-style "bsd")             ; set c-basic-offset to 4, plus other stuff
+  (c-set-offset 'case-label '+)   ; tweak case indent to match PG custom
+  (setq indent-tabs-mode t))      ; make sure we keep tabs when indenting</PRE
+><P>
+   </P
+><P
+>    对于 <SPAN
+CLASS="APPLICATION"
+>vi</SPAN
+>，你的
+    <TT
+CLASS="FILENAME"
+>~/.vimrc</TT
+> 或者相当的文件应该包含下面的东西：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>set tabstop=4</PRE
+><P>
+
+    或者在 <SPAN
+CLASS="APPLICATION"
+>vi</SPAN
+> 里面键入
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>:set ts=4</PRE
+><P>
+   </P
+><P
+>	文本浏览工具 <SPAN
+CLASS="APPLICATION"
+>more</SPAN
+> 和
+	<SPAN
+CLASS="APPLICATION"
+>less</SPAN
+> 可以用下面命令调用
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>more -x4
+less -x4</PRE
+><P>
+
+       这样就可以让他们正确显示 tab 键。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="protocol-changes.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="error-message-reporting.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>自协议 2.0 以来的变化的概述</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="internals.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>报告服务器里的错误</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

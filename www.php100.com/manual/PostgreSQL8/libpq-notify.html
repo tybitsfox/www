@@ -1,0 +1,277 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>异步通知 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="libpq - C 库" HREF="libpq.html"><LINK REL="PREVIOUS" TITLE="捷径接口" HREF="libpq-fastpath.html"><LINK REL="NEXT" TITLE="与COPY命令相关的函数" HREF="libpq-copy.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="libpq-fastpath.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="libpq.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 28. <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> - C 库</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="libpq.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="libpq-copy.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="LIBPQ-NOTIFY" >28.7. 异步通知</A
+></H1
+><A NAME="AEN26071" ></A
+><P
+><SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+通过<TT
+CLASS="COMMAND"
+>LISTEN</TT
+>和<TT
+CLASS="COMMAND"
+>NOTIFY</TT
+>命令提供对异步通知的支持。
+一个服务器用<TT
+CLASS="COMMAND"
+>LISTEN</TT
+>命令注册一个它感兴趣的通知条件
+（也可以用<TT
+CLASS="COMMAND"
+>UNLISTEN</TT
+>命令停止监听）。
+所有正在监听某一通知条件的会话在该条件名的
+<TT
+CLASS="COMMAND"
+>NOTIFY</TT
+>（通知）被任何会话执行后都将被异步地通知。
+通知发出者不会传递附加的信息到监听者。因此，很典型地是，
+任何实际的需要被传递的数据都是通过一个数据库表传递的。
+通常，条件名与相关联的表同名，但是并不是一定要与某个表相关才行。</P
+><P
+><TT
+CLASS="FILENAME"
+>libpq</TT
+> 应用把<TT
+CLASS="COMMAND"
+>LISTEN</TT
+>和
+<TT
+CLASS="COMMAND"
+>UNLISTEN</TT
+>
+命令作为通常的 SQL 命令提交。
+随后通过调用<TT
+CLASS="FUNCTION"
+>PQnotifies()</TT
+><A NAME="AEN26086" ></A
+>可以侦测到
+<TT
+CLASS="COMMAND"
+>NOTIFY</TT
+> 消息的到达。</P
+><P
+>函数<TT
+CLASS="FUNCTION"
+>PQnotifies</TT
+>
+	从一个来自服务器的未处理的通知信息列表中返回下一条通知。
+	如果没有未处理的信息则返回 NULL 指针。
+	一旦<TT
+CLASS="FUNCTION"
+>PQnotifies</TT
+>返回一条通知，
+	该通知会被认为已处理并且将被从通知列表中删除。
+</P><PRE
+CLASS="SYNOPSIS"
+>PGnotify *PQnotifies(PGconn *conn);
+
+typedef struct pgNotify {
+    char *relname;		   /* 通知名字*/
+    int  be_pid;		   /* 服务器进程 id*/
+    char *extra;                /* 通知参数 */
+} PGnotify;</PRE
+><P>
+在处理完 <TT
+CLASS="FUNCTION"
+>PQnotifies</TT
+> 返回的<TT
+CLASS="STRUCTNAME"
+>PGnotify</TT
+>对象后，
+别忘了用<TT
+CLASS="FUNCTION"
+>PQfreemem()</TT
+> 把它释放，以避免内存泄漏。
+释放 <TT
+CLASS="STRUCTNAME"
+>PGnotify</TT
+> 指针就足够了；<TT
+CLASS="STRUCTFIELD"
+>relname</TT
+> 和 <TT
+CLASS="STRUCTFIELD"
+>extra</TT
+>
+字段并未代表独立分配的内存。（目前，<TT
+CLASS="STRUCTFIELD"
+>extra</TT
+> 字段没有使用，
+并且将总是指向一个空字串。）</P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+> 在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 6.4 和更高的版本里，
+<TT
+CLASS="LITERAL"
+>be_pid</TT
+> 是正在通知的服务器的 <SPAN
+CLASS="ACRONYM"
+>PID</SPAN
+>，
+而在早些的版本里它总是你自己的服务器的<SPAN
+CLASS="ACRONYM"
+>PID</SPAN
+>。</P
+></BLOCKQUOTE
+></DIV
+><P
+><A HREF="libpq-example.html#LIBPQ-EXAMPLE-2" >Example 28-2</A
+> 给出了一个使用异步通知的例子。</P
+><P
+><TT
+CLASS="FUNCTION"
+>PQnotifies()</TT
+> 实际上并不读取服务器数据；
+它只是返回被前面的另一个<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>函数吸收的信息。
+在以前的 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 的版本里，
+周期性的收到<TT
+CLASS="COMMAND"
+>NOTIFY</TT
+>信息的唯一方法是持续的提交命令，
+即使是空查询也可以，并且在每次
+<TT
+CLASS="FUNCTION"
+>PQexec()</TT
+>后检查
+<TT
+CLASS="FUNCTION"
+>PQnotifies()</TT
+> 。现在这个方法也能还工作，
+不过我们认为它太浪费处理器时间而废弃了它。</P
+><P
+>在你没有可用的命令提交时检查<TT
+CLASS="COMMAND"
+>NOTIFY</TT
+>消息的更好的方法是调用
+<TT
+CLASS="FUNCTION"
+>PQconsumeInput()</TT
+>，然后检查
+<TT
+CLASS="FUNCTION"
+>PQnotifies()</TT
+>。你可以使用
+ <TT
+CLASS="FUNCTION"
+>select()</TT
+> 来等待服务器数据的到达，
+这样在没有数据可处理时可以不浪费 <SPAN
+CLASS="ACRONYM"
+>CPU</SPAN
+> 时间。
+（参阅<TT
+CLASS="FUNCTION"
+>PQsocket()</TT
+> 获取用于 <TT
+CLASS="FUNCTION"
+>select()</TT
+>的文件描述符。）
+注意这种方法不管你使用
+<TT
+CLASS="FUNCTION"
+>PQsendQuery</TT
+>/<TT
+CLASS="FUNCTION"
+>PQgetResult</TT
+> 还是简单的
+ <TT
+CLASS="FUNCTION"
+>PQexec</TT
+>来执行命令都能工作。不过，你应该记住在每次
+<TT
+CLASS="FUNCTION"
+>PQgetResult</TT
+> 或 <TT
+CLASS="FUNCTION"
+>PQexec</TT
+>后检查
+ <TT
+CLASS="FUNCTION"
+>PQnotifies()</TT
+> ，看看在处理命令的过程中是否有通知到达。</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="libpq-fastpath.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="libpq-copy.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >捷径接口</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="libpq.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >与<TT
+CLASS="COMMAND"
+>COPY</TT
+>命令相关的函数</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

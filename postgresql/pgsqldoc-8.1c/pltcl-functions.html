@@ -1,0 +1,313 @@
+<HTML
+><HEAD
+><TITLE
+>PL/Tcl 函数和参数</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="PL/Tcl - Tcl 过程语言"
+HREF="pltcl.html"><LINK
+REL="PREVIOUS"
+TITLE="PL/Tcl - Tcl 过程语言"
+HREF="pltcl.html"><LINK
+REL="NEXT"
+TITLE="PL/Tcl 里的数据值"
+HREF="pltcl-data.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="pltcl.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="pltcl.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 37. PL/Tcl - Tcl 过程语言</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="pltcl.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="pltcl-data.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="PLTCL-FUNCTIONS"
+>37.2. PL/Tcl 函数和参数</A
+></H1
+><P
+>     要用<SPAN
+CLASS="APPLICATION"
+>PL/Tcl</SPAN
+>语言创建一个函数，使用标准的
+     <A
+HREF="sql-createfunction.html"
+><I
+>CREATE FUNCTION</I
+></A
+>
+     语法：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION <TT
+CLASS="REPLACEABLE"
+><I
+>funcname</I
+></TT
+> (<TT
+CLASS="REPLACEABLE"
+><I
+>argument-types</I
+></TT
+>) RETURNS <TT
+CLASS="REPLACEABLE"
+><I
+>return-type</I
+></TT
+> AS $$
+    # PL/Tcl 函数体
+$$ LANGUAGE pltcl;</PRE
+><P>
+
+	<SPAN
+CLASS="APPLICATION"
+>PL/TclU</SPAN
+>是一样的，除了语言应该声明为 <TT
+CLASS="LITERAL"
+>pltclu</TT
+> 之外。
+     </P
+><P
+>	函数体就是一段 Tcl 代码。
+	当在一个查询里面调用这个函数，
+	参数是作为变量 <TT
+CLASS="LITERAL"
+>$1</TT
+> ... <TT
+CLASS="LITERAL"
+>$n</TT
+> 
+	传递给 Tcl 脚本的。
+	结果是用通常的方法从 Tcl 代码中返回的，就是用一个 <TT
+CLASS="LITERAL"
+>return</TT
+> 语句。
+     </P
+><P
+>	比如，
+	一个简单的返回两个整数值的最大值函数可以这样定义：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION tcl_max (integer, integer) RETURNS integer AS $$
+    if {$1 &gt; $2} {return $1}
+    return $2
+$$ LANGUAGE pltcl STRICT;</PRE
+><P>
+
+	请注意子句 <TT
+CLASS="LITERAL"
+>STRICT</TT
+>，它让我们可以不用考虑输入为 NULL 的情况：
+	如果传递了一个 NULL，该函数实际上就不会被调用，
+	而只是自动返回一个 NULL 结果。
+    </P
+><P
+>	如果是一个不严格的函数，如果一个参数的实际数值是 NULL，
+	那么对应的 <TT
+CLASS="LITERAL"
+>$n</TT
+> 变量将被设置为一个空字串。
+	要检测一个特定的参数是否为 NULL，可以使用函数 <TT
+CLASS="LITERAL"
+>argisnull</TT
+>。
+	比如，假设我们要求<TT
+CLASS="FUNCTION"
+>tcl_max</TT
+>在一个参数为
+	null 而另外一个为非 null 时返回非 null 参数，而不是 NULL：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION tcl_max (integer, integer) RETURNS integer AS $$
+    if {[argisnull 1]} {
+	if {[argisnull 2]} { return_null }
+	return $2
+    }
+    if {[argisnull 2]} { return $1 }
+    if {$1 &gt; $2} {return $1}
+    return $2
+$$ LANGUAGE pltcl;</PRE
+><P>
+    </P
+><P
+>	如上所述，要从 PL/Tcl 函数中返回一个 NULL 数值，
+	可以执行 <TT
+CLASS="LITERAL"
+>return_null</TT
+>。不管函数是否严格，我们都可以这么做。
+    </P
+><P
+>	复合类型的参数是当做 Tcl 数组传递给过程的。
+	数组中的元素名字就是复合类型里的属性名字。
+	如果在实际的行中的一个属性有 NULL 数值，那么它不会在数组中出现。
+	下面是一个例子：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE employee (
+    name text,
+    salary integer,
+    age integer
+);
+
+CREATE FUNCTION overpaid_2 (EMP) RETURNS boolean AS $$
+    if {200000.0 &lt; $1(salary)} {
+	return "t"
+    }
+    if {$1(age) &#60; 30 &#38;&#38; 100000.0 &lt; $1(salary)} {
+	return "t"
+    }
+    return "f"
+$$ LANGUAGE pltcl;</PRE
+><P>
+    </P
+><P
+>	目前没有返回复合类型结果值的支持。也不支持返回结果集。
+    </P
+><P
+>     <SPAN
+CLASS="APPLICATION"
+>PL/Tcl</SPAN
+> 目前还不是完全支持域类型：它看待域类型和下层的标量类型是一样的。
+     这就意味着与域关联的约束将不会被强制。对于函数参数，这不是什么问题，
+     但是如果你把 <SPAN
+CLASS="APPLICATION"
+>PL/Tcl</SPAN
+> 函数声明为返回一个域类型，那么就有危险。
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="pltcl.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="pltcl-data.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>PL/Tcl - Tcl 过程语言</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="pltcl.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>PL/Tcl 里的数据值</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

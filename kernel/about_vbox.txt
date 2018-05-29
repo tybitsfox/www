@@ -1,0 +1,80 @@
+关于vbox(virtualbox)加载个人内核测试的说明：
+1、img文件的转换，vbox默认不能加载img文件，但是他有个工具用于转换img文件到vdi或vhd格式的文件
+vboxmanage convertdd boot.img boot.vdi --format vdi(or vhd)
+其中vdi格式为virtualbox自有的一个格式规范，而vhd则为微软公布的一个规范，该规范可查阅。我对硬盘
+的设置将参照vhd格式，之前我的bochrc中对硬盘参数的设置太随意（cylinder 20,head 16,sector 63）不
+符合vbox认可的各种规范，这也导致了我的初期测试进行不下去。
+vhd格式中规定的参数格式为：
+Dynamic Disk header fields 
+Copy of hard disk footer (512 bytes) 
+Dynamic Disk Header (1024 bytes) 
+BAT (Block Allocation table) 
+Data Block 1 
+Data Block 2 
+…
+Data Block n 
+Hard Disk Footer (512 bytes) 
+
+Hard disk footer fields 	Size (bytes) 
+
+Cookie 						8 
+Features					4 
+File Format Version			4 
+Data Offset					8 
+Time Stamp					4 
+Creator Application			4 
+Creator Version				4 
+Creator Host OS				4 
+Original Size				8 
+Current Size				8 
+Disk Geometry				4 
+Disk Type					4 
+Checksum					4 
+Unique Id					16 
+Saved State					1 
+Reserved					427
+其中，涉及硬盘参数设置的Disk Geometry的含义为：
+Disk Geometry 
+This field stores the cylinder, heads, and sectors per track value for the hard 
+disk.  
+Disk Geometry field 		Size (bytes) 
+Cylinder					2 
+Heads						1 
+Sectors per track/cylinder 	1 
+通过测试，发现其柱面数的存储格式为大头（big endding）
+另外，这里的参数设定不能简单的通过修改vhd文件实现，因为这些都是vhd规范按照你设定的
+硬盘大小来自动决定的。
+<font size=3 color=red>好吧，我被virutalbox恶心到了！！</font>
+心血来潮，想试试我的镜像在vritualbox下的效果，没想到各种莫名其妙的错误。而这种错误定位到
+源代码处都是极为平常且不可能出错的地方，真不知道他是怎么模拟运行各种成功系统的。首先，我
+怀疑的是镜像文件的转换造成了差异，因为相同的代码生成的原始镜像在bochs下都是完美的运行。
+并且在bochs下运行的img镜像都是可以控制到字节级的，因为这种镜像就是dd直接生成的Raw格式的最
+纯净的镜像。然而，这种镜像却无法在vb下直接运行，还需要一个转换，因为vb不支持raw格式的镜像
+转换的方法是通过vb（virtualbox）自带的管理工具vboxmanage实现的：
+vboxmanage convertfromraw boot.img boot.vdi --format vdi(或者vhd,vwdk格式)
+然而转换后在vb下运行就各种的变味了，同一个镜像每次运行甚至是出错的eip都不相同！为此我浪费了
+一天的时间在进行测试，还是解决不了。或许问题处在转换的过程，但我真不知道怎么进行下去了。
+在网上搜索各种方法以及各种模拟软件的区别，说实话对vb的介绍都是停留在应用级，少有深入的介绍。
+属于一个傻瓜型的模拟软件。并且在内核或系统级测试时都强调了bochs完美的模拟性，这使得他非常适
+合底层开发的应用。
+<font size=5 color=red>thanks!thanks for virtualbox that guide me to find a big mistake!!</font>
+感谢virtualbox!正是因为你，才是我发现了一个硬盘驱动程序中大的错误！我要在这里收回我之前对你错误
+的评价，但我不会删掉那段错误的评价，这也记录了我真正认识你的过程！再次感谢。
+同时，也为我自己锲而不舍的找寻解决问题的方法并最终解决问题而自豪！正是virtualbox帮我发现了问题，
+而我又没有忽视和放弃这个目前看似不算什么大问题的存在，使得我最终解决了硬盘驱动代码中一个关键的问
+题。再次感谢virtualbox!并感谢一直陪伴我的bochs!
+简单记录下这次问题的原因：在硬盘中断处理程序中，虽然可以连续的读写多个扇区的数据，但是在每次读写
+完成一个扇区之后，都必须要读取下状态硬盘的主状态寄存器，并且要查看读取的状态字中数据请求有效标志位
+是否置位！我之前的硬盘操作就是缺少这一步，不过，在bochs下没有发生错误，但是在virtualbox和qemu下都
+发生了同样的错误：那就是除了第一扇区数据的操作正常外，后续扇区的读写操作都发生了错误。这也就造成了
+上面所说的各种莫名其妙的错误。之前我也怀疑过可能是硬盘操作出现了问题，但是查看virtualbox的运行状态
+可以看到读取的数据字节数完全正确，并且由于第一扇区数据是正确的，这使得错误更加隐蔽。幸好我在万般无
+奈的情况下，还没放弃，开始了每个扇区数据的比较。这才使问题暴露出来，并最终完美解决。
+2016-3-28,值得庆祝的一天 ;)
+
+  
+ 
+
+ 
+
+

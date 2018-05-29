@@ -1,0 +1,94 @@
+使用automake&autoconf生成发布版安装包
+一、文件、目录的组织结构：
+1、新建一个项目目录：如：mkdir a01
+2、进入a01目录，建立一个主程序的目录：mkdir app,在app目录下建立主程序的源代码：a01.c
+3、回到a01目录，建立一个链接库的目录：mkdir lib,在lib目录下建立链接库的源代码：libfun.c,头文件：libfun.h
+
+二、手动添加auto工具所需的模板文件：
+1、在项目目录下建立Makefile.am,在文件中仅是指定子目录的名称：
+#该文件就是下面一行代码即可：
+SUBDIRS = lib app
+
+2、在app目录下建立也Makefile.am,该文件的建立同样简单,很多设置照抄就行
+#下面一行指定建立发布版，照抄
+AUTOMAKE_OPTIONS = foreign
+#指定生成程序的名称：
+bin_PROGRAMS = a01
+#指定所需的源代码，注意：这里的通用写法为xxx_SOURCES,xxx用你的程序名称替代：
+a01_SOURCES = a01.c
+#指定所需的链接库文件：xxx_LDADD,一样使用你的程序名替代xxx,top_builddir即是你的项目目录
+a01_LDADD =  $(top_builddir)/libfun/.libs/liblibfun.so
+#指定要包含的头文件路径，top_srcdir等同top_builddir
+a01_CPPFLAGS = -I $(top_srcdir)/libdir
+#如无特殊要求，这个Makefile.am就完成了。
+
+3、在lib目录下建立Makefile.am,一样非常的简单：
+#建立发布版，照抄
+AUTOMAKE_OPTIONS = foreign
+#指定生成链接库的名称，注意：这里如果生成动态库，不能写为.so而要写成.la
+lib_LTLIBRARIES = liblibfun.la
+#如果要生成静态库，应写为：
+#lib_LIBRARIES = liblibfun.a
+#指定所需的源代码文件，这里是动态库的写法
+liblibfun_la_SOURCES = libfun.c
+#指定所需的源代码文件，这里是静态库写法,注意区别两者的不同。
+#liblibfun_a_SOURCES = libfun.c
+#指定make install时动态库文件的安装路径：
+libdir = $(perfix)/workarea/cprogram/mlib
+#如无特殊要求，这个Makefile.am就完成了。
+
+三、到这里，基本上已经大功告成了，嘎嘎！还需要一文件：在项目目录a01下运行autoscan,生成一个configure.scan文件。
+对这个文件稍加改动就完成了，下面是自动生成的configure.scan：
+  1 #                                               -*- Autoconf -*-
+  2 # Process this file with autoconf to produce a configure script.
+  3 
+  4 AC_PREREQ([2.67])
+  5 AC_INIT([FULL-PACKAGE-NAME], [VERSION], [BUG-REPORT-ADDRESS])
+  6 AC_CONFIG_SRCDIR([libfun/libfun.h])
+  7 AC_CONFIG_HEADERS([config.h])
+  8 
+  9 # Checks for programs.
+ 10 AC_PROG_CC
+ 11 
+ 12 # Checks for libraries.
+ 13 # FIXME: Replace `main' with a function in `-llibfun':
+ 14 AC_CHECK_LIB([libfun], [main])
+ 15 
+ 16 # Checks for header files.
+ 17 
+ 18 # Checks for typedefs, structures, and compiler characteristics.
+ 19 
+ 20 # Checks for library functions.
+ 21 
+ 22 AC_CONFIG_FILES([Makefile
+ 23                  app/Makefile
+ 24                  libfun/Makefile])
+ 25 AC_OUTPUT
+改动后的文件：
+#对autoconf版本的要求，无需改动。
+AC_PREREQ([2.67])
+#指定程序名称，版本号，错误报告邮箱:
+AC_INIT(a01, 0.01, tybitsofx@gmail.com)
+#添加自动编译宏：
+AM_INIT_AUTOMAKE(a01,0.01)
+#确定使用的编译器：
+AC_PROG_CC
+#检查所包含的库，注意：main应替换为你的库文件中的一个函数名,我的是p_test
+AC_CHECK_LIB([libfun], [p_test])
+#添加下面一句，如果你使用的是动态库：
+AM_PROG_LIBTOOL
+#如果你使用的是静态库，则应选择添加：
+#AC_PROC_RANLIB
+#下面的照抄过来：
+AC_CONFIG_FILES([Makefile
+                 app/Makefile
+                 libfun/Makefile])
+AC_OUTPUT
+ok!!!!大功告成！！！！将上面的文件改名：mv configure.scan  configure.ac
+四、依次运行（或编写个autogen.sh）：
+aclocal
+libtoolize -c -f
+autoconf
+automake --add-missing
+偷着乐吧~~~~~~~~
+

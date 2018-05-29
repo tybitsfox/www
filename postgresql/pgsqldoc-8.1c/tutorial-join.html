@@ -1,0 +1,439 @@
+<HTML
+><HEAD
+><TITLE
+>在表之间连接</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="SQL 语言"
+HREF="tutorial-sql.html"><LINK
+REL="PREVIOUS"
+TITLE="查询一个表"
+HREF="tutorial-select.html"><LINK
+REL="NEXT"
+TITLE="聚集函数"
+HREF="tutorial-agg.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="tutorial-select.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="tutorial-sql.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 2. <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语言</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="tutorial-sql.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="tutorial-agg.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="TUTORIAL-JOIN"
+>2.6. 在表之间连接</A
+></H1
+><A
+NAME="AEN775"
+></A
+><P
+>	到目前为止，我们的查询一次只访问了一个表。
+	查询可以一次访问多个表，或者用某种方式访问一个表，而同时处理该表的多个行。
+	一个同时访问同一个或者不同表的多个行的查询叫<I
+CLASS="FIRSTTERM"
+>连接（join）</I
+>查询。
+	举例来说，比如你想列出所有天气记录以及这些记录相关的城市。
+	要实现这个目标，我们需要拿
+	<TT
+CLASS="CLASSNAME"
+>weather</TT
+>表每行的<TT
+CLASS="STRUCTFIELD"
+>city</TT
+>
+	字段和<TT
+CLASS="CLASSNAME"
+>cities</TT
+>表所有行的<TT
+CLASS="STRUCTFIELD"
+>name</TT
+>字段进行比较，
+	并选取那些这些数值相匹配的行。
+    </P><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	这里只是一个概念上的模型。该连接通常以比实际比较每个可能的行配对更高效的方式执行，
+	但这些是用户看不到的。
+     </P
+></BLOCKQUOTE
+></DIV
+><P>
+	这个任务可以用下面的查询来实现：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT *
+    FROM weather, cities
+    WHERE city = name;</PRE
+><P>
+
+</P><PRE
+CLASS="SCREEN"
+>     city      | temp_lo | temp_hi | prcp |    date    |     name      | location
+---------------+---------+---------+------+------------+---------------+-----------
+ San Francisco |      46 |      50 | 0.25 | 1994-11-27 | San Francisco | (-194,53)
+ San Francisco |      43 |      57 |    0 | 1994-11-29 | San Francisco | (-194,53)
+(2 rows)</PRE
+><P>
+
+   </P
+><P
+>	观察结果集的两个方面：
+    <P
+></P
+></P><UL
+><LI
+><P
+>	没有城市<TT
+CLASS="LITERAL"
+>Hayward</TT
+>的结果行。这是因为在
+	<TT
+CLASS="CLASSNAME"
+>cities</TT
+> 表里面没有
+	<TT
+CLASS="LITERAL"
+>Hayward</TT
+>的匹配行，所以连接忽略
+	<TT
+CLASS="CLASSNAME"
+>weather</TT
+>表里的不匹配行。我们稍后将看到如何修补这个毛病。
+      </P
+></LI
+><LI
+><P
+>	有两个字段包含城市名字。这是正确的，
+	因为 <TT
+CLASS="CLASSNAME"
+>weather</TT
+> 和 <TT
+CLASS="CLASSNAME"
+>cities</TT
+>
+	表的字段是接在一起的。不过，实际上我们不想要这些，
+	因此你将可能希望明确列出输出字段而不是使用
+	<TT
+CLASS="LITERAL"
+>*</TT
+>：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT city, temp_lo, temp_hi, prcp, date, location
+    FROM weather, cities
+    WHERE city = name;</PRE
+><P>
+      </P
+></LI
+></UL
+><P>
+   </P
+><DIV
+CLASS="FORMALPARA"
+><P
+><B
+>练习：. </B
+>	看看省略 <TT
+CLASS="LITERAL"
+>WHERE</TT
+> 子句的语义是什么。
+    </P
+></DIV
+><P
+>	因为这些字段的名字都不一样，所以分析器自动找出它们属于哪个表，
+	但是在连接查询里使用字段全称是很好的风格：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT	weather.city, weather.temp_lo, weather.temp_hi,
+	weather.prcp, weather.date, cities.location
+    FROM weather, cities
+    WHERE cities.name = weather.city;</PRE
+><P>
+   </P
+><P
+>	到目前为止，这种类型的连接查询也可以用下面这样的形式写出来：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT *
+    FROM weather INNER JOIN cities ON (weather.city = cities.name);</PRE
+><P>
+
+	这个语法并非象上面那个那么常用，我们在这里写出来是为了让你更容易了解后面的主题。
+   </P
+><P
+>    <A
+NAME="AEN811"
+></A
+>
+
+	现在我们将看看如何能把<TT
+CLASS="LITERAL"
+>Hayward</TT
+>记录找回来。
+	我们想让查询干的事是扫描 <TT
+CLASS="CLASSNAME"
+>weather</TT
+> 表，
+	并且对每一行都找出匹配的 <TT
+CLASS="CLASSNAME"
+>cities</TT
+> 表里面的行。
+	如果我们没有找到匹配的行，那么我们需要一些<SPAN
+CLASS="QUOTE"
+>"空值"</SPAN
+>代替<TT
+CLASS="CLASSNAME"
+>cities</TT
+>表的字段。
+	这种类型的查询叫<I
+CLASS="FIRSTTERM"
+>外连接</I
+>。
+	（我们在此之前看到的连接都是内部连接。）这样的命令看起来象这样：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT *
+    FROM weather LEFT OUTER JOIN cities ON (weather.city = cities.name);
+
+     city      | temp_lo | temp_hi | prcp |    date    |     name      | location
+---------------+---------+---------+------+------------+---------------+-----------
+ Hayward       |      37 |      54 |      | 1994-11-29 |               |
+ San Francisco |      46 |      50 | 0.25 | 1994-11-27 | San Francisco | (-194,53)
+ San Francisco |      43 |      57 |    0 | 1994-11-29 | San Francisco | (-194,53)
+(3 rows)</PRE
+><P>
+
+	这个查询是一个<I
+CLASS="FIRSTTERM"
+>左手边外连接</I
+>，
+	因为在连接操作符（译注∶LEFT OUTER JOIN）左手边的表中的行在输出中至少要出现一次，
+	而在右手边的行将只输出那些与左手边行有对应匹配的行。
+	如果输出的左手边表的行没有对应匹配的右手边表的行，那么在右手边行的字段将填充空（NULL）。
+   </P
+><DIV
+CLASS="FORMALPARA"
+><P
+><B
+>练习：. </B
+>	还有右连接和全连接。试着找出来它们能干什么。
+    </P
+></DIV
+><P
+>    <A
+NAME="AEN826"
+></A
+>
+    <A
+NAME="AEN829"
+></A
+>
+
+	我们也可以把一个表和自己连接起来。这叫做<I
+CLASS="FIRSTTERM"
+>自连接</I
+>。
+	比如，假设我们想找出那些在其它天气记录的温度范围之外的天气记录。
+	这样我们就需要拿 <TT
+CLASS="CLASSNAME"
+>weather</TT
+> 表里每行的
+	<TT
+CLASS="STRUCTFIELD"
+>temp_lo</TT
+> 和 <TT
+CLASS="STRUCTFIELD"
+>temp_hi</TT
+> 字段与 <TT
+CLASS="CLASSNAME"
+>weather</TT
+> 表里其它行的
+	<TT
+CLASS="STRUCTFIELD"
+>temp_lo</TT
+> 和 <TT
+CLASS="STRUCTFIELD"
+>temp_hi</TT
+> 字段进行比较。我们可以用下面的查询实现这个目标：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT W1.city, W1.temp_lo AS low, W1.temp_hi AS high,
+    W2.city, W2.temp_lo AS low, W2.temp_hi AS high
+    FROM weather W1, weather W2
+    WHERE W1.temp_lo &lt; W2.temp_lo
+    AND W1.temp_hi &gt; W2.temp_hi;
+
+     city      | low | high |     city      | low | high
+---------------+-----+------+---------------+-----+------
+ San Francisco |  43 |   57 | San Francisco |  46 |   50
+ Hayward       |  37 |   54 | San Francisco |  46 |   50
+(2 rows)</PRE
+><P>
+
+	在这里我们把<TT
+CLASS="CLASSNAME"
+>weather</TT
+>表重新标记为
+	<TT
+CLASS="LITERAL"
+>W1</TT
+> 和 <TT
+CLASS="LITERAL"
+>W2</TT
+> 以区分连接的左手边和右手边。
+	你还可以用这样的别名在其它查询里节约一些敲键，比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT *
+    FROM weather w, cities c
+    WHERE w.city = c.name;</PRE
+><P>
+	你以后会经常碰到这样的缩写的．
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="tutorial-select.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="tutorial-agg.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>查询一个表</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="tutorial-sql.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>聚集函数</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

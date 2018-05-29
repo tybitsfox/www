@@ -1,0 +1,75 @@
+<HTML><HEAD><TITLE>错误报告</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="安全" HREF="security.index.html"><LINK REL="PREVIOUS" TITLE="数据库安全" HREF="security.database.html"><LINK REL="NEXT" TITLE="Using Register Globals" HREF="security.registerglobals.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="sect1" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="security.database.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 15. 安全</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="security.registerglobals.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="sect1"><H1 CLASS="sect1"><A NAME="security.errors"></A>错误报告</H1><P>&#13; With PHP security, there are two sides to error reporting. One is
+beneficial to increasing security, the other is detrimental.
+</P><P>&#13; A standard attack tactic involves profiling a system by feeding
+it improper data, and checking for the kinds, and contexts, of the
+errors which are returned. This allows the system cracker to probe
+for information about the server, to determine possible weaknesses.
+For example, if an attacker had gleaned information about a page
+based on a prior form submission, they may attempt to override
+variables, or modify them:
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN6264"></A><P><B>例子 15-11. 用自定义的 HTML 页面来攻击变量</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+&lt;form method="POST" action="attacktarget?username=badfoo&amp;password=badfoo"&gt;<br />&lt;input type="hidden" name="username" value="badfoo"&gt;<br />&lt;input type="hidden" name="password" value="badfoo"&gt;<br />&lt;/form&gt;</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; The PHP errors which are normally returned can be quite helpful to a
+developer who is trying to debug a script, indicating such things
+as the function or file that failed, the PHP file it failed in,
+and the line number which the failure occured in. This is all
+information that can be exploited. It is not uncommon for a php
+developer to use <A HREF="function.show-source.html"><B CLASS="function">show_source()</B></A>,
+<A HREF="function.highlight-string.html"><B CLASS="function">highlight_string()</B></A>, or
+<A HREF="function.highlight-file.html"><B CLASS="function">highlight_file()</B></A> as a debugging measure, but in
+a live site, this can expose hidden variables, unchecked syntax,
+and other dangerous information. Especially dangerous is running
+code from known sources with built-in debugging handlers, or using
+common debugging techniques. If the attacker can determine what
+general technique you are using, they may try to brute-force a page,
+by sending various common debugging strings:
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN6271"></A><P><B>例子 15-12. 利用普通的调试变量</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+&lt;form method="POST" action="attacktarget?errors=Y&amp;amp;showerrors=1&amp;amp;debug=1"&gt;<br />&lt;input type="hidden" name="errors" value="Y"&gt;<br />&lt;input type="hidden" name="showerrors" value="1"&gt;<br />&lt;input type="hidden" name="debug" value="1"&gt;<br />&lt;/form&gt;</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; Regardless of the method of error handling, the ability to probe a
+system for errors leads to providing an attacker with more
+information.
+</P><P>&#13; For example, the very style of a generic PHP error indicates a system
+is running PHP. If the attacker was looking at an .html page, and
+wanted to probe for the back-end (to look for known weaknesses in
+the system), by feeding it the wrong data they may be able to
+determine that a system was built with PHP.
+</P><P>&#13; A function error can indicate whether a system may be running a
+specific database engine, or give clues as to how a web page or
+programmed or designed. This allows for deeper investigation into
+open database ports, or to look for specific bugs or weaknesses
+in a web page. By feeding different pieces of bad data, for example,
+an attacker can determine the order of authentication in a script,
+(from the line number errors) as well as probe for exploits that
+may be exploited in different locations in the script.
+</P><P>&#13; A filesystem or general PHP error can indicate what permissions
+the webserver has, as well as the structure and organization of
+files on the web server. Developer written error code can aggravate
+this problem, leading to easy exploitation of formerly "hidden"
+information.
+</P><P>&#13; There are three major solutions to this issue. The first is to
+scrutinize all functions, and attempt to compensate for the bulk
+of the errors. The second is to disable error reporting entirely
+on the running code. The third is to use PHP's custom error
+handling functions to create your own error handler. Depending
+on your security policy, you may find all three to be applicable
+to your situation.
+</P><P>&#13; One way of catching this issue ahead of time is to make use of
+PHP's own <A HREF="function.error-reporting.html"><B CLASS="function">error_reporting()</B></A>, to help you
+secure your code and find variable usage that may be dangerous.
+By testing your code, prior to deployment, with E_ALL, you can
+quickly find areas where your variables may be open to poisoning
+or modification in other ways. Once you are ready for deployment,
+by using E_NONE, you insulate your code from probing.
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN6281"></A><P><B>例子 15-13. 利用 E_ALL 来找出危险的变量</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#007700">if (</font><font color="#0000BB">$username</font><font color="#007700">) {&nbsp;&nbsp;</font><font color="#FF8000">// Not initialized or checked before usage<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$good_login </font><font color="#007700">= </font><font color="#0000BB">1</font><font color="#007700">;<br />}<br />if (</font><font color="#0000BB">$good_login </font><font color="#007700">== </font><font color="#0000BB">1</font><font color="#007700">) { </font><font color="#FF8000">// If above test fails, not initialized or checked before usage<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">readfile </font><font color="#007700">(</font><font color="#DD0000">"/highly/sensitive/data/index.html"</font><font color="#007700">); <br />}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="security.database.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="security.registerglobals.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">数据库安全</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="security.index.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Using Register Globals</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

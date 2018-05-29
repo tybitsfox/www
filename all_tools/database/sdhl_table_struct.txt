@@ -1,0 +1,385 @@
+<center><font size=5 color=red>山东汇力平台mysql数据库表结构</font></center><font color=blue>
+(1)字段命名规则：本数据库各表中所有字段名相同的即为同一字段,也是各表的关联字段。
+				 最主要的关联字段名为：uid 站点id，iid 项目id，
+(2)为提高访问效率，所有在主表中体现的项目：（COD，NHx）（SO2，NOx）已经与其字段位置绑定，所以，他们与项目表及项目id没有关联，
+				 或者说，他们的项目id也随位置固化，无需在项目表中取得，这点体现在项目标准的查询中就是无需查询项目表取得id再去查询关联标准
+				 而是使用固定id直接查询标准。项目表和项目标准查询仅在某些特殊企业的特殊污染项目中使用。</font>
+原来想尽量不使用多表联合查询的，现在看来还得免不了要使用，数据表中（废水，废气，污水厂）不再包含站点名称，控制级别等信息，直接由站点信息表中取得
+数据表中只需保留站点id即可。
+------------------------------------------------------------------------------------------------------
+一、废水：
+<font color=red>表名称： fs_h_master</font>
+表用途： 废水（污染源，污水厂结构相同，污水厂的表名：wsc_h_master）小时数据主表。
+表结构：
+mysql&gt; create table fs_h_master (uid int(8) unsigned not null,
+    -&gt; date timestamp,
+    -&gt; cod double(7,2) unsigned not null,
+    -&gt; nhx double(7,2) unsigned not null,
+    -&gt; ll_sh int(6) unsigned not null,
+    -&gt; ll_jg int(6) unsigned not null,
+    -&gt; ll_lj int(8) unsigned not null,
+    -&gt; PRIMARY KEY(uid,date));
++-------+----------------------+------+-----+-------------------+-----------------------------+
+| Field | Type                 | Null | Key | Default           | Extra                       |
++-------+----------------------+------+-----+-------------------+-----------------------------+
+| uid   | int(8) unsigned      | NO   | PRI | NULL              |                             |
+| date  | timestamp            | NO   | PRI | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
+| cod   | double(7,2) unsigned | NO   |     | NULL              |                             |
+| nhx   | double(7,2) unsigned | NO   |     | NULL              |                             |
+| ll_sh | int(6) unsigned      | NO   |     | NULL              |                             |
+| ll_jg | int(6) unsigned      | NO   |     | NULL              |                             |
+| ll_lj | int(8) unsigned      | NO   |     | NULL              |                             |
++-------+----------------------+------+-----+-------------------+-----------------------------+
+<font color=magenta>字段说明：
+uid：		站点id，每个站点唯一的标识。
+date:		时间戳，长度为4字节的unsigned int。
+cod:		COD浓度值
+nhx:		氨氮浓度值
+ll_sh:		瞬时流量
+ll_jg:		间隔流量
+ll_lj:		累计流量</font>
+-----------------------------------------------------------------------------------------------------
+二、废气
+<font color=red>表名称：	fq_m_master</font>
+表用途： 	废气（污染源）分钟数据主表。
+表结构：	
+mysql&gt; create table fq_m_master (uid int(8) unsigned not null,
+    -&gt; date timestamp,
+    -&gt; so2 double(7,2) unsigned not null,
+    -&gt; nox double(7,2) unsigned not null,
+    -&gt; dust double(7,2) unsigned not null,
+    -&gt; o2 double(5,2) unsigned not null,
+    -&gt; dll double(8,0) unsigned not null,
+    -&gt; PRIMARY KEY(uid,date));
++-------+----------------------+------+-----+-------------------+-----------------------------+
+| Field | Type                 | Null | Key | Default           | Extra                       |
++-------+----------------------+------+-----+-------------------+-----------------------------+
+| uid   | int(8) unsigned      | NO   | PRI | NULL              |                             |
+| date  | timestamp            | NO   | PRI | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
+| so2   | double(7,2) unsigned | NO   |     | NULL              |                             |
+| nox   | double(7,2) unsigned | NO   |     | NULL              |                             |
+| dust  | double(7,2) unsigned | NO   |     | NULL              |                             |
+| o2    | double(5,2) unsigned | NO   |     | NULL              |                             |
+| dll   | double(8,0) unsigned | NO   |     | NULL              |                             |
++-------+----------------------+------+-----+-------------------+-----------------------------+
+<font color=magenta>字段说明：
+uid：		站点id，每个站点唯一的标识。
+date:		时间戳，长度为4字节的unsigned int。
+so2:		so2浓度折算值
+nox:		氮氧化物浓度折算值
+dust:		烟尘浓度折算值
+o2:			氧浓度
+dll:		废气排放量</font>
+
+<font color=red>表名称：	fq_m_slave</font>
+表用途： 	废气（污染源）分钟数据附表。
+表结构：	
+mysql&gt; create table fq_m_slave (uid int(8) unsigned not null,
+    -&gt; date timestamp,
+    -&gt; dtmp double(7,2) unsigned not null,
+    -&gt; dpre double(7,2) unsigned not null,
+    -&gt; dhum double(7,2) unsigned not null,
+    -&gt; so2s double(7,2) unsigned not null,
+    -&gt; noxs double(7,2) unsigned not null,
+    -&gt; dusts double(7,2) unsigned not null,
+    -&gt; o2s double(7,2) unsigned not null,
+    -&gt; PRIMARY KEY(uid,date));
++-------+----------------------+------+-----+-------------------+-----------------------------+
+| Field | Type                 | Null | Key | Default           | Extra                       |
++-------+----------------------+------+-----+-------------------+-----------------------------+
+| uid   | int(8) unsigned      | NO   | PRI | NULL              |                             |
+| date  | timestamp            | NO   | PRI | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
+| dtmp  | double(7,2) unsigned | NO   |     | NULL              |                             |
+| dpre  | double(7,2) unsigned | NO   |     | NULL              |                             |
+| dhum  | double(7,2) unsigned | NO   |     | NULL              |                             |
+| so2s  | double(7,2) unsigned | NO   |     | NULL              |                             |
+| noxs  | double(7,2) unsigned | NO   |     | NULL              |                             |
+| dusts | double(7,2) unsigned | NO   |     | NULL              |                             |
+| o2s   | double(7,2) unsigned | NO   |     | NULL              |                             |
++-------+----------------------+------+-----+-------------------+-----------------------------+
+<font color=magenta>字段说明：
+uid：		站点id，每个站点唯一的标识。
+date:		时间戳，长度为4字节的unsigned int。
+dtmp:		烟气温度
+dpre:		烟气压力
+dhum:		烟气湿度
+so2s:		so2实测浓度			**
+noxs:		氮氧化物实测值		**
+dusts:		烟尘实测浓度		**
+o2s:		氧含量实测			**
+注：后面四项(*标注)不确定，可被其他项目代替</font>
+-------------------------------------------------------------------------
+三、标准表
+<font color=red>表名称：gb_std</font>
+表用途：污染项目排放标准
+表结构：
+mysql&gt; create table gb_std(uid int(8) unsigned not null,
+    -&gt; iid int(5) unsigned not null,
+    -&gt; sttm timestamp,
+    -&gt; edtm timestamp,
+    -&gt; std1 double(7,2) unsigned not null,
+    -&gt; std1_area varchar(12),
+    -&gt; std2 double(7,2),
+    -&gt; std1_levl varchar(6) not null,
+    -&gt; std2_levl varchar(6),
+    -&gt; INDEX extime(sttm,edtm));
++-----------+----------------------+------+-----+---------------------+-----------------------------+
+| Field     | Type                 | Null | Key | Default             | Extra                       |
++-----------+----------------------+------+-----+---------------------+-----------------------------+
+| uid       | int(8) unsigned      | NO   |     | NULL                |                             |
+| iid       | int(5) unsigned      | NO   |     | NULL                |                             |
+| sttm      | timestamp            | NO   | MUL | CURRENT_TIMESTAMP   | on update CURRENT_TIMESTAMP |
+| edtm      | timestamp            | NO   |     | 0000-00-00 00:00:00 |                             |
+| std1      | double(7,2) unsigned | NO   |     | NULL                |                             |
+| std1_area | varchar(12)          | YES  |     | NULL                |                             |
+| std2      | double(7,2)          | YES  |     | NULL                |                             |
+| std1_levl | varchar(6)           | NO   |     | NULL                |                             |
+| std2_levl | varchar(6)           | YES  |     | NULL                |                             |
++-----------+----------------------+------+-----+---------------------+-----------------------------+
+<font color=magenta>字段说明：
+uid:		站点id
+iid:		项目id（itemid）
+sttm:		标准起始执行时间
+edtm:		标准终止执行时间
+std1:		标准值1
+std1_area:	标准值1的执行区间（年内）格式：[1101-0228]，如果没有区间划分，即该列值为null，则说明该项目在执行时间范围内只有一个标准。std2无效
+			格式说明：方括号表示包括边界，元括号表示不包括边界。括号内前4位表示月份和日期，月份和日期必须都是2位。后4位表示结束月份和日期。
+			中间中划线连接。
+std2:		标准值2 如果std1_area不为NULL,则凡是不在area指定区间内的日期都执行标准值2。
+std1_levl:	标准值1所属的执行级别（国家标准，行业标准，地方标准，其他标准）
+std2_levl:  标准值2所属的执行级别（国家标准，行业标准，地方标准，其他标准）</font>
+------------------------------------------------------------------------------------------------------
+四、废气均值表
+<font color=red>表名称：	fq_h_master</font>
+表用途： 	废气（污染源）小时均值数据表，小时均值表仅有主表生成，附表中项目不生成小时和日均值表。
+表结构：	
+mysql&gt; create table fq_h_master (uid int(8) unsigned not null,
+    -&gt; date timestamp,
+    -&gt; so2 double(7,2) unsigned not null,
+    -&gt; nox double(7,2) unsigned not null,
+    -&gt; dust double(7,2) unsigned not null,
+    -&gt; o2 double(5,2) unsigned not null,
+    -&gt; dll double(8,0) unsigned not null,
+    -&gt; PRIMARY KEY(uid,date));
++-------+----------------------+------+-----+-------------------+-----------------------------+
+| Field | Type                 | Null | Key | Default           | Extra                       |
++-------+----------------------+------+-----+-------------------+-----------------------------+
+| uid   | int(8) unsigned      | NO   | PRI | NULL              |                             |
+| date  | timestamp            | NO   | PRI | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
+| so2   | double(7,2) unsigned | NO   |     | NULL              |                             |
+| nox   | double(7,2) unsigned | NO   |     | NULL              |                             |
+| dust  | double(7,2) unsigned | NO   |     | NULL              |                             |
+| o2    | double(5,2) unsigned | NO   |     | NULL              |                             |
+| dll   | double(8,0) unsigned | NO   |     | NULL              |                             |
++-------+----------------------+------+-----+-------------------+-----------------------------+
+<font color=red>表名称：	fq_d_master</font>
+表用途： 	废气（污染源）日均值数据表，日均值表仅有主表生成，附表中项目不生成小时和日均值表。
+表结构：	
+mysql&gt; create table fq_d_master (uid int(8) unsigned not null,
+    -&gt; date timestamp,
+    -&gt; so2 double(7,2) unsigned not null,
+    -&gt; nox double(7,2) unsigned not null,
+    -&gt; dust double(7,2) unsigned not null,
+    -&gt; o2 double(5,2) unsigned not null,
+    -&gt; dll double(8,0) unsigned not null,
+    -&gt; PRIMARY KEY(uid,date));
++-------+----------------------+------+-----+-------------------+-----------------------------+
+| Field | Type                 | Null | Key | Default           | Extra                       |
++-------+----------------------+------+-----+-------------------+-----------------------------+
+| uid   | int(8) unsigned      | NO   | PRI | NULL              |                             |
+| date  | timestamp            | NO   | PRI | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
+| so2   | double(7,2) unsigned | NO   |     | NULL              |                             |
+| nox   | double(7,2) unsigned | NO   |     | NULL              |                             |
+| dust  | double(7,2) unsigned | NO   |     | NULL              |                             |
+| o2    | double(5,2) unsigned | NO   |     | NULL              |                             |
+| dll   | double(8,0) unsigned | NO   |     | NULL              |                             |
++-------+----------------------+------+-----+-------------------+-----------------------------+
+字段说明同上(分钟表)
+------------------------------------------------------------------------------------------------------
+五、废水（污水厂）日均值表
+<font color=red>表名称： fs_d_master</font>
+表用途： 废水（污染源，污水厂结构相同，污水厂的表名：wsc_d_master）小时数据主表。
+表结构：
+mysql&gt; create table fs_d_master (uid int(8) unsigned not null,
+    -&gt; date timestamp,
+    -&gt; cod double(7,2) unsigned not null,
+    -&gt; nhx double(7,2) unsigned not null,
+    -&gt; ll_sh int(6) unsigned not null,
+    -&gt; ll_jg int(6) unsigned not null,
+    -&gt; ll_lj int(8) unsigned not null,
+    -&gt; PRIMARY KEY(uid,date));
++-------+----------------------+------+-----+-------------------+-----------------------------+
+| Field | Type                 | Null | Key | Default           | Extra                       |
++-------+----------------------+------+-----+-------------------+-----------------------------+
+| uid   | int(8) unsigned      | NO   | PRI | NULL              |                             |
+| date  | timestamp            | NO   | PRI | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
+| cod   | double(7,2) unsigned | NO   |     | NULL              |                             |
+| nhx   | double(7,2) unsigned | NO   |     | NULL              |                             |
+| ll_sh | int(6) unsigned      | NO   |     | NULL              |                             |
+| ll_jg | int(6) unsigned      | NO   |     | NULL              |                             |
+| ll_lj | int(8) unsigned      | NO   |     | NULL              |                             |
++-------+----------------------+------+-----+-------------------+-----------------------------+
+字段说明同上
+-----------------------------------------------------------------------------------------------
+六、监测项目表
+<font color=red>表名称：b_item</font>
+表用途：记录所有监测项目的名称，id，和单位
+表结构：
+mysql&gt; create table b_item(iid int(5) unsigned not null,
+    -&gt; iname varchar(20) not null,
+    -&gt; iunit varchar(6),
+    -&gt; PRIMARY KEY(iid));
++-------+-----------------+------+-----+---------+-------+
+| Field | Type            | Null | Key | Default | Extra |
++-------+-----------------+------+-----+---------+-------+
+| iid   | int(5) unsigned | NO   | PRI | NULL    |       |
+| iname | varchar(20)     | NO   |     | NULL    |       |
+| iunit | varchar(6)      | YES  |     | NULL    |       |
++-------+-----------------+------+-----+---------+-------+
+<font color=magenta>字段说明：
+iid:		项目id，与项目标准表中的iid对应，常用（COD，NHx，SO2，NOx）项目的iid固定，不检索本表。
+iname:		项目名称
+iunit：		项目单位
+===========固定的id有======================
+COD:		316
+HNx:		311
+SO2:		101			3c --&gt; SO2.		201
+NOx:		102			3c --&gt; NOx.		202
+烟尘:		207
+氧气：		209
+===========================================</font>
+--------------------------------------------------------------------------------------------------
+七、站点信息表
+<font color=red>表名称：zd_info</font>
+表用途：记录每个站点的基本信息
+表结构：
+mysql&gt; create table zd_info(uid int(8) unsigned not null comment '站点id',
+    -&gt; mncode varchar(16) not null comment '数采仪MN',
+    -&gt; uname varchar(20) not null comment '站点名称',
+    -&gt; utype int(2) unsigned not null comment '站点类型',
+    -&gt; aid int(6) unsigned not null comment '行政区划代码',
+    -&gt; ctlvl int(2) unsigned not null comment '控制级别',
+    -&gt; PRIMARY KEY(uid));
++--------+-----------------+-----------------+------+-----+---------+-------+---------------------------------+--------------------+
+| Field  | Type            | Collation       | Null | Key | Default | Extra | Privileges                      | Comment            |
++--------+-----------------+-----------------+------+-----+---------+-------+---------------------------------+--------------------+
+| uid    | int(8) unsigned | NULL            | NO   | PRI | NULL    |       | select,insert,update,references | 站点id             |
+| mncode | varchar(16)     | utf8_general_ci | NO   |     | NULL    |       | select,insert,update,references | 数采仪MN           |
+| uname  | varchar(20)     | utf8_general_ci | NO   |     | NULL    |       | select,insert,update,references | 站点名称           |
+| utype  | int(2) unsigned | NULL            | NO   |     | NULL    |       | select,insert,update,references | 站点类型           |
+| aid    | int(6) unsigned | NULL            | NO   |     | NULL    |       | select,insert,update,references | 行政区划代码       |
+| ctlvl  | int(2) unsigned | NULL            | NO   |     | NULL    |       | select,insert,update,references | 控制级别           |
++--------+-----------------+-----------------+------+-----+---------+-------+---------------------------------+--------------------+
+<font color=magenta>字段说明：
+uid:		站点id，这是数据库中最基本的关联键值
+mncode:		数采MN值，数采仪的身份标识
+uname:		站点名称
+utype:		站点类型：（0：废水，1：废气，2：污水厂，3：水源地，4：空气站，5：河流断面）
+aid:		行政区划代码
+ctlvl:		控制级别：（0：国控，1：省控，2：市控，3：县控，4：其它）</font>
+--------------------------------------------------------------------------------------
+八、单位信息表
+<font color=red>表名称：dw_info</font>
+表用途：以单位为基本数据单元，记录单位的各项资料，此表以后视情况可以扩充
+表结构：
+mysql&gt; create table dw_info(dwid int(8) unsigned not null comment '单位id',
+    -&gt; dname varchar(32) not null comment '单位名称',
+    -&gt; dcode varchar(32) not null comment '机构代码',
+    -&gt; aid int(6) unsigned not null comment '行政区划',
+    -&gt; ctlvl int(2) unsigned not null comment '控制级别',
+    -&gt; PRIMARY KEY(dwid));
+mysql&gt; show full fields from dw_info;
++-------+-----------------+-----------------+------+-----+---------+-------+---------------------------------+--------------+
+| Field | Type            | Collation       | Null | Key | Default | Extra | Privileges                      | Comment      |
++-------+-----------------+-----------------+------+-----+---------+-------+---------------------------------+--------------+
+| dwid  | int(8) unsigned | NULL            | NO   | PRI | NULL    |       | select,insert,update,references | 单位id       |
+| dname | varchar(32)     | utf8_general_ci | NO   |     | NULL    |       | select,insert,update,references | 单位名称     |
+| dcode | varchar(32)     | utf8_general_ci | NO   |     | NULL    |       | select,insert,update,references | 机构代码     |
+| aid   | int(6) unsigned | NULL            | NO   |     | NULL    |       | select,insert,update,references | 行政区划     |
+| ctlvl | int(2) unsigned | NULL            | NO   |     | NULL    |       | select,insert,update,references | 控制级别     |
++-------+-----------------+-----------------+------+-----+---------+-------+---------------------------------+--------------+
+<font color=magenta>字段说明：
+dwid:		单位的id，和站点id极为密切，算是uid的特殊情况，uid后2位置零即为dwid。两者的关联无需查表取得。
+dname:		单位名称
+dcode:		示例中的代码为取自泰安市环境监察支队，是控制级别，行政区划和组织机构代码三者的组合代码。
+aid:		行政区划代码
+ctlvl:		控制级别，本表中sscode,xcode,ctlvl这三个字段的类型含义与站点信息表中的相应字段完全一致</font>
+-----------------------------------------------------------------------------------------------
+九、行政区划表
+<font color=red>表名称：area_info</font>
+表用途：依据2014年10月31日发布的国家行政区划建立，该表用于确定使用当前系统的行政区划
+表结构：
+mysql&gt; create table area_info (aid int(6) unsigned not null comment '行政区划代码',
+    -&gt; aname varchar(16) not null comment '行政区划名称',
+    -&gt; bused int(1) unsigned default '0' comment '本系统所属的行政区划',
+    -&gt; PRIMARY KEY(aid));
++-------+-----------------+------+-----+---------+-------+
+| Field | Type            | Null | Key | Default | Extra |
++-------+-----------------+------+-----+---------+-------+
+| aid   | int(6) unsigned | NO   | PRI | NULL    |       |
+| aname | varchar(16)     | NO   |     | NULL    |       |
+| bused | int(1) unsigned | YES  |     | 0       |       |
++-------+-----------------+------+-----+---------+-------+
+<font color=magenta>字段说明：
+aid:		area_id 行政区划id,共六位，高2位代表省，中2位表示地市，低2位表示县区
+aname:		行政区划的名称
+bused:		=1,表示运行本系统的行政区划，该字段只有唯一一条记录置1,可以是省，市，县</font>
+-----------------------------------------------------------------------------------------------
+<font color=blue>************************************************************************************************************
+*2016年5月18日重要调整:                                                                                    *
+*由于最后决定采用国家统计局最新的行政区划代码，以便将来本系统的移植，因此，在单位信息和站点信息中将不再采用*
+*sscode和xcode来表示行政区划，所以要对dw_info和zd_info这两个表的结构进行调整。统一采用aid表示所属的行政区划*
+*所有涉及uid的表全部进行了修改，修改字段长为int(8) dwid也进行了修改                                        *
+************************************************************************************************************</font>
+<font color=red>2017年3月25日添加：关于监控平台跨年度数据库更替的说明</font>
+本系统对数据库的应用选择是自动的，除非新年度对数据库的指定和建立需要该系统之外进行操作。
+新年度的数据库可以继续使用原先的数据库，也可以指定新的服务器地址、端口、建立新的数据库，
+但是无论如何操作，都需要在本系统的配置文件下添加所用数据库的设置，该配置文件为：
+php_hl/config/setup.php
+例如，下面是2017年正在使用的配置文件内容：
+<?php
+        $DB_ADDR_TY                             =       array('2016'=>'127.0.0.1','2017'=>'127.0.0.1');
+        $DB_PORT_TY                             =       array('2016'=>3306,'2017'=>3306);
+        $DB_NAME_TY                             =       array('2016'=>'env2016','2017'=>'env2017');
+?>
+现在需要添加2018年所用数据库的设置，则新的配置文件如下：
+<?php
+        $DB_ADDR_TY                             =       array('2016'=>'127.0.0.1','2017'=>'127.0.0.1','2018'=>'127.0.0.1');
+        $DB_PORT_TY                             =       array('2016'=>3306,'2017'=>3306,'2018'=>3306);
+        $DB_NAME_TY                             =       array('2016'=>'env2016','2017'=>'env2017','2018'=>'env2018');
+?>
+即便数据库不改变，仍必须在此配置中添加新年度的设置。
+对于该配置文件，还有一个需要注意的地方，就是当在用的数据库更换服务器地址，端口，或数据库名称时，也必须在此配置文件中修改。
+关于新数据库的建立：
+1、最好有一个原始数据库的备份，如果没有则使用在用的数据库备份，并删除下列表格的数据：
+fs_h_master				//废水小时数据表
+fs_d_master				//废水日均值数据表
+wsc_h_master			//污水厂小时数据表
+wsc_d_master			//污水厂日均值数据表
+fq_m_master				//废气分钟数据主表
+fq_m_slave				//废气分钟数据附表
+fq_h_master				//废气小时均值表
+fq_d_master				//废气日均值表
+导出的方法：mysqldump -uuser -p env2016 > env2016.sql
+2、备份的导入：
+由于本系统默认的数据库操作帐号没有root权限，不能建立表格。因此需要使用管理员帐号建立新的数据库并将备份导入，然后将新数据库
+的操作权限赋予本系统默认使用的帐号。
+mysql -uroot -p
+mysql> create database env2018;
+mysql> use env2018;
+mysql> source /tmp/env2016.sql;
+mysql> grant all on env2018.* to 'sdhl'@'localhost'
+mysql> quit
+3、另务必注意：本系统无论是配置文件还是数据库资料均使用UTF-8编码，如在windows系统下编辑，请务必保证编码的一致性。
+
+
+
+
+
+
+
+
+
+
+
+<a href="#header">返回</a>

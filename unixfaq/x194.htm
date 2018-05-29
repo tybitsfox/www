@@ -1,0 +1,42 @@
+<html><head><title>我怎样使我的程序作为守护程序运行？</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="进程控制" href="./c46.htm"><link rel="PREVIOUS" title="我怎样去除僵死进程？" href="./x178.htm"><link rel="NEXT" title="我怎样象ps程序一样审视系统的进程？" href="./x215.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x178.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 1. 进程控制</td><td align="right" valign="bottom" width="10%"><a href="./x215.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN194">1.7. 我怎样使我的程序作为守护程序运行？</a></h1><p>一个“守护程序”进程通常被定义为一个后台进程，而且它不属于任何一个终端
+会话，(terminal session)。许多系统服务由守护程序实施；如网络服务，打印等。
+    </p><p>简单地在后台启动一个程序并非足够是这些长时间运行的程序；那种方法没有正
+确地将进程从启动它的终端脱离(detach)。而且，启动守护程序的普遍接受的的方
+法是简单地手工执行或从rc脚本程序执行(译者注：rc：runcom)；并希望这个守护
+程序将其*自身*安置到后台。
+    </p><p>这里是成为守护程序的步骤：
+    </p><div class="PROCEDURE"><ol type="1"><li><p>     调用‘fork()’以便父进程可以退出，这样就将控制权归还给运行你程序的
+     命令行或shell程序。需要这一步以便保证新进程不是一个进程组头领进程(process
+     group leader)。下一步，‘setsid()’，会因为你是进程组头领进程而失败。
+        </p></li><li><p>     调用‘setsid()’ 以便成为一个进程组和会话组的头领进程。由于一个控制终端
+     与一个会话相关联，而且这个新会话还没有获得一个控制终端，我们的进程没
+     有控制终端，这对于守护程序来说是一件好事。
+        </p></li><li><p>     再次调用‘fork()’所以父进程(会话组头领进程)可以退出。这意味着我们，一
+     个非会话组头领进程永远不能重新获得控制终端。
+        </p></li><li><p>     调用‘chdir("/")’确认我们的进程不保持任何目录于使用状态。不做这个会导
+     致系统管理员不能卸装(umount)一个文件系统，因为它是我们的当前工作目录。
+
+     [类似的，我们可以改变当前目录至对于守护程序运行重要的文件所在目录]
+        </p></li><li><p>     调用‘umask(0)’以便我们拥有对于我们写的任何东西的完全控制。我们不知
+     道我们继承了什么样的umask。
+
+     [这一步是可选的](译者注：这里指步骤5，因为守护程序不一定需要写文件)
+        </p></li><li><p>     调用‘close()’关闭文件描述符0,1和2。这样我们释放了从父进程继承的标
+     准输入，标准输出，和标准错误输出。我们没办法知道这些文描述符符可能
+     已经被重定向去哪里。注意到许多守护程序使用‘sysconf()’来确认
+     ‘_SC_OPEN_MAX’的限制。‘_SC_OPEN_MAX’告诉你每个进程能够打
+     开的最多文件数。然后使用一个循环，守护程序可以关闭所有可能的文件描
+     述符。你必须决定你需要做这个或不做。如果你认为有可能有打开的文件描
+     述符，你需要关闭它们，因为系统有一个同时打开文件数的限制。
+        </p></li><li><p>     为标准输入，标准输出和标准错误输出建立新的文件描述符。即使你不打算
+     使用它们，打开着它们不失为一个好主意。准确操作这些描述符是基于各自
+     爱好；比如说，如果你有一个日志文件，你可能希望把它作为标准输出和标
+     准错误输出打开，而把‘/dev/null’作为标准输入打开；作为替代方法，你可
+     以将‘/dev/console’作为标准错误输出和/或标准输出打开，而‘/dev/null’作
+     为标准输入，或者任何其它对你的守护程序有意义的结合方法。(译者注：一
+     般使用dup2函数原子化关闭和复制文件描述符，参见《高级编程》3.12节)
+        </p></li></ol></div><p>如果你的守护程序是被‘inetd’启动的，几乎所有这些步骤都不需要(或不建议
+采用)。在那种情况下，标准输入，标准输出和标准错误输出都为你指定为网络
+连接，而且‘fork()’的调用和会话的操纵不应做(以免使‘inetd’造成混乱)。只
+有‘chdir()’和‘umask()’这两步保持有用。
+    </p></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x178.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x215.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">我怎样去除僵死进程？</td><td align="center" valign="top" width="34%"><a href="./c46.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">我怎样象ps程序一样审视系统的进程？</td></tr></tbody></table></div></body></html>

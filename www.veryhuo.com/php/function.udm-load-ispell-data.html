@@ -1,0 +1,98 @@
+<HTML><HEAD><TITLE>udm_load_ispell_data</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="mnoGoSearch Functions" HREF="ref.mnogo.html"><LINK REL="PREVIOUS" TITLE="udm_hash32" HREF="function.udm-hash32.html"><LINK REL="NEXT" TITLE="udm_open_stored" HREF="function.udm-open-stored.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.udm-hash32.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.udm-open-stored.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.udm-load-ispell-data"></A>udm_load_ispell_data</H1><DIV CLASS="refnamediv"><A NAME="AEN63825"></A><P> (PHP 4 &#62;= 4.0.5)</P>udm_load_ispell_data&nbsp;--&nbsp;Load ispell data</DIV><DIV CLASS="refsect1"><A NAME="AEN63828"></A><H2>Description</H2>bool <B CLASS="methodname">udm_load_ispell_data</B> ( resource agent, int var, string val1, string val2, int flag)<BR></BR><P>&#13; <B CLASS="function">udm_load_ispell_data()</B> loads ispell data.
+如果成功则返回 <TT CLASS="constant"><B>TRUE</B></TT>，失败则返回 <TT CLASS="constant"><B>FALSE</B></TT>。
+</P><P>&#13; <TT CLASS="parameter"><I>agent</I></TT> - agent link identifier, received after call
+to <A HREF="function.udm-alloc-agent.html"><B CLASS="function">udm_alloc_agent()</B></A>.
+</P><P>&#13; <TT CLASS="parameter"><I>var</I></TT> - parameter, indicating the source for ispell
+data. May have the following values:
+</P><P>&#13; After using this function to free memory allocated for ispell data, please
+use <A HREF="function.udm-free-ispell-data.html"><B CLASS="function">udm_free_ispell_data()</B></A>, even if you use UDM_ISPELL_TYPE_SERVER mode.
+</P><P>&#13; The fastest mode is UDM_ISPELL_TYPE_SERVER. UDM_ISPELL_TYPE_TEXT is slower
+and UDM_ISPELL_TYPE_DB is the slowest. The above pattern is <TT CLASS="constant"><B>TRUE</B></TT> for
+mnoGoSearch 3.1.10 - 3.1.11. It is planned to speed up DB mode in future
+versions and it is going to be faster than TEXT mode.
+</P><P></P><UL><LI><P>&#13; UDM_ISPELL_TYPE_DB - indicates that ispell data should be loaded from SQL.
+In this case, parameters <TT CLASS="parameter"><I>val1</I></TT> and <TT CLASS="parameter"><I>val2</I></TT>
+are ignored and should be left blank. <TT CLASS="parameter"><I>flag</I></TT>
+should be equal to <TT CLASS="literal">1</TT>.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+<TT CLASS="parameter"><I>flag</I></TT> indicates that after loading ispell data
+from defined source it should be sorted (it is necessary for correct
+functioning of ispell). In case of loading ispell data from files
+there may be several calls to <B CLASS="function">udm_load_ispell_data()</B>,
+and there is no sense to sort data after every call, but only after
+the last one. Since in db mode all the data is loaded by one call,
+this parameter should have the value <TT CLASS="literal">1</TT>. In this mode
+in case of error, e.g. if ispell tables are absent, the function will
+return <TT CLASS="constant"><B>FALSE</B></TT> and code and error message will be accessible through
+<A HREF="function.udm-error.html"><B CLASS="function">udm_error()</B></A> and <A HREF="function.udm-errno.html"><B CLASS="function">udm_errno()</B></A>.
+</P></BLOCKQUOTE></DIV><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN63877"></A><P><B>例子 1. <B CLASS="function">udm_load_ispell_data()</B>example</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#007700">if (! </font><font color="#0000BB">udm_load_ispell_data</font><font color="#007700">(</font><font color="#0000BB">$udm</font><font color="#007700">, </font><font color="#0000BB">UDM_ISPELL_TYPE_DB</font><font color="#007700">, </font><font color="#DD0000">''</font><font color="#007700">, </font><font color="#DD0000">''</font><font color="#007700">, </font><font color="#0000BB">1</font><font color="#007700">)) {<br />&nbsp;&nbsp;</font><font color="#0000BB">printf</font><font color="#007700">(</font><font color="#DD0000">"Error #%d: '%s'\n"</font><font color="#007700">, </font><font color="#0000BB">udm_errno</font><font color="#007700">(</font><font color="#0000BB">$udm</font><font color="#007700">), </font><font color="#0000BB">udm_error</font><font color="#007700">(</font><font color="#0000BB">$udm</font><font color="#007700">));<br />&nbsp;&nbsp;exit;<br />}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P></LI><LI><P>&#13; UDM_ISPELL_TYPE_AFFIX - indicates that ispell data should be loaded from
+file and initiates loading affixes file. In this case <TT CLASS="parameter"><I>val1</I></TT>
+defines double letter language code for which affixes are loaded,
+and <TT CLASS="parameter"><I>val2</I></TT> - file path. Please note, that if
+a relative path entered, the module looks for the file not in UDM_CONF_DIR,
+but in relation to current path, i.e. to the path where the script is executed.
+In case of error in this mode, e.g. if file is absent, the function will return
+<TT CLASS="constant"><B>FALSE</B></TT>, and an error message will be displayed. Error message text cannot be
+accessed through <A HREF="function.udm-error.html"><B CLASS="function">udm_error()</B></A> and <A HREF="function.udm-errno.html"><B CLASS="function">udm_errno()</B></A>,
+since those functions can only return messages associated with SQL. Please,
+see <TT CLASS="parameter"><I>flag</I></TT> parameter description in UDM_ISPELL_TYPE_DB.
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN63890"></A><P><B>例子 2. <B CLASS="function">udm_load_ispell_data()</B> example</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#007700">if ((! </font><font color="#0000BB">udm_load_ispell_data</font><font color="#007700">(</font><font color="#0000BB">$udm</font><font color="#007700">, </font><font color="#0000BB">UDM_ISPELL_TYPE_AFFIX</font><font color="#007700">, </font><font color="#DD0000">'en'</font><font color="#007700">, </font><font color="#DD0000">'/opt/ispell/en.aff'</font><font color="#007700">, </font><font color="#0000BB">0</font><font color="#007700">)) ||<br />&nbsp;&nbsp;&nbsp;&nbsp;(! </font><font color="#0000BB">udm_load_ispell_data</font><font color="#007700">(</font><font color="#0000BB">$udm</font><font color="#007700">, </font><font color="#0000BB">UDM_ISPELL_TYPE_AFFIX</font><font color="#007700">, </font><font color="#DD0000">'ru'</font><font color="#007700">, </font><font color="#DD0000">'/opt/ispell/ru.aff'</font><font color="#007700">, </font><font color="#0000BB">0</font><font color="#007700">)) ||<br />&nbsp;&nbsp;&nbsp;&nbsp;(! </font><font color="#0000BB">udm_load_ispell_data</font><font color="#007700">(</font><font color="#0000BB">$udm</font><font color="#007700">, </font><font color="#0000BB">UDM_ISPELL_TYPE_SPELL</font><font color="#007700">, </font><font color="#DD0000">'en'</font><font color="#007700">, </font><font color="#DD0000">'/opt/ispell/en.dict'</font><font color="#007700">, </font><font color="#0000BB">0</font><font color="#007700">)) ||<br />&nbsp;&nbsp;&nbsp;&nbsp;(! </font><font color="#0000BB">udm_load_ispell_data</font><font color="#007700">(</font><font color="#0000BB">$udm</font><font color="#007700">, </font><font color="#0000BB">UDM_ISPELL_TYPE_SPELL</font><font color="#007700">, </font><font color="#DD0000">'ru'</font><font color="#007700">, </font><font color="#DD0000">'/opt/ispell/ru.dict'</font><font color="#007700">, </font><font color="#0000BB">1</font><font color="#007700">))) {<br />&nbsp;&nbsp;&nbsp;&nbsp;exit;<br />}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+<TT CLASS="parameter"><I>flag</I></TT> is equal to <TT CLASS="literal">1</TT> only in the last call.
+</P></BLOCKQUOTE></DIV></LI><LI><P>&#13; UDM_ISPELL_TYPE_SPELL - indicates that ispell data should be loaded from
+file and initiates loading of ispell dictionary file. In this case
+<TT CLASS="parameter"><I>val1</I></TT> defines double letter language code for which
+affixes are loaded,
+and <TT CLASS="parameter"><I>val2</I></TT> - file path. Please note, that if a relative
+path entered, the module looks for the file not in UDM_CONF_DIR, but in
+relation to current path, i.e. to the path where the script is executed.
+In case of error in this mode, e.g. if file is absent, the function will
+return <TT CLASS="constant"><B>FALSE</B></TT>, and an error message will be displayed. Error message text
+cannot be accessed through <A HREF="function.udm-error.html"><B CLASS="function">udm_error()</B></A> and
+<A HREF="function.udm-errno.html"><B CLASS="function">udm_errno()</B></A>, since those functions can only return messages
+associated with SQL. Please, see <TT CLASS="parameter"><I>flag</I></TT> parameter
+description in UDM_ISPELL_TYPE_DB.
+</P><DIV CLASS="informalexample"><A NAME="AEN63906"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">if ((! </font><font color="#0000BB">Udm_Load_Ispell_Data</font><font color="#007700">(</font><font color="#0000BB">$udm</font><font color="#007700">, </font><font color="#0000BB">UDM_ISPELL_TYPE_AFFIX</font><font color="#007700">, </font><font color="#DD0000">'en'</font><font color="#007700">, </font><font color="#DD0000">'/opt/ispell/en.aff'</font><font color="#007700">, </font><font color="#0000BB">0</font><font color="#007700">)) ||<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(! </font><font color="#0000BB">Udm_Load_Ispell_Data</font><font color="#007700">(</font><font color="#0000BB">$udm</font><font color="#007700">, </font><font color="#0000BB">UDM_ISPELL_TYPE_AFFIX</font><font color="#007700">, </font><font color="#DD0000">'ru'</font><font color="#007700">, </font><font color="#DD0000">'/opt/ispell/ru.aff'</font><font color="#007700">, </font><font color="#0000BB">0</font><font color="#007700">)) ||<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(! </font><font color="#0000BB">Udm_Load_Ispell_Data</font><font color="#007700">(</font><font color="#0000BB">$udm</font><font color="#007700">, </font><font color="#0000BB">UDM_ISPELL_TYPE_SPELL</font><font color="#007700">, </font><font color="#DD0000">'en'</font><font color="#007700">, </font><font color="#DD0000">'/opt/ispell/en.dict'</font><font color="#007700">, </font><font color="#0000BB">0</font><font color="#007700">)) ||<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(! </font><font color="#0000BB">Udm_Load_Ispell_Data</font><font color="#007700">(</font><font color="#0000BB">$udm</font><font color="#007700">, </font><font color="#0000BB">UDM_ISPELL_TYPE_SPELL</font><font color="#007700">, </font><font color="#DD0000">'ru'</font><font color="#007700">, </font><font color="#DD0000">'/opt/ispell/ru.dict'</font><font color="#007700">, </font><font color="#0000BB">1</font><font color="#007700">))) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exit;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P></P></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+<TT CLASS="parameter"><I>flag</I></TT> is equal to <TT CLASS="literal">1</TT> only in the last call.
+</P></BLOCKQUOTE></DIV></LI><LI><P>&#13; UDM_ISPELL_TYPE_SERVER - enables spell server support.
+<TT CLASS="parameter"><I>val1</I></TT> parameter indicates
+address of the host running spell server. <TT CLASS="parameter"><I>val2</I></TT> `
+is not used yet, but in future releases it is going to indicate number
+of port used by spell server. <TT CLASS="parameter"><I>flag</I></TT> parameter in
+this case is not needed since ispell data is stored
+on spellserver already sorted.
+</P><P>&#13; Spelld server reads spell-data from a separate configuration file
+(/usr/local/mnogosearch/etc/spelld.conf by default), sorts it and stores in
+memory. With clients server communicates in two ways: to indexer all the
+data is transferred (so that indexer starts faster), from search.cgi server
+receives word to normalize and then passes over to client (search.cgi) list
+of normalized word forms. This allows fastest, compared to db and text modes
+processing of search queries (by omitting loading and sorting all the spell data).
+</P><P>&#13; <B CLASS="function">udm_load_ispell_data()</B> function in UDM_ISPELL_TYPE_SERVER
+mode does not actually load ispell data, but only defines server address.
+In fact, server is automatically used by <A HREF="function.udm-find.html"><B CLASS="function">udm_find()</B></A>
+function when performing search. In case of errors, e.g. if spellserver
+is not running or invalid host indicated, there are no messages returned
+and ispell conversion does not work.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+This function is available in mnoGoSearch 3.1.12 or later.
+</P></BLOCKQUOTE></DIV><P>Example:</P><DIV CLASS="informalexample"><A NAME="AEN63924"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#007700">if (!</font><font color="#0000BB">udm_load_ispell_data</font><font color="#007700">(</font><font color="#0000BB">$udm</font><font color="#007700">, </font><font color="#0000BB">UDM_ISPELL_TYPE_SERVER</font><font color="#007700">, </font><font color="#DD0000">''</font><font color="#007700">, </font><font color="#DD0000">''</font><font color="#007700">, </font><font color="#0000BB">1</font><font color="#007700">)) {<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"Error loading ispell data from server&lt;br /&gt;\n"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;exit;<br />}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P></P></DIV></LI></UL></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.udm-hash32.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.udm-open-stored.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">udm_hash32</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.mnogo.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">udm_open_stored</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

@@ -1,0 +1,359 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>索引类型 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="索引" HREF="indexes.html"><LINK REL="PREVIOUS" TITLE="索引" HREF="indexes.html"><LINK REL="NEXT" TITLE="多字段索引" HREF="indexes-multicolumn.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="indexes.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="indexes.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 11. 索引</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="indexes.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="indexes-multicolumn.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="INDEXES-TYPES" >11.2. 索引类型</A
+></H1
+><P
+>        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 提供了好几种索引类型∶
+        B-tree，R-tree，Hash 和 GiST。每种索引类型都比较适合某些特定的查询类型，
+        因为它们用了不同的算法。
+	缺省时，<TT
+CLASS="COMMAND"
+>CREATE INDEX</TT
+> 命令将创建一个 B-tree 索引，
+	它适合大多数情况。
+  </P
+><P
+>   <A NAME="AEN14886" ></A
+>
+   <A NAME="AEN14889" ></A
+>
+	B-tree 可以处理那些可以按照某种顺序存储的数据的等于和范围查询。
+	特别是在一个建立了索引的列涉及到使用下列操作符之一进行比较的时候，
+         <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的查询规划器都会考虑使用 B-tree 索引∶
+
+   <P
+></P
+><TABLE
+BORDER="0"
+><TBODY
+><TR ><TD ><TT
+CLASS="LITERAL"
+>&lt;</TT
+></TD
+></TR
+><TR ><TD ><TT
+CLASS="LITERAL"
+>&lt;=</TT
+></TD
+></TR
+><TR ><TD ><TT
+CLASS="LITERAL"
+>=</TT
+></TD
+></TR
+><TR ><TD ><TT
+CLASS="LITERAL"
+>&gt;=</TT
+></TD
+></TR
+><TR ><TD ><TT
+CLASS="LITERAL"
+>&gt;</TT
+></TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+>
+   构造等效于这些操作符的组合，比如 <TT
+CLASS="LITERAL"
+>BETWEEN</TT
+> 和 <TT
+CLASS="LITERAL"
+>IN</TT
+>，
+   也可以用 B-tree 索引搜索视线。（但是要注意，<TT
+CLASS="LITERAL"
+>IS NULL</TT
+> 不等于 <TT
+CLASS="LITERAL"
+>=</TT
+>，
+   并且是不能建立索引的。）
+  </P
+><P
+>   优化器也会把 B-tree 所以用于涉及模式匹配操作符 <TT
+CLASS="LITERAL"
+>LIKE</TT
+>，
+   <TT
+CLASS="LITERAL"
+>ILIKE</TT
+>，<TT
+CLASS="LITERAL"
+>~</TT
+>，和 <TT
+CLASS="LITERAL"
+>~*</TT
+>
+   的查询，<I
+CLASS="EMPHASIS"
+>条件是</I
+>模式是一个常量，并且锚接在字串的开头，比如，
+   <TT
+CLASS="LITERAL"
+>col LIKE 'foo%'</TT
+> 或者 <TT
+CLASS="LITERAL"
+>col ~ '^foo'</TT
+>，
+   而不是 <TT
+CLASS="LITERAL"
+>col LIKE '%bar'</TT
+>。
+   但是，如果你的服务器不适用 C 区域，那么你需要用一个特殊的操作符表创建索引来支持模式匹配查询上的索引。
+   参阅下面的 <A HREF="indexes-opclass.html" >Section 11.8</A
+>。
+  </P
+><P
+>   <A NAME="AEN14919" ></A
+>
+   <A NAME="AEN14922" ></A
+>
+        R-tree 索引特别适合于两维空间数据。要创建一个 R-tree 索引，
+        使用下面形式的命令
+</P><PRE
+CLASS="SYNOPSIS"
+>CREATE INDEX <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> ON <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> USING rtree (<TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+>);</PRE
+><P>
+        当一个索引了的列涉及到使用下列操作符之一进行比较的时候，
+         <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的查询规划器都会考虑使用 R-tree 索引∶
+
+   <P
+></P
+><TABLE
+BORDER="0"
+><TBODY
+><TR ><TD ><TT
+CLASS="LITERAL"
+>&lt;&lt;</TT
+></TD
+></TR
+><TR ><TD ><TT
+CLASS="LITERAL"
+>&amp;&lt;</TT
+></TD
+></TR
+><TR ><TD ><TT
+CLASS="LITERAL"
+>&amp;&gt;</TT
+></TD
+></TR
+><TR ><TD ><TT
+CLASS="LITERAL"
+>&gt;&gt;</TT
+></TD
+></TR
+><TR ><TD ><TT
+CLASS="LITERAL"
+>&lt;&lt;|</TT
+></TD
+></TR
+><TR ><TD ><TT
+CLASS="LITERAL"
+>&amp;&lt;|</TT
+></TD
+></TR
+><TR ><TD ><TT
+CLASS="LITERAL"
+>|&amp;&gt;</TT
+></TD
+></TR
+><TR ><TD ><TT
+CLASS="LITERAL"
+>|&gt;&gt;</TT
+></TD
+></TR
+><TR ><TD ><TT
+CLASS="LITERAL"
+>~</TT
+></TD
+></TR
+><TR ><TD ><TT
+CLASS="LITERAL"
+>@</TT
+></TD
+></TR
+><TR ><TD ><TT
+CLASS="LITERAL"
+>~=</TT
+></TD
+></TR
+><TR ><TD ><TT
+CLASS="LITERAL"
+>&amp;&amp;</TT
+></TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+>
+        (请参考 <A HREF="functions-geometry.html" >Section 9.10</A
+> 获取这些操作符的含义。)
+  </P
+><P
+>   <A NAME="AEN14957" ></A
+>
+   <A NAME="AEN14960" ></A
+>
+   散列（hash）索引只能处理简单的等于比较。
+        当一个索引了的列涉及到使用 <TT
+CLASS="LITERAL"
+>=</TT
+> 操作符进行比较的时候，
+	查询规划器会考虑使用散列索引。
+        下面的命令用于创建散列索引∶
+</P><PRE
+CLASS="SYNOPSIS"
+>CREATE INDEX <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> ON <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> USING hash (<TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+>);</PRE
+><P>
+  </P
+><P
+>   GiST 索引不是单独一种索引类型，而是一种架构，可以在这种架构上实现很多不同的索引策略。
+   因此，可以使用 GiST 索引的特定操作符类型根据索引策略的不同而不同（<I
+CLASS="FIRSTTERM"
+>操作符表</I
+>）。
+   标准的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 包含等效于 R-tree 的 GiST 操作符表，
+   另外还有很多其它 GiST 操作符表在 <TT
+CLASS="LITERAL"
+>contrib</TT
+> 里以独立的项目的形式存在。
+   详见 <A HREF="gist.html" >Chapter 49</A
+>。
+  </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>    测试表明，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的散列索引的性能不比 B-tree 索引强，
+    而散列索引的尺寸和制作时间更差。另外，散列索引操作目前没有记录 WAL 日志，
+    因此如果发生了数据库崩溃，我们可能需要用 <TT
+CLASS="COMMAND"
+>REINDEX</TT
+> 重建散列索引。
+    因为这些原因，我们并不鼓励使用散列索引。
+   </P
+><P
+>    类似的，R-tree 索引看上去并不比等效的 GiST 索引操作性能更好。
+    和散列索引一样，它们也是没有记录 WAL 日志的，因此可能在数据库崩溃之后需要重建。
+   </P
+><P
+>    虽然散列索引的问题将来可能会得到改正，但是 R-tree 索引类型看上去很有可能在将来的版本里退休。
+    我们鼓励使用 R-tree 索引的用户将自己的应用移植到使用 GiST 索引上。
+   </P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="indexes.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="indexes-multicolumn.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >索引</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="indexes.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >多字段索引</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

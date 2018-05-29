@@ -1,0 +1,245 @@
+<HTML
+><HEAD
+><TITLE
+>外键</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="高级特性"
+HREF="tutorial-advanced.html"><LINK
+REL="PREVIOUS"
+TITLE="视图"
+HREF="tutorial-views.html"><LINK
+REL="NEXT"
+TITLE="事务"
+HREF="tutorial-transactions.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="tutorial-views.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="tutorial-advanced.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 3. 高级特性</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="tutorial-advanced.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="tutorial-transactions.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="TUTORIAL-FK"
+>3.3. 外键</A
+></H1
+><A
+NAME="AEN966"
+></A
+><A
+NAME="AEN968"
+></A
+><P
+>	回忆一下 <A
+HREF="tutorial-sql.html"
+>Chapter 2</A
+> 里的
+	<TT
+CLASS="CLASSNAME"
+>weather</TT
+> 和 <TT
+CLASS="CLASSNAME"
+>cities</TT
+>
+	表。考虑一下下面的问题：你想确保没有人可以在
+	<TT
+CLASS="CLASSNAME"
+>weather</TT
+> 表里插入一条在
+	<TT
+CLASS="CLASSNAME"
+>cities</TT
+> 表里没有匹配记录的数据行。
+	这就叫维护你的表的<I
+CLASS="FIRSTTERM"
+>参考完整性</I
+>。
+	在简单的数据库系统里，实现（如果也叫实现）这个特性的方法
+	通常是先看看 <TT
+CLASS="CLASSNAME"
+>cities</TT
+> 表里是否有匹配的记录，
+	然后插入或者拒绝新的 <TT
+CLASS="CLASSNAME"
+>weather</TT
+> 记录。
+	这个方法有许多问题，而且非常不便，因此
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 可以为你做这些。
+   </P
+><P
+>	新的表声明看起来会象下面这样：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE cities (
+        city            varchar(80) primary key,
+        location        point
+);
+
+CREATE TABLE weather (
+        city            varchar(80) references cities(city),
+        temp_lo         int,
+        temp_hi         int,
+        prcp            real,
+        date            date
+);&#13;</PRE
+><P>
+
+	然后我们试图插入一条非法的记录：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT INTO weather VALUES ('Berkeley', 45, 53, 0.0, '1994-11-28');</PRE
+><P>
+
+</P><PRE
+CLASS="SCREEN"
+>ERROR:  insert or update on table "weather" violates foreign key constraint "weather_city_fkey"
+DETAIL:  Key (city)=(Berkeley) is not present in table "cities".</PRE
+><P>
+   </P
+><P
+>	外键的行为可以为你的应用仔细调节。在这份教程里我们就不再多说了，而是请你参考<A
+HREF="ddl.html"
+>Chapter 5</A
+>获取更多的信息。
+	正确使用外键无疑将改进你的数据库应用，所以我们强烈建议你学习它们。
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="tutorial-views.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="tutorial-transactions.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>视图</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="tutorial-advanced.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>事务</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

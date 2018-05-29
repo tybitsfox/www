@@ -1,0 +1,63 @@
+<HTML><HEAD><TITLE>ob_start</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="输出控制函数" HREF="ref.outcontrol.html"><LINK REL="PREVIOUS" TITLE="ob_list_handlers" HREF="function.ob-list-handlers.html"><LINK REL="NEXT" TITLE="output_add_rewrite_var" HREF="function.output-add-rewrite-var.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.ob-list-handlers.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.output-add-rewrite-var.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.ob-start"></A>ob_start</H1><DIV CLASS="refnamediv"><A NAME="AEN84254"></A><P> (PHP 4 )</P>ob_start&nbsp;--&nbsp;Turn on output buffering</DIV><DIV CLASS="refsect1"><A NAME="AEN84257"></A><H2>Description</H2>bool <B CLASS="methodname">ob_start</B> ( [callback output_callback])<BR></BR><P>&#13; This function will turn output buffering on. While output
+buffering is active no output is sent from the script (other than
+headers), instead the output is stored in an internal buffer.
+</P><P>&#13; The contents of this internal buffer may be copied into a string
+variable using <A HREF="function.ob-get-contents.html"><B CLASS="function">ob_get_contents()</B></A>. To output
+what is stored in the internal buffer, use
+<A HREF="function.ob-end-flush.html"><B CLASS="function">ob_end_flush()</B></A>. Alternatively,
+<A HREF="function.ob-end-clean.html"><B CLASS="function">ob_end_clean()</B></A> will silently discard the
+buffer contents.
+</P><P>&#13; An optional <TT CLASS="parameter"><I>output_callback</I></TT> function may
+be specified. This function takes a string as a parameter and
+should return a string. The function will be called when
+<A HREF="function.ob-end-flush.html"><B CLASS="function">ob_end_flush()</B></A> is called, or when the output
+buffer is flushed to the browser at the end of the request. When
+<TT CLASS="parameter"><I>output_callback</I></TT> is called, it will receive
+the contents of the output buffer as its parameter and is
+expected to return a new output buffer as a result, which will be
+sent to the browser. If the <TT CLASS="parameter"><I>output_callback</I></TT> is not
+a callable function, this function will return <TT CLASS="constant"><B>FALSE</B></TT>.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+In PHP 4.0.4, <A HREF="function.ob-gzhandler.html"><B CLASS="function">ob_gzhandler()</B></A> was introduced
+to facilitate sending gz-encoded data to web browsers that
+support compressed web pages. <A HREF="function.ob-gzhandler.html"><B CLASS="function">ob_gzhandler()</B></A>
+determines what type of content encoding the browser will accept
+and will return its output accordingly.
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Before PHP 4.3.2 this function did not return <TT CLASS="constant"><B>FALSE</B></TT> in case the passed
+<TT CLASS="parameter"><I>output_callback</I></TT> can not be executed.
+</P></BLOCKQUOTE></DIV><P>&#13; Output buffers are stackable, that is, you may call
+<B CLASS="function">ob_start()</B> while another
+<B CLASS="function">ob_start()</B> is active. Just make
+sure that you call <A HREF="function.ob-end-flush.html"><B CLASS="function">ob_end_flush()</B></A>
+the appropriate number of times. If multiple output callback
+functions are active, output is being filtered sequentially
+through each of them in nesting order.
+</P><P>&#13; <A HREF="function.ob-end-clean.html"><B CLASS="function">ob_end_clean()</B></A>,
+<A HREF="function.ob-end-flush.html"><B CLASS="function">ob_end_flush()</B></A>, <A HREF="function.ob-clean.html"><B CLASS="function">ob_clean()</B></A>,
+<A HREF="function.ob-flush.html"><B CLASS="function">ob_flush()</B></A> and <B CLASS="function">ob_start()</B>
+may not be called from a callback function. If you call them from
+callback function, the behavior is undefined. If you would like to
+delete the contents of a buffer, return "" (a null string) from callback
+function.
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN84295"></A><P><B>例子 1. User defined callback function example</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /><br /></font><font color="#007700">function </font><font color="#0000BB">callback</font><font color="#007700">(</font><font color="#0000BB">$buffer</font><font color="#007700">) <br />{<br />&nbsp;&nbsp;</font><font color="#FF8000">// replace all the apples with oranges<br />&nbsp;&nbsp;</font><font color="#007700">return (</font><font color="#0000BB">str_replace</font><font color="#007700">(</font><font color="#DD0000">"apples"</font><font color="#007700">, </font><font color="#DD0000">"oranges"</font><font color="#007700">, </font><font color="#0000BB">$buffer</font><font color="#007700">));<br />}<br /><br /></font><font color="#0000BB">ob_start</font><font color="#007700">(</font><font color="#DD0000">"callback"</font><font color="#007700">);<br /><br /></font><font color="#0000BB">?&gt;<br /></font><br />&lt;html&gt;<br />&lt;body&gt;<br />&lt;p&gt;It's like comparing apples to oranges.<br />&lt;/body&gt;<br />&lt;/html&gt;<br /><br /><font color="#0000BB">&lt;?php<br /><br />ob_end_flush</font><font color="#007700">();<br /><br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P>&#13; Would produce:
+</P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">&#60;html&#62;
+&#60;body&#62;
+&#60;p&#62;It's like comparing oranges to oranges.
+&#60;/body&#62;
+&#60;/html&#62;</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; See also <A HREF="function.ob-get-contents.html"><B CLASS="function">ob_get_contents()</B></A>,
+<A HREF="function.ob-end-flush.html"><B CLASS="function">ob_end_flush()</B></A>,
+<A HREF="function.ob-end-clean.html"><B CLASS="function">ob_end_clean()</B></A>,
+<A HREF="function.ob-implicit-flush.html"><B CLASS="function">ob_implicit_flush()</B></A> and
+<A HREF="function.ob-gzhandler.html"><B CLASS="function">ob_gzhandler()</B></A>.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.ob-list-handlers.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.output-add-rewrite-var.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">ob_list_handlers</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.outcontrol.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">output_add_rewrite_var</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

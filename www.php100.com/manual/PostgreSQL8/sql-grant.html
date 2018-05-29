@@ -1,0 +1,718 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>GRANT PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="FETCH" HREF="sql-fetch.html"><LINK REL="NEXT" TITLE="INSERT" HREF="sql-insert.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-fetch.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-fetch.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-insert.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-insert.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-GRANT" >GRANT</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN46320" ></A
+><H2
+>Name</H2
+>GRANT&nbsp;--&nbsp;定义访问权限</DIV
+><A NAME="AEN46323" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN46325" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>GRANT { { SELECT | INSERT | UPDATE | DELETE | RULE | REFERENCES | TRIGGER }
+    [,...] | ALL [ PRIVILEGES ] }
+    ON [ TABLE ] <TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+> [, ...]
+    TO { <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+> | GROUP <TT
+CLASS="REPLACEABLE"
+><I
+>groupname</I
+></TT
+> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+
+GRANT { { CREATE | TEMPORARY | TEMP } [,...] | ALL [ PRIVILEGES ] }
+    ON DATABASE <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+> [, ...]
+    TO { <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+> | GROUP <TT
+CLASS="REPLACEABLE"
+><I
+>groupname</I
+></TT
+> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+
+GRANT { EXECUTE | ALL [ PRIVILEGES ] }
+    ON FUNCTION <TT
+CLASS="REPLACEABLE"
+><I
+>funcname</I
+></TT
+> ( [ [ <TT
+CLASS="REPLACEABLE"
+><I
+>argmode</I
+></TT
+> ] [ <TT
+CLASS="REPLACEABLE"
+><I
+>argname</I
+></TT
+> ] <TT
+CLASS="REPLACEABLE"
+><I
+>argtype</I
+></TT
+> [, ...] ] ) [, ...]
+    TO { <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+> | GROUP <TT
+CLASS="REPLACEABLE"
+><I
+>groupname</I
+></TT
+> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+
+GRANT { USAGE | ALL [ PRIVILEGES ] }
+    ON LANGUAGE <TT
+CLASS="REPLACEABLE"
+><I
+>langname</I
+></TT
+> [, ...]
+    TO { <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+> | GROUP <TT
+CLASS="REPLACEABLE"
+><I
+>groupname</I
+></TT
+> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+
+GRANT { { CREATE | USAGE } [,...] | ALL [ PRIVILEGES ] }
+    ON SCHEMA <TT
+CLASS="REPLACEABLE"
+><I
+>schemaname</I
+></TT
+> [, ...]
+    TO { <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+> | GROUP <TT
+CLASS="REPLACEABLE"
+><I
+>groupname</I
+></TT
+> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+
+GRANT { CREATE | ALL [ PRIVILEGES ] }
+    ON TABLESPACE <TT
+CLASS="REPLACEABLE"
+><I
+>tablespacename</I
+></TT
+> [, ...]
+    TO { <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+> | GROUP <TT
+CLASS="REPLACEABLE"
+><I
+>groupname</I
+></TT
+> | PUBLIC } [, ...] [ WITH GRANT OPTION ]</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="SQL-GRANT-DESCRIPTION" ></A
+><H2
+>描述</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>GRANT</TT
+> 命令将某对象（表，视图，序列，函数，过程语言，模式或者表空间）
+	上的特定权限给予一个用户或者多个用户或者一组用户。
+	这些权限将增加到那些已经赋予的权限上，如果存在这些权限的话。
+  </P
+><P
+>	键字 <TT
+CLASS="LITERAL"
+>PUBLIC</TT
+> 表示该权限要赋予所有用户,
+	包括那些以后可能创建的用户。<TT
+CLASS="LITERAL"
+>PUBLIC</TT
+>
+	可以看做是一个隐含定义好的组，它总是包括所有用户。
+	任何特定的用户都将拥有直接赋予他/她的权限，加上他/她所处的任何组，
+	以及再加上赋予 <TT
+CLASS="LITERAL"
+>PUBLIC</TT
+> 的权限的总和。
+  </P
+><P
+>	如果声明了 <TT
+CLASS="LITERAL"
+>WITH GRANT OPTION</TT
+>，那么权限的受予者也可以赋予别人。
+	没有这个选项，接受权限的用户不能给别人授权不允许的。
+	目前，赋权选项只能给独立的用户，而不能给组或者 <TT
+CLASS="LITERAL"
+>PUBLIC</TT
+>。
+  </P
+><P
+>	对对象的所有者（通常就是创建者）而言，没有什么权限需要赋予，
+	因为所有者缺省就持有所有权限。（不过，所有者出于安全考虑可以选择废弃一些他自己的权限。）
+	删除一个对象的权力，或者是任意修改它的权力都不是可赋予的权利所能描述的；
+	它是创建者固有的，并且不能赋予或撤销。所有者也隐含地拥有该对象的所有授权选项。
+  </P
+><P
+>	根据对象的不同，初始的缺省权限可能包括给 <TT
+CLASS="LITERAL"
+>PUBLIC</TT
+>
+	赋予一些权限。缺省设置对于表，模式和表空间是没有公开访问权限的；
+	<TT
+CLASS="LITERAL"
+>TEMP</TT
+> 表为数据库创建权限；<TT
+CLASS="LITERAL"
+>EXECUTE</TT
+> 权限用于函数；
+	以及 <TT
+CLASS="LITERAL"
+>USAGE</TT
+> 用于语言。对象所有者当然可以撤回这些权限。
+	（出于最大安全性考虑，在创建该对象的同一个事务中发出 <TT
+CLASS="COMMAND"
+>REVOKE</TT
+>；
+	那么就不会打开给别的用户使用该对象的窗口。）
+  </P
+><P
+>	可能的权限有：
+
+   <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>SELECT</DT
+><DD
+><P
+>	允许对声明的表，试图，或者序列 <A HREF="sql-select.html" ><I
+>SELECT</I
+></A
+>
+	任意字段。还允许做 <A HREF="sql-copy.html" ><I
+>COPY</I
+></A
+> TO 的源。
+	对于序列而言，这个权限还允许使用 <TT
+CLASS="FUNCTION"
+>currval</TT
+> 函数。
+      </P
+></DD
+><DT
+>INSERT</DT
+><DD
+><P
+>	允许向声明的表 <A HREF="sql-insert.html" >INSERT</A
+> 一个新行。
+	同时还允许做 <A HREF="sql-copy.html" >COPY</A
+> FROM。
+      </P
+></DD
+><DT
+>UPDATE</DT
+><DD
+><P
+>	允许对声明的表中任意字段做  <A HREF="sql-update.html" >UPDATE</A
+>。
+	<TT
+CLASS="LITERAL"
+>SELECT ... FOR UPDATE</TT
+> 和 <TT
+CLASS="LITERAL"
+>SELECT ... FOR SHARE</TT
+>
+	也要求这个权限（除了 <TT
+CLASS="LITERAL"
+>SELECT</TT
+> 权限之外）。比如，
+	这个权限允许使用<TT
+CLASS="FUNCTION"
+>nextval</TT
+>，
+	和
+	<TT
+CLASS="FUNCTION"
+>setval</TT
+>。
+      </P
+></DD
+><DT
+>DELETE</DT
+><DD
+><P
+>	允许从声明的表中 <A HREF="sql-delete.html" ><I
+>DELETE</I
+></A
+> 行。
+      </P
+></DD
+><DT
+>RULE</DT
+><DD
+><P
+>	允许在该表/视图上创建规则。（参阅
+	<A HREF="sql-createrule.html" ><I
+>CREATE RULE</I
+></A
+> 语句。）
+      </P
+></DD
+><DT
+>REFERENCES</DT
+><DD
+><P
+>	要创建一个外键约束，你必须在参考表和被参考表上都拥有这个权限。
+      </P
+></DD
+><DT
+>TRIGGER</DT
+><DD
+><P
+>	允许在声明表上创建触发器。（参阅
+	<A HREF="sql-createtrigger.html" ><I
+>CREATE TRIGGER</I
+></A
+> 语句。）
+      </P
+></DD
+><DT
+>CREATE</DT
+><DD
+><P
+>	对于数据库，允许在该数据库里创建新的模式。
+      </P
+><P
+>	对于模式，允许在该模式中创建新的对象。
+	要重命名一个现有对象，你必需拥有该对象<I
+CLASS="EMPHASIS"
+>并且</I
+>。
+	对包含该对象的模式拥有这个权限。
+      </P
+><P
+>       对于表空间，允许表在该表空间中创建，以及允许创建数据库和模式的时候把该表空间指定为其缺省表空间。
+       （请注意，撤销这个权限不会改变现有数据库和模式的存放位置。）
+      </P
+></DD
+><DT
+>TEMPORARY<BR>TEMP</DT
+><DD
+><P
+>	允许在使用该数据库的时候创建临时表。
+      </P
+></DD
+><DT
+>EXECUTE</DT
+><DD
+><P
+>	允许使用指定的函数并且可以使用任何利用这些函数实现的操作符。
+	这是适用于函数的唯一的一种权限类型。
+	（该语法同样适用于聚集函数。）
+      </P
+></DD
+><DT
+>USAGE</DT
+><DD
+><P
+>	对于过程语言，
+	允许使用指定过程语言创建该语言的函数。
+	这是适用于过程语言的唯一的一种权限类型。
+      </P
+><P
+>	对于模式，允许访问包含在指定模式中的对象（假设该对象的所有权要求同样也设置了）。
+	最终这些就允许了权限接受者<SPAN
+CLASS="QUOTE"
+>"查询"</SPAN
+>模式中的对象。
+      </P
+></DD
+><DT
+>ALL PRIVILEGES</DT
+><DD
+><P
+>	一次性给予所有可以赋予的权限。
+	<TT
+CLASS="LITERAL"
+>PRIVILEGES</TT
+> 
+	关键字在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里是可选的，
+	但是严格的 SQL 要求有这个关键字。
+      </P
+></DD
+></DL
+></DIV
+><P>
+
+	其它命令要求的权限都在相应的命令的参考页上列出。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="SQL-GRANT-NOTES" ></A
+><H2
+>注意</H2
+><P
+>	<A HREF="sql-revoke.html" ><I
+>REVOKE</I
+></A
+> 命令用于删除访问权限。
+   </P
+><P
+>    如果非对象所有者企图在对象上 <TT
+CLASS="COMMAND"
+>GRANT</TT
+> 权限，而该用户没有该对象上指定的权限，那么命令将立即失败。
+    只要有某些可用的权限，该命令就会继续，但是它只授予那些该用户有授权选项的权限。
+    如果手头没有可用的授权选项，那么 <TT
+CLASS="COMMAND"
+>GRANT ALL PRIVILEGES</TT
+> 形式将发出一个警告信息，
+    其它命令形式将发出在命令中提到的，但是没有授权选项的那些权限相关的警告信息。
+    （这些语句原则上也适用于对象所有者，但是因为所有者总是被认为拥有所有授权选项，所以这种情况永远不会发生在所有者身上。）
+   </P
+><P
+>	我们要注意数据库超级用户可以访问所有对象，
+	而不会受对象的权限设置影响。这个特点类似 Unix 系统的 <TT
+CLASS="LITERAL"
+>root</TT
+>
+	的权限。和 <TT
+CLASS="LITERAL"
+>root</TT
+> 一样，除了必要的情况，总是以超级用户身分进行操作是不明智的做法。
+   </P
+><P
+>	目前，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 不支持给一个表的独立字段进行权限赋予和撤销的操作，
+	一个绕开的办法是创建一个拥有那几行的视图然后给那个视图赋予权限。
+   </P
+><P
+>	使用 <A HREF="app-psql.html" ><SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+></A
+> 的 <TT
+CLASS="COMMAND"
+>\z</TT
+> 命令获取在现有对象上的与权限有关的信息。
+</P><PRE
+CLASS="PROGRAMLISTING"
+>lusitania=&gt; \z mytable
+
+                        Access privileges for database "lusitania"
+ Schema |  Name   | Type  |                     Access privileges
+--------+---------+-------+------------------------------------------------------------
+ public | mytable | table | {miriam=arwdRxt/miriam,=r/miriam,"group todos=arw/miriam"}
+(1 row)</PRE
+><P>
+	<TT
+CLASS="COMMAND"
+>\z</TT
+> 显示的条目解释如下：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>              =xxxx -- 赋予 PUBLIC 的权限
+         uname=xxxx -- 赋予一个用户的权限
+   group gname=xxxx -- 赋予一个组的权限
+
+                  r -- SELECT ("读")
+                  w -- UPDATE ("写")
+                  a -- INSERT ("追加")
+                  d -- DELETE
+                  R -- RULE
+                  x -- REFERENCES
+                  t -- TRIGGER
+                  X -- EXECUTE
+                  U -- USAGE
+                  C -- CREATE
+                  T -- TEMPORARY
+            arwdRxt -- ALL PRIVILEGES (用于表)
+                  * -- 给前面权限的授权选项
+
+              /yyyy -- 授出这个权限的用户</PRE
+><P>
+	用户 <TT
+CLASS="LITERAL"
+>miriam</TT
+> 在建完表之后再做下面的语句，
+	就可以得到上面例子的结果
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>GRANT SELECT ON mytable TO PUBLIC;
+GRANT SELECT, UPDATE, INSERT ON mytable TO GROUP todos;</PRE
+><P>
+   </P
+><P
+>	如果一个给定的对象的 <SPAN
+CLASS="QUOTE"
+>"Access privileges"</SPAN
+> 字段是空的，
+	这意味着该对象有缺省权限（也就是说，它的权限字段是 NULL）。
+	缺省权限总是包括所有者的所有权限，以及根据对象的不同，可能包含一些给 <TT
+CLASS="LITERAL"
+>PUBLIC</TT
+>
+	的权限。
+	对象上第一个 <TT
+CLASS="COMMAND"
+>GRANT</TT
+> 或者 <TT
+CLASS="COMMAND"
+>REVOKE</TT
+>
+	将实例化这个缺省权限（比如，产生 <TT
+CLASS="LITERAL"
+>{=,miriam=arwdRxt}</TT
+>）
+	然后根据每次特定的需求修改它。
+   </P
+><P
+>    请注意所有者的隐含授权选项没有在显示出来的访问权限里标记出来。
+    只有在授权选项明确地授予某人之后，才会显示一个 <TT
+CLASS="LITERAL"
+>*</TT
+>。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="SQL-GRANT-EXAMPLES" ></A
+><H2
+>例子</H2
+><P
+>	把表 <TT
+CLASS="LITERAL"
+>films</TT
+> 的插入权限赋予所有用户：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>GRANT INSERT ON films TO PUBLIC;</PRE
+><P>
+  </P
+><P
+>	赋予用户<TT
+CLASS="LITERAL"
+>manuel</TT
+>对视图<TT
+CLASS="LITERAL"
+>kinds</TT
+>的所有权限：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>GRANT ALL PRIVILEGES ON kinds TO manuel;</PRE
+><P>
+
+   请注意，如果上面的命令由超级用户或者 <TT
+CLASS="LITERAL"
+>kinds</TT
+> 的所有者执行，那么它实际上会赋予所有权限，
+   如果由其他人执行，那么它会赋予这个“其他人”拥有授权选项的所有权限。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="SQL-GRANT-COMPATIBILITY" ></A
+><H2
+>兼容性</H2
+><P
+>	根据 SQL 标准，在 <TT
+CLASS="LITERAL"
+>ALL PRIVILEGES</TT
+> 里的 <TT
+CLASS="LITERAL"
+>PRIVILEGES</TT
+>
+	关键字是必须的。<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 不支持在一条命令里对多个表设置权限。
+   </P
+><P
+>    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 允许一个对象所有者撤销它自己的普通权限：
+    比如，一个表所有者可以让自己对这个表是只读的，方法是撤销自己的 INSERT，UPDATE，
+    以及 DELETE 权限。根据 SQL 标准，这是不可能的。原因是 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+    把所有者的权限当作由所有者给自己赋予的；因此也可以撤销他们。
+    在 SQL 标准里，所有者的权限是假设为 <SPAN
+CLASS="QUOTE"
+>"_SYSTEM"</SPAN
+> 实体赋予的。因为所有者不是 <SPAN
+CLASS="QUOTE"
+>"_SYSTEM"</SPAN
+>，
+    所以他不能撤销这些权限。
+   </P
+><P
+>	SQL 标准允许在一个表里为独立的字段设置权限：
+
+</P><PRE
+CLASS="SYNOPSIS"
+>GRANT <TT
+CLASS="REPLACEABLE"
+><I
+>privilege</I
+></TT
+>
+    ON <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> [ ( <TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> [, ...] ) ] [, ...]
+    TO { PUBLIC | <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+> [, ...] } [ WITH GRANT OPTION ]</PRE
+><P>
+   </P
+><P
+>	SQL 标准对其它类型的对象提供了一个
+	<TT
+CLASS="LITERAL"
+>USAGE</TT
+> 权限：字符集，校勘，转换，域。
+   </P
+><P
+>	<TT
+CLASS="LITERAL"
+>RULE</TT
+> 权限，以及在数据库，表空间，模式，语言和序列上的权限是 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 扩展。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46498" ></A
+><H2
+>又见</H2
+><P
+>   <A HREF="sql-revoke.html" ><I
+>REVOKE</I
+></A
+>
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-fetch.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-insert.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >FETCH</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >INSERT</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

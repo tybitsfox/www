@@ -1,0 +1,380 @@
+<HTML
+><HEAD
+><TITLE
+>查询</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="SQL 语言"
+HREF="sql.html"><LINK
+REL="PREVIOUS"
+TITLE="删除数据"
+HREF="dml-delete.html"><LINK
+REL="NEXT"
+TITLE="表表达式"
+HREF="queries-table-expressions.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="dml-delete.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="dml.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="datatype.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="queries-table-expressions.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="QUERIES"
+>Chapter 7. 查询</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>7.1. <A
+HREF="queries.html#QUERIES-OVERVIEW"
+>概述</A
+></DT
+><DT
+>7.2. <A
+HREF="queries-table-expressions.html"
+>表表达式</A
+></DT
+><DD
+><DL
+><DT
+>7.2.1. <A
+HREF="queries-table-expressions.html#QUERIES-FROM"
+><TT
+CLASS="LITERAL"
+>FROM</TT
+> 子句</A
+></DT
+><DT
+>7.2.2. <A
+HREF="queries-table-expressions.html#QUERIES-WHERE"
+>WHERE 子句</A
+></DT
+><DT
+>7.2.3. <A
+HREF="queries-table-expressions.html#QUERIES-GROUP"
+><TT
+CLASS="LITERAL"
+>GROUP BY</TT
+> 和 <TT
+CLASS="LITERAL"
+>HAVING</TT
+> 子句</A
+></DT
+></DL
+></DD
+><DT
+>7.3. <A
+HREF="queries-select-lists.html"
+>选择列表</A
+></DT
+><DD
+><DL
+><DT
+>7.3.1. <A
+HREF="queries-select-lists.html#QUERIES-SELECT-LIST-ITEMS"
+>选择列表项</A
+></DT
+><DT
+>7.3.2. <A
+HREF="queries-select-lists.html#QUERIES-COLUMN-LABELS"
+>字段标签</A
+></DT
+><DT
+>7.3.3. <A
+HREF="queries-select-lists.html#QUERIES-DISTINCT"
+>DISTINCT</A
+></DT
+></DL
+></DD
+><DT
+>7.4. <A
+HREF="queries-union.html"
+>组合查询</A
+></DT
+><DT
+>7.5. <A
+HREF="queries-order.html"
+>行排序</A
+></DT
+><DT
+>7.6. <A
+HREF="queries-limit.html"
+><TT
+CLASS="LITERAL"
+>LIMIT</TT
+> 和 <TT
+CLASS="LITERAL"
+>OFFSET</TT
+></A
+></DT
+></DL
+></DIV
+><A
+NAME="AEN2941"
+></A
+><A
+NAME="AEN2943"
+></A
+><P
+>	前面的章节解释了如何创建表，如何用数据填充它们，
+	以及如何操作那些数据。现在我们终于可以讨论如何从数据库中检索数据了。
+ </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="QUERIES-OVERVIEW"
+>7.1. 概述</A
+></H1
+><P
+>  从数据库中检索数据的过程或命令叫做<I
+CLASS="FIRSTTERM"
+>查询</I
+>。
+  在 SQL 里 <TT
+CLASS="LITERAL"
+>SELECT</TT
+> 命令用于声明查询。
+	<TT
+CLASS="LITERAL"
+>SELECT</TT
+> 命令的通用语法是
+</P><PRE
+CLASS="SYNOPSIS"
+>SELECT <TT
+CLASS="REPLACEABLE"
+><I
+>select_list</I
+></TT
+> FROM <TT
+CLASS="REPLACEABLE"
+><I
+>table_expression</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>sort_specification</I
+></TT
+></SPAN
+>]</PRE
+><P>
+	下面几节描述选择列表，表表达式，和排序声明的细节。
+  </P
+><P
+>	简单的查询的形式如下
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM table1;</PRE
+><P>
+	假设有一个表叫做<TT
+CLASS="LITERAL"
+>table1</TT
+>，这条命令将从<TT
+CLASS="LITERAL"
+>table1</TT
+>中检索所有行和所有字段。
+	（检索的方法取决于客户端应用。比如，<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 程序将在屏幕上显示一个 ASCII 艺术构成的表格，
+	客户端库将提供检索独立行和字段的函数。）
+	选择列表声明 <TT
+CLASS="LITERAL"
+>*</TT
+> 意味着所有表表达式提供的字段。
+	一个选择列表也可以选择可用字段的一个子集或者在检索它们之前对字段进行计算；
+	比如，如果<TT
+CLASS="LITERAL"
+>table1</TT
+>有叫做<TT
+CLASS="LITERAL"
+>a</TT
+>，<TT
+CLASS="LITERAL"
+>b</TT
+>，和<TT
+CLASS="LITERAL"
+>c</TT
+>的字段（可能还有其他），那么你可以用下面的查询：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT a, b + c FROM table1;</PRE
+><P>
+	（假设<TT
+CLASS="LITERAL"
+>b</TT
+>和<TT
+CLASS="LITERAL"
+>c</TT
+>都是数字数据类型）。
+	参阅 <A
+HREF="queries-select-lists.html"
+>Section 7.3</A
+> 获取更多细节。
+ </P
+><P
+>	<TT
+CLASS="LITERAL"
+>FROM table1</TT
+> 是一种非常简单的表表达式：它只读取了一个表。
+	通常，表表达式可以是基本表，连接，和子查询的复杂构造。
+	但你也可以省略表表达式记录而用<TT
+CLASS="LITERAL"
+>SELECT</TT
+>命令当做一个计算器：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT 3 * 4;</PRE
+><P>
+	如果选择列表里的表达式返回变化的结果，那么这个东西就更有用了。
+	比如，你可以用这个方法调用函数：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT random();</PRE
+><P>
+ </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="dml-delete.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="queries-table-expressions.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>删除数据</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="sql.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>表表达式</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

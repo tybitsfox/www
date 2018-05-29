@@ -1,0 +1,601 @@
+<HTML
+><HEAD
+><TITLE
+>PL/Perl - Perl 过程语言</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="服务器端编程"
+HREF="server-programming.html"><LINK
+REL="PREVIOUS"
+TITLE="Tcl 过程名字"
+HREF="pltcl-procnames.html"><LINK
+REL="NEXT"
+TITLE="从 PL/Perl 里访问数据库"
+HREF="plperl-database.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="pltcl-procnames.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="pltcl.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plpython.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plperl-database.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="PLPERL"
+>Chapter 38. PL/Perl - Perl 过程语言</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>38.1. <A
+HREF="plperl.html#PLPERL-FUNCS"
+>PL/Perl 函数和参数</A
+></DT
+><DT
+>38.2. <A
+HREF="plperl-database.html"
+>从 PL/Perl 里访问数据库</A
+></DT
+><DT
+>38.3. <A
+HREF="plperl-data.html"
+>PL/Perl 里的数据值</A
+></DT
+><DT
+>38.4. <A
+HREF="plperl-global.html"
+>PL/Perl 里的全局变量</A
+></DT
+><DT
+>38.5. <A
+HREF="plperl-trusted.html"
+>可信的和不可信的 PL/Perl</A
+></DT
+><DT
+>38.6. <A
+HREF="plperl-triggers.html"
+>PL/Perl 触发器</A
+></DT
+><DT
+>38.7. <A
+HREF="plperl-missing.html"
+>限制及缺少的特性</A
+></DT
+></DL
+></DIV
+><A
+NAME="AEN36188"
+></A
+><A
+NAME="AEN36190"
+></A
+><P
+>	PL/Perl 是一种可装载的过程语言，通过它我们可以用 
+	<A
+HREF="http://www.perl.com"
+TARGET="_top"
+>Perl 编程语言</A
+>写 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 函数。
+  </P
+><P
+>	要在特定数据库里安装 PL/Perl，使用  <TT
+CLASS="LITERAL"
+>createlang plperl <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></TT
+>。
+  </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>	如果某种编程语言安装到 <TT
+CLASS="LITERAL"
+>template1</TT
+>，那么所有随后创建的数据库都会自动安装这种语言。
+   </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	使用源码包的用户必须在安装过程中特别打开 PL/Perl 的制作。
+	（请参考 <A
+HREF="installation.html#INSTALL-SHORT"
+>Section 14.1</A
+> 获取更多信息）。
+	二进制包的用户可能会在一些独立的子包中找到 PL/Perl。
+   </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="PLPERL-FUNCS"
+>38.1. PL/Perl 函数和参数</A
+></H1
+><P
+>	要用 PL/Perl 语言创建一个函数，可以使用标准的
+	<A
+HREF="sql-createfunction.html"
+><I
+>CREATE FUNCTION</I
+></A
+>
+	语法：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION <TT
+CLASS="REPLACEABLE"
+><I
+>funcname</I
+></TT
+> (<TT
+CLASS="REPLACEABLE"
+><I
+>argument-types</I
+></TT
+>) RETURNS <TT
+CLASS="REPLACEABLE"
+><I
+>return-type</I
+></TT
+> AS $$
+    # PL/Perl 函数体
+$$ LANGUAGE plperl;</PRE
+><P>
+   函数体是普通 Perl 代码。实际上，PL/Perl 胶水代码将其封装在一个 Perl 子过程里。
+   一个 PL/Perl 函数必须总是返回标量数值。
+   你可以用返回引用的方法返回更复杂的结构，像下面描述的那样。
+   绝对不要返回一个列表。
+    </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>    在 Perl 里使用命名的嵌套子过程是很危险的，特别是它们在闭包里引用了词法变量的事后。
+    因为 PL/Perl 是封装在一个子过程里，因此，任何你创建的命名子过程都将被嵌套。
+    通常，创建一个用 coderef 调用的匿名子过程要安全得多。参阅 <TT
+CLASS="LITERAL"
+>perldiag</TT
+>
+    手册页获取更多细节。
+   </P
+></BLOCKQUOTE
+></DIV
+><P
+>   <TT
+CLASS="COMMAND"
+>CREATE FUNCTION</TT
+> 命令的语法要求把函数体写成字串常量。
+   通常处理字串文本用美元符包围更方便（参阅 <A
+HREF="sql-syntax.html#SQL-SYNTAX-DOLLAR-QUOTING"
+>Section 4.1.2.2</A
+>），
+   如果你想使用传统的单引号语法，你必须逃逸函数体里面使用的单引号（<TT
+CLASS="LITERAL"
+>'</TT
+>）和反斜杠（<TT
+CLASS="LITERAL"
+>\</TT
+>），
+   通常是写双份（参阅 <A
+HREF="sql-syntax.html#SQL-SYNTAX-STRINGS"
+>Section 4.1.2.1</A
+> ）。
+   </P
+><P
+>	参数和结果都是和任何其它 Perl 子过程里那样处理的：
+	参数是放在 <TT
+CLASS="VARNAME"
+>@_</TT
+> 里传递的，
+	结果值是用 <TT
+CLASS="LITERAL"
+>return</TT
+> 返回或者作为函数中最后计算的表达式的值返回。
+    </P
+><P
+>	比如，一个返回两个整数中较大值的函数可以这么写：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION perl_max (integer, integer) RETURNS integer AS $$
+    if ($_[0] &gt; $_[1]) { return $_[0]; }
+    return $_[1];
+$$ LANGUAGE plperl;</PRE
+><P>
+    </P
+><P
+>	如果给函数传递一个 SQL 空值
+	<A
+NAME="AEN36230"
+></A
+>
+	那么其参数值将以 Perl 中 <SPAN
+CLASS="QUOTE"
+>"undefined"</SPAN
+>
+	的形式出现。上面的函数定义在输入为空值时的行为不是很正常（实际上，
+	它将表现得好像它们都是零一样）。我们可以给函数定义增加
+	<TT
+CLASS="LITERAL"
+>STRICT</TT
+>，让 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	做一些更合理的事情：如果传递进来一个空值，那么该函数则根本不会被调用，
+	而只是自动返回一个空值结果。另外，我们可以在函数体里检查未定义（undefined）的输入。
+	比如，假设我们想收到一个空值和一个非空值参数的
+	<TT
+CLASS="FUNCTION"
+>perl_max</TT
+> 返回非空值的参数，而不是空值：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION perl_max (integer, integer) RETURNS integer AS $$
+    my ($x,$y) = @_;
+    if (! defined $x) {
+        if (! defined $y) { return undef; }
+        return $y;
+    }
+    if (! defined $y) { return $x; }
+    if ($x &gt; $y) { return $x; }
+    return $y;
+$$ LANGUAGE plperl;</PRE
+><P>
+	如上所述，要从 PL/Perl 函数中返回一个 SQL 空值，
+	我们可以返回一个未定义（undef）的数值。
+	不管该函数是否严格，我们都可以这么做。
+    </P
+><P
+>   Perl 可以以 Perl 数组引用的方式返回 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 数组。
+   下面是一个例子：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE OR REPLACE function returns_array()
+RETURNS text[][] AS $$
+    return [['a"b','c,d'],['e\\f','g']];
+$$ LANGUAGE plperl;
+
+select returns_array();</PRE
+><P>
+  </P
+><P
+>	复合类型的参数是当做指向散列的引用传递给函数的。
+	散列的键字是复合类型的属性名。下面是一个例子：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE employee (
+    name text,
+    basesalary integer,
+    bonus integer
+);
+
+CREATE FUNCTION empcomp(employee) RETURNS integer AS $$
+    my ($emp) = @_;
+    return $emp-&gt;{basesalary} + $emp-&gt;{bonus};
+$$ LANGUAGE plperl;
+
+SELECT name, empcomp(employee.*) FROM employee;</PRE
+><P>
+    </P
+><P
+>   使用同样的办法，一个 PL/Perl 函数可以返回一个复合类型的结果：
+   返回一个包含所需要的属性的散列的引用。比如，
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TYPE testrowperl AS (f1 integer, f2 text, f3 text);
+
+CREATE OR REPLACE FUNCTION perl_row() RETURNS testrowperl AS $$
+    return {f2 =&gt; 'hello', f1 =&gt; 1, f3 =&gt; 'world'};
+$$ LANGUAGE plperl;
+
+SELECT * FROM perl_row();</PRE
+><P>
+
+   在声明的结果数据类型里的任何字段如果在散列里面没有出现，那么都会当作 NULL 返回。
+  </P
+><P
+>   PL/Perl 函数也能返回标量或者复合类型的集合。通常你希望一次返回一行，
+   一方面加速函数启动时间，另外一方面防止在内存里堆积整个结果集。
+   我们可以用下面说明的函数 <TT
+CLASS="FUNCTION"
+>return_next</TT
+>。
+   请注意在最后的 <TT
+CLASS="FUNCTION"
+>return_next</TT
+>，你必须放一个 <TT
+CLASS="LITERAL"
+>return</TT
+>
+   或者（最好是） <TT
+CLASS="LITERAL"
+>return undef</TT
+>。
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE OR REPLACE FUNCTION perl_set_int(int)
+RETURNS SETOF INTEGER AS $$
+    foreach (0..$_[0]) {
+        return_next($_);
+    }
+    return undef;
+$$ LANGUAGE plperl;
+
+SELECT * FROM perl_set_int(5);
+
+CREATE OR REPLACE FUNCTION perl_set()
+RETURNS SETOF testrowperl AS $$
+    return_next({ f1 =&gt; 1, f2 =&gt; 'Hello', f3 =&gt; 'World' });
+    return_next({ f1 =&gt; 2, f2 =&gt; 'Hello', f3 =&gt; 'PostgreSQL' });
+    return_next({ f1 =&gt; 3, f2 =&gt; 'Hello', f3 =&gt; 'PL/Perl' });
+    return undef;
+$$ LANGUAGE plperl;</PRE
+><P>
+
+   对于小的结果集，你可以返回一个指向一个数组的引用，这个数组可以包含标量，
+   指向数组的引用，或者指向简单类型，数组类型以及复合类型等的散列的引用。
+   这里是一个简单的例子，它把整个结果集当作一个数组引用返回：
+   
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE OR REPLACE FUNCTION perl_set_int(int) RETURNS SETOF INTEGER AS $$
+    return [0..$_[0]];
+$$ LANGUAGE plperl;
+
+SELECT * FROM perl_set_int(5);
+
+CREATE OR REPLACE FUNCTION perl_set() RETURNS SETOF testrowperl AS $$
+    return [
+        { f1 =&gt; 1, f2 =&gt; 'Hello', f3 =&gt; 'World' },
+        { f1 =&gt; 2, f2 =&gt; 'Hello', f3 =&gt; 'PostgreSQL' },
+        { f1 =&gt; 3, f2 =&gt; 'Hello', f3 =&gt; 'PL/Perl' }
+    ];
+$$ LANGUAGE plperl;
+
+SELECT * FROM perl_set();</PRE
+><P>
+  </P
+><P
+>     <SPAN
+CLASS="APPLICATION"
+>PL/Perl</SPAN
+> 目前还没有对域类型的完整支持：
+     它把域类型当作下层的标量类型看待。这就意味着跟域相关的约束将不会被强制。
+     对于函数参数而言，这不算个问题，但是如果你声明 <SPAN
+CLASS="APPLICATION"
+>PL/Perl</SPAN
+> 函数返回一个域类型，
+     那么就有危险了。
+    </P
+><P
+>   如果你想在自己的代码里使用 <TT
+CLASS="LITERAL"
+>strice</TT
+> 用法，
+   最简单的方法是 <TT
+CLASS="COMMAND"
+>SET</TT
+> <TT
+CLASS="LITERAL"
+>plperl.use_strict</TT
+> 为真。
+   这个参数影响随后的 <SPAN
+CLASS="APPLICATION"
+>PL/Perl</SPAN
+> 函数的编译，
+   但是不影响在当前会话里已经编译了的函数。
+   要想在 <SPAN
+CLASS="APPLICATION"
+>PL/Perl</SPAN
+> 装载之前设置这个参数，
+   我们必须把 <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+>plperl</TT
+>"</SPAN
+> 添加到 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>
+   的 <A
+HREF="runtime-config-custom.html#GUC-CUSTOM-VARIABLE-CLASSES"
+>custom_variable_classes</A
+> 列表里。
+  </P
+><P
+>   另外一个使用 <TT
+CLASS="LITERAL"
+>strict</TT
+> 用法的方法是把
+</P><PRE
+CLASS="PROGRAMLISTING"
+>use strict;</PRE
+><P>
+   放在函数体里。但是这个只能在 <SPAN
+CLASS="APPLICATION"
+>PL/PerlU</SPAN
+> 函数里有用，
+   因为 <TT
+CLASS="LITERAL"
+>use</TT
+> 不是可信任的操作。在 <SPAN
+CLASS="APPLICATION"
+>PL/Perl</SPAN
+>
+   里你可以这么用
+</P><PRE
+CLASS="PROGRAMLISTING"
+>BEGIN { strict-&#62;import(); }</PRE
+><P>
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="pltcl-procnames.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plperl-database.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Tcl 过程名字</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="server-programming.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>从 PL/Perl 里访问数据库</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

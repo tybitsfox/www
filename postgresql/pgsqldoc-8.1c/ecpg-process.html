@@ -1,0 +1,294 @@
+<HTML
+><HEAD
+><TITLE
+>处理嵌入的 SQL 程序</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="ecpg - 在 C 里嵌入 SQL"
+HREF="ecpg.html"><LINK
+REL="PREVIOUS"
+TITLE="头文件"
+HREF="ecpg-include.html"><LINK
+REL="NEXT"
+TITLE="库函数"
+HREF="ecpg-library.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="ecpg-include.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="ecpg.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 30. <SPAN
+CLASS="APPLICATION"
+>ecpg</SPAN
+> - 在 C 里嵌入 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="ecpg.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="ecpg-library.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="ECPG-PROCESS"
+>30.11. 处理嵌入的 SQL 程序</A
+></H1
+><P
+>	既然现在你已经有了如何构成嵌入的 SQL C 程序的概念，
+	那么你可能就会向知道如何编译它们。在编译之前，你先用嵌入的
+	<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> <SPAN
+CLASS="ACRONYM"
+>C</SPAN
+> 预编译器处理文件，
+	于编译器会把你使用的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语句转换成特殊的函数调用。
+	在编译之后，你必须用一个包含所需要的函数的特殊库来链接目标文件。
+	这些函数从参数中抓取信息，用 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>
+	接口执行 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令，然后把结果放到声明为输出的参数中。
+  </P
+><P
+>	预处理程序叫做 <TT
+CLASS="FILENAME"
+>ecpg</TT
+>，包含在正常的
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 安装里面。嵌入的 SQL 程序通常的扩展名是 <TT
+CLASS="FILENAME"
+>.pgc</TT
+>。
+	如果你有一个叫做 <TT
+CLASS="FILENAME"
+>prog1.pgc</TT
+> 的程序文件，那么你可以简单地调用
+</P><PRE
+CLASS="PROGRAMLISTING"
+>ecpg prog1.pgc</PRE
+><P>
+	来处理它。这样将创建一个叫做 <TT
+CLASS="FILENAME"
+>prog1.c</TT
+> 的文件。
+	如果你的输入文件不遵循建议的命名模式，那么你可以用 <TT
+CLASS="OPTION"
+>-o</TT
+> 选项明确地声明输出文件。
+  </P
+><P
+>	处理后的文件可以正常编译，比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>cc -c prog1.c</PRE
+><P>
+	生成的 C 源文件包含来自 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 安装的头文件，这样，如果你在一个缺省不查找的位置安装了 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>，
+	那么你就必须在编译命令行上增加类似 <TT
+CLASS="LITERAL"
+>-I/usr/local/pgsql/include</TT
+> 这样的选项。
+  </P
+><P
+>	要链接一个嵌入的 SQL 程序，你需要包含 <TT
+CLASS="FILENAME"
+>libecpg</TT
+> 库，
+	像这样：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>cc -o myprog prog1.o prog2.o ... -lecpg</PRE
+><P>
+	另外，你可能还需要增加一个类似 <TT
+CLASS="LITERAL"
+>-L/usr/local/pgsql/lib</TT
+>
+	这样的选项到这个命令行上。
+  </P
+><P
+>	如果你用 <SPAN
+CLASS="APPLICATION"
+>make</SPAN
+> 把制作过程融合到一个大的项目中，
+	那么在你的 makefile 里包含下面的隐含规则可能会比较方便：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>ECPG = ecpg
+
+%.c: %.pgc
+        $(ECPG) $&#60;</PRE
+><P>
+  </P
+><P
+>	<TT
+CLASS="COMMAND"
+>ecpg</TT
+> 命令的复杂语法在
+	<A
+HREF="app-ecpg.html"
+><SPAN
+CLASS="APPLICATION"
+>ecpg</SPAN
+></A
+> 里有详细介绍。
+  </P
+><P
+>   如果使用 <TT
+CLASS="FILENAME"
+>configure</TT
+> 的  <TT
+CLASS="OPTION"
+>--enable-thread-safety</TT
+>
+   选项编译了 <SPAN
+CLASS="APPLICATION"
+>ecpg</SPAN
+> 库，那么它是线程安全的。
+   （你可能需要使用其它线程命令行选项编译你的客户端代码。）
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="ecpg-include.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="ecpg-library.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>头文件</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="ecpg.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>库函数</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

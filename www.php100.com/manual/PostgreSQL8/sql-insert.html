@@ -1,0 +1,448 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>INSERT PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="GRANT" HREF="sql-grant.html"><LINK REL="NEXT" TITLE="LISTEN" HREF="sql-listen.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-grant.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-grant.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-listen.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-listen.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-INSERT" >INSERT</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN46506" ></A
+><H2
+>Name</H2
+>INSERT&nbsp;--&nbsp;在表中创建新行</DIV
+><A NAME="AEN46509" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN46511" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>INSERT INTO <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> [ ( <TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> [, ...] ) ]
+    { DEFAULT VALUES | VALUES ( { <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> | DEFAULT } [, ...] ) | <TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+> }</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46517" ></A
+><H2
+>描述</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>INSERT</TT
+> 向表中插入新行。
+	我们可以一次插入用值表达式声明的一行或者一个查询结果表现出来的多个行。
+  </P
+><P
+>	目标列表中的列/字段可以按任何顺序排列。
+	如果完全没有列出任何字段名，那么缺省是全部字段，顺序是按照表声明的时候的顺序；
+	如果 <TT
+CLASS="LITERAL"
+>VALUES</TT
+> 子句或者 <TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+> 里面只提供了 <TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+>
+	个字段，那么就是头 <TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+> 个字段。
+	<TT
+CLASS="LITERAL"
+>VALUES</TT
+> 子句或者 <TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+> 提供的数值是以从左到右的方式与明确或者隐含的字段列表关联的。
+  </P
+><P
+>   每个没有在明确或者隐含的字段列表众出现的字段都将填充缺省值，
+   如果有声明的缺省值则用声明的那个，如果没有则用 null。
+  </P
+><P
+>	如果每行的表达式不是正确的数据类型，系统将试图进行自动的类型转换。
+  </P
+><P
+>	要想向表中插入数据，你必须有 <TT
+CLASS="LITERAL"
+>INSERT</TT
+> 权限，
+	如果你使用了 <TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+> 子句插入来自查询里的数据行，
+	你还需要拥有在查询里使用的表的 <TT
+CLASS="LITERAL"
+>SELECT</TT
+> 权限。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46534" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+></DT
+><DD
+><P
+>	现存表的名称（可以有模式修饰）。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+></DT
+><DD
+><P
+>	表 <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> 中的字段名。
+	必要时，字段名可以有子字段名或者数组下标修饰。（向一个复合类型中的某些字段插入数据的话，其它字段是空。）
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>DEFAULT VALUES</TT
+></DT
+><DD
+><P
+>	所有字段都会用它们的缺省值填充。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+></DT
+><DD
+><P
+>	赋予对应的 <TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> 的一个有效表达式或值。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>DEFAULT</TT
+></DT
+><DD
+><P
+>	对应的 <TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> 将被它的缺省值填充。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+></DT
+><DD
+><P
+>	一个查询（<TT
+CLASS="COMMAND"
+>SELECT</TT
+> 语句），它提供插入的数据行。
+	请参考 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 语句获取语法描述。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46572" ></A
+><H2
+>输出</H2
+><P
+>   成功完成后，一条 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 命令返回一个下面形式的命令标签
+</P><PRE
+CLASS="SCREEN"
+>INSERT <TT
+CLASS="REPLACEABLE"
+><I
+>oid</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+></PRE
+><P>
+   <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+> 是插入的行数。
+   如果 <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+> 正好是一，并且目标表有 OID，
+   那么 <TT
+CLASS="REPLACEABLE"
+><I
+>oid</I
+></TT
+> 是赋予插入行的 <SPAN
+CLASS="ACRONYM"
+>OID</SPAN
+>。
+   否则 <TT
+CLASS="REPLACEABLE"
+><I
+>oid</I
+></TT
+> 是零。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46584" ></A
+><H2
+>例子</H2
+><P
+>   向表 <TT
+CLASS="LITERAL"
+>films</TT
+> 里插入一行：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT INTO films VALUES
+    ('UA502', 'Bananas', 105, '1971-07-13', 'Comedy', '82 minute');</PRE
+><P>
+  </P
+><P
+>	在这个个例子里面省略了字段 <TT
+CLASS="LITERAL"
+>len</TT
+>
+	因此在它里面将存储缺省值：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT INTO films (code, title, did, date_prod, kind)
+    VALUES ('T_601', 'Yojimbo', 106, '1961-06-16', 'Drama');</PRE
+><P>
+  </P
+><P
+>	在这个例子里，我们用 <TT
+CLASS="LITERAL"
+>DEFAULT</TT
+> 子句作为日期字段，而不是声明一个数值：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT INTO films VALUES
+    ('UA502', 'Bananas', 105, DEFAULT, 'Comedy', '82 minute');
+INSERT INTO films (code, title, did, date_prod, kind)
+    VALUES ('T_601', 'Yojimbo', 106, DEFAULT, 'Drama');</PRE
+><P>
+  </P
+><P
+>   插入一行完全由缺省值组成的数据行：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT INTO films DEFAULT VALUES;</PRE
+><P>
+  </P
+><P
+>   从表 <TT
+CLASS="LITERAL"
+>tmp</TT
+> 中插入几行到表 <TT
+CLASS="LITERAL"
+>films</TT
+> 中，
+   字段布局与 <TT
+CLASS="LITERAL"
+>films</TT
+> 相同：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT INTO films SELECT * FROM tmp_films WHERE date_prod &lt; '2004-05-07';</PRE
+><P>
+  </P
+><P
+>	插入数组：
+		
+</P><PRE
+CLASS="PROGRAMLISTING"
+>-- 创建一个空的 3x3 游戏板来玩圈-和-叉游戏
+-- （这些查询创建相同的板属性）
+INSERT INTO tictactoe (game, board[1:3][1:3])
+    VALUES (1,'{{"","",""},{"","",""},{"","",""}}');
+INSERT INTO tictactoe (game, board[3][3])
+    VALUES (2,'{}');
+    VALUES (2,'{{,,},{,,},{,,}}');</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46604" ></A
+><H2
+>兼容性</H2
+><P
+>    <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 语句与 SQL 标准兼容。
+    不过，省略字段名列表，但是并非所有字段都从 <TT
+CLASS="LITERAL"
+>VALUES</TT
+> 子句或者
+    <TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+> 填充的这种用法是标准不允许的。
+   </P
+><P
+>	可能碰到的关于
+    <TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+>
+	子句特性的限制在
+    <A HREF="sql-select.html" ><I
+>SELECT</I
+></A
+>.
+	语句中有相关文档。
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-grant.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-listen.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >GRANT</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >LISTEN</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

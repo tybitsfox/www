@@ -1,0 +1,381 @@
+<HTML
+><HEAD
+><TITLE
+>PostgreSQL 内部概貌</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="内部"
+HREF="internals.html"><LINK
+REL="PREVIOUS"
+TITLE="内部"
+HREF="internals.html"><LINK
+REL="NEXT"
+TITLE="联接是如何建立起来的"
+HREF="connect-estab.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="internals.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="internals.html#AEN54798"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="catalogs.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="connect-estab.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="OVERVIEW"
+>Chapter 41. PostgreSQL 内部概貌</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>41.1. <A
+HREF="overview.html#QUERY-PATH"
+>查询经过的路径</A
+></DT
+><DT
+>41.2. <A
+HREF="connect-estab.html"
+>联接是如何建立起来的</A
+></DT
+><DT
+>41.3. <A
+HREF="parser-stage.html"
+>分析器阶段</A
+></DT
+><DD
+><DL
+><DT
+>41.3.1. <A
+HREF="parser-stage.html#AEN54889"
+>分析器</A
+></DT
+><DT
+>41.3.2. <A
+HREF="parser-stage.html#AEN54926"
+>转换处理</A
+></DT
+></DL
+></DD
+><DT
+>41.4. <A
+HREF="rule-system.html"
+><SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 规则系统</A
+></DT
+><DT
+>41.5. <A
+HREF="planner-optimizer.html"
+>规划器/优化器</A
+></DT
+><DT
+>41.6. <A
+HREF="executor.html"
+>执行器</A
+></DT
+></DL
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>作者: </B
+>	本章最初是 <A
+HREF="biblio.html#SIM98"
+><I
+>Enhancement of the ANSI SQL Implementation of PostgreSQL</I
+></A
+> 的一部分，
+	它是 Stefan Simkovics 在维也纳理工大学写的硕士论文，
+	是由 O.Univ.Prof.Dr. Georg Gottlob和Univ.Ass. Mag. Katrin Seyr 指导的。
+   </P
+></BLOCKQUOTE
+></DIV
+><P
+>   本章给出了 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 后端服务器的内部结构的一个概貌。
+	在阅读完毕下面的章节后，你应该对查询是如何处理的有一个概念了。
+	本章并不准备提供对 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 
+	内部操作的详细描述，因为这样的一份文档将会非常庞大。
+	本章只是试图帮助读者了解从后端收到查询后到结果返回给客户端之间一般操作顺序。
+  </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="QUERY-PATH"
+>41.1. 查询经过的路径</A
+></H1
+><P
+>	下面是一个简短的描述，描述一个查询从开始到得到结果要经过的阶段。
+   </P
+><DIV
+CLASS="PROCEDURE"
+><OL
+TYPE="1"
+><LI
+><P
+>      首先必须先建立起从应用程序到 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	服务器的联接。应用程序向服务器发送查询然后接收从服务器返回的结果。
+     </P
+></LI
+><LI
+><P
+>	<I
+CLASS="FIRSTTERM"
+>分析器阶段</I
+>检查从应用程序（客户端）发送过来的查询，
+	核对语法并创建一个 <I
+CLASS="FIRSTTERM"
+>查询树</I
+>。
+     </P
+></LI
+><LI
+><P
+>      <I
+CLASS="FIRSTTERM"
+>重写系统</I
+>接收分析阶段来的<I
+CLASS="FIRSTTERM"
+>查询树</I
+>且搜索任何应用到<I
+CLASS="FIRSTTERM"
+>查询树</I
+>上的<I
+CLASS="FIRSTTERM"
+>规则</I
+>，
+       （规则存储在<I
+CLASS="FIRSTTERM"
+>系统表里</I
+>）并根据给出的<I
+CLASS="FIRSTTERM"
+>规则体</I
+> 进行转换。
+     </P
+><P
+>      重写系统的一个应用就是实现 <I
+CLASS="FIRSTTERM"
+>视图</I
+>。
+     当一个查询访问一个视图时（也就是说，一个<I
+CLASS="FIRSTTERM"
+>虚拟表</I
+>），重写系统改写用户的查询，
+      使之成为一个访问在 <I
+CLASS="FIRSTTERM"
+>视图定义</I
+> 里给出的<I
+CLASS="FIRSTTERM"
+>基本表</I
+>的查询。
+     </P
+></LI
+><LI
+><P
+>      <I
+CLASS="FIRSTTERM"
+>规划器/优化器</I
+>接收（改写后的）查询树然后创建一个<I
+CLASS="FIRSTTERM"
+>查询规划</I
+>，
+      这个查询规划是<I
+CLASS="FIRSTTERM"
+>执行器</I
+>的输入。
+     </P
+><P
+>      它（规划器/优化器）首先创建所有得出相同结果的可能的<I
+CLASS="FIRSTTERM"
+>路径</I
+>。
+      例如，如果待扫描的关系上有一个索引，那么扫描的路径就有两个。
+	一个可能是简单的顺序查找，而另一个可能就是使用索引的那个。
+	下一步是计算出不同路径的执行开销，并且选择和返回开销最少的那条。
+	开销最小的路径然后会被展开成为一个可以供执行器使用的完整的查询规划。
+     </P
+></LI
+><LI
+><P
+>	执行器递归地走过<I
+CLASS="FIRSTTERM"
+>规划树</I
+>并且按照规划指定的方式检索数据行。
+	执行器在对关系进行扫描时使用<I
+CLASS="FIRSTTERM"
+>存储系统</I
+>，
+	进行<I
+CLASS="FIRSTTERM"
+>排序</I
+> 和<I
+CLASS="FIRSTTERM"
+>连接</I
+>，
+	计算 <I
+CLASS="FIRSTTERM"
+>条件</I
+>并且最终交回生成的数据行。
+     </P
+></LI
+></OL
+></DIV
+><P
+>	在随后的小节里，我们将对上面的每一个步骤进行更详细的讨论，
+	以便让我们对 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的内部控制和数据结构有一个更准确的理解。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="internals.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="connect-estab.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>内部</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="internals.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>联接是如何建立起来的</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

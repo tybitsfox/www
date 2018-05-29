@@ -1,0 +1,316 @@
+<HTML
+><HEAD
+><TITLE
+>BKI 后端接口</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="内部"
+HREF="internals.html"><LINK
+REL="PREVIOUS"
+TITLE="数据库分页文件"
+HREF="storage-page-layout.html"><LINK
+REL="NEXT"
+TITLE="BKI命令"
+HREF="bki-commands.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="storage-page-layout.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="storage.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="planner-stats-details.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="bki-commands.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="BKI"
+>Chapter 51. <SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+> 后端接口</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>51.1. <A
+HREF="bki.html#BKI-FORMAT"
+><SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+> 文件格式</A
+></DT
+><DT
+>51.2. <A
+HREF="bki-commands.html"
+><SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+>命令</A
+></DT
+><DT
+>51.3. <A
+HREF="bki-structure.html"
+>系统初始化的 <SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+> 文件的结构</A
+></DT
+><DT
+>51.4. <A
+HREF="bki-example.html"
+>例子</A
+></DT
+></DL
+></DIV
+><P
+>后端接口（<SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+>）文件是一些用特殊语言写的脚本，这些脚本是
+<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 后端能够理解的，以特殊的
+<SPAN
+CLASS="QUOTE"
+>"bootstrap"</SPAN
+>（引导）模式运行，
+这种模式允许在不存在系统表的零初始条件下执行数据库函数，而普通的 SQL 命令要求系统表必须存在。
+因此  <SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+> 文件可以用于在第一时间创建数据库系统。
+（可能除此以外也没有其它用处。）</P
+><P
+>在创建一个新的数据库集群的时候，
+<SPAN
+CLASS="APPLICATION"
+>initdb</SPAN
+>就是使用
+<SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+> 文件来完成其工作的一部分。
+<SPAN
+CLASS="APPLICATION"
+>initdb</SPAN
+>使用的输入的文件是作为制作
+<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>的一部分，由一个叫 <TT
+CLASS="FILENAME"
+>genbki.sh</TT
+> 的程序创建的，
+这个程序读取源代码树目录的 <TT
+CLASS="FILENAME"
+>src/include/catalog/</TT
+> 目录里面的几个特殊格式的 C 头文件。生成的
+<SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+>文件叫
+<TT
+CLASS="FILENAME"
+>postgres.bki</TT
+>
+并且通常安装在安装树里的
+<TT
+CLASS="FILENAME"
+>share</TT
+> 子目录。</P
+><P
+>相关的信息可以在有关
+<SPAN
+CLASS="APPLICATION"
+>initdb</SPAN
+>
+的文档中找到。</P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="BKI-FORMAT"
+>51.1. <SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+> 文件格式</A
+></H1
+><P
+>    本节描述
+    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 后端是如何理解
+    <SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+> 文件。如果把
+    <TT
+CLASS="FILENAME"
+>postgres.bki</TT
+> 文件拿来做为例子，
+    这些描述会变得容易理解些。
+    你还可以学习 <SPAN
+CLASS="APPLICATION"
+>initdb</SPAN
+> 的源程序以便获取后端是如何激活的概念。
+   </P
+><P
+>	<SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+>输入是由一系列命令组成的。
+	命令是由一些记号组成的，具体是什么由命令语法决定。记号通常是用空白分隔的，但是如果没有歧义的话可以不要。
+	没有什么特殊的命令分隔符；语法上无法属于前面命令的记号开始新的一条命令。
+	（通常你会把一条新的命令放在新的一行上以保持清晰。）
+	记号可以是某些关键字，特殊字符（圆括弧，逗号等），数字，或者双引号字串。
+        所有东西都是大小写敏感的。
+  </P
+><P
+>        以 <TT
+CLASS="LITERAL"
+>#</TT
+> 开头的行被忽略。
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="storage-page-layout.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="bki-commands.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>数据库分页文件</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="internals.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+>命令</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

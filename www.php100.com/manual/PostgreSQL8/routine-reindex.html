@@ -1,0 +1,107 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>经常重建索引 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="日常数据库维护工作" HREF="maintenance.html"><LINK REL="PREVIOUS" TITLE="日常数据库维护工作" HREF="maintenance.html"><LINK REL="NEXT" TITLE="日志文件维护" HREF="logfile-maintenance.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="maintenance.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="maintenance.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 22. 日常数据库维护工作</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="maintenance.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="logfile-maintenance.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="ROUTINE-REINDEX" >22.2. 经常重建索引</A
+></H1
+><A NAME="AEN23055" ></A
+><P
+>   有时候我们值得用  <A HREF="sql-reindex.html" ><I
+>REINDEX</I
+></A
+> 命令周期的重建索引。
+  </P
+><P
+>   在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本 7.4 之前，我们经常有必要避免<SPAN
+CLASS="QUOTE"
+>"索引膨胀"</SPAN
+>，
+   因为缺乏在 B-tree 索引内部的空间恢复机制。一个情况是就是索引健字的范围随着时间而变化 &mdash;
+   比如，一个在某个表的时间戳上的索引，随着时间的推移，旧的记录会最终被删除 &mdash;
+   就会导致膨胀，因为那些用于不再使用的键字范围的索引页面不回得到重复使用。
+   随着时间的推移，索引的尺寸可能会变得比里面的有用的数据大得多。
+  </P
+><P
+>   从 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 7.4 开始，那些已经完全清空的索引页会得到重复使用。
+   不过这样仍然会有不充分使用空间的可能：如果一个页面中大多数索引键字被删除，只留下很少的部分呢，
+   那么该页仍然将被分配。所以，如果使用模式是这样的：每个范围里除了少数键字之外，其他大部分键字最终都被删除；
+   那么这样也会导致空间的低效使用。膨胀的可能性不是无穷的 &mdash; 最差的情况是每个页面至少还有一个键字 &mdash;
+   但是对这样的使用模式，我们可能仍然值得安排周期性的重新索引。
+  </P
+><P
+>   对于非 B-tree 索引的膨胀可能还没有很好地定量分析。
+   在使用非 B-tree 索引的时候保持对索引的物理尺寸的监控是个很好的主意。
+  </P
+><P
+>   还有，对于 B-tree 索引，一个新建立的索引从某种意义上比更新了多次的访问起来要快，
+   因为在新建立的索引上，逻辑上连接的页面通常物理上也连接在一起。
+   （这样的考虑目前并不适用于非 B-tree 索引。）仅仅从提高访问速度角度出发，
+   可能我们也值得周期性的重建索引。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="maintenance.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="logfile-maintenance.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >日常数据库维护工作</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="maintenance.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >日志文件维护</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

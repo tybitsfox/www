@@ -1,0 +1,363 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>触发器 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="服务器端编程" HREF="server-programming.html"><LINK REL="PREVIOUS" TITLE="扩展索引接口" HREF="xindex.html"><LINK REL="NEXT" TITLE="数据改变的可视性" HREF="trigger-datachanges.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="CHAPTER" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="xindex.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="extend.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="rules.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="trigger-datachanges.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A NAME="TRIGGERS" >Chapter 33. 触发器</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>33.1. <A HREF="triggers.html#TRIGGER-DEFINITION" >触发器行为概述</A
+></DT
+><DT
+>33.2. <A HREF="trigger-datachanges.html" >数据改变的可视性</A
+></DT
+><DT
+>33.3. <A HREF="trigger-interface.html" >用 C 写触发器</A
+></DT
+><DT
+>33.4. <A HREF="trigger-example.html" >一个完整的例子</A
+></DT
+></DL
+></DIV
+><A NAME="AEN33349" ></A
+><P
+>   本章提供有关书写触发器函数的一般信息。触发器函数可以用大多数可用的过程语言书写，
+   包括 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>（<A HREF="plpgsql.html" >Chapter 36</A
+>），
+   <SPAN
+CLASS="APPLICATION"
+>PL/Tcl</SPAN
+>（<A HREF="pltcl.html" >Chapter 37</A
+>），
+   <SPAN
+CLASS="APPLICATION"
+>PL/Perl</SPAN
+>（<A HREF="plperl.html" >Chapter 38</A
+>），
+   和 <SPAN
+CLASS="APPLICATION"
+>PL/Python</SPAN
+>（<A HREF="plpython.html" >Chapter 39</A
+>）。
+   阅读完本章之后，你应该参考你喜欢的过程语言的章节，找出使用这些语言书写触发器的一些语言相关的细节。
+  </P
+><P
+>   我们也可以用 C 来写触发器，不过大多数人都会觉得使用某种过程语言书写更简单。
+   目前还不能用简单的 SQL 函数语言书写触发器函数。
+  </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="TRIGGER-DEFINITION" >33.1. 触发器行为概述</A
+></H1
+><P
+>   一个触发器是一种声明，告诉数据库应该在执行特定的操作的时候执行特定的函数。 
+   触发器可以定义在一个<TT
+CLASS="COMMAND"
+>INSERT</TT
+>，<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>，
+   或者 <TT
+CLASS="COMMAND"
+>DELETE</TT
+> 命令之前或者之后执行，要么是对每个被修改的行一次，
+   要么是每条 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 一次。
+   如果发生触发器事件，那么将在合适的时刻调用触发器的函数以处理该事件。
+  </P
+><P
+>	触发器函数必须在创建触发器之前，作为一个没有参数并且返回<TT
+CLASS="LITERAL"
+>trigger</TT
+>类型的函数定义。
+	（触发器函数通过特殊的 <TT
+CLASS="STRUCTNAME"
+>TriggerData</TT
+> 结构接收其输入，而不是用普通函数参数那种形式。）
+   </P
+><P
+>    一旦创建了一个合适的触发器函数，触发器就用 <A HREF="sql-createtrigger.html" ><I
+>CREATE TRIGGER</I
+></A
+>
+    创建。同一个触发器函数可以用于多个触发器。
+   </P
+><P
+>    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+    提供<I
+CLASS="FIRSTTERM"
+>按行</I
+>触发的触发器和<I
+CLASS="FIRSTTERM"
+>按语句</I
+>触发的触发器。在按行触发的触发器里，
+    触发器函数是为触发触发器的语句影响的每一行执行一次。相比之下，一个按语句触发的触发器是在每执行一次合适的语句执行一次的，
+    而不管影响的行数。特别是，一个影响零行的语句将仍然导致任何适用的按语句触发的触发器的执行。
+    这两种类型的触发器有时候分别叫做<I
+CLASS="FIRSTTERM"
+>行级别</I
+>的触发器和<I
+CLASS="FIRSTTERM"
+>语句级别</I
+>的触发器。
+   </P
+><P
+>    触发器还通常分成 <I
+CLASS="FIRSTTERM"
+>before</I
+> 触发器和 <I
+CLASS="FIRSTTERM"
+>after</I
+> 触发器。
+    语句级别的 <SPAN
+CLASS="QUOTE"
+>"before"</SPAN
+> 触发器通常在语句开始做任何事情之前触发，
+    而语句级别的 <SPAN
+CLASS="QUOTE"
+>"after"</SPAN
+> 触发器在语句的最后触发。
+    行级别的 <SPAN
+CLASS="QUOTE"
+>"before"</SPAN
+> 触发器在对特定行进行操作的时候马上触发，
+    而行级别的 <SPAN
+CLASS="QUOTE"
+>"after"</SPAN
+> 触发器在语句结束的时候触发（但是在任何语句级别的 <SPAN
+CLASS="QUOTE"
+>"after"</SPAN
+> 触发器之前）。
+   </P
+><P
+>	按语句触发的触发器应该总是返回 <TT
+CLASS="SYMBOL"
+>NULL</TT
+>。
+	如果必要，按行触发的触发器函数可以给调用它的执行者返回一表数据行（一个类型为 <TT
+CLASS="STRUCTNAME"
+>HeapTuple</TT
+> 的数值），
+	那些在操作之前触发的触发器有以下选择：
+
+    <P
+></P
+></P><UL
+><LI
+><P
+>	它可以返回 <TT
+CLASS="SYMBOL"
+>NULL</TT
+> 以忽略对当前行的操作。
+	这就指示执行器不要执行调用该触发器的行级别操作（对特定行的插入或者更改））。
+      </P
+></LI
+><LI
+><P
+>      只用于<TT
+CLASS="COMMAND"
+>INSERT</TT
+>和<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>触发器：
+      返回的行将成为被插入的行或者是成为将要更新的行。
+      这样就允许触发器函数修改被插入或者更新的行。
+      </P
+></LI
+></UL
+><P>
+
+    一个无意导致任何这类行为的在操作之前触发的行级触发器必须仔细返回那个被当作新行传进来的同一行
+    （也就是说，对于 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 和 <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> 触发器而言，是 <TT
+CLASS="VARNAME"
+>NEW</TT
+> 行，
+    对于 <TT
+CLASS="COMMAND"
+>DELETE</TT
+> 触发器而言，是 <TT
+CLASS="VARNAME"
+>OLD</TT
+> 行）。
+   </P
+><P
+>    对于在操作之后触发的行级别的触发器，其返回值会被忽略，因此他们可以返回<TT
+CLASS="SYMBOL"
+>NULL</TT
+>。
+   </P
+><P
+>	如果多于一个触发器为同样的事件定义在同样的关系上，
+	触发器将按照由名字的字母顺序排序的顺序触发。
+	如果是事件之前触发的触发器，每个触发器返回的可能已经被修改过的行成为下一个触发器的输入。
+	如果任何事件之前触发的触发器返回 <TT
+CLASS="SYMBOL"
+>NULL</TT
+> 指针，
+	那么对该行的操作将被丢弃并且随后的触发器不会被触发。
+   </P
+><P
+>    通常，行的 before 触发器用于检查或修改将要插入或者更新的数据。
+    比如，一个 before 触发器可以用于把当前时间插入一个 <TT
+CLASS="TYPE"
+>timestamp</TT
+> 字段，
+    或者跟踪该行的两个元素是一致的。行的 after 触发器多数用于填充或者更新其它表，
+    或者对其它表进行一致性检查。这么区分工作的原因是， after 触发器肯定可以看到该行的最后数值，
+    而 before 触发器不能；还可能有其它的 before 触发器在其后触发。
+    如果你没有具体的原因定义触发器是 before 还是 after，那么 before 触发器的效率高些，
+    因为操作相关的信息不必保存到语句的结尾。
+   </P
+><P
+>	如果一个触发器函数执行 SQL 命令，然后这些命令可能再次触发触发器。
+	这就是所谓的级联触发器。对级联触发器的级联深度没有明确的限制。
+	有可能出现级联触发器导致同一个触发器的递归调用的情况；
+	比如，一个 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 触发器可能执行一个命令，
+	把一个额外的行插入同一个表中，导致 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 触发器再次激发。
+	避免这样的无穷递归的问题是触发器程序员的责任。
+   </P
+><P
+>	在定义一个触发器的时候，我们可以声明一些参数。
+	<A NAME="AEN33413" ></A
+>
+	在触发器定义里面包含参数的目的是允许类似需求的不同触发器调用同一个函数。
+	比如，我们可能有一个通用的触发器函数，
+	接受两个字段名字，把当前用户放在第一个，而当前时间戳在第二个。
+	只要我们写得恰当，那么这个触发器函数就可以和触发它的特定表无关。
+	这样同一个函数就可以用于有着合适字段的任何表的 <TT
+CLASS="COMMAND"
+>INSERT</TT
+>
+	事件，实现自动跟踪交易表中的记录创建之类的问题。如果定义成一个
+	 <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> 触发器，我们还可以用它跟踪最后更新的事件。
+   </P
+><P
+>    每种支持触发器的编程语言都有自己的方法让触发器函数得到输入数据。
+    这些输入数据包括触发器事件的类型（比如，<TT
+CLASS="COMMAND"
+>INSERT</TT
+> 或者
+    <TT
+CLASS="COMMAND"
+>UPDATE</TT
+>）以及所有在 <TT
+CLASS="COMMAND"
+>CREATE TRIGGER</TT
+> 里面列出的参数。
+    对于低层次的触发器，输入数据也包括 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 和 <TT
+CLASS="COMMAND"
+>UPDATE</TT
+>
+    触发器的 <TT
+CLASS="VARNAME"
+>NEW</TT
+> 行，和/或 <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> 和
+    <TT
+CLASS="COMMAND"
+>DELETE</TT
+> 触发器的 <TT
+CLASS="VARNAME"
+>OLD</TT
+> 行。
+    语句级别的触发器目前没有任何方法检查改语句修改的独立行。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="xindex.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="trigger-datachanges.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >扩展索引接口</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="server-programming.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >数据改变的可视性</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

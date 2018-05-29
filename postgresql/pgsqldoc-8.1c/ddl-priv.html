@@ -1,0 +1,346 @@
+<HTML
+><HEAD
+><TITLE
+>权限</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="数据定义"
+HREF="ddl.html"><LINK
+REL="PREVIOUS"
+TITLE="修改表"
+HREF="ddl-alter.html"><LINK
+REL="NEXT"
+TITLE="模式"
+HREF="ddl-schemas.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="ddl-alter.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="ddl.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 5. 数据定义</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="ddl.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="ddl-schemas.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="DDL-PRIV"
+>5.6. 权限</A
+></H1
+><A
+NAME="AEN2333"
+></A
+><A
+NAME="AEN2335"
+></A
+><P
+>	如果你创建了一个数据库对象，那么你就成为它的所有者。
+	缺省时，只有一个对象的所有者可以在对象上做任何事情。
+	为了允许其它用户使用它，我们必须赋予他们<I
+CLASS="FIRSTTERM"
+>权限</I
+>。
+	（不过拥有超级用户权限的用户总是可以访问任何对象。）
+  </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	为了改变一个表，索引，序列，或者视图的所有者，
+	使用 <TT
+CLASS="COMMAND"
+>ALTER TABLE</TT
+> 命令。
+   </P
+></BLOCKQUOTE
+></DIV
+><P
+>	有好几种不同的权限：<TT
+CLASS="LITERAL"
+>SELECT</TT
+>，<TT
+CLASS="LITERAL"
+>INSERT</TT
+>，
+	<TT
+CLASS="LITERAL"
+>UPDATE</TT
+>，<TT
+CLASS="LITERAL"
+>DELETE</TT
+>，<TT
+CLASS="LITERAL"
+>RULE</TT
+>，
+	<TT
+CLASS="LITERAL"
+>REFERENCES</TT
+>，<TT
+CLASS="LITERAL"
+>TRIGGER</TT
+>，<TT
+CLASS="LITERAL"
+>CREATE</TT
+>，
+	<TT
+CLASS="LITERAL"
+>TEMPORARY</TT
+>，<TT
+CLASS="LITERAL"
+>EXECUTE</TT
+>，<TT
+CLASS="LITERAL"
+>USAGE</TT
+>。
+	适用于特定对象的权限因对象类型（表、函数等）而异。
+	和 <TT
+CLASS="LITERAL"
+>ALL PRIVILEGES</TT
+>。有关 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	所支持的不同类型的权限的完整信息，请参考 <A
+HREF="sql-grant.html"
+><I
+>GRANT</I
+></A
+>
+	的手册页。下面的章节将为你展示如何利用这些权限。
+  </P
+><P
+>	修改或者删除一个对象的权限永远是所有者独有的权限。
+  </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>    要改变一个表，索引，序列，或者视图的所有者，使用 <A
+HREF="sql-altertable.html"
+><I
+>ALTER TABLE</I
+></A
+> 命令。
+    还有对应其它对象类型的 <TT
+CLASS="LITERAL"
+>ALTER</TT
+> 命令。
+   </P
+></BLOCKQUOTE
+></DIV
+><P
+>	要赋予一个权限，我们使用 <TT
+CLASS="COMMAND"
+>GRANT</TT
+> 命令。
+	因此，如果 <TT
+CLASS="LITERAL"
+>joe</TT
+> 是一个现存的用户，而
+	<TT
+CLASS="LITERAL"
+>accounts</TT
+> 是一个已经存在的表，
+	更新表的权限可以用下面的命令赋予
+</P><PRE
+CLASS="PROGRAMLISTING"
+>GRANT UPDATE ON accounts TO joe;</PRE
+><P>
+	要给一个组赋予权限，使用
+</P><PRE
+CLASS="PROGRAMLISTING"
+>GRANT SELECT ON accounts TO GROUP staff;</PRE
+><P>
+	名字叫<TT
+CLASS="LITERAL"
+>PUBLIC</TT
+>的特殊<SPAN
+CLASS="QUOTE"
+>"用户"</SPAN
+>可以用于
+	将权限赋予系统中的每一个用户。在声明权限的位置写  <TT
+CLASS="LITERAL"
+>ALL</TT
+> 
+	则将所有的与该对象类型相关的权限都赋予出去。
+  </P
+><P
+>	要撤销一个权限，使用合适的 <TT
+CLASS="COMMAND"
+>REVOKE</TT
+> 命令：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>REVOKE ALL ON accounts FROM PUBLIC;</PRE
+><P>
+	对象所有者的特殊权限（也就是做 <TT
+CLASS="COMMAND"
+>DROP</TT
+>，<TT
+CLASS="COMMAND"
+>GRANT</TT
+>，
+	<TT
+CLASS="COMMAND"
+>REVOKE</TT
+>，等等的权限）总是隐含地属于所有者，并且不能
+	赋予或者撤销。但是对象所有者可以选择撤销自己的普通权限，
+	比如把一个表做成对他自己和别人都是只读的。
+  </P
+><P
+>   最初，只有对象所有者（或者超级用户）可以赋予或者撤销对象的权限。
+   但是，我们可以赋予一个 <SPAN
+CLASS="QUOTE"
+>"with grant option"</SPAN
+> 权限，这样就给接受权限的人以授予该权限给其它人的权限。
+   如果授予选项后来被撤销，那么所有那些从这个接受者接受了权限的用户（直接或者通过级连的授权）都将失去该权限。
+   细节详见 <A
+HREF="sql-grant.html"
+><I
+>GRANT</I
+></A
+> 和
+   <A
+HREF="sql-revoke.html"
+><I
+>REVOKE</I
+></A
+> 手册页。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="ddl-alter.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="ddl-schemas.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>修改表</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="ddl.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>模式</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

@@ -1,0 +1,407 @@
+<HTML
+><HEAD
+><TITLE
+>创建一个数据库</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="从头开始"
+HREF="tutorial-start.html"><LINK
+REL="PREVIOUS"
+TITLE="体系基本概念"
+HREF="tutorial-arch.html"><LINK
+REL="NEXT"
+TITLE="访问数据库"
+HREF="tutorial-accessdb.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="tutorial-arch.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="tutorial-start.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 1. 从头开始</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="tutorial-start.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="tutorial-accessdb.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="TUTORIAL-CREATEDB"
+>1.3. 创建一个数据库</A
+></H1
+><A
+NAME="AEN450"
+></A
+><A
+NAME="AEN453"
+></A
+><P
+>	看看你能否访问数据库服务器的第一个例子就是试着创建一个数据库。
+	一台运行着的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器可以管理许多数据库。
+	通常我们会为每个项目和每个用户单独使用一个数据库。
+   </P
+><P
+>	你的节点管理员可能已经为你创建了可以使用的数据库。
+	他应该已经告诉你这个数据库的名字。如果这样你就可以省略这一步，
+	并且跳到下一节。
+   </P
+><P
+>	要创建一个新的数据库，在我们这个例子里叫
+	<TT
+CLASS="LITERAL"
+>mydb</TT
+>，你可以使用下面的命令：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>createdb mydb</B
+></TT
+></PRE
+><P>
+	它应该生成下面这样的响应：
+</P><PRE
+CLASS="SCREEN"
+>CREATE DATABASE</PRE
+><P>
+	如果这样，那么这一步就成功了，你就可以忽略本节余下的部分了。
+   </P
+><P
+>	如果你看到类似下面这样的信息
+</P><PRE
+CLASS="SCREEN"
+>createdb: command not found</PRE
+><P>
+	那么就是<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>没有安装好。要么是就根本没装上，
+	要么是你的搜索路径没有设置正确。尝试用绝对路径调用该命令试试：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>/usr/local/pgsql/bin/createdb mydb</B
+></TT
+></PRE
+><P>
+	在你的节点上这个路径可能不一样。和你的管理员联系或者看看安装指导获取正确的位置。
+   </P
+><P
+>	另外一种响应可能是这样：
+</P><PRE
+CLASS="SCREEN"
+>createdb: could not connect to database postgres: could not connect to server:
+No such file or directory
+        Is the server running locally and accepting
+        connections on Unix domain socket "/tmp/.s.PGSQL.5432"?</PRE
+><P>
+	这意味着该服务器没有启动，或者没有在
+	<TT
+CLASS="COMMAND"
+>createdb</TT
+> 预期的地方启动。同样，
+	你也要检查安装指导或者找管理员。
+   </P
+><P
+>    另外一个响应可能是这样：
+</P><PRE
+CLASS="SCREEN"
+>createdb: could not connect to database postgres: FATAL:  user "joe" does not
+exist</PRE
+><P>
+    在这里提到了你自己的登陆名。如果管理员没有为你创建 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 用户帐号，
+    就会发生这些现象。（<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 用户帐号和操作系统用户帐号是不同的。）
+    如果你是管理员，参阅 <A
+HREF="user-manag.html"
+>Chapter 18</A
+> 获取创建用户帐号的帮助。
+    你需要变成安装 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的操作系统用户的身份（通常是 <TT
+CLASS="LITERAL"
+>postgres</TT
+>）才能创建第一个用户帐号。
+    也有可能是赋予你的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 用户名和你的操作系统用户名不同；
+    这种情况下，你需要使用 <TT
+CLASS="OPTION"
+>-U</TT
+> 开关或者使用 <TT
+CLASS="ENVAR"
+>PGUSER</TT
+> 环境变量声明你的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 用户名。
+   </P
+><P
+>	如果你有个数据库用户帐号，但是没有创建数据库所需要的权限，那么你会看到下面的东西：
+</P><PRE
+CLASS="SCREEN"
+>createdb: database creation failed: ERROR:  permission denied to create database</PRE
+><P>
+	并非所有用户都经过了创建新数据库的授权。
+	如果 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 拒绝为你创建数据库，
+	那么你需要让节点管理员赋予你创建数据库的权限。出现这种情况时请咨询你的节点管理员。
+	如果你自己安装了
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>，
+	那么你应该以你启动数据库服务器的用户身份登陆然后参考手册完成权限的赋予工作。
+
+    <A
+NAME="AEN488"
+HREF="#FTN.AEN488"
+>[1]</A
+>
+   </P
+><P
+>	你还可以用其它名字创建数据库。
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 允许你在一个节点上创建任意数量的数据库。
+	数据库名必须是以字母开头并且小于 63 个字符长。
+	一个方便的做法是创建和你当前用户名同名的数据库。
+	许多工具假设该数据库名为缺省数据库名，所以这样可以节省你的敲键。
+	要创建这样的数据库，只需要键入
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>createdb</B
+></TT
+></PRE
+><P>
+   </P
+><P
+>	如果你再也不想使用你的数据库了，那么你可以删除它。
+	比如，如果你是数据库 <TT
+CLASS="LITERAL"
+>mydb</TT
+> 的所有人（创建人），
+	那么你就可以用下面的命令删除它：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>dropdb mydb</B
+></TT
+></PRE
+><P>
+	（对于这条命令而言，数据库名不是缺省的用户名。这样你就必须声明它。）
+	这个动作物理上将所有与该数据库相关的文件都删除并且不可取消，
+	因此做这件事之前一定要想清楚。
+   </P
+></DIV
+><H3
+CLASS="FOOTNOTES"
+>Notes</H3
+><TABLE
+BORDER="0"
+CLASS="FOOTNOTES"
+WIDTH="100%"
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+WIDTH="5%"
+><A
+NAME="FTN.AEN488"
+HREF="tutorial-createdb.html#AEN488"
+>[1]</A
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+WIDTH="95%"
+><P
+>	为什么这么干就行了？
+	解释：<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 用户名是和操作系统用户账号分开的。
+	如果你与一个数据库联接，你可以选择以何种
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 用户名进行联接；
+	如果你不选择，那么缺省就是你的当前操作系统账号。
+	如果这样，那么总有一个与操作系统用户同名的
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 用户账号用于启动服务器，
+	并且通常这个用户都有创建数据库的权限。如果你不想以该用户身份登陆，
+	那么你也可以在任何地方声明一个 <TT
+CLASS="OPTION"
+>-U</TT
+> 选项以选择一个联接的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 用户名。
+     </P
+></TD
+></TR
+></TABLE
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="tutorial-arch.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="tutorial-accessdb.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>体系基本概念</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="tutorial-start.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>访问数据库</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

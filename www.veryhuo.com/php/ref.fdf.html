@@ -1,0 +1,125 @@
+<HTML><HEAD><TITLE>Forms Data Format Functions</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="函数参考" HREF="funcref.html"><LINK REL="PREVIOUS" TITLE="unlink" HREF="function.unlink.html"><LINK REL="NEXT" TITLE="fdf_add_doc_javascript" HREF="function.fdf-add-doc-javascript.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="reference" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.unlink.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.fdf-add-doc-javascript.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="reference"><A NAME="ref.fdf"></A><DIV CLASS="TITLEPAGE"><H1 CLASS="title">XXXI. Forms Data Format Functions</H1><DIV CLASS="PARTINTRO"><A NAME="AEN29920"></A><DIV CLASS="section"><H1 CLASS="section"><A NAME="fdf.intro"></A>介绍</H1><P>&#13; Forms Data Format (FDF) is a format for handling
+forms within PDF documents. You should read the documentation at
+<A HREF="http://partners.adobe.com/asn/acrobat/forms.jsp" TARGET="_top">http://partners.adobe.com/asn/acrobat/forms.jsp</A>
+for more information on what FDF is and how it is used in general.
+</P><P>&#13; The general idea of FDF is similar to HTML forms. The difference is
+basically the format how data is transmitted to the server when the submit
+button is pressed (this is actually the Form Data Format) and the format
+of the form itself (which is the Portable Document Format, PDF).
+Processing the FDF data is one of the features provided by the fdf
+functions. But there is more. One may as well take an existing PDF form
+and populated the input fields with data without modifying the form
+itself. In such a case one would create a FDF document
+(<A HREF="function.fdf-create.html"><B CLASS="function">fdf_create()</B></A>) set the values of each input field
+(<A HREF="function.fdf-set-value.html"><B CLASS="function">fdf_set_value()</B></A>) and associate it with a PDF form
+(<A HREF="function.fdf-set-file.html"><B CLASS="function">fdf_set_file()</B></A>). Finally it has to be sent to the
+browser with MimeType <TT CLASS="literal">application/vnd.fdf</TT>. The Acrobat
+reader plugin of your browser recognizes the MimeType, reads the
+associated PDF form and fills in the data from the FDF document.
+</P><P>&#13; If you look at an FDF-document with a text editor you will find a
+catalogue object with the name <TT CLASS="literal">FDF</TT>. Such an object may
+contain a number of entries like <TT CLASS="literal">Fields</TT>,
+<TT CLASS="literal">F</TT>, <TT CLASS="literal">Status</TT> etc..
+The most commonly used entries are <TT CLASS="literal">Fields</TT> which points
+to a list of input fields, and <TT CLASS="literal">F</TT> which contains the
+filename of the PDF-document this data belongs to. Those entries are
+referred to in the FDF documentation as /F-Key or /Status-Key.
+Modifying this entries
+is done by functions like <A HREF="function.fdf-set-file.html"><B CLASS="function">fdf_set_file()</B></A> and
+<A HREF="function.fdf-set-status.html"><B CLASS="function">fdf_set_status()</B></A>. Fields are modified with
+<A HREF="function.fdf-set-value.html"><B CLASS="function">fdf_set_value()</B></A>, <A HREF="function.fdf-set-opt.html"><B CLASS="function">fdf_set_opt()</B></A> etc..
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="fdf.requirements"></A>需求</H1><P>&#13; You need the FDF toolkit SDK available from
+<A HREF="http://partners.adobe.com/asn/acrobat/forms.jsp" TARGET="_top">http://partners.adobe.com/asn/acrobat/forms.jsp</A>.
+As of PHP 4.3 you need at least SDK version 5.0.
+The FDF toolkit library is available in binary form only,
+platforms supported by Adobe are Win32, Linux, Solaris and AIX.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="fdf.installation"></A>安装</H1><P>&#13; You must compile PHP with
+<TT CLASS="option">--with-fdftk[=DIR]</TT>.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+If you run into problems configuring PHP with fdftk support, check
+whether the header file <TT CLASS="filename">fdftk.h</TT> and the library
+<TT CLASS="filename">libfdftk.so</TT> are at the right place.
+The configure script supports both the directory structure of the
+FDF SDK distribution and the usual <TT CLASS="filename">DIR/include</TT> /
+<TT CLASS="filename">DIR/lib</TT> layout, so you can point it either
+directly to the unpacked distribution directory or put the header
+file and the appropriate library for your platform into e.g.
+<TT CLASS="filename">/usr/local/include</TT> and
+<TT CLASS="filename">/usr/local/lib</TT> and configure with
+<TT CLASS="literal">--with-fdftk=/usr/local</TT>.
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>Note to Win32 Users: </B>
+In order to enable this module on a Windows environment, you must copy
+<TT CLASS="filename">fdftk.dll</TT> from the DLL folder of the PHP/Win32 binary
+package to the SYSTEM32 folder of your windows machine. (Ex: <TT CLASS="filename">C:\WINNT\SYSTEM32</TT>
+or <TT CLASS="filename">C:\WINDOWS\SYSTEM32</TT>)
+</P></BLOCKQUOTE></DIV></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="fdf.configuration"></A>运行时配置</H1><P>该扩展模块未定义任何设置指令。</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="fdf.resources"></A>资源类型</H1><DIV CLASS="section"><H2 CLASS="section"><A NAME="fdf.resources.fdf"></A>fdf</H2><P>&#13; Most fdf functions require a <TT CLASS="parameter"><I>fdf</I></TT> resource
+as their first parameter. A <TT CLASS="parameter"><I>fdf</I></TT> resource
+is a handle to an opened fdf file. <TT CLASS="parameter"><I>fdf</I></TT>
+resources may be obtained using <A HREF="function.fdf-create.html"><B CLASS="function">fdf_create()</B></A>,
+<A HREF="function.fdf-open.html"><B CLASS="function">fdf_open()</B></A> and <A HREF="function.fdf-open-string.html"><B CLASS="function">fdf_open_string()</B></A>.
+</P></DIV></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="fdf.constants"></A>预定义常量</H1><P>&#13;由于这些常量是由该扩展模块定义的，因此只有在该扩展模块被编译到 PHP 中，或者在运行时被动态加载后，这些常量才有效。</P><P></P><DIV CLASS="variablelist"><DL><DT><TT CLASS="constant"><B>FDFValue</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFStatus</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFFile</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFID</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFFf</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFSetFf</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFClearFf</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFFlags</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFSetF</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFClrF</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFAP</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFAS</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFAction</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFAA</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFAPRef</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFIF</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFEnter</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFExit</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFDown</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFUp</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFFormat</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFValidate</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFKeystroke</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFCalculate</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFNormalAP</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFRolloverAP</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD><DT><TT CLASS="constant"><B>FDFDownAP</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>
+</P></DD></DL></DIV></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="fdf.examples"></A>范例</H1><P>&#13; The following examples shows just the evaluation of form data.
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN30147"></A><P><B>例子 1. Evaluating a FDF document</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#FF8000">// Open fdf from input string provided by the extension<br />// The pdf form contained several input text fields with the names<br />// volume, date, comment, publisher, preparer, and two checkboxes<br />// show_publisher and show_preparer.<br /></font><font color="#0000BB">$fdf </font><font color="#007700">= </font><font color="#0000BB">fdf_open_string</font><font color="#007700">(</font><font color="#0000BB">$HTTP_FDF_DATA</font><font color="#007700">);<br /></font><font color="#0000BB">$volume </font><font color="#007700">= </font><font color="#0000BB">fdf_get_value</font><font color="#007700">(</font><font color="#0000BB">$fdf</font><font color="#007700">, </font><font color="#DD0000">"volume"</font><font color="#007700">);<br />echo </font><font color="#DD0000">"The volume field has the value '&lt;b&gt;$volume&lt;/b&gt;'&lt;br /&gt;"</font><font color="#007700">;<br /><br /></font><font color="#0000BB">$date </font><font color="#007700">= </font><font color="#0000BB">fdf_get_value</font><font color="#007700">(</font><font color="#0000BB">$fdf</font><font color="#007700">, </font><font color="#DD0000">"date"</font><font color="#007700">);<br />echo </font><font color="#DD0000">"The date field has the value '&lt;b&gt;$date&lt;/b&gt;'&lt;br /&gt;"</font><font color="#007700">;<br /><br /></font><font color="#0000BB">$comment </font><font color="#007700">= </font><font color="#0000BB">fdf_get_value</font><font color="#007700">(</font><font color="#0000BB">$fdf</font><font color="#007700">, </font><font color="#DD0000">"comment"</font><font color="#007700">);<br />echo </font><font color="#DD0000">"The comment field has the value '&lt;b&gt;$comment&lt;/b&gt;'&lt;br /&gt;"</font><font color="#007700">;<br /><br />if (</font><font color="#0000BB">fdf_get_value</font><font color="#007700">(</font><font color="#0000BB">$fdf</font><font color="#007700">, </font><font color="#DD0000">"show_publisher"</font><font color="#007700">) == </font><font color="#DD0000">"On"</font><font color="#007700">) {<br />&nbsp;&nbsp;</font><font color="#0000BB">$publisher </font><font color="#007700">= </font><font color="#0000BB">fdf_get_value</font><font color="#007700">(</font><font color="#0000BB">$fdf</font><font color="#007700">, </font><font color="#DD0000">"publisher"</font><font color="#007700">);<br />&nbsp;&nbsp;echo </font><font color="#DD0000">"The publisher field has the value '&lt;b&gt;$publisher&lt;/b&gt;'&lt;br /&gt;"</font><font color="#007700">;<br />} else<br />&nbsp;&nbsp;echo </font><font color="#DD0000">"Publisher shall not be shown.&lt;br /&gt;"</font><font color="#007700">;<br /><br />if (</font><font color="#0000BB">fdf_get_value</font><font color="#007700">(</font><font color="#0000BB">$fdf</font><font color="#007700">, </font><font color="#DD0000">"show_preparer"</font><font color="#007700">) == </font><font color="#DD0000">"On"</font><font color="#007700">) {<br />&nbsp;&nbsp;</font><font color="#0000BB">$preparer </font><font color="#007700">= </font><font color="#0000BB">fdf_get_value</font><font color="#007700">(</font><font color="#0000BB">$fdf</font><font color="#007700">, </font><font color="#DD0000">"preparer"</font><font color="#007700">);<br />&nbsp;&nbsp;echo </font><font color="#DD0000">"The preparer field has the value '&lt;b&gt;$preparer&lt;/b&gt;'&lt;br /&gt;"</font><font color="#007700">;<br />} else<br />&nbsp;&nbsp;echo </font><font color="#DD0000">"Preparer shall not be shown.&lt;br /&gt;"</font><font color="#007700">;<br /></font><font color="#0000BB">fdf_close</font><font color="#007700">(</font><font color="#0000BB">$fdf</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P></DIV></DIV><DIV CLASS="TOC"><DL><DT><B>目录</B></DT><DT><A HREF="function.fdf-add-doc-javascript.html">fdf_add_doc_javascript</A>&nbsp;--&nbsp;Adds javascript code to the FDF document</DT><DT><A HREF="function.fdf-add-template.html">fdf_add_template</A>&nbsp;--&nbsp;Adds a template into the FDF document</DT><DT><A HREF="function.fdf-close.html">fdf_close</A>&nbsp;--&nbsp;Close an FDF document</DT><DT><A HREF="function.fdf-create.html">fdf_create</A>&nbsp;--&nbsp;Create a new FDF document</DT><DT><A HREF="function.fdf-enum-values.html">fdf_enum_values</A>&nbsp;--&nbsp;Call a user defined function for each document value </DT><DT><A HREF="function.fdf-errno.html">fdf_errno</A>&nbsp;--&nbsp;Return error code for last fdf operation</DT><DT><A HREF="function.fdf-error.html">fdf_error</A>&nbsp;--&nbsp;Return error description for fdf error code</DT><DT><A HREF="function.fdf-get-ap.html">fdf_get_ap</A>&nbsp;--&nbsp;Get the appearance of a field</DT><DT><A HREF="function.fdf-get-attachment.html">fdf_get_attachment</A>&nbsp;--&nbsp;Extracts uploaded file embedded in the FDF</DT><DT><A HREF="function.fdf-get-encoding.html">fdf_get_encoding</A>&nbsp;--&nbsp;Get the value of the /Encoding key</DT><DT><A HREF="function.fdf-get-file.html">fdf_get_file</A>&nbsp;--&nbsp;Get the value of the /F key</DT><DT><A HREF="function.fdf-get-flags.html">fdf_get_flags</A>&nbsp;--&nbsp;Gets the flags of a field</DT><DT><A HREF="function.fdf-get-option.html">fdf_get_opt</A>&nbsp;--&nbsp;Gets a value from the opt array of a field</DT><DT><A HREF="function.fdf-get-status.html">fdf_get_status</A>&nbsp;--&nbsp;Get the value of the /STATUS key</DT><DT><A HREF="function.fdf-get-value.html">fdf_get_value</A>&nbsp;--&nbsp;Get the value of a field</DT><DT><A HREF="function.fdf-get-version.html">fdf_get_version</A>&nbsp;--&nbsp;Gets version number for FDF API or file </DT><DT><A HREF="function.fdf-header.html">fdf_header</A>&nbsp;--&nbsp;Sets FDF-specific output headers</DT><DT><A HREF="function.fdf-next-field-name.html">fdf_next_field_name</A>&nbsp;--&nbsp;Get the next field name</DT><DT><A HREF="function.fdf-open-string.html">fdf_open_string</A>&nbsp;--&nbsp;Read a FDF document from a string</DT><DT><A HREF="function.fdf-open.html">fdf_open</A>&nbsp;--&nbsp;Open a FDF document</DT><DT><A HREF="function.fdf-remove-item.html">fdf_remove_item</A>&nbsp;--&nbsp;Sets target frame for form</DT><DT><A HREF="function.fdf-save-string.html">fdf_save_string</A>&nbsp;--&nbsp;Returns the FDF document as a string</DT><DT><A HREF="function.fdf-save.html">fdf_save</A>&nbsp;--&nbsp;Save a FDF document</DT><DT><A HREF="function.fdf-set-ap.html">fdf_set_ap</A>&nbsp;--&nbsp;Set the appearance of a field</DT><DT><A HREF="function.fdf-set-encoding.html">fdf_set_encoding</A>&nbsp;--&nbsp;Sets FDF character encoding</DT><DT><A HREF="function.fdf-set-file.html">fdf_set_file</A>&nbsp;--&nbsp;Set PDF document to display FDF data in</DT><DT><A HREF="function.fdf-set-flags.html">fdf_set_flags</A>&nbsp;--&nbsp;Sets a flag of a field</DT><DT><A HREF="function.fdf-set-javascript-action.html">fdf_set_javascript_action</A>&nbsp;--&nbsp;Sets an javascript action of a field</DT><DT><A HREF="function.fdf-set-opt.html">fdf_set_opt</A>&nbsp;--&nbsp;Sets an option of a field</DT><DT><A HREF="function.fdf-set-status.html">fdf_set_status</A>&nbsp;--&nbsp;Set the value of the /STATUS key</DT><DT><A HREF="function.fdf-set-submit-form-action.html">fdf_set_submit_form_action</A>&nbsp;--&nbsp;Sets a submit form action of a field</DT><DT><A HREF="function.fdf-set-target-frame.html">fdf_set_target_frame</A>&nbsp;--&nbsp;Set target frame for form display</DT><DT><A HREF="function.fdf-set-value.html">fdf_set_value</A>&nbsp;--&nbsp;Set the value of a field</DT><DT><A HREF="function.fdf-set-version.html">fdf_set_version</A>&nbsp;--&nbsp;Sets version number for a FDF file </DT></DL></DIV></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.unlink.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.fdf-add-doc-javascript.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">unlink</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="funcref.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">fdf_add_doc_javascript</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

@@ -1,0 +1,336 @@
+<HTML
+><HEAD
+><TITLE
+>索引</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="SQL 语言"
+HREF="sql.html"><LINK
+REL="PREVIOUS"
+TITLE="UNION，CASE 和相关构造"
+HREF="typeconv-union-case.html"><LINK
+REL="NEXT"
+TITLE="索引类型"
+HREF="indexes-types.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="typeconv-union-case.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="typeconv.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="mvcc.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="indexes-types.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="INDEXES"
+>Chapter 11. 索引</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>11.1. <A
+HREF="indexes.html#INDEXES-INTRO"
+>介绍</A
+></DT
+><DT
+>11.2. <A
+HREF="indexes-types.html"
+>索引类型</A
+></DT
+><DT
+>11.3. <A
+HREF="indexes-multicolumn.html"
+>多字段索引</A
+></DT
+><DT
+>11.4. <A
+HREF="indexes-bitmap-scans.html"
+>组合多个索引</A
+></DT
+><DT
+>11.5. <A
+HREF="indexes-unique.html"
+>唯一索引</A
+></DT
+><DT
+>11.6. <A
+HREF="indexes-expressional.html"
+>表达式上的索引</A
+></DT
+><DT
+>11.7. <A
+HREF="indexes-partial.html"
+>部分索引</A
+></DT
+><DT
+>11.8. <A
+HREF="indexes-opclass.html"
+>操作符表</A
+></DT
+><DT
+>11.9. <A
+HREF="indexes-examine.html"
+>检查索引的使用</A
+></DT
+></DL
+></DIV
+><A
+NAME="AEN14853"
+></A
+><P
+>        索引是提高数据库性能的常用方法。
+        索引可以令数据库服务器以比没有索引快得多的速度查找和检索特定的行。
+	不过索引也在总体上增加了数据库系统的过荷，
+        因此我们应该有意识地使用它们。
+  </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="INDEXES-INTRO"
+>11.1. 介绍</A
+></H1
+><P
+>        索引使用的一个经典的例子就是有象下面这样的一个表∶
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE test1 (
+    id integer,
+    content varchar
+);</PRE
+><P>
+        并且应用需要大量的从下面查询语句进行的查询
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT content FROM test1 WHERE id = <TT
+CLASS="REPLACEABLE"
+><I
+>constant</I
+></TT
+>;</PRE
+><P>
+        通常，数据库系统将不得不一行一行地扫描整个 <TT
+CLASS="STRUCTNAME"
+>test1</TT
+> 以寻找所有匹配的记录。
+        如果在 <TT
+CLASS="STRUCTNAME"
+>test1</TT
+> 里面有许多行，
+	但是只返回少数几行（可能是零个或者是一个），
+        那么上面这个方法可就不是个有效的方法。
+	如果我们让数据库系统在 <TT
+CLASS="STRUCTFIELD"
+>id</TT
+>
+	列上维护一个索引用于定位匹配的行。
+	这样，数据库系统就可能只需要在搜索树中走少数的几层就可以找到匹配行。
+  </P
+><P
+>        在大多数非小说的书籍里面都使用了类似这样的方法∶
+        在书的背后收集着读者会经常查找的术语和概念的索引，
+	并按照字母顺序排列。
+	有兴趣的读者可以相对快速地扫描该索引并且切换到合适的页，
+	因此就不用阅读整本书才能查找到感兴趣的位置。
+        作者的任务之一就是预计哪些项是读者最需要查找的东西，
+        与之类似，预计哪些索引可以带来便利也是数据库程序员的任务。
+  </P
+><P
+>        下面的命令可以用于在 <TT
+CLASS="STRUCTFIELD"
+>id</TT
+> 列上创建我们讨论那样的索引∶
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE INDEX test1_id_index ON test1 (id);</PRE
+><P>
+        你可以自由选择索引名字 <TT
+CLASS="STRUCTNAME"
+>test1_id_index</TT
+>，
+        但是应该选那些稍后可以让你回忆起你的索引是干什么的名字。
+  </P
+><P
+>        要删除一个索引，使用 <TT
+CLASS="COMMAND"
+>DROP INDEX</TT
+> 命令。
+        你可以在任何时候向表里增加索引或者从表中删除索引。
+  </P
+><P
+>        一旦你创建了索引，那么就不在需要更多的干涉了∶
+        当系统认为用索引比顺序的表扫描快的时候它就会使用索引。
+        不过你可能必须经常性地运行<TT
+CLASS="COMMAND"
+>ANALYZE</TT
+>
+        命令以更新统计信息，好让查询规划器能够做出有训练的判断。
+        参见 <A
+HREF="performance-tips.html"
+>Chapter 13</A
+> 获取关于如何获知是否使用了索引的信息，
+        以及在何时何因下规划器会决定<I
+CLASS="EMPHASIS"
+>不</I
+>使用索引。
+  </P
+><P
+>        索引对带搜索条件的 <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> 和 <TT
+CLASS="COMMAND"
+>DELETE</TT
+> 也有好处。
+        索引更可以用于表连接查询。因此，如果你定义了索引的列是连接条件的一部分，
+        那么它可以显著提高带连接的查询的速度。
+  </P
+><P
+>        在创建索引的时候，它必须和表保持同步。这些操作增加了数据操作的负荷。
+	因此我们应该把那些非关键或者根本用不上的索引删除掉。
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="typeconv-union-case.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="indexes-types.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><TT
+CLASS="LITERAL"
+>UNION</TT
+>，<TT
+CLASS="LITERAL"
+>CASE</TT
+> 和相关构造</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="sql.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>索引类型</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

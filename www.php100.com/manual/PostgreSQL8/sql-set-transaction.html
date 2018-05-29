@@ -1,0 +1,367 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>SET TRANSACTION PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="SET SESSION AUTHORIZATION" HREF="sql-set-session-authorization.html"><LINK REL="NEXT" TITLE="SHOW" HREF="sql-show.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-set-session-authorization.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-set-session-authorization.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-show.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-show.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-SET-TRANSACTION" >SET TRANSACTION</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN48672" ></A
+><H2
+>Name</H2
+>SET TRANSACTION&nbsp;--&nbsp;设置当前事务的特性</DIV
+><A NAME="AEN48675" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN48677" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>SET TRANSACTION <TT
+CLASS="REPLACEABLE"
+><I
+>transaction_mode</I
+></TT
+> [, ...]
+SET SESSION CHARACTERISTICS AS TRANSACTION <TT
+CLASS="REPLACEABLE"
+><I
+>transaction_mode</I
+></TT
+> [, ...]
+
+这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>transaction_mode</I
+></TT
+> 是下列之一：
+
+    ISOLATION LEVEL { SERIALIZABLE | REPEATABLE READ | READ COMMITTED | READ UNCOMMITTED }
+    READ WRITE | READ ONLY</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN48682" ></A
+><H2
+>描述</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>SET TRANSACTION</TT
+> 命令为当前事务设置特性。
+	它对后面的事务没有影响。
+	 <TT
+CLASS="COMMAND"
+>SET SESSION CHARACTERISTICS</TT
+>
+	为一个会话中随后的每个事务设置缺省的隔离级别。
+	这些缺省可以被 <TT
+CLASS="COMMAND"
+>SET TRANSACTION</TT
+> 为一个独立的事务覆盖。
+  </P
+><P
+>	可用的事务特性是事务隔离级别和事务访问模式（读/写或者只读）。
+  </P
+><P
+>        事务的隔离级别决定一个事务在同时存在其它并行运行的事务时它能够看到什么数据。
+
+   <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>READ COMMITTED</TT
+></DT
+><DD
+><P
+>        一条语句只能看到在它开始之前的数据。这是缺省。
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>SERIALIZABLE</TT
+></DT
+><DD
+><P
+>        当前的事务中的所有语句只能看到在这次事务第一条查询或者修改数据的语句执行之前的数据。
+      </P
+></DD
+></DL
+></DIV
+><P>
+
+   SQL 标准还定义了另外两个级别，<TT
+CLASS="LITERAL"
+>READ UNCOMMITTED</TT
+> 和 <TT
+CLASS="LITERAL"
+>REPEATABLE READ</TT
+>。
+   在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里 <TT
+CLASS="LITERAL"
+>READ UNCOMMITTED</TT
+> 被当作 <TT
+CLASS="LITERAL"
+>READ COMMITTED</TT
+>，
+   而 <TT
+CLASS="LITERAL"
+>REPEATABLE READ</TT
+> 当作 <TT
+CLASS="LITERAL"
+>SERIALIZABLE</TT
+> 看待。
+  </P
+><P
+>	事务隔离级别在事务中第一个数据修改语句（<TT
+CLASS="COMMAND"
+>SELECT</TT
+>，
+	<TT
+CLASS="COMMAND"
+>INSERT</TT
+>，<TT
+CLASS="COMMAND"
+>DELETE</TT
+>，
+	<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>，<TT
+CLASS="COMMAND"
+>FETCH</TT
+>，或者
+	<TT
+CLASS="COMMAND"
+>COPY</TT
+>）执行之后就不能再次设置。
+	参阅 <A HREF="mvcc.html" >Chapter 12</A
+> 获取有关事务隔离级别和并发性控制的更多信息。
+  </P
+><P
+>	事务访问模式决定事务是读/写还是只读。读/写是缺省。如果一个
+	事务是只读，而且写入的表不是临时表，那么下面的 SQL 命令是不允许的：<TT
+CLASS="LITERAL"
+>INSERT</TT
+>，
+	<TT
+CLASS="LITERAL"
+>UPDATE</TT
+>，<TT
+CLASS="LITERAL"
+>DELETE</TT
+>，和 <TT
+CLASS="LITERAL"
+>COPY TO</TT
+>；
+	而所有的 <TT
+CLASS="LITERAL"
+>CREATE</TT
+>，<TT
+CLASS="LITERAL"
+>ALTER</TT
+>，和 <TT
+CLASS="LITERAL"
+>DROP</TT
+> 命令；
+	<TT
+CLASS="LITERAL"
+>COMMENT</TT
+>，<TT
+CLASS="LITERAL"
+>GRANT</TT
+>，<TT
+CLASS="LITERAL"
+>REVOKE</TT
+>，
+	<TT
+CLASS="LITERAL"
+>TRUNCATE</TT
+>；和 <TT
+CLASS="LITERAL"
+>EXPLAIN ANALYZE</TT
+> 和<TT
+CLASS="LITERAL"
+>EXECUTE</TT
+> 
+	都不允许。这是一个高层次的只读概念，它并不阻止所有对磁盘的写入。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN48730" ></A
+><H2
+>注意</H2
+><P
+>   如果执行 <TT
+CLASS="COMMAND"
+>SET TRANSACTION</TT
+> 之前没有执行 <TT
+CLASS="COMMAND"
+>START TRANSACTION</TT
+>
+   或者 <TT
+CLASS="COMMAND"
+>BEGIN</TT
+>，那么它会显得没有效果一样，因为事务将立即结束。
+  </P
+><P
+>   我们可以用在 <TT
+CLASS="COMMAND"
+>BEGIN</TT
+> 或者 <TT
+CLASS="COMMAND"
+>START TRANSACTION</TT
+> 里面声明所需要的
+   <TT
+CLASS="REPLACEABLE"
+><I
+>transaction_modes</I
+></TT
+>
+   的方法来避免使用 <TT
+CLASS="COMMAND"
+>SET TRANSACTION</TT
+>。
+  </P
+><P
+>	会话的缺省事务隔离级别也可以通过设置配置参数<A HREF="runtime-config-client.html#GUC-DEFAULT-TRANSACTION-ISOLATION" >default_transaction_isolation</A
+>
+	和 <A HREF="runtime-config-client.html#GUC-DEFAULT-TRANSACTION-READ-ONLY" >default_transaction_read_only</A
+> 的方法来设置。
+	（实际上 <TT
+CLASS="COMMAND"
+>SET SESSION CHARACTERISTICS</TT
+>  只是一个用 <TT
+CLASS="COMMAND"
+>SET</TT
+> 来设置这些参数的冗长等效物。）
+	这就意味着缺省值可以通过 <TT
+CLASS="COMMAND"
+>ALTER DATABASE</TT
+>，在配置文件里等方法设置。
+	参考 <A HREF="runtime-config.html" >Chapter 17</A
+> 获取更多信息。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="R1-SQL-SET-TRANSACTION-3" ></A
+><H2
+>兼容性</H2
+><P
+>   两个命令都在 SQL 标准里定义了。<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 里的缺省事务隔离级别是 <TT
+CLASS="LITERAL"
+>SERIALIZABLE</TT
+>；
+   在 PostgreSQL 里，缺省隔离级别是 <TT
+CLASS="LITERAL"
+>READ COMMITED</TT
+>，但是你可以用上面的描述修改它。
+   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 并没有提供隔离级别
+   <TT
+CLASS="LITERAL"
+>READ UNCOMMITTED</TT
+> 和 <TT
+CLASS="LITERAL"
+>REPEATABLE READ</TT
+>。
+   因为多版本并发控制，<TT
+CLASS="LITERAL"
+>SERIALIZABLE</TT
+> 级别并非真正的可串行化。参阅 <A HREF="mvcc.html" >Chapter 12</A
+> 获取细节。
+  </P
+><P
+>    在 SQL 标准里还有另外一种事务特性可以用这些命令设置：诊断范围的大小。这个概念只用于嵌入的 SQL，因此没有在
+    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器里实现。
+   </P
+><P
+>   SQL 标准要求在相连的 <TT
+CLASS="REPLACEABLE"
+><I
+>transaction_modes</I
+></TT
+> 之间使用逗号，
+   但是因为历史原因，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 允许省略这个逗号。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-set-session-authorization.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-show.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >SET SESSION AUTHORIZATION</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >SHOW</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

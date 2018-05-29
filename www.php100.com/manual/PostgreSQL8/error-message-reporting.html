@@ -1,0 +1,408 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>报告服务器里的错误 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="PostgreSQL 源代码" HREF="source.html"><LINK REL="PREVIOUS" TITLE="PostgreSQL 源代码" HREF="source.html"><LINK REL="NEXT" TITLE="错误消息风格指导" HREF="error-style-guide.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="source.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="source.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 44. PostgreSQL 源代码</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="source.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="error-style-guide.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="ERROR-MESSAGE-REPORTING" >44.2. 报告服务器里的错误</A
+></H1
+><A NAME="AEN61279" ></A
+><A NAME="AEN61281" ></A
+><P
+>    在服务器代码里生成的错误，警告以及日志信息应该用 <TT
+CLASS="FUNCTION"
+>ereport</TT
+>，或者它的老前辈 <TT
+CLASS="FUNCTION"
+>elog</TT
+> 创建。
+    这个函数的使用已经复杂得足够我们做些解释了。
+   </P
+><P
+>    每条消息都有两个必须的要素：一个严重级别（范围从 <TT
+CLASS="LITERAL"
+>DEBUG</TT
+> 到 <TT
+CLASS="LITERAL"
+>PANIC</TT
+>）和一个主要消息文本。
+    除此之外还有可选的元素，最常见的就是一个遵循 SQL 标准的 SQLSTATE 习惯的错误标识码。
+    <TT
+CLASS="FUNCTION"
+>ereport</TT
+> 本身只是一个壳函数，它的存在主要是为了便于让消息生成看起来像 C 代码里的函数调用。
+    <TT
+CLASS="FUNCTION"
+>ereport</TT
+> 直接接受的唯一参数是严重级别。
+    主消息文本和任何附加消息元素都是通过在 <TT
+CLASS="FUNCTION"
+>ereport</TT
+> 调用里调用辅助函数，比如 <TT
+CLASS="FUNCTION"
+>errmsg</TT
+>，生成的。
+   </P
+><P
+>    典型的调用 <TT
+CLASS="FUNCTION"
+>ereport</TT
+> 的方式看起来可能像下面这样：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>ereport(ERROR,
+        (errcode(ERRCODE_DIVISION_BY_ZERO),
+         errmsg("division by zero")));</PRE
+><P>
+    这样就声明了严重级别 <TT
+CLASS="LITERAL"
+>ERROR</TT
+> （一个错误）。
+    调用 <TT
+CLASS="FUNCTION"
+>errcode</TT
+> 则使用一个定义在 <TT
+CLASS="FILENAME"
+>src/include/utils/errcodes.h</TT
+> 里面的宏声明 SQLSTATE 错误代码。
+    <TT
+CLASS="FUNCTION"
+>errmsg</TT
+> 调用提供主要的消息文本。
+    请注意额外的圆括弧包围在辅助函数调用周围 &mdash; 这么做虽然烦人，但是语法上是必须的。
+   </P
+><P
+>    然后是一个更复杂的例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>ereport(ERROR,
+        (errcode(ERRCODE_AMBIGUOUS_FUNCTION),
+         errmsg("function %s is not unique",
+                func_signature_string(funcname, nargs,
+                                      actual_arg_types)),
+         errhint("Unable to choose a best candidate function. "
+                 "You may need to add explicit typecasts.")));</PRE
+><P>
+    这个例子演示了使用格式化代码把运行时数值嵌入一个消息文本的用法。
+    同样，还提供了一个可选的<SPAN
+CLASS="QUOTE"
+>"暗示"</SPAN
+>信息。
+   </P
+><P
+>    <TT
+CLASS="FUNCTION"
+>ereport</TT
+> 可用的附属过程有：
+  <P
+></P
+></P><UL
+><LI
+><P
+>     <TT
+CLASS="FUNCTION"
+>errcode(sqlerrcode)</TT
+> 为该条件声明 SQLSTATE 错误标识符代码。
+     如果没有调用这个过程，并且错误严重级别是 <TT
+CLASS="LITERAL"
+>ERROR</TT
+> 或更高，那么错误标识符缺省是 <TT
+CLASS="LITERAL"
+>ERRCODE_INTERNAL_ERROR</TT
+>，
+     如果错误严重级别是 <TT
+CLASS="LITERAL"
+>WARNING</TT
+>，则为 <TT
+CLASS="LITERAL"
+>ERRCODE_WARNING</TT
+>，
+     否则（用于 <TT
+CLASS="LITERAL"
+>NOTICE</TT
+> 或者更低级别）为 <TT
+CLASS="LITERAL"
+>ERRCODE_SUCCESSFUL_COMPLETION</TT
+>。
+     虽然这些缺省都很方便，但是最好还是在省略 <TT
+CLASS="FUNCTION"
+>errcode()</TT
+> 调用之前三思。
+    </P
+></LI
+><LI
+><P
+>     <TT
+CLASS="FUNCTION"
+>errmsg(const char *msg, ...)</TT
+> 声明主错误消息文本，以及可能的插入其中的运行时数值。
+     插入是使用 <TT
+CLASS="FUNCTION"
+>sprintf</TT
+> 风格的格式代码插入的。
+     除了 <TT
+CLASS="FUNCTION"
+>sprintf</TT
+> 接受的标准格式代码，还接受 <TT
+CLASS="LITERAL"
+>%m</TT
+> 用于插入 <TT
+CLASS="FUNCTION"
+>strerror</TT
+> 为当前 <TT
+CLASS="LITERAL"
+>errno</TT
+> 值返回的错误信息。
+     <A NAME="AEN61324" HREF="error-message-reporting.html#FTN.AEN61324" >[1]</A
+>
+     <TT
+CLASS="LITERAL"
+>%m</TT
+> 并不要求在 <TT
+CLASS="FUNCTION"
+>errmsg</TT
+> 的参数列表里有任何对应的项目。
+     请注意这个消息字串在格式代码得到处理之前将不会通过 <TT
+CLASS="FUNCTION"
+>gettext</TT
+> 运行获取合适的本地化。
+    </P
+></LI
+><LI
+><P
+>     <TT
+CLASS="FUNCTION"
+>errmsg_internal(const char *msg, ...)</TT
+> 和 <TT
+CLASS="FUNCTION"
+>errmsg</TT
+> 一样，
+     只是消息字串将不会包含在国际化消息字典里。
+     这个函数应该用于<SPAN
+CLASS="QUOTE"
+>"不可能发生"</SPAN
+>的情况，也就是不值得展开进行翻译的场合。
+    </P
+></LI
+><LI
+><P
+>     <TT
+CLASS="FUNCTION"
+>errdetail(const char *msg, ...)</TT
+> 提供一个可选的<SPAN
+CLASS="QUOTE"
+>"详细"</SPAN
+>信息；
+     在存在额外的的信息，并且很适合放在主消息里面的时候使用这个函数。
+     消息字串处理的方法和 <TT
+CLASS="FUNCTION"
+>errmsg</TT
+> 完全一样。
+    </P
+></LI
+><LI
+><P
+>     <TT
+CLASS="FUNCTION"
+>errhint(const char *msg, ...)</TT
+> 提供一个可选的<SPAN
+CLASS="QUOTE"
+>"暗示"</SPAN
+>消息；
+     这个函数用于提供如何修补问题的建议，而不是提供错误的事实。
+     消息字串处理的方式和 <TT
+CLASS="FUNCTION"
+>errmsg</TT
+> 一样。
+    </P
+></LI
+><LI
+><P
+>     <TT
+CLASS="FUNCTION"
+>errcontext(const char *msg, ...)</TT
+> 通常不会直接从 <TT
+CLASS="FUNCTION"
+>ereport</TT
+> 消息点里直接调用；
+     而是用在 <TT
+CLASS="LITERAL"
+>error_context_stack</TT
+> 回调函数里提供有关错误发生的环境的信息，
+     比如，当前的位置是在一个 PL 函数里等等。
+     消息字串的处理和 <TT
+CLASS="FUNCTION"
+>errmsg</TT
+> 完全一样。
+     和其它辅助函数不同，这个函数在一次 <TT
+CLASS="FUNCTION"
+>ereport</TT
+> 调用里可以调用多次；
+     随后的调用生成的字串将带着各自的换行符连接在原来的字串上。
+    </P
+></LI
+><LI
+><P
+>     <TT
+CLASS="FUNCTION"
+>errposition(int cursorpos)</TT
+> 声明一个错误在查询字串里的文本位置。
+     目前它只是在汇报查询处理过程中的词法和语法分析阶段检测到的错误有用。
+    </P
+></LI
+><LI
+><P
+>     <TT
+CLASS="FUNCTION"
+>errcode_for_file_access()</TT
+> 是一个便利函数，它可以为一个文件访问类的系统调用选择一个合适的 SQLSTATE 错误标识符。
+     它利用保存下来的 <TT
+CLASS="LITERAL"
+>errno</TT
+> 判断生成哪个错误代码。
+     通常它应该和主消息文本里的 <TT
+CLASS="LITERAL"
+>%m</TT
+> 结合使用。
+    </P
+></LI
+><LI
+><P
+>     <TT
+CLASS="FUNCTION"
+>errcode_for_socket_access()</TT
+> 是一个便利函数，它可以为一个套接字相关的系统调用选择一个合适的 SQLSTATE 错误标识符。
+    </P
+></LI
+></UL
+><P>
+   </P
+><P
+>    还有一个老一些的 <TT
+CLASS="FUNCTION"
+>elog</TT
+> 函数，仍然在频繁使用。
+    一个 <TT
+CLASS="FUNCTION"
+>elog</TT
+> 调用
+</P><PRE
+CLASS="PROGRAMLISTING"
+>elog(level, "format string", ...);</PRE
+><P>
+    完全等效于
+</P><PRE
+CLASS="PROGRAMLISTING"
+>ereport(level, (errmsg_internal("format string", ...)));</PRE
+><P>
+    请注意 SQLSTATE 错误代码总是缺省的，并且消息字串并没有包含在国际化信息字典里。
+    因此，<TT
+CLASS="FUNCTION"
+>elog</TT
+> 应该只用于内部错误以及低层的调试日志。
+    任何普通用户感兴趣的消息都应该通过 <TT
+CLASS="FUNCTION"
+>ereport</TT
+> 生成。
+    当然，还有大量内部的<SPAN
+CLASS="QUOTE"
+>"不可能发生"</SPAN
+>的错误检查使用 <TT
+CLASS="FUNCTION"
+>elog</TT
+>；
+    因为这些信息最好还是表示得简单些好。
+   </P
+><P
+>    书写好的错误消息的建议可以在 <A HREF="error-style-guide.html" >Section 44.3</A
+> 找到。
+   </P
+></DIV
+><H3
+CLASS="FOOTNOTES"
+>Notes</H3
+><TABLE
+BORDER="0"
+CLASS="FOOTNOTES"
+WIDTH="100%"
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" WIDTH="5%" ><A NAME="FTN.AEN61324" HREF="error-message-reporting.html#AEN61324" >[1]</A
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" WIDTH="95%" ><P
+>       也就是说，在到达 <TT
+CLASS="FUNCTION"
+>ereport</TT
+> 调用的时候当前的数值；
+       在附属报告过程里对 <TT
+CLASS="LITERAL"
+>errno</TT
+> 的修改将不会影响他。
+       但是如果你在 <TT
+CLASS="FUNCTION"
+>errmsg</TT
+> 的参数列表里明确地写 <TT
+CLASS="LITERAL"
+>strerror(errno)</TT
+>，
+       这一点就不能保证了，因此，请不要这么做。
+      </P
+></TD
+></TR
+></TABLE
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="source.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="error-style-guide.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >PostgreSQL 源代码</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="source.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >错误消息风格指导</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

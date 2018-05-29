@@ -1,0 +1,329 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>访问数据库 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="从头开始" HREF="tutorial-start.html"><LINK REL="PREVIOUS" TITLE="创建一个数据库" HREF="tutorial-createdb.html"><LINK REL="NEXT" TITLE="SQL 语言" HREF="tutorial-sql.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="tutorial-createdb.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="tutorial-start.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 1. 从头开始</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="tutorial-start.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="tutorial-sql.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="TUTORIAL-ACCESSDB" >1.4. 访问数据库</A
+></H1
+><A NAME="AEN507" ></A
+><P
+>	一旦你创建了数据库，你就可以访问它：
+
+    <P
+></P
+></P><UL
+COMPACT="COMPACT"
+><LI
+STYLE="list-style-type: disc"
+><P
+>	运行 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 交互的终端程序，
+	叫 <SPAN
+CLASS="APPLICATION"
+><I
+CLASS="FIRSTTERM"
+>psql</I
+></SPAN
+>，
+	它允许你交互地输入，编辑，和执行 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令。
+      </P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+>	使用我们现有的图形前端工具，比如
+	<SPAN
+CLASS="APPLICATION"
+>PgAccess</SPAN
+> 或者带 <SPAN
+CLASS="ACRONYM"
+>ODBC</SPAN
+> 支持的办公套件来创建和管理数据库。
+	这种方法在这份教程中没有介绍。
+      </P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+>	写一个客户应用，使用多种语言绑定中的一种。
+	这些可能性在 <A HREF="client-interfaces.html" >Part IV</A
+> 中有更深入的讨论。
+      </P
+></LI
+></UL
+><P>
+
+	你可能需要启动 <TT
+CLASS="COMMAND"
+>psql</TT
+>，试验本教程中的例子。
+	你可以用下面的命令为 <TT
+CLASS="LITERAL"
+>mydb</TT
+> 数据库激活它：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>psql mydb</B
+></TT
+></PRE
+><P>
+	如果你省略了数据库名字，那么它缺省就是你的用户账号名字。
+	你已经在前面的小节里知道这个大纲了。
+   </P
+><P
+>	在 <TT
+CLASS="COMMAND"
+>psql</TT
+> 里，你会看到下面的欢迎信息：
+</P><PRE
+CLASS="SCREEN"
+>Welcome to psql 8.1, the PostgreSQL interactive terminal.
+
+Type:  \copyright for distribution terms
+       \h for help with SQL commands
+       \? for help with psql commands
+       \g or terminate with semicolon to execute query
+       \q to quit
+
+mydb=&gt;</PRE
+><P>
+    <A NAME="AEN532" ></A
+>
+	最后一行也可能是
+</P><PRE
+CLASS="SCREEN"
+>mydb=#</PRE
+><P>
+	这个提示符意味着你是数据库超级用户，最可能出现在你自己安装了
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的情况下。作为超级用户意味着你不受访问控制的限制。
+	对于本教程的目的而言，是否超级用户并不重要。
+   </P
+><P
+>	如果你启动 <TT
+CLASS="COMMAND"
+>psql</TT
+> 时碰到了问题，那么回到前面的小节。
+	诊断 <TT
+CLASS="COMMAND"
+>createdb</TT
+> 的方法和诊断 <TT
+CLASS="COMMAND"
+>psql</TT
+> 的方法很类似，
+	如果前者能运行那么后者也应该能运行。
+   </P
+><P
+>	<TT
+CLASS="COMMAND"
+>psql</TT
+> 打印出的最后一行是提示符，它表示
+	<TT
+CLASS="COMMAND"
+>psql</TT
+> 正听着你说话，这个时候你就可以敲入
+	<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 查询到一个 <TT
+CLASS="COMMAND"
+>psql</TT
+> 维护的工作区中。试验一下下面的命令：
+    <A NAME="AEN545" ></A
+>
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>mydb=&gt;</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>SELECT version();</B
+></TT
+>
+                            version
+----------------------------------------------------------------
+ PostgreSQL 8.1 on i586-pc-linux-gnu, compiled by GCC 2.96
+(1 row)
+<TT
+CLASS="PROMPT"
+>mydb=&gt;</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>SELECT current_date;</B
+></TT
+>
+    date
+------------
+ 2002-08-31
+(1 row)
+
+<TT
+CLASS="PROMPT"
+>mydb=&gt;</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>SELECT 2 + 2;</B
+></TT
+>
+ ?column?
+----------
+        4
+(1 row)</PRE
+><P>
+   </P
+><P
+>	<TT
+CLASS="COMMAND"
+>psql</TT
+> 程序有一些不属于 SQL 命令的内部命令。
+	它们以反斜杠开头，<SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+>\</TT
+>"</SPAN
+>。
+	有些这种命令在欢迎信息中列出。比如，你可以用下面的命令获取各种<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>
+	命令的帮助语法：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>mydb=&gt;</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>\h</B
+></TT
+></PRE
+><P>
+   </P
+><P
+>	要退出 <TT
+CLASS="COMMAND"
+>psql</TT
+>，键入
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>mydb=&gt;</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>\q</B
+></TT
+></PRE
+><P>
+	然后 <TT
+CLASS="COMMAND"
+>psql</TT
+> 就会退出并且给你返回到命令行 shell。
+	（要获取更多有关内部命令的信息，你可以在 <TT
+CLASS="COMMAND"
+>psql</TT
+> 提示符上键入 <TT
+CLASS="LITERAL"
+>\?</TT
+>。）
+	<TT
+CLASS="COMMAND"
+>psql</TT
+> 的完整功能在 <A HREF="reference.html" >Part VI</A
+> 中有文档。如果
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	安装正确，那么你还可以在操作系统的 shell 提示符上键入
+	<TT
+CLASS="LITERAL"
+>man psql</TT
+> 来阅读该文档。在这份文档里，我们将不会明确使用这些特性，但是你自己可以在合适的时候使用它们。
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="tutorial-createdb.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="tutorial-sql.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >创建一个数据库</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="tutorial-start.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语言</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

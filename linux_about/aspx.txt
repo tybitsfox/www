@@ -1,0 +1,82 @@
+<pre><center><font color=red size=4>在asp.net中使用VC编写的dll</font></center>
+一、在asp.net中对一些敏感的不想分享的代码可以通过调用dll中函数的形式来实现，这种做法非常的简单可行。
+首先，该dll与vc编写的正常dll无太大差别，只是一些messagebox等的调用不要写上，对于不同的情况可以使用
+不用的返回值来替代。在dll中只实现必要的功能。不涉及显示方面的代码。比如数据库的访问实现可以全部放在
+dll中，并把结果组织成html的字符串传递出去。关于调用函数的参数传递，最好使用简单数据类型，例如：
+整形int,字符串形char*等，便于函数和调用者之间的转换。例如：
+在VC中：
+_declspec(dllexport) int WINAPI get_data(char *user,char *pwd,char *ip,char *dbname,char *rt);
+参数中除rt以外都是传入，rt为在asp.net中声明分配的一个字符串空间，用于接收返回结果。
+在vb.net中：
+Private Declare Function cadll Lib "c:\tdll03.dll" alias "get_data" (byval user as string,byval pwd as string,
+		byval ip as string,byval dbname as string,byval rt as string) As Integer
+然后就可以在过程或函数中进行调用了：
+sub method_1()
+	dim s1,s2,s3,s4,rrt as string
+	s1="ty"
+	s2="password"
+	s3="192.168.1.100"
+	s4="orcl"
+	rrt=space(10000)	'要想接受返回信息，必须在这里分配空间
+	cadll(s1,s2,s3,s4,rt)
+	label.text=rt
+end sub	
+在参数中还有个要注意的地方，当参数在dll中为int时，对应的vb.net为long，不过在asp.net的函数声明时依然要写int，但是在实际传
+入时要用long型的传入：
+dim i as long
+func(i)		'此时声明的func的参数为int
+二、在windows下，如果数据库为oracle时，数据库操作应注意的问题：
+1、使用Pro*c方式时，因为我们采用dll来实现数据库的操作，所以可以使用proc方式来访问数据库了，但是如果服务器没有安装完整的
+oracle客户端时，就必须自己准备好Por*c的运行环境了。我自己准备了一个36M免安装的压缩包
+解压后本目录下的ex_a011目录包含了访问oracle所需的基本文件及目录结构。大小约36M。
+由于oracle的硬性规定，里面的目录结构和文件不要改动。
+若要该环境正常的运行，还需要修改注册表以及添加本目录路径至path环境变量。
+环境变量的修改是至关重要的一步，因为它指引着程序找到注册表的信息，进而获取运行环境的更多信息。
+环境变量的指向为可执行程序的bin目录，在该目录下还必须要有一个oracle.key的文件，该文件内容一般为：
+SOFTWARE\tybitsfox\Oracle11g_home1，即运行环境的注册位置。有了这个文件，注册信息才有效。
+最基本的注册信息为：
+Windows Registry Editor Version 5.00
+[HKEY_LOCAL_MACHINE\SOFTWARE\tybitsfox]
+[HKEY_LOCAL_MACHINE\SOFTWARE\tybitsfox\Oracle11g_home1]
+"ORACLE_HOME"="C:\\Program Files\\Oracle\\ex_a011"
+"NLS_LANG"="SIMPLIFIED CHINESE_CHINA.ZHS16GBK"
+其中ORACLE_HOME指向了我们构造的oracle运行所设置的目录。该目录的结构是一定的，请不要擅自修改。
+    NLS_LANG指向了所用的字符集。没有这个子项，将无法正常的显示中文。
+上面的注册信息是针对32位的服务器的，对64位服务器，注册信息稍有不同，好像有个x86什么的...
+下面是我的本本上path中oracle的相关信息：
+D:\app\Administrator\product\11.1.0\db_1\bin;
+2、使用odbc方式时，odbc的链接字符串应为：
+"ODBC;Driver={Microsoft ODBC for Oracle};DSN='''';server=192.168.1.106/orcl;UID=ty; pwd=sa123123;";
+使用odbc方式有个小小的不便，就是在密码中含有@字符时，其连接字符串无法解析从而使得这种方法无法连接。
+3、如果不使用dll而直接在asp.net使用oledb的方式连接oracle数据库时，连接字符串应为：
+dim conn as new oledbconnection()
+dim ccmd as new oledbcommand()
+dim ddata as oledbdatareader
+    DSN="data source=hb;Provider=MSDAORA;host=10.37.16.39;persist security info=false;user id=hb;password=""sdhb@3ckj!zdjk"""
+    sqlstr="select name,addr from table_name"
+    conn=new oledbconnection(DSN)
+    conn.open()
+    ccmd=new oledbcommand(sqlstr,conn)
+    ddata=ccmd.Executereader()
+    do while ddata.read()
+        s1=ddata.getvalue(0)
+		s2=ddata.getvalue(1)
+		....
+	loop
+    str=str & ss
+    ddata.close()
+    ccmd.dispose()
+    conn.close()
+4、顺便记录下使用Pro*c时，VC编译环境的构建，打开VC的[工具]->[选项]，选择[project]->[vc++目录]，如图添加
+oracle的可执行文件目录<br><img src='linux_about/a1.PNG'><br><img src='linux_about/a2.PNG'>
+<br>添加oracle的包含文件目录<br><img src='linux_about/a3.PNG'>
+<br>添加oracle的库文件目录<br><img src='linux_about/a4.PNG'>
+<br>然后在工程项目的CPP文件中添加pc文件，右键点击该pc文件。选择[属性]->自定义生成步骤。依图示输入
+<br><img src='linux_about/a5.PNG'><br>完成pc文件后右键点击[编译]生成cpp文件。</pre>
+
+
+
+
+
+
+

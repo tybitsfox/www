@@ -1,0 +1,987 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>查询语言（SQL）函数 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="扩展 SQL" HREF="extend.html"><LINK REL="PREVIOUS" TITLE="用户定义函数" HREF="xfunc.html"><LINK REL="NEXT" TITLE="函数重载" HREF="xfunc-overload.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="xfunc.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="extend.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 32. 扩展 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="extend.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="xfunc-overload.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="XFUNC-SQL" >32.4. 查询语言（<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>）函数</A
+></H1
+><A NAME="AEN31437" ></A
+><P
+>	SQL 函数执行一个任意 SQL 查询的列表，返回列表里最后一个查询的结果。
+	它必须是一条 <TT
+CLASS="LITERAL"
+>SELECT</TT
+>。在比较简单的情况下（非集合的情况），
+	返回最后一条查询结果的第一行。（请记住多行结果的<SPAN
+CLASS="QUOTE"
+>"第一行"</SPAN
+>是不明确的，除非你用 <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> 对结果排序。）
+	如果最后一个查询碰巧不返回行，那么返回 NULL 值。
+   </P
+><P
+>	<A NAME="AEN31446" ></A
+>
+	另外，一个 SQL 函数可以声明为返回一个集合，方法是把该函数的返回类型声明为
+	<TT
+CLASS="LITERAL"
+>SETOF <TT
+CLASS="REPLACEABLE"
+><I
+>sometype</I
+></TT
+></TT
+>。
+	这个时候最后一条查询结果的所有行都会被返回。更多的细节在下面讲。
+   </P
+><P
+>	SQL 函数的函数体应该是一个用分号分隔的 SQL 语句的列表。
+	最后一个语句后面的分号是可选的。除非函数声明为返回 <TT
+CLASS="TYPE"
+>void</TT
+>，
+	否则最后一条语句必须是 <TT
+CLASS="COMMAND"
+>SELECT</TT
+>。
+     </P
+><P
+>     任何 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语言的命令都可以打包在一起，定义成新的函数。
+     除了 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 查询之外，命令可以包含数据修改的查询
+     （<TT
+CLASS="COMMAND"
+>INSERT</TT
+>，<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>，和 <TT
+CLASS="COMMAND"
+>DELETE</TT
+>），
+     以及其它 SQL 命令。（唯一的例外是你不能在 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 函数里方
+     <TT
+CLASS="COMMAND"
+>BEGIN</TT
+>，<TT
+CLASS="COMMAND"
+>COMMIT</TT
+>，<TT
+CLASS="COMMAND"
+>ROLLBACK</TT
+>，或者 <TT
+CLASS="COMMAND"
+>SAVEPOINT</TT
+>
+     命令。）
+     不过，最后一条命令必须是一个返回函数声明的返回类型的 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 语句。
+     另外，如果你想定义一个执行某种动作，但是不返回什么有用的数值的 SQL 函数，
+     那么你可以定义之为返回 <TT
+CLASS="TYPE"
+>void</TT
+>。
+     这种情况下，该函数体不能以 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 结尾。
+     比如，下面这个函数从 <TT
+CLASS="LITERAL"
+>emp</TT
+> 表删除负数的薪水：
+
+</P><PRE
+CLASS="SCREEN"
+>CREATE FUNCTION clean_emp() RETURNS void AS '
+    DELETE FROM emp
+        WHERE salary &lt; 0;
+' LANGUAGE SQL;
+
+SELECT clean_emp();
+
+ clean_emp
+-----------
+
+(1 row)</PRE
+><P>
+    </P
+><P
+>	<TT
+CLASS="COMMAND"
+>CREATE FUNCTION</TT
+> 命令的语法要求函数体写成一个字串文本。
+	通常来说，字串常量使用美元符包围更方便些（参阅 <A HREF="sql-syntax.html#SQL-SYNTAX-DOLLAR-QUOTING" >Section 4.1.2.2</A
+>）。
+	如果你决定使用通常的字串常量语法，必须逃逸函数体中使用的单引号（<TT
+CLASS="LITERAL"
+>'</TT
+>）和反斜杠（<TT
+CLASS="LITERAL"
+>\'</TT
+>），
+	通常的方法是写两份。
+   </P
+><P
+>	SQL 函数的参数在查询里可以用 <TT
+CLASS="LITERAL"
+>$<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+></TT
+> 语法引用：
+	<TT
+CLASS="LITERAL"
+>$1</TT
+> 指第一个参数，<TT
+CLASS="LITERAL"
+>$2</TT
+> 指第二个参数，以此类推。
+	如果参数是复合类型，那么可以用点表示法，
+	也就是说，<TT
+CLASS="LITERAL"
+>$1.name</TT
+>，访问参数里的字段。
+	这个参数只能用作数据值，不能当作标识符使用。因此，下面这么做是合理的：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT INTO mytable VALUES ($1);</PRE
+><P>
+但是这么做就不行了：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT INTO $1 VALUES (42);</PRE
+><P>
+   </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="XFUNC-SQL-BASE-FUNCTIONS" >32.4.1. 基本类型上的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 函数</A
+></H2
+><P
+>     最简单的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 函数可能就是没有参数并且返回一个
+     基本类型，比如 <TT
+CLASS="TYPE"
+>integer</TT
+> 的函数：
+
+</P><PRE
+CLASS="SCREEN"
+>CREATE FUNCTION one() RETURNS integer AS $$
+    SELECT 1 AS result;
+$$ LANGUAGE SQL;
+
+-- 另外一种字串文本的语法：
+CREATE FUNCTION one() RETURNS integer AS '
+    SELECT 1 AS result;
+' LANGUAGE SQL;
+
+SELECT one();
+
+one
+-----
+  1</PRE
+><P>
+    </P
+><P
+>     请注意我们在函数体里面定义了一个字段别名，用于函数结果（名字是 <TT
+CLASS="LITERAL"
+>result</TT
+>），
+     但是字段别名在函数外面是不可见的。因此，结果是以 <TT
+CLASS="LITERAL"
+>one</TT
+> 为标签的，而不是
+     <TT
+CLASS="LITERAL"
+>result</TT
+>。
+    </P
+><P
+>     定义一个接受基本类型做参数的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 函数几乎一样简单。
+     在下面的例子里，请注意我们在函数中是如何用<TT
+CLASS="LITERAL"
+>$1</TT
+> 和 <TT
+CLASS="LITERAL"
+>$2</TT
+> 引用参数的。
+
+</P><PRE
+CLASS="SCREEN"
+>CREATE FUNCTION add_em(integer, integer) RETURNS integer AS $$
+    SELECT $1 + $2;
+$$ LANGUAGE SQL;
+
+SELECT add_em(1, 2) AS answer;
+                                                                                                                                                                            
+ answer
+--------
+      3</PRE
+><P>
+    </P
+><P
+>    下面是一个更有用的函数，我们可以用它对一个银行帐号做扣款（借记消费 debit）动作：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION tf1 (integer, numeric) RETURNS integer AS $$
+    UPDATE bank 
+        SET balance = balance - $2
+        WHERE acctountno = $1;
+        SELECT 1;
+$$ LANGUAGE SQL;</PRE
+><P>
+
+        一个用户可以象下面这样用这个函数给帐户 17 扣款 $100.00：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT tf1( 17,100.0);</PRE
+><P>
+    </P
+><P
+>	实际上我们可能喜欢函数有一个比常量 1 更有用一些的结果。
+	所以更有可能的定义是
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION tf1 (integer, numeric) RETURNS numeric AS $$
+    UPDATE bank
+        SET balance = balance - $2
+        WHERE accountno = $1;
+    SELECT balance FROM bank WHERE accountno = $1;
+$$ LANGUAGE SQL;</PRE
+><P>
+	它修改余额并返回新的余额。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN31504" >32.4.2. 复合类型的<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>函数</A
+></H2
+><P
+>	当我们书写使用用复合类型做参数的函数时，
+	我们不仅要声明我们需要哪个参数（像上面我们使用 <TT
+CLASS="LITERAL"
+>$1</TT
+>和<TT
+CLASS="LITERAL"
+>$2</TT
+>一样），而且要声明参数的字段（数据域）。比如，
+	假设 <TT
+CLASS="TYPE"
+>emp</TT
+> 是一个包含雇员信息的表，并且因此也是该表每行的复合类型的名字。这里就是一个函数
+	<TT
+CLASS="FUNCTION"
+>double_salary</TT
+>，它计算某人薪水翻番之后的数值：
+
+</P><PRE
+CLASS="SCREEN"
+>CREATE TABLE emp (
+    name        text,
+    salary      numeric,
+    age         integer,
+    cubicle     point
+);
+
+CREATE FUNCTION double_salary(emp) RETURNS integer AS $$
+    SELECT $1.salary * 2 AS salary;
+$$ LANGUAGE SQL;
+
+SELECT name, double_salary(emp.*) AS dream
+    FROM emp
+    WHERE emp.cubicle ~= point '(2,1)';
+
+ name | dream
+------+-------
+ Bill |  8400</PRE
+><P>
+    </P
+><P
+>	请注意这里使用 <TT
+CLASS="LITERAL"
+>$1.salary</TT
+> 的语法选择参数行数值的一个字段。
+	还要注意<TT
+CLASS="COMMAND"
+>SELECT</TT
+>命令是如何使用 <TT
+CLASS="LITERAL"
+>*</TT
+> 表示该表的整个当前行作为复合数值。
+	表里面的行也可以用表名字引用，像下面这样：
+</P><PRE
+CLASS="SCREEN"
+>SELECT name, double_salary(emp) AS dream
+    FROM emp
+    WHERE emp.cubicle ~= point '(2,1)';</PRE
+><P>
+     不过这个用法已经废弃了，因为很容易混淆。
+    </P
+><P
+>     有时候我们动态地构造一个复合参数值很有用。
+     我们可以用 <TT
+CLASS="LITERAL"
+>ROW</TT
+> 构造器实现这个功能。
+     比如，我们可以调节传递给函数的数据：
+</P><PRE
+CLASS="SCREEN"
+>SELECT name, double_salary(ROW(name, salary*1.1, age, cubicle)) AS dream
+    FROM emp;</PRE
+><P>
+    </P
+><P
+>	我们也可以写一个返回复合类型的函数。
+	下面是一个返回一行 <TT
+CLASS="TYPE"
+>emp</TT
+> 函数的例子：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION new_emp() RETURNS emp AS $$
+    SELECT text 'None' AS name,
+        1000.0 AS salary,
+        25 AS age,
+        point '(2,2)' AS cubicle
+$$ LANGUAGE SQL;</PRE
+><P>
+
+	在这个例子中我们给每个字段都赋予了一个常量，
+	当然我们可以用任何计算或表达式来代替这些常量。
+	</P
+><P
+>	注意定义函数的两个重要的问题：
+
+     <P
+></P
+></P><UL
+><LI
+><P
+>	选择列表的顺序必须和与该复合类型相关的表中字段的顺序完全一样。
+	（象我们上面那样给字段的命名和系统无关。）
+       </P
+></LI
+><LI
+><P
+>	你必须对表达式进行类型转换以匹配复合类型的定义。
+	否则你将看到下面的错误信息：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="COMPUTEROUTPUT"
+>ERROR:  function declared to return emp returns varchar instead of text at column 1</TT
+></PRE
+><P>
+       </P
+></LI
+></UL
+><P>
+    </P
+><P
+>     另外一个定义同样函数的方法是：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION new_emp() RETURNS emp AS $$
+    SELECT ROW('None', 1000.0, 25, '(2,2)')::emp;
+$$ LANGUAGE SQL;</PRE
+><P>
+
+     这里我们写一个置返回一个对应复合类型字段的 <TT
+CLASS="COMMAND"
+>SELECT</TT
+>。
+     在这种情况下，这么做并没有任何好处，但是它在某些场合是一个很好用的东西
+     &mdash; 比如，如果我们需要通过调用另外一个返回需要的复合类型数值的函数来计算结果。
+    </P
+><P
+>     我们可以用两种方法来直接调用这个函数：
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT new_emp();
+
+         new_emp
+--------------------------
+ (None,1000.0,25,"(2,2)")
+
+SELECT * FROM new_emp();
+
+ name | salary | age | cubicle
+------+--------+-----+---------
+ None | 1000.0 |  25 | (2,2)</PRE
+><P>
+
+     第二种方法在 <A HREF="xfunc-sql.html#XFUNC-SQL-TABLE-FUNCTIONS" >Section 32.4.4</A
+> 里有更完整的描述。
+    </P
+><P
+>	在使用一个返回复合类型的函数的时候，你可能想从结果中只抽取一个字段。
+	你可以用下面的语法来做：
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT (new_emp()).name;
+
+ name
+------
+ None</PRE
+><P>
+
+	我们需要一个额外的圆括弧以防止分析器误解。
+	如果你想省略这对括弧，你会看见类似下面这样的东西：
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT new_emp().name;
+ERROR:  syntax error at or near "." at character 17
+LINE 1: SELECT new_emp().name;
+                         ^</PRE
+><P>
+    </P
+><P
+>	另外一个选择是使用函数表示法进行字段抽取。解释这些问题的简单方法是我们通常交互使用<TT
+CLASS="LITERAL"
+>attribute(table)</TT
+>和
+	<TT
+CLASS="LITERAL"
+>table.attribute</TT
+>的表示法。
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT name(new_emp());
+
+ name
+------
+ None</PRE
+><P>
+
+</P><PRE
+CLASS="SCREEN"
+>--
+-- 下面的与这句话相同：
+-- SELECT emp.name AS youngster FROM emp WHERE emp.age &lt; 30;
+--
+
+SELECT name(emp) AS youngster FROM emp WHERE age(emp) &lt; 30;
+
+ youngster
+-----------
+ Sam
+ Andy</PRE
+><P>
+    </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>      函数表示法和字段属性表示法之间的等效关系让我们可以使用复合类型上的函数来模拟<SPAN
+CLASS="QUOTE"
+>"计算得出的字段"</SPAN
+>。
+      <A NAME="AEN31550" ></A
+>
+      <A NAME="AEN31552" ></A
+>
+      比如，使用前面的 <TT
+CLASS="LITERAL"
+>double_salary(emp)</TT
+> 定义，
+      我们可以写
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT emp.name, emp.double_salary FROM emp;</PRE
+><P>
+
+      应用可以这么用而不用明确知道 <TT
+CLASS="LITERAL"
+>double_salary</TT
+> 并不是表中一个真实的字段。
+      （你也可以模拟试图上的计算得出的字段。）
+     </P
+></BLOCKQUOTE
+></DIV
+><P
+>	另外一个使用函数返回复合类型的情况是把结果传递给另外一个该行类型输入的函数：
+
+</P><PRE
+CLASS="SCREEN"
+>CREATE FUNCTION getname(emp) RETURNS text AS $$
+SELECT $1.name;
+$$ LANGUAGE SQL;
+
+SELECT getname(new_emp());
+ getname
+---------
+ None
+(1 row)</PRE
+><P>
+    </P
+><P
+>     另外一个把使用返回复合类型的函数的方法是把它当作一个表函数使用，如 <A HREF="xfunc-sql.html#XFUNC-SQL-TABLE-FUNCTIONS" >Section 32.4.4</A
+> 所述。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="XFUNC-OUTPUT-PARAMETERS" >32.4.3. 带输出参数的函数</A
+></H2
+><A NAME="AEN31564" ></A
+><P
+>     描述函数的结果的另外一种方法是把它定义成带有<I
+CLASS="FIRSTTERM"
+>输出参数</I
+>，
+     像下面的例子一样：
+
+</P><PRE
+CLASS="SCREEN"
+>CREATE FUNCTION add_em (IN x int, IN y int, OUT sum int)
+AS 'SELECT $1 + $2'
+LANGUAGE SQL;
+
+SELECT add_em(3,7);
+ add_em
+--------
+     10
+(1 row)</PRE
+><P>
+
+     这个版本和 <A HREF="xfunc-sql.html#XFUNC-SQL-BASE-FUNCTIONS" >Section 32.4.1</A
+> 里面的那个 <TT
+CLASS="LITERAL"
+>add_em</TT
+>
+     版本没有什么本质的区别。输出参数的真正价值在于它提供了定义返回多个字段的函数的便利方法。
+     比如，
+
+</P><PRE
+CLASS="SCREEN"
+>CREATE FUNCTION sum_n_product (x int, y int, OUT sum int, OUT product int)
+AS 'SELECT $1 + $2, $1 * $2'
+LANGUAGE SQL;
+
+ SELECT * FROM sum_n_product(11,42);
+ sum | product
+-----+---------
+  53 |     462
+(1 row)</PRE
+><P>
+
+     这里实际上发生的事情是我们为函数的结果创建了一个匿名的复合类型。
+     上面的例子和下面的有同样的最终结果
+
+</P><PRE
+CLASS="SCREEN"
+>CREATE TYPE sum_prod AS (sum int, product int);
+
+CREATE FUNCTION sum_n_product (int, int) RETURNS sum_prod
+AS 'SELECT $1 + $2, $1 * $2'
+LANGUAGE SQL;</PRE
+><P>
+
+     不过，不用操心独立的复合类型定义通常都会很方便。
+    </P
+><P
+>     请注意，从 SQL 里调用这样的函数的时候，输出参数并未包含在调用参出列表里。
+     这是因为 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 认为只有输入参数定义函数的调用签名。
+     这也意味着在类似删除函数这样的场合里，只有输入参数管用。我们可以用下列命令之一删除函数
+
+</P><PRE
+CLASS="SCREEN"
+>DROP FUNCTION sum_n_product (x int, y int, OUT sum int, OUT product int);
+DROP FUNCTION sum_n_product (int, int);</PRE
+><P>
+    </P
+><P
+>     参数可以标记为 <TT
+CLASS="LITERAL"
+>IN</TT
+>（缺省），
+     <TT
+CLASS="LITERAL"
+>OUT</TT
+>，或者 <TT
+CLASS="LITERAL"
+>INOUT</TT
+>。一个 <TT
+CLASS="LITERAL"
+>INOUT</TT
+>
+     参数可以当作输入参数（调用参数列表的一部分）和一个输出参数（结果记录类型的一部分）。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="XFUNC-SQL-TABLE-FUNCTIONS" >32.4.4. 当做表数据源的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 函数</A
+></H2
+><P
+>	所有 SQL 函数都可以在查询的 <TT
+CLASS="COMMAND"
+>FROM</TT
+> 子句里使用。
+	但是它对于返回复合类型的函数特别有用。如果该函数定义为返回一个基本类型，
+	那么表函数生成一个单字段表。如果该函数定义为返回一个复合类型，那么该表函数生成一个复合类型里每个属性组成的行。
+    </P
+><P
+>	这里是一个例子：
+
+</P><PRE
+CLASS="SCREEN"
+>CREATE TABLE foo (fooid int, foosubid int, fooname text);
+INSERT INTO foo VALUES (1, 1, 'Joe');
+INSERT INTO foo VALUES (1, 2, 'Ed');
+INSERT INTO foo VALUES (2, 1, 'Mary');
+
+CREATE FUNCTION getfoo(int) RETURNS foo AS $$
+    SELECT * FROM foo WHERE fooid = $1;
+$$ LANGUAGE SQL;
+
+SELECT *, upper(fooname) FROM getfoo(1) AS t1;
+
+ fooid | foosubid | fooname | upper
+-------+----------+---------+-------
+     1 |        1 | Joe     | JOE
+(1 rows)</PRE
+><P>
+
+	如这个例子显示的那样，我们可以象对待一个普通表的字段一样对待函数的结果字段。
+    </P
+><P
+>	请注意我们只从该函数中获取了一行。这是因为我们没有说 <TT
+CLASS="LITERAL"
+>SETOF</TT
+>。
+	这个问题我们在下一节描述。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN31591" >32.4.5. 返回集合的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 函数</A
+></H2
+><P
+>	如果一个 SQL 函数声明为返回
+	<TT
+CLASS="LITERAL"
+>SETOF <TT
+CLASS="REPLACEABLE"
+><I
+>sometype</I
+></TT
+></TT
+>。
+	这时候，该函数的最后的<TT
+CLASS="COMMAND"
+>SELECT</TT
+>查询一直执行到结束，并且它输出的每行都当做该结果集合的一个元素返回。
+    </P
+><P
+>	这个特性通常用于把函数放在<TT
+CLASS="LITERAL"
+>FROM</TT
+>子句里调用的时候。
+	这个时候函数返回的每一行都成为查询可见的该表的一行。
+	比如，假设表 <TT
+CLASS="LITERAL"
+>foo</TT
+> 有着和上面一样的内容，而我们说：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION getfoo(int) RETURNS setof foo AS $$
+    SELECT * FROM foo WHERE fooid = $1;
+$$ LANGUAGE SQL;
+
+SELECT * FROM getfoo(1) AS t1;</PRE
+><P>
+
+	这样我们得到：
+</P><PRE
+CLASS="SCREEN"
+> fooid | foosubid | fooname
+-------+----------+---------
+     1 |        1 | Joe
+     1 |        2 | Ed
+(2 rows)</PRE
+><P>
+    </P
+><P
+>	目前，返回集合的函数也可以在一个查询的选择列表里调用。
+	对于该查询自己生成的每一行，都会调用这个返回集合的函数，
+	并且相对该函数的结果集中的每个元素都会生成一个输出行。不过，
+	请注意，这个功能已经废弃了，在将来的版本中可能会被删除。
+	下面就是一个在选择列表中使用返回集合的函数的例子：
+
+</P><PRE
+CLASS="SCREEN"
+>CREATE FUNCTION listchildren(text) RETURNS SETOF text AS $$
+SELECT name FROM nodes WHERE parent = $1
+$$ LANGUAGE SQL;
+
+SELECT * FROM nodes;
+   name    | parent
+-----------+--------
+ Top       |
+ Child1    | Top
+ Child2    | Top
+ Child3    | Top
+ SubChild1 | Child1
+ SubChild2 | Child1
+(6 rows)
+
+SELECT listchildren('Top');
+ listchildren
+--------------
+ Child1
+ Child2
+ Child3
+(3 rows)
+
+SELECT name, listchildren(name) FROM nodes;
+  name  | listchildren
+--------+--------------
+ Top    | Child1
+ Top    | Child2
+ Top    | Child3
+ Child1 | SubChild1
+ Child1 | SubChild2
+(5 rows)</PRE
+><P>
+
+	在最后的<TT
+CLASS="COMMAND"
+>SELECT</TT
+>里，请注意没有出现<TT
+CLASS="LITERAL"
+>Child2</TT
+>，
+	<TT
+CLASS="LITERAL"
+>Child3</TT
+>等的行。
+	这是因为<TT
+CLASS="FUNCTION"
+>listchildren</TT
+> 为这些参数返回一个空集合，
+	因此不生成任何结果行。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN31609" >32.4.6. 多态的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 函数</A
+></H2
+><P
+>     <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 函数可以声明为接受并返回多态的类型 <TT
+CLASS="TYPE"
+>anyelement</TT
+> 和
+     <TT
+CLASS="TYPE"
+>anyarray</TT
+>。参阅 <A HREF="extend-type-system.html#EXTEND-TYPES-POLYMORPHIC" >Section 32.2.5</A
+> 获取有关多态函数的更多细节。
+     这里是一个多态的函数 <TT
+CLASS="FUNCTION"
+>make_array</TT
+>，它从两个任意数据类型元素中建立一个数组：
+</P><PRE
+CLASS="SCREEN"
+>CREATE FUNCTION make_array(anyelement, anyelement) RETURNS anyarray AS $$
+    SELECT ARRAY[$1, $2];
+$$ LANGUAGE SQL;
+
+SELECT make_array(1, 2) AS intarray, make_array('a'::text, 'b') AS textarray;
+ intarray | textarray
+----------+-----------
+ {1,2}    | {a,b}
+(1 row)</PRE
+><P>
+    </P
+><P
+>     请注意我们使用了类型转换 <TT
+CLASS="LITERAL"
+>'a'::text</TT
+> 声明参数是类型 <TT
+CLASS="TYPE"
+>text</TT
+>。
+     如果参数只是一个字串文本，这是要求的动作，否则它就会被当作类型 <TT
+CLASS="TYPE"
+>unknown</TT
+>，
+     并且 <TT
+CLASS="TYPE"
+>unknown</TT
+> 不是一种有效的类型。如果没有类型转换，那么就会看到类似下面这样的错误信息：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="COMPUTEROUTPUT"
+>ERROR:  could not determine "anyarray"/"anyelement" type because input has type "unknown"</TT
+></PRE
+><P>
+    </P
+><P
+>     PostgreSQL 允许有多态的参数的函数返回一个固定类型，但是反过来不行。比如：
+</P><PRE
+CLASS="SCREEN"
+>CREATE FUNCTION is_greater(anyelement, anyelement) RETURNS boolean AS $$
+    SELECT $1 &gt; $2;
+$$ LANGUAGE SQL;
+
+SELECT is_greater(1, 2);
+ is_greater
+------------
+ f
+(1 row)
+
+CREATE FUNCTION invalid_func() RETURNS anyelement AS $$
+    SELECT 1;
+$$ LANGUAGE SQL;
+ERROR:  cannot determine result data type
+DETAIL:  A function returning "anyarray" or "anyelement" must have at least one argument of either type.</PRE
+><P>
+    </P
+><P
+>     多形性可以用于那些有输出参数的函数。比如：
+</P><PRE
+CLASS="SCREEN"
+>CREATE FUNCTION dup (f1 anyelement, OUT f2 anyelement, OUT f3 anyarray)
+AS 'select $1, array[$1,$1]' LANGUAGE sql;
+
+SELECT * FROM dup(22);
+ f2 |   f3
+----+---------
+ 22 | {22,22}
+(1 row)</PRE
+><P>
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="xfunc.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="xfunc-overload.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >用户定义函数</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="extend.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >函数重载</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

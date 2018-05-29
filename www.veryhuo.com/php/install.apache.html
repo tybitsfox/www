@@ -1,0 +1,186 @@
+<HTML><HEAD><TITLE>Apache 服务器 1.x 版本</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="安装" HREF="installation.html"><LINK REL="PREVIOUS" TITLE="Servers-CGI/命令行" HREF="install.commandline.html"><LINK REL="NEXT" TITLE="Apache 服务器 2.x 版本" HREF="install.apache2.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="sect1" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="install.commandline.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 3. 安装</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="install.apache2.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="sect1"><H1 CLASS="sect1"><A NAME="install.apache"></A>Apache 服务器 1.x 版本</H1><P>&#13; 本节包括 Apache 下安装 PHP 的说明和提示，包括
+<A HREF="install.apache.html#install.apache.unix">Unix</A> 和
+<A HREF="install.apache.html#install.apache.windows">Windows</A>
+版本。我们在另外的页面也有
+<A HREF="install.apache2.html">Apache 2 的安装和说明</A>。
+</P><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="install.apache.unix"></A>Unix 下的 Apache 中安装 PHP 的详细资料</H2><P>&#13; 你可以根据<A HREF="install.configure.html">完整配置选项列表</A>在以下第 10
+行中加入你选择的参数。这里把具体版本号略去了以确保本说明的不会出错。你需要把下面的
+'xxx' 替换成你得到的文件中确切的数值。
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="install.apache.unix.longer"></A><P><B>例子 3-4.
+PHP 的 Apache 共享模块版本安装说明
+</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">1.  gunzip apache_xxx.tar.gz
+2.  tar -xvf apache_xxx.tar
+3.  gunzip php-xxx.tar.gz
+4.  tar -xvf php-xxx.tar
+5.  cd apache_xxx
+6.  ./configure --prefix=/www --enable-module=so
+7.  make
+8.  make install
+9.  cd ../php-xxx
+10. 现在，配置你的 PHP。这是你定制 PHP 的不同选项的时候，例如要
+    加载哪些扩展库。使用
+      ./configure --help
+    来列出可用的选项。在下面的示例中我们只是简单地配置 Apache 1
+    和 MySQL 支持。你的 apxs 的路径可能和此示例中的不同。
+      ./configure --with-mysql --with-apxs=/www/bin/apxs
+11. make
+12. make install
+    如果在安装之后你决定修改配置选项，那么只需重复以上最后三步。
+    只须重新启动 Apache 就可以使新模块生效。不需要重新编译 Apache。
+    注意除非特别指出，'make install' 总是会安装 PEAR，各种 PHP
+    工具例如 phpize，安装 PHP CLI 以及其它。
+13. 建立你的 php.ini 文件。
+      cp php.ini-dist /usr/local/lib/php.ini
+    你可以编辑 php.ini 来设置 PHP 选项。如果你想把 php.ini 放在
+    其它目录，在第 10 步加上以下选项：
+      --with-config-file-path=/path
+    如果你选择了 php.ini-recommended，确保阅读一下其中的变更说明，
+    因为这些会影响到 PHP 的行为。
+14. 编辑你的 httpd.conf 来加载 PHP 模块。在 LoadModule 语句右边的
+    路径必须指向你系统中 PHP 模块所在的路径。上面的 make install
+    步骤可能已经添加了，但还是检查确认一下。
+    对 PHP 4：
+      LoadModule php4_module        libexec/libphp4.so
+    对 PHP 5：
+      LoadModule php5_module        libexec/libphp5.so
+15. 在 httpd.conf 中加入 AddModule 部分，在 ClearModuleList 下面的
+    某处，加上这一句：
+    对 PHP 4：
+      AddModule mod_php4.c
+    对 PHP 5：
+      AddModule mod_php5.c
+16. 告诉 Apache 将哪些后缀作为 PHP 解析。例如，让 Apache 把 .php
+    后缀的文件解析为 PHP。可以将任何后缀的文件解析为 PHP，只要在
+    以下语句中加入并用空格分开。我们添加一个 .phtml 来示例。
+      AddType application/x-httpd-php .php .phtml
+    为了将 .phps 作为 PHP 的源文件进行语法高亮显示，还可以加上：
+      AddType application/x-httpd-php-source .phps
+17. 用你通常的过程启动 Apache。(你必须完全停止 Apache 再重新启动，
+    而不是用 HUP 或者 USR1 信号使 Apache 重新加载。)</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE><P>&#13; 根据你的 Unix 系统和 Apache 安装方法的不同，有很多方法停止和重启动
+Apache。以下是一些不同的 Apache/Unix 下重启动 Apache
+的典型命令。你需要把 <TT CLASS="literal">/path/to/</TT> 替换成你系统上的确切路径。
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN1367"></A><P><B>例子 3-5. 重启动 Apache 的示例命令</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="shell">1. 在一些 Linux 和 SysV 的变种下：
+/etc/rc.d/init.d/httpd restart
+
+2. 使用 apachectl 脚本：
+/path/to/apachectl stop
+/path/to/apachectl start
+
+3. httpdctl 和 httpsdctl（使用了 OpenSSL），类似 apachectl：
+/path/to/httpsdctl stop
+/path/to/httpsdctl start
+
+4. 使用了 mod_ssl，或其他 SSL 服务器，你可能需要手工重启动：
+/path/to/apachectl stop
+/path/to/apachectl startssl</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; apachectl 和 http(s)dctl 程序所在的路径在不同系统中通常不一样。如果你的系统中有
+<TT CLASS="literal">locate</TT> 或者 <TT CLASS="literal">whereis</TT> 或者
+<TT CLASS="literal">which</TT> 命令，那么可以帮你找到这些控制程序。
+</P><P>&#13; 编译 PHP 和 Apache 的不同例子还有：
+<DIV CLASS="informalexample"><A NAME="AEN1375"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="shell">./configure --with-apxs --with-pgsql</PRE></TD></TR></TABLE><P></P></DIV>
+</P><P>&#13; 这个配置将生成在 Apache 的 httpd.conf 文件中用 LoadModule 加载的
+<TT CLASS="filename">libphp4.so</TT> 共享库。而 PostgreSQL 支持将嵌入到
+<TT CLASS="filename">libphp4.so</TT> 库中。
+</P><P>&#13; <DIV CLASS="informalexample"><A NAME="AEN1381"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">./configure --with-apxs --with-pgsql=shared</PRE></TD></TR></TABLE><P></P></DIV>
+</P><P>&#13; 这个配置将生成 Apache 的 <TT CLASS="filename">libphp4.so</TT> 共享库，并且还生成
+<TT CLASS="filename">pgsql.so</TT> 共享库，可以在 <TT CLASS="filename">php.ini</TT> 文件中用
+extension 指令加载，或者在 PHP 脚本中用 <A HREF="function.dl.html"><B CLASS="function">dl()</B></A> 函数明确地加载。
+</P><P>&#13; <DIV CLASS="informalexample"><A NAME="AEN1389"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">./configure --with-apache=/path/to/apache_source --with-pgsql</PRE></TD></TR></TABLE><P></P></DIV>
+</P><P>&#13; 这个配置将生成 <TT CLASS="filename">libmodphp4.a</TT> 库，<TT CLASS="filename">mod_php4.c</TT>
+和一些相关的文件并且拷贝到 Apache 源程序目录中的 <TT CLASS="literal">src/modules/php4</TT>
+目录下。然后用 <TT CLASS="literal">--activate-module=src/modules/php4/libphp4.a</TT>
+编译 Apache，Apache 编译系统会生成 <TT CLASS="filename">libphp4.a</TT>
+并且将其静态地连接到 <TT CLASS="filename">httpd</TT> 程序中。PostgreSQL
+支持也直接包括在这个 <TT CLASS="filename">httpd</TT>
+程序中了，因此最终结果是单一的一个包括了所有 Apache 和 PHP 支持的
+<TT CLASS="filename">httpd</TT> 可执行文件。
+</P><P>&#13; <DIV CLASS="informalexample"><A NAME="AEN1401"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">./configure --with-apache=/path/to/apache_source --with-pgsql=shared</PRE></TD></TR></TABLE><P></P></DIV>
+</P><P>&#13; 这个配置和上面一样 － 除了没有在最后的 <TT CLASS="filename">httpd</TT>
+可执行文件中包括 PostgreSQL 的支持以及生成了一个 <TT CLASS="filename">pgsql.so</TT>
+共享库以外。该共享库可以在 <TT CLASS="filename">php.ini</TT> 文件中或者用 <A HREF="function.dl.html"><B CLASS="function">dl()</B></A> 函数加载。
+</P><P>&#13; 当选择不同的方法编译 PHP 时，需要考虑每种方法的优势和缺点。用共享对象方式编译
+PHP 意味着可以单独编译 Apache，并且不用在添加或修改了 PHP
+的时候重新编译所有程序。用内置方法编译 PHP（静态方式）意味着
+PHP 可以加载和运行得更快。更多信息见 Apache 的
+<A HREF="http://httpd.apache.org/docs/dso.html" TARGET="_top">DSO 支持页面</A>。
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Apache 默认的 httpd.conf 文件中目前包括类似如下的内容：
+<DIV CLASS="informalexample"><A NAME="AEN1412"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">User nobody
+Group "#-1"</PRE></TD></TR></TABLE><P></P></DIV>
+除非你把它修改成“Group nogroup”或者其它类似的（“Group daemon”也很通用），PHP
+将不能打开文件。
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+确认在使用 <TT CLASS="option">--with-apxs=/path/to/apxs</TT> 时指向 Apache 安装后的目录中的
+apxs。绝对不能用 Apache 源程序中的 apxs 而要用安装后的 apxs。
+</P></BLOCKQUOTE></DIV></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="install.apache.windows"></A>Windows 下在 Apache 1.3.x 中安装 PHP</H2><P>&#13; 有两种方式使 PHP 工作于 Windows 下的 Apache 1.3.x。一种是
+CGI 方式（php.exe），另一种是使用 Apache 模块 DLL。不管哪种方式都需要停止
+Apache，编辑
+<TT CLASS="filename">httpd.conf</TT> 来配置 Apache 以加入PHP支持。
+</P><P>&#13; 值得在这里指出现在 Windows 下的 SAPI
+模块更加稳定了，我们推荐使用模块方式，因为更加透明和安全。
+</P><P>&#13; 尽管有几种不同方法在 Apache 下配置
+PHP，但是对新手来说还是非常简单易用的。有关更多的 httpd.conf 配置指令请参考 Apache 文档。
+</P><P>&#13; 如果你按照<A HREF="install.windows.html#install.windows.manual">手工安装步骤</A>一节中的说明把
+PHP 解压缩到了 <TT CLASS="filename">c:\php\</TT> 目录下，那么需要加入以下三行到 Apache 配置文件中以 CGI 方式安装：
+<P></P><UL><LI><P>&#13; <TT CLASS="literal">&#13; ScriptAlias /php/ "c:/php/"
+</TT>
+</P></LI><LI><P>&#13; <TT CLASS="literal">&#13; AddType application/x-httpd-php .php .phtml
+</TT>
+</P></LI><LI><P>&#13; <TT CLASS="literal">&#13; Action application/x-httpd-php "/php/php.exe"
+</TT>
+</P></LI></UL>
+注意上面的第二行在原来的 <TT CLASS="filename">httpd.conf</TT>
+中就有的，不过被注释了。还有记住用你自己放置 PHP 的路径替换
+<TT CLASS="filename">c:/php/</TT>。
+</P><DIV CLASS="warning"><P></P><TABLE CLASS="warning" BORDER="1" WIDTH="100%"><TR><TD ALIGN="CENTER"><B>警告</B></TD></TR><TR><TD ALIGN="LEFT"><P>&#13; 在 CGI 方式下，你的服务器可能会受到几种攻击的影响。阅读
+<A HREF="security.cgi-bin.html">CGI 安全</A>一节学习如何防止攻击。
+</P></TD></TR></TABLE></DIV><P>&#13; 如果你想在 Apache 中用模块方式使用 PHP，确认把 <TT CLASS="filename">php4ts.dll</TT>
+拷贝到 <TT CLASS="filename">windows/system</TT>（Windows 9x/Me）或者
+<TT CLASS="filename">winnt/system32</TT>（Windows NT/2000）或者
+<TT CLASS="filename">windows/system32</TT>（Windows XP）目录下，覆盖原来的文件。然后在
+Apache 配置文件 <TT CLASS="filename">httpd.conf</TT> 中加入以下两行：
+<P></P><UL><LI><P>&#13; 用自己喜爱的编辑器打开 <TT CLASS="filename">httpd.conf</TT>，找到 <TT CLASS="literal">LoadModule</TT>
+指令的部分，在其列表的<SPAN CLASS="emphasis"><I CLASS="emphasis">最后部分</I></SPAN>加上如下一行，对
+PHP 4：<TT CLASS="literal">LoadModule php4_module c:/php/sapi/php4apache.dll</TT>，对
+PHP 5：<TT CLASS="literal">LoadModule php5_module "c:/php/sapi/php5apache.dll"</TT>。
+</P></LI><LI><P>&#13; 你可能发现在用 Windows Installer 安装了
+Apache 之后需要为用
+<TT CLASS="literal">AddModule</TT> 指令定义
+<TT CLASS="filename">mod_php4.c</TT>。尤其是在定义了
+<TT CLASS="literal">ClearModuleList</TT>
+指令时格外重要，向下滚动几行可以找到该指令。你将会看到
+<TT CLASS="literal">AddModule</TT>
+项目的列表，在列表的<SPAN CLASS="emphasis"><I CLASS="emphasis">最后</I></SPAN>加上这一行：<TT CLASS="literal">AddModule mod_php4.c</TT>，对于
+PHP 5 则为
+<TT CLASS="literal">AddModule mod_php5.c</TT>。
+</P></LI><LI><P>
+搜索类似
+<TT CLASS="literal"># AddType allows you to tweak mime.types</TT>
+的短语，你会找到一些
+<TT CLASS="literal">AddType</TT>
+的项目，并且在列表的<SPAN CLASS="emphasis"><I CLASS="emphasis">最后</I></SPAN>有这一行：
+<TT CLASS="literal">AddType application/x-httpd-php .php</TT>。你可以在这里选择任何想用
+PHP 解析的后缀。.php 只是所建议的一个。甚至可以包括 .html，也可以加上
+.php3 来向下兼容。
+</P></LI></UL>
+</P><P>&#13; 修改了配置文件之后记住重新启动 Apache，例如如果你的 Apache 是作为
+Windows 的服务安装的，<B CLASS="command">NET STOP APACHE</B> 后面接上
+<B CLASS="command">NET START APACHE</B>。或者用你通常使用的快捷方式。
+</P><P>&#13; 有两种方式使用源程序语法彩色显示特色，但是取决于你的安装方法。如果你配置了
+Apache 的 SAPI 模块方式使用
+PHP，那么在 <TT CLASS="filename">httpd.conf</TT> 中（和插入
+<TT CLASS="literal">AddType application/x-httpd-php .php</TT> 是同一个位置）加入下面一行就可以使用本特色：<TT CLASS="literal">AddType application/x-httpd-php-source .phps</TT>。
+</P><P>&#13; 如果你用 CGI 方式使用 PHP，那你需要用 <A HREF="function.show-source.html"><B CLASS="function">show_source()</B></A>
+函数。建立一个 PHP 文件，加入以下代码：<TT CLASS="literal">&#60;?php
+show_source ("original_php_script.php"); ?&#62;</TT>。用你想要显示源代码的文件名替换掉
+<TT CLASS="literal">original_php_script.php</TT>。
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+在 Windows-Apache 组合中，所有路径中的反斜线例如
+"c:\directory\file.ext" 都必须转换成斜线，如 "c:/directory/file.ext"。
+</P></BLOCKQUOTE></DIV></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="install.commandline.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="install.apache2.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Servers-CGI/命令行</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="installation.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Apache 服务器 2.x 版本</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

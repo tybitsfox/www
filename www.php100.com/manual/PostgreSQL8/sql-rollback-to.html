@@ -1,0 +1,264 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>ROLLBACK TO PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="ROLLBACK PREPARED" HREF="sql-rollback-prepared.html"><LINK REL="NEXT" TITLE="SAVEPOINT" HREF="sql-savepoint.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-rollback-prepared.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-rollback-prepared.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-savepoint.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-savepoint.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-ROLLBACK-TO" >ROLLBACK TO</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN47510" ></A
+><H2
+>Name</H2
+>ROLLBACK TO SAVEPOINT&nbsp;--&nbsp;回滚到一个保存点</DIV
+><A NAME="AEN47513" ></A
+><A NAME="AEN47515" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN47518" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>ROLLBACK [ WORK | TRANSACTION ] TO [ SAVEPOINT ] <TT
+CLASS="REPLACEABLE"
+><I
+>savepoint_name</I
+></TT
+></PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47521" ></A
+><H2
+>描述</H2
+><P
+>   回滚所有指定保存点建立之后执行的命令。保存点仍然有效，并且需要时可以再次回滚到该点。
+  </P
+><P
+>   <TT
+CLASS="COMMAND"
+>ROLLBACK TO SAVEPOINT</TT
+> 隐含地删除所有在该命名保存点之后建立的保存点。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47526" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>savepoint_name</I
+></TT
+></DT
+><DD
+><P
+>      回滚截至的保存点。
+     </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47534" ></A
+><H2
+>注意</H2
+><P
+>   使用 <A HREF="sql-release-savepoint.html" ><I
+>RELEASE SAVEPOINT</I
+></A
+> 删除一个保存点，
+   而不会抛弃这个保存点建立之后执行的命令结果。
+  </P
+><P
+>   声明一个还没有建立的保存点名字是一个错误。
+  </P
+><P
+>   在保存点方面，游标有一些非事务性的行为。任何在保存点里打开的游标都会在回滚掉这个保存点之后关闭。
+   如果一个前面打开了的游标在保存点里面，并且游标被一个 <TT
+CLASS="COMMAND"
+>FETCH</TT
+> 命令影响，
+   而这个保存点稍后回滚了，那么这个游标的位置仍然在 <TT
+CLASS="COMMAND"
+>FETCH</TT
+> 让它指向的位置
+   （也就是，<TT
+CLASS="COMMAND"
+>FETCH</TT
+> 不会被回滚）。
+   关闭一个游标的行为也不会被回滚给撤消掉。
+   如果一个游标的操作导致事务回滚，那么这个游标就会置于不可执行状态，
+   所以，尽管一个事务可以用 <TT
+CLASS="COMMAND"
+>ROLLBACK TO SAVEPOINT</TT
+> 重新恢复，但是游标不能再使用了。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47544" ></A
+><H2
+>例子</H2
+><P
+>   撤销 <TT
+CLASS="LITERAL"
+>my_savepoint</TT
+> 建立之后执行的命令的影响：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>ROLLBACK TO SAVEPOINT my_savepoint;</PRE
+><P>
+  </P
+><P
+>   游标位置不受保存点回滚的影响：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>BEGIN;
+
+DECLARE foo CURSOR FOR SELECT 1 UNION SELECT 2;
+
+SAVEPOINT foo;
+
+FETCH 1 FROM foo;
+ ?column? 
+----------
+        1
+
+ROLLBACK TO SAVEPOINT foo;
+
+FETCH 1 FROM foo;
+ ?column? 
+----------
+        2
+
+COMMIT;</PRE
+><P>
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47551" ></A
+><H2
+>兼容性</H2
+><P
+>   SQL:2003 标准声明关键字 <TT
+CLASS="LITERAL"
+>SAVEPOINT</TT
+> 是必须的。
+   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 和 <SPAN
+CLASS="PRODUCTNAME"
+>Oracle</SPAN
+> 允许省略 <TT
+CLASS="LITERAL"
+>SAVEPOINT</TT
+> 关键字。
+   SQL:2003 只允许 <TT
+CLASS="LITERAL"
+>WORK</TT
+>，不允许 <TT
+CLASS="LITERAL"
+>TRANSACTION</TT
+> 作为 <TT
+CLASS="LITERAL"
+>ROLLBACK</TT
+> 后面的噪音键字。
+   还有，SQL:2003 有一个可选的子句 <TT
+CLASS="LITERAL"
+>AND [ NO ] CHAIN</TT
+>，
+   目前 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 还不支持。否则，这个命令完全兼容 SQL 标准。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47563" ></A
+><H2
+>又见</H2
+><A HREF="sql-begin.html" ><I
+>BEGIN</I
+></A
+>, <A HREF="sql-commit.html" ><I
+>COMMIT</I
+></A
+>, <A HREF="sql-release-savepoint.html" ><I
+>RELEASE SAVEPOINT</I
+></A
+>, <A HREF="sql-rollback.html" ><I
+>ROLLBACK</I
+></A
+>, <A HREF="sql-savepoint.html" ><I
+>SAVEPOINT</I
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-rollback-prepared.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-savepoint.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >ROLLBACK PREPARED</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >SAVEPOINT</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

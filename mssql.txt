@@ -1,0 +1,253 @@
+<a name=hack13></a>整理下mssql2005的基本应用
+
+一、odbc编程使用mssql:</font><font size=2 color=black>
+使用odbc的好处：可以使用相同的代码就能对access,txt,mssql,mysql,dbase,visual foxpro,oracle数据库进行操作，而需要修改的仅仅是
+连接字符串：
+access   "ODBC;Driver={microsoft   access   driver(*.mdb)};dbq=*.mdb;uid=admin;pwd=pass; "   
+dBase     "Driver={microsoft   dbase   driver(*.dbf)};driverid=277;dbq=------------; "   
+Oracle     "Driver={microsoft   odbc   for   oracle};server=oraclesever.world;uid=admin;pwd=pass; "   
+MSSQL   server   "ODBC;Driver={sql   server};server=servername;database=dbname;uid=sa;pwd=pass; "   
+MS   text     "Driver={microsoft   text   driver(*.txt;   *.csv)};dbq=-----;extensions=asc,csv,tab,txt;Persist SecurityInfo=false; "   
+Visual   Foxpro   "Driver={microsoft   Visual   Foxpro   driver};sourcetype=DBC;sourceDB=*.dbc;Exclusive=No; "   
+MySQL   "Driver={mysql};database=yourdatabase;uid=username;pwd=yourpassword;option=16386; "
+通过对access和mssql的使用发现，这种操作甚至连数据源都无需设置。而对于ADO的操作方式鄙人还是鄙视之。
+OLEDB的连接字符串为：
+OLEDB链接 
+适合的数据库类型   链接方式   
+access   "Provider=microsoft.jet.oledb.4.0;data   source=your_database_path;user   id=admin;password=pass; "   
+Oracle   "Provider=OraOLEDB.Oracle;data   source=dbname;user   id=admin;password=pass; "   
+MS   SQL   Server   "Provider=SQLOLEDB;data   source=machinename;initial   catalog=dbname;userid=sa;password=pass; "   
+MS   text     "Provider=microsof.jet.oledb.4.0;data   source=your_path;Extended   Properties 'text;FMT=Delimited ' "
+</font><font color=blue size=4>
+二、mssql的安装：</font><font size=2 color=black>
+mssql2005的安装盘大小约为一G，由于完全安装需要C盘至少1.7G的空闲空间，我的本本没有那么多的空间。只能安装基本sqlserver，而可视化
+的操作管理工具：SQL Server Management Studio无法安装，所以使用中队数据库的维护和管理可使用sqlcmd命令。这样只需2、300M的空间即
+可，而且使用命令行操作更符合我的风格。^_^
+</font><font color=blue size=4>
+三、sqlcmd的基本应用：</font><font size=2 color=black>
+（1）sqlcmd -S localhost -d databasename -U username -P password -q SQL_command -v var="temp_variable" -i script_filename
+这是最基本的应用，其中：
+	-S 指定 服务器地址或名称，连接本地数据库时可为空或localhost
+	-d 指定连接的数据库名称
+	-U 用户名
+	-P 密码
+	-q 直接执行的SQL语句，使用-Q时，执行完后立即退出sqlcmd
+	-v 指定需要使用的变量
+	-i 指定要执行的脚本文件名
+
+（2）基本操作和查询命令：
+	查看当前所有的数据库名称：select name from sys.databases /go
+	选择待操作的数据库：use dbname /go
+	查看当前数据库中的表：select name from sys.tables /go
+	察看表结构：select column_name,data_type from information_schema.columns where table_name = '表名'
+	创建一个数据库：create database db1 /go
+	创建一个表：create table tb01(vname int,vname1 varchar(20),...) /go
+	插入一条记录：insert into tb01(vname,vname1,...) values(var1,var2,...) /go
+	把数据从一个表插入到另一个表：insert into 表名 (字段名) select (对应字段) from 表名2 where 条件
+	实例：
+	insert into Consult (StudentName,Birthday,Sex,Address,Tel) select Name,Birthday,Sex,Address,Tel from Student where StudentId=1
+	查询其他命令：:help
+	将执行结果重定向至文件：:out  filename
+	设置变量：:setvar var_name  value
+	执行脚本：:r script_filename
+
+（3）使用excel中的数据批量导入数据库：
+	1、在使用excel中的数据之前需要进行下列准备工作：
+	（1）启用Ad Hoc Distributed Queries：
+	在sqlcmd中运行：
+	exec sp_configure 'show advanced options',1
+	reconfigure
+	exec sp_configure 'Ad Hoc Distributed Queries',1
+	reconfigure
+	（2）为了安全使用完成后，关闭Ad Hoc Distributed Queries：
+	exec sp_configure 'Ad Hoc Distributed Queries',0
+	reconfigure
+	exec sp_configure 'show advanced options',0
+	reconfigure
+	2、在sqlcmd中查询excel的记录：
+	SELECT * FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0','Data Source="c:\book1.xls";
+	User ID=Admin;Password=;Extended properties=Excel 5.0')...[Sheet1$]  /go
+	如果查询成功，则可以进行数据导入。
+	3、数据导入：在导入前，需要确定你当前所操作的数据库是否是目标数据库，可以使用use dbname
+	指定目标数据库，然后运行：
+	SELECT * into newtable FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0',
+	'Data Source="c:\book1.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...[Sheet1$]
+	即可完成数据库的导入。	
+
+（4）导出为excel:
+	1>insert into OpenDataSource('Microsoft.Jet.OLEDB.4.0','Data source="d:\bbbb.xls";Extended properties=Excel 5.0')...[Sheet1$]
+	2>select * from SJ001HN
+	3>go
+	使用该命令前需要在d盘建立bbbb.xls文件，并且在文件的第一行写入与数据库相应列的名称，还有如果数据量大，请使用where限制下获取的记录条数。
+
+（5）直接将库文件(*.mdf)导入数据库的方法：
+	导入mdf文件的两种方法：
+	1： 在企业管理器里面的菜单 操作-》所有任务-》附加数据库里面，根据需求填写就搞定了。
+	2：在查询分析器里执行如下语句
+	exec sp_attach_db '数据库名','mdf文件路径'
+	比如你的数据库名字为data.mdf文件的路径是d:\data.mdf，就可以用下面的代码搞定
+	exec sp_attach_db 'data','d:\data.mdf'
+	exec sp_attach_db 'data','d:\data.mdf','d:\data.ldf'
+（6）数据的备份与还原：
+	1、备份：
+	sqlcmd -S localhost -U sa -P asdf1234 -d master -Q "backup database env01 to disk='d:\back\env01.bak'"
+	2、还原：
+	sqlcmd -S localhost -U sa -P asdf1234 -d master -Q "restore database env01 from disk='d:\back\env01.bak'"
+（7）其它：
+	按日期查询数据库中记录：
+	select * from SJ001HN where convert(varchar(50),DATE_TIME,20) like '2009-02-13%'
+
+	使用变量执行Sql脚本:
+	sqlcmd -S localhost -U sa -P sa -v tablename="SJ001HN" -d env01
+	1>select * from $(tablename) where convert(varchar(50),DATE_TIME,20) like '2009-01-22%'
+	2>go
+----------------------------------------------------------------------------------------------------------------------------------------------
+二、sqlcmd的基本应用
+1、连接数据库：sqlcmd -S 【localhost】-d databasename 
+本地连接时，如不指定数据库可直接：sqlcmd，更多的参数可参考相关文章。
+2、查看当前所有的数据库名称：select 【name】 from sys.databases /go
+3、选择待操作的数据库：use dbname /go
+4、查看当前数据库中的表：select 【name】 from sys.objects where type='U' /go
+      or		 select name from sys.tables /go
+5、创建一个数据库：create database db1 /go
+6、创建一个表：create table tb01(vname int,vname1 varchar(20),...) /go
+7、插入一条记录：insert into tb01(vname,vname1,...) values(var1,var2,...) /go
+8、查询其他命令：:help
+三、使用excel中的数据批量导入数据库：
+1、在使用excel中的数据之前需要进行下列准备工作：
+（1）启用Ad Hoc Distributed Queries：
+在sqlcmd中运行：
+exec sp_configure 'show advanced options',1
+reconfigure
+exec sp_configure 'Ad Hoc Distributed Queries',1
+reconfigure
+（2）为了安全使用完成后，关闭Ad Hoc Distributed Queries：
+exec sp_configure 'Ad Hoc Distributed Queries',0
+reconfigure
+exec sp_configure 'show advanced options',0
+reconfigure
+2、在sqlcmd中查询excel的记录：
+SELECT * FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0','Data Source="c:\book1.xls";
+User ID=Admin;Password=;Extended properties=Excel 5.0')...[Sheet1$]  /go
+如果查询成功，则可以进行数据导入。
+3、数据导入：在导入前，需要确定你当前所操作的数据库是否是目标数据库，可以使用use dbname
+指定目标数据库，然后运行：
+SELECT * into newtable FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0',
+'Data Source="c:\book1.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...[Sheet1$]
+即可完成数据库的导入。
+
+
+
+
+SQL2000系统表的应用
+--1：获取当前数据库中的所有用户表
+
+select Name from sysobjects where xtype='u' and status>=0
+
+--2：获取某一个表的所有字段
+
+select name from syscolumns where id=object_id('表名')
+
+--3：查看与某一个表相关的视图、存储过程、函数
+
+select a.* from sysobjects a, syscomments b where a.id = b.id and b.text like '%表名%'
+
+--4：查看当前数据库中所有存储过程
+
+select name as 存储过程名称 from sysobjects where xtype='P'
+
+--5：查询用户创建的所有数据库
+
+select * from master..sysdatabases D where sid not in(select sid from master..syslogins where name='sa')
+
+或者
+
+select dbid, name AS DB_NAME from master..sysdatabases where sid <> 0x01
+
+--6：查询某一个表的字段和数据类型
+
+select column_name,data_type from information_schema.columns
+where table_name = '表名'
+
+--7:取得表字段的描述
+select name,
+(select value from sysproperties where id = syscolumns.id and smallid=syscolumns.colid) as 描述
+from syscolumns where id=object_id('表名')
+
+--8:取得表字段长度：
+select a.name,b.length from syscolumns a,systypes b where a.xtype=b.xtype
+----------------------------------------------------------------------------------------------------------------------------------------------
+1、你可以用SQLCMD执行交互式动作，如：
+
+C:\sqlcmd>sqlcmd 
+1> SELECT name from sys.databases 
+2> GO
+
+你也可以试着键入如下命令，现实服务器列表
+1>:ServerList
+
+SERVERS:
+WUYZ
+
+1>如果想看其他命令的使用，可以键入:Help /? 
+
+2、执行SQL脚本文件
+
+你可以在SQLCMD命令上加入参数I来执行SQL脚本文件，例如：
+C:\sqlcmd>sqlcmd -i test.sql
+
+上面的I选项允许你执行一个脚本文件，另外，你也可以指定O选项，把命令的输出导出到指定文件,当然，我们也可以在代码中指定输出结果，如下
+C:\sqlcmd>sqlcmd 
+1> :out output.txt
+2> :r test.sql 
+3、在脚本中使用变量
+
+SQLCMD支持可以在脚本中接收用户传入的变量信息，如下面语句：
+SET NOCOUNT ON 
+Select $(Cols) from $(tablename) 
+GO
+
+上面语句请求2个参数，我们可以通过指定相应的参数信息传给脚本，如下：
+C:\sqlcmd>sqlcmd -i test.sql -o Output.txt -v cols="name,object_id,create_date" tablename="sys.objects"
+
+上面语句的用途是：执行TEST.SQL脚本文件，并把输出的信息输出到OUTPUT.TXT文件中，并分别指定了COLS,TABLENAME的参数值
+</font><font color=blue size=4>
+4、在脚本中设置变量的值</font><font size=2 color=black>
+
+除了通过外部传入参数的值外，还可以在内部设置参数的值，如下面例子
+e:\sqlcmd\backuptemplate.sql
+use master
+backup database [$(db)] to disk='$(file)'
+e:\sqlcmd\backupsingle.sql
+:setvar db msdb
+:setvar file c:\temp\msdb.bak
+:r e:\sqlcmd\backuptemplate.sql
+如果你想知道当然定义了哪些变量，可以使用:listvar命令来显示
+
+5、mssql数据库非本机备份还原的方法
+1、使用mssql系统管理工具，右键点击‘数据库’，选择还原数据库->选择‘目标数据库’->选择‘数据源’，指定待还原的bak文件->确定，还原。
+
+2、使用sqlcmd命令还原：
+备份：backup database env01 to disk='c:\env01.bak'
+
+还原：首先查看原数据库文件名称：restore filelistonly from disk='c:\env01.bak'
+例如我的数据库可以看到：EnviSYSBak_Data (mdf文件) 和 EnviSYSBak_Log (ldf文件) 
+将该数据库迁移至新服务器上后，准备将数据库单独存放在e:\mssql_data目录下，
+restore database env01 from disk = 'c:\env01.bak' 
+with move 'EnviSYSBak_Data' to 'e:\mssql_data\env01.mdf',
+move 'EnviSYSBak_Log' to 'e:\mssql_data\env01.ldf'
+go
+这样就可以成功迁移。
+--如果遇到页面错误乃至不能还原，可用以下误句强制还原，跳过页面错误：
+
+RESTORE DATABASE dbname
+
+FROM DISK='backupset_file'
+
+WITH CONTINUE_AFTER_ERROR
+
+ 
+
+--还原后用DBCC CHECKDB 修复数据库。
+
+--注意：由于原始的备份集中有页面错误，还原后会有部分数据丢失。</font>

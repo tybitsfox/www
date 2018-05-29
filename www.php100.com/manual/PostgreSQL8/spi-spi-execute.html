@@ -1,0 +1,558 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>SPI_execute PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="接口函数" HREF="spi.html#SPI-INTERFACE"><LINK REL="PREVIOUS" TITLE="SPI_pop" HREF="spi-spi-pop.html"><LINK REL="NEXT" TITLE="SPI_exec" HREF="spi-spi-exec.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="spi-spi-pop.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="spi-spi-pop.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="spi-spi-exec.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="spi-spi-exec.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SPI-SPI-EXECUTE" >SPI_execute</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN36788" ></A
+><H2
+>Name</H2
+>SPI_execute&nbsp;--&nbsp;执行一条命令</DIV
+><A NAME="AEN36791" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN36793" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>int SPI_execute(const char * <TT
+CLASS="PARAMETER"
+>command</TT
+>, bool <TT
+CLASS="PARAMETER"
+>read_only</TT
+>, long <TT
+CLASS="PARAMETER"
+>count</TT
+>)</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN36798" ></A
+><H2
+>描述</H2
+><P
+>   <TT
+CLASS="FUNCTION"
+>SPI_exec</TT
+> 执行声明的 SQL 命令获取 <TT
+CLASS="PARAMETER"
+>count</TT
+> 行。
+   如果 <TT
+CLASS="PARAMETER"
+>read_only</TT
+> 为真，命令必须是只读的，因此可以略微降低一些执行的开销。
+  </P
+><P
+>   这个函数只能在已连接的过程中调用。
+  </P
+><P
+>   如果 <TT
+CLASS="PARAMETER"
+>count</TT
+> 是零，则在命令适合的所有行上执行。
+   如果 <TT
+CLASS="PARAMETER"
+>count</TT
+> 大于 0，那么命令执行的行数将被限制（很像一个 <TT
+CLASS="LITERAL"
+>LIMIT</TT
+> 子句）。
+   比如，
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SPI_execute("INSERT INTO foo SELECT * FROM bar", false, 5);</PRE
+><P>
+   将只允许最多 5 行插入表中。
+  </P
+><P
+>   你可以在一个字串里传递多个命令。
+   <TT
+CLASS="FUNCTION"
+>SPI_execute</TT
+> 返回最后执行的命令的结果。
+   <TT
+CLASS="PARAMETER"
+>count</TT
+> 的限制独立地应用于每一个命令，
+   但是不会应用于规则生成的隐藏命令。
+  </P
+><P
+>   如果 <TT
+CLASS="PARAMETER"
+>read_only</TT
+> 是 <TT
+CLASS="LITERAL"
+>false</TT
+>，
+   <TT
+CLASS="FUNCTION"
+>SPI_execute</TT
+> 递增命令计数器并且在执行字串里的每个命令之前计算一个新的<SPAN
+CLASS="QUOTE"
+>"快照"</SPAN
+>。
+   如果当前事务的隔离级别是<TT
+CLASS="LITERAL"
+>SERIALIZABLE</TT
+>，这个快照实际上并不改变，
+   但是在 <TT
+CLASS="LITERAL"
+>READ COMMITTED</TT
+> 模式里，这个快照更新允许每个命令看到其它会话的事务提交的结果。
+   这样实际上是为了修改数据库的命令有一致的行为。
+  </P
+><P
+>   如果 <TT
+CLASS="PARAMETER"
+>read_only</TT
+> 是 <TT
+CLASS="LITERAL"
+>true</TT
+>，
+   <TT
+CLASS="FUNCTION"
+>SPI_execute</TT
+> 并不更新快照或者命令计数器，并且它指允许简单的 <TT
+CLASS="COMMAND"
+>SELECT</TT
+>
+   命令出现在命令字串里。这个命令使用为周围的查询建立起来的快照执行。
+   这个执行模式比读/写模式执行得略微块些，因为它消除了每个命令的一些开销。
+   并且它还允许制作真正<I
+CLASS="FIRSTTERM"
+>稳定的</I
+>函数：因为随后的执行都将使用同一个快照，
+   结果里不会有改变。
+  </P
+><P
+>   通常，在同一个使用 SPI 的函数里混杂只读和读写命令是不明智的；
+   那样可能导致非常混乱的行为，因为只读的查询不能看到任何读写的查询做的数据库更新。
+  </P
+><P
+>   （最后）一条命令执行返回的结果的实际行数会放在全局的变量 <TT
+CLASS="VARNAME"
+>SPI_processed</TT
+> 里
+   （除非函数返回的值是 <TT
+CLASS="SYMBOL"
+>SPI_OK_UTILITY</TT
+>）。如果函数的返回值是 <TT
+CLASS="SYMBOL"
+>SPI_OK_SELECT</TT
+>，
+   那么你可以使用全局指针 <TT
+CLASS="LITERAL"
+>SPITupleTable *SPI_tuptable</TT
+> 访问结果行。
+  </P
+><P
+>   结构 <TT
+CLASS="STRUCTNAME"
+>SPITupleTable</TT
+> 是这样定义的：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct
+{
+    MemoryContext tuptabcxt;    /* 结果表的内存环境 */
+    uint32      alloced;        /* 分配的 vals 的数目 */
+    uint32      free;           /* 空闲的 vals 数目 */
+    TupleDesc   tupdesc;        /* 行描述符 */
+    HeapTuple  *vals;           /* 数据行 */
+} SPITupleTable;</PRE
+><P>
+   <TT
+CLASS="STRUCTFIELD"
+>vals</TT
+> 是一个指向数据行的的指针数组。
+   （有效记录的数目由 <TT
+CLASS="VARNAME"
+>SPI_processed</TT
+> 给出）。
+   <TT
+CLASS="STRUCTFIELD"
+>tupdesc</TT
+> 是一个行描述符，你可以传递给 SPI 函数处理这些数据行。
+   <TT
+CLASS="STRUCTFIELD"
+>tuptabcxt</TT
+>，<TT
+CLASS="STRUCTFIELD"
+>alloced</TT
+>，和 <TT
+CLASS="STRUCTFIELD"
+>free</TT
+> 是 SPI 的内部字段，并非给 SPI 调用者使用的。
+  </P
+><P
+>   <TT
+CLASS="FUNCTION"
+>SPI_finish</TT
+> 释放所有在当前过程中分配的 <TT
+CLASS="STRUCTNAME"
+>SPITupleTable</TT
+>s。
+   如果你已经处理完特定的结果表，那么可以更早地释放它，方法是调用 <TT
+CLASS="FUNCTION"
+>SPI_freetuptable</TT
+>。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN36845" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>const char * <TT
+CLASS="PARAMETER"
+>command</TT
+></TT
+></DT
+><DD
+><P
+>      包含要执行的命令的字串
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>bool <TT
+CLASS="PARAMETER"
+>read_only</TT
+></TT
+></DT
+><DD
+><P
+>      <TT
+CLASS="LITERAL"
+>true</TT
+> 用于只读的执行
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>long <TT
+CLASS="PARAMETER"
+>count</TT
+></TT
+></DT
+><DD
+><P
+>      处理或返回的最大行数
+     </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN36867" ></A
+><H2
+>返回值</H2
+><P
+>   如果命令执行成功，那么返回下列值之一（非负数）：
+
+   <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="SYMBOL"
+>SPI_OK_SELECT</TT
+></DT
+><DD
+><P
+>       如果执行了一个 <TT
+CLASS="COMMAND"
+>SELECT</TT
+>（但不是 <TT
+CLASS="COMMAND"
+>SELECT INTO</TT
+>）
+      </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>SPI_OK_SELINTO</TT
+></DT
+><DD
+><P
+>       如果执行了一条 <TT
+CLASS="COMMAND"
+>SELECT INTO</TT
+>。
+      </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>SPI_OK_DELETE</TT
+></DT
+><DD
+><P
+>       如果执行了一条 <TT
+CLASS="COMMAND"
+>DELETE</TT
+>。
+      </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>SPI_OK_INSERT</TT
+></DT
+><DD
+><P
+>       如果执行了一条 <TT
+CLASS="COMMAND"
+>INSERT</TT
+>。
+      </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>SPI_OK_UPDATE</TT
+></DT
+><DD
+><P
+>       如果执行了一条 <TT
+CLASS="COMMAND"
+>UPDATE</TT
+>。
+      </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>SPI_OK_UTILITY</TT
+></DT
+><DD
+><P
+>       如果执行了一条工具命令你（比如，<TT
+CLASS="COMMAND"
+>CREATE TABLE</TT
+>）
+      </P
+></DD
+></DL
+></DIV
+><P>
+  </P
+><P
+>   发生错误时，返回下列负数值之一：
+
+   <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="SYMBOL"
+>SPI_ERROR_ARGUMENT</TT
+></DT
+><DD
+><P
+>       如果 <TT
+CLASS="PARAMETER"
+>command</TT
+> 是 <TT
+CLASS="SYMBOL"
+>NULL</TT
+> 或者 <TT
+CLASS="PARAMETER"
+>count</TT
+> 小于 0
+      </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>SPI_ERROR_COPY</TT
+></DT
+><DD
+><P
+>       如果企图进行 <TT
+CLASS="COMMAND"
+>COPY TO stdout</TT
+> 或者 <TT
+CLASS="COMMAND"
+>COPY FROM stdin</TT
+>
+      </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>SPI_ERROR_CURSOR</TT
+></DT
+><DD
+><P
+>       如果企图进行 <TT
+CLASS="COMMAND"
+>DECLARE</TT
+>，<TT
+CLASS="COMMAND"
+>CLOSE</TT
+>，或者 <TT
+CLASS="COMMAND"
+>FETCH</TT
+>
+      </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>SPI_ERROR_TRANSACTION</TT
+></DT
+><DD
+><P
+>       如果企图进行 <TT
+CLASS="COMMAND"
+>BEGIN</TT
+>，<TT
+CLASS="COMMAND"
+>COMMIT</TT
+>，或者 <TT
+CLASS="COMMAND"
+>ROLLBACK</TT
+>
+      </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>SPI_ERROR_OPUNKNOWN</TT
+></DT
+><DD
+><P
+>       命令类型未知（不应该发生）
+      </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>SPI_ERROR_UNCONNECTED</TT
+></DT
+><DD
+><P
+>       如果从一个未连接的过程中调用
+      </P
+></DD
+></DL
+></DIV
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN36951" ></A
+><H2
+>注意</H2
+><P
+>   函数 <TT
+CLASS="FUNCTION"
+>SPI_execute</TT
+>，<TT
+CLASS="FUNCTION"
+>SPI_exec</TT
+>，<TT
+CLASS="FUNCTION"
+>SPI_execute_plan</TT
+>，
+   <TT
+CLASS="FUNCTION"
+>SPI_execp</TT
+>，
+   和 <TT
+CLASS="FUNCTION"
+>SPI_prepare</TT
+> 修改 <TT
+CLASS="VARNAME"
+>SPI_processed</TT
+> 和 <TT
+CLASS="VARNAME"
+>SPI_tuptable</TT
+>
+   （只是一个指针，不是结构的内容）。如果你需要跨越后面的调用访问 <TT
+CLASS="FUNCTION"
+>SPI_execute</TT
+> 
+   或者相关函数的结果表，那么需要把这两个全局俩保存到一个局部过程变量中。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="spi-spi-pop.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="spi-spi-exec.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >SPI_pop</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="spi.html#SPI-INTERFACE" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >SPI_exec</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

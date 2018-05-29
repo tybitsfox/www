@@ -1,0 +1,160 @@
+<HTML><HEAD><TITLE>LDAP Functions</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="函数参考" HREF="funcref.html"><LINK REL="PREVIOUS" TITLE="java_last_exception_get" HREF="function.java-last-exception-get.html"><LINK REL="NEXT" TITLE="ldap_8859_to_t61" HREF="function.ldap-8859-to-t61.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="reference" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.java-last-exception-get.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.ldap-8859-to-t61.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="reference"><A NAME="ref.ldap"></A><DIV CLASS="TITLEPAGE"><H1 CLASS="title">XLVIII. LDAP Functions</H1><DIV CLASS="PARTINTRO"><A NAME="AEN47459"></A><DIV CLASS="section"><H1 CLASS="section"><A NAME="ldap.intro"></A>介绍</H1><P>&#13; LDAP is the Lightweight Directory Access Protocol, and is a
+protocol used to access "Directory Servers". The Directory is a
+special kind of database that holds information in a tree
+structure.
+</P><P>
+The concept is similar to your hard disk directory structure,
+except that in this context, the root directory is "The world"
+and the first level subdirectories are "countries". Lower levels
+of the directory structure contain entries for companies,
+organisations or places, while yet lower still we find directory
+entries for people, and perhaps equipment or documents.
+</P><P>&#13; To refer to a file in a subdirectory on your hard disk, you might
+use something like:
+</P><P CLASS="literallayout"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/local/myapp/docs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;</P><P>&#13; The forwards slash marks each division in the reference, and the
+sequence is read from left to right.
+</P><P>
+The equivalent to the fully qualified file reference in LDAP is
+the "distinguished name", referred to simply as "dn". An example
+dn might be:
+</P><P CLASS="literallayout"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cn=John&nbsp;Smith,ou=Accounts,o=My&nbsp;Company,c=US<br>
+&nbsp;&nbsp;&nbsp;&nbsp;</P><P>&#13; The comma marks each division in the reference, and the sequence
+is read from right to left. You would read this dn as:
+</P><P CLASS="literallayout"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;country&nbsp;=&nbsp;US<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;organization&nbsp;=&nbsp;My&nbsp;Company<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;organizationalUnit&nbsp;=&nbsp;Accounts<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;commonName&nbsp;=&nbsp;John&nbsp;Smith<br>
+&nbsp;&nbsp;&nbsp;&nbsp;</P><P>&#13; In the same way as there are no hard rules about how you organise
+the directory structure of a hard disk, a directory server
+manager can set up any structure that is meaningful for the
+purpose. However, there are some conventions that are used. The
+message is that you can not write code to access a directory
+server unless you know something about its structure, any more
+than you can use a database without some knowledge of what is
+available.
+</P><P>&#13; Lots of information about LDAP can be found at
+</P><P></P><UL><LI><P>&#13; <A HREF="http://developer.netscape.com/tech/directory/" TARGET="_top">Netscape</A>
+</P></LI><LI><P>&#13; <A HREF="http://www.openldap.org/" TARGET="_top">OpenLDAP Project</A>
+</P></LI><LI><P>&#13; <A HREF="http://www.innosoft.com/ldapworld/" TARGET="_top">LDAP World</A>
+</P></LI></UL><P>
+The Netscape SDK contains a helpful
+<A HREF="http://docs.sun.com/source/816-5616-10/" TARGET="_top">Programmer's Guide</A> in
+HTML format.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="ldap.requirements"></A>需求</H1><P>&#13; You will need to get and compile LDAP client libraries from
+either the University of Michigan <A HREF="ftp://terminator.rs.itd.umich.edu/ldap/ldap-3.3.tar.Z" TARGET="_top">&#13; ldap-3.3 package</A>, <A HREF="http://developer.netscape.com/tech/directory/downloads.html" TARGET="_top"> Netscape
+Directory SDK 3.0</A> or <A HREF="ftp://ftp.openldap.org/pub/openldap/openldap-stable.tgz" TARGET="_top">&#13; OpenLDAP</A> to compile PHP with LDAP support.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="ldap.installation"></A>安装</H1><P>&#13; LDAP support in PHP is not enabled by default. You will need to
+use the <TT CLASS="option">--with-ldap[=DIR]</TT>
+configuration option when compiling PHP to enable LDAP support.
+DIR is the LDAP base install directory.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>Note to Win32 Users: </B>
+In order to enable this module on a Windows environment, you must copy
+several files from the DLL folder of the PHP/Win32 binary package to the
+SYSTEM folder of your windows machine. (Ex: <TT CLASS="filename">C:\WINNT\SYSTEM32</TT>,
+or <TT CLASS="filename">C:\WINDOWS\SYSTEM</TT>). For PHP &#60;= 4.2.0 copy
+<TT CLASS="filename">libsasl.dll</TT>, for PHP &#62;= 4.3.0 copy
+<TT CLASS="filename">libeay32.dll</TT> and <TT CLASS="filename">ssleay32.dll</TT> to
+your SYSTEM folder.
+</P></BLOCKQUOTE></DIV></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="ldap.configuration"></A>运行时配置</H1><P>这些函数的行为受到全局<A HREF="configuration.html#configuration.file">配置文件</A> <TT CLASS="filename">php.ini</TT> 的影响。</P><P>&#13; <DIV CLASS="table"><A NAME="AEN47509"></A><P><B>表格 1. LDAP configuration options</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">Name</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Default</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Changeable</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">ldap.max_links</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">"-1"</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_SYSTEM</TD></TR></TBODY></TABLE></DIV>
+For further details and definition of the PHP_INI_* constants see
+<A HREF="function.ini-set.html"><B CLASS="function">ini_set()</B></A>.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="ldap.resources"></A>资源类型</H1><P>该扩展模块未定义任何资源类型。</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="ldap.constants"></A>预定义常量</H1><P>&#13;由于这些常量是由该扩展模块定义的，因此只有在该扩展模块被编译到 PHP 中，或者在运行时被动态加载后，这些常量才有效。</P><P></P><DIV CLASS="variablelist"><DL><DT><TT CLASS="constant"><B>LDAP_DEREF_NEVER</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>LDAP_DEREF_SEARCHING</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>LDAP_DEREF_FINDING</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>LDAP_DEREF_ALWAYS</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>LDAP_OPT_DEREF</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>LDAP_OPT_SIZELIMIT</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>LDAP_OPT_TIMELIMIT</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>LDAP_OPT_PROTOCOL_VERSION</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>LDAP_OPT_ERROR_NUMBER</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>LDAP_OPT_REFERRALS</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>LDAP_OPT_RESTART</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>LDAP_OPT_HOST_NAME</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>LDAP_OPT_ERROR_STRING</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>LDAP_OPT_MATCHED_DN</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>LDAP_OPT_SERVER_CONTROLS</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>LDAP_OPT_CLIENT_CONTROLS</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>LDAP_OPT_DEBUG_LEVEL</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>GSLC_SSL_NO_AUTH</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>GSLC_SSL_ONEWAY_AUTH</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>GSLC_SSL_TWOWAY_AUTH</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD></DL></DIV></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="ldap.examples"></A>范例</H1><P>&#13; Retrieve information for all entries where the surname starts
+with "S" from a directory server, displaying an extract with
+name and email address.
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN47653"></A><P><B>例子 1. LDAP search example</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#FF8000">// basic sequence with LDAP is connect, bind, search, interpret search<br />// result, close connection<br /><br /></font><font color="#007700">echo </font><font color="#DD0000">"&lt;h3&gt;LDAP query test&lt;/h3&gt;"</font><font color="#007700">;<br />echo </font><font color="#DD0000">"Connecting ..."</font><font color="#007700">;<br /></font><font color="#0000BB">$ds</font><font color="#007700">=</font><font color="#0000BB">ldap_connect</font><font color="#007700">(</font><font color="#DD0000">"localhost"</font><font color="#007700">);&nbsp;&nbsp;</font><font color="#FF8000">// must be a valid LDAP server!<br /></font><font color="#007700">echo </font><font color="#DD0000">"connect result is " </font><font color="#007700">. </font><font color="#0000BB">$ds </font><font color="#007700">. </font><font color="#DD0000">"&lt;br /&gt;"</font><font color="#007700">;<br /><br />if (</font><font color="#0000BB">$ds</font><font color="#007700">) { <br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"Binding ..."</font><font color="#007700">; <br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$r</font><font color="#007700">=</font><font color="#0000BB">ldap_bind</font><font color="#007700">(</font><font color="#0000BB">$ds</font><font color="#007700">);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// this is an "anonymous" bind, typically<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// read-only access<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">echo </font><font color="#DD0000">"Bind result is " </font><font color="#007700">. </font><font color="#0000BB">$r </font><font color="#007700">. </font><font color="#DD0000">"&lt;br /&gt;"</font><font color="#007700">;<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"Searching for (sn=S*) ..."</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// Search surname entry<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$sr</font><font color="#007700">=</font><font color="#0000BB">ldap_search</font><font color="#007700">(</font><font color="#0000BB">$ds</font><font color="#007700">, </font><font color="#DD0000">"o=My Company, c=US"</font><font color="#007700">, </font><font color="#DD0000">"sn=S*"</font><font color="#007700">);&nbsp;&nbsp;<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"Search result is " </font><font color="#007700">. </font><font color="#0000BB">$sr </font><font color="#007700">. </font><font color="#DD0000">"&lt;br /&gt;"</font><font color="#007700">;<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"Number of entires returned is " </font><font color="#007700">. </font><font color="#0000BB">ldap_count_entries</font><font color="#007700">(</font><font color="#0000BB">$ds</font><font color="#007700">, </font><font color="#0000BB">$sr</font><font color="#007700">) . </font><font color="#DD0000">"&lt;br /&gt;"</font><font color="#007700">;<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"Getting entries ...&lt;p&gt;"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$info </font><font color="#007700">= </font><font color="#0000BB">ldap_get_entries</font><font color="#007700">(</font><font color="#0000BB">$ds</font><font color="#007700">, </font><font color="#0000BB">$sr</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"Data for " </font><font color="#007700">. </font><font color="#0000BB">$info</font><font color="#007700">[</font><font color="#DD0000">"count"</font><font color="#007700">] . </font><font color="#DD0000">" items returned:&lt;p&gt;"</font><font color="#007700">;<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;for (</font><font color="#0000BB">$i</font><font color="#007700">=</font><font color="#0000BB">0</font><font color="#007700">; </font><font color="#0000BB">$i</font><font color="#007700">&lt;</font><font color="#0000BB">$info</font><font color="#007700">[</font><font color="#DD0000">"count"</font><font color="#007700">]; </font><font color="#0000BB">$i</font><font color="#007700">++) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"dn is: " </font><font color="#007700">. </font><font color="#0000BB">$info</font><font color="#007700">[</font><font color="#0000BB">$i</font><font color="#007700">][</font><font color="#DD0000">"dn"</font><font color="#007700">] . </font><font color="#DD0000">"&lt;br /&gt;"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"first cn entry is: " </font><font color="#007700">. </font><font color="#0000BB">$info</font><font color="#007700">[</font><font color="#0000BB">$i</font><font color="#007700">][</font><font color="#DD0000">"cn"</font><font color="#007700">][</font><font color="#0000BB">0</font><font color="#007700">] . </font><font color="#DD0000">"&lt;br /&gt;"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"first email entry is: " </font><font color="#007700">. </font><font color="#0000BB">$info</font><font color="#007700">[</font><font color="#0000BB">$i</font><font color="#007700">][</font><font color="#DD0000">"mail"</font><font color="#007700">][</font><font color="#0000BB">0</font><font color="#007700">] . </font><font color="#DD0000">"&lt;br /&gt;&lt;hr /&gt;"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"Closing connection"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">ldap_close</font><font color="#007700">(</font><font color="#0000BB">$ds</font><font color="#007700">);<br /><br />} else {<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"&lt;h4&gt;Unable to connect to LDAP server&lt;/h4&gt;"</font><font color="#007700">;<br />}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="ldap.using"></A>Using the PHP LDAP calls</H1><P>&#13; Before you can use the LDAP calls you will need to know ..
+<P></P><UL><LI><P>&#13; The name or address of the directory server you will use
+</P></LI><LI><P>&#13; The "base dn" of the server (the part of the world directory
+that is held on this server, which could be "o=My
+Company,c=US")
+</P></LI><LI><P>&#13; Whether you need a password to access the server (many servers
+will provide read access for an "anonymous bind" but require a
+password for anything else)
+</P></LI></UL></P><P>&#13; The typical sequence of LDAP calls you will make in an
+application will follow this pattern:
+<P CLASS="literallayout"><br>
+&nbsp;&nbsp;ldap_connect()&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;establish&nbsp;connection&nbsp;to&nbsp;server<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+&nbsp;&nbsp;ldap_bind()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;anonymous&nbsp;or&nbsp;authenticated&nbsp;"login"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+&nbsp;&nbsp;do&nbsp;something&nbsp;like&nbsp;search&nbsp;or&nbsp;update&nbsp;the&nbsp;directory<br>
+&nbsp;&nbsp;and&nbsp;display&nbsp;the&nbsp;results<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+&nbsp;&nbsp;ldap_close()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;"logout"<br>
+</P></P></DIV></DIV><DIV CLASS="TOC"><DL><DT><B>目录</B></DT><DT><A HREF="function.ldap-8859-to-t61.html">ldap_8859_to_t61</A>&nbsp;--&nbsp;
+Translate 8859 characters to t61 characters
+</DT><DT><A HREF="function.ldap-add.html">ldap_add</A>&nbsp;--&nbsp;Add entries to LDAP directory</DT><DT><A HREF="function.ldap-bind.html">ldap_bind</A>&nbsp;--&nbsp;Bind to LDAP directory</DT><DT><A HREF="function.ldap-close.html">ldap_close</A>&nbsp;--&nbsp;Close link to LDAP server</DT><DT><A HREF="function.ldap-compare.html">ldap_compare</A>&nbsp;--&nbsp;Compare value of attribute found in entry specified with DN</DT><DT><A HREF="function.ldap-connect.html">ldap_connect</A>&nbsp;--&nbsp;Connect to an LDAP server</DT><DT><A HREF="function.ldap-count-entries.html">ldap_count_entries</A>&nbsp;--&nbsp;Count the number of entries in a search</DT><DT><A HREF="function.ldap-delete.html">ldap_delete</A>&nbsp;--&nbsp;Delete an entry from a directory</DT><DT><A HREF="function.ldap-dn2ufn.html">ldap_dn2ufn</A>&nbsp;--&nbsp;Convert DN to User Friendly Naming format</DT><DT><A HREF="function.ldap-err2str.html">ldap_err2str</A>&nbsp;--&nbsp;
+Convert LDAP error number into string error message
+</DT><DT><A HREF="function.ldap-errno.html">ldap_errno</A>&nbsp;--&nbsp;
+Return the LDAP error number of the last LDAP command
+</DT><DT><A HREF="function.ldap-error.html">ldap_error</A>&nbsp;--&nbsp;
+Return the LDAP error message of the last LDAP command
+</DT><DT><A HREF="function.ldap-explode-dn.html">ldap_explode_dn</A>&nbsp;--&nbsp;Splits DN into its component parts</DT><DT><A HREF="function.ldap-first-attribute.html">ldap_first_attribute</A>&nbsp;--&nbsp;Return first attribute</DT><DT><A HREF="function.ldap-first-entry.html">ldap_first_entry</A>&nbsp;--&nbsp;Return first result id</DT><DT><A HREF="function.ldap-first-reference.html">ldap_first_reference</A>&nbsp;--&nbsp;
+Return first reference
+</DT><DT><A HREF="function.ldap-free-result.html">ldap_free_result</A>&nbsp;--&nbsp;Free result memory</DT><DT><A HREF="function.ldap-get-attributes.html">ldap_get_attributes</A>&nbsp;--&nbsp;Get attributes from a search result entry</DT><DT><A HREF="function.ldap-get-dn.html">ldap_get_dn</A>&nbsp;--&nbsp;Get the DN of a result entry</DT><DT><A HREF="function.ldap-get-entries.html">ldap_get_entries</A>&nbsp;--&nbsp;Get all result entries</DT><DT><A HREF="function.ldap-get-option.html">ldap_get_option</A>&nbsp;--&nbsp;Get the current value for given option</DT><DT><A HREF="function.ldap-get-values-len.html">ldap_get_values_len</A>&nbsp;--&nbsp;Get all binary values from a result entry</DT><DT><A HREF="function.ldap-get-values.html">ldap_get_values</A>&nbsp;--&nbsp;Get all values from a result entry</DT><DT><A HREF="function.ldap-list.html">ldap_list</A>&nbsp;--&nbsp;Single-level search</DT><DT><A HREF="function.ldap-mod-add.html">ldap_mod_add</A>&nbsp;--&nbsp;Add attribute values to current attributes</DT><DT><A HREF="function.ldap-mod-del.html">ldap_mod_del</A>&nbsp;--&nbsp;Delete attribute values from current attributes</DT><DT><A HREF="function.ldap-mod-replace.html">ldap_mod_replace</A>&nbsp;--&nbsp;Replace attribute values with new ones</DT><DT><A HREF="function.ldap-modify.html">ldap_modify</A>&nbsp;--&nbsp;Modify an LDAP entry</DT><DT><A HREF="function.ldap-next-attribute.html">ldap_next_attribute</A>&nbsp;--&nbsp;Get the next attribute in result</DT><DT><A HREF="function.ldap-next-entry.html">ldap_next_entry</A>&nbsp;--&nbsp;Get next result entry</DT><DT><A HREF="function.ldap-next-reference.html">ldap_next_reference</A>&nbsp;--&nbsp;
+Get next reference
+</DT><DT><A HREF="function.ldap-parse-reference.html">ldap_parse_reference</A>&nbsp;--&nbsp;
+Extract information from reference entry
+</DT><DT><A HREF="function.ldap-parse-result.html">ldap_parse_result</A>&nbsp;--&nbsp;
+Extract information from result
+</DT><DT><A HREF="function.ldap-read.html">ldap_read</A>&nbsp;--&nbsp;Read an entry</DT><DT><A HREF="function.ldap-rename.html">ldap_rename</A>&nbsp;--&nbsp;Modify the name of an entry</DT><DT><A HREF="function.ldap-search.html">ldap_search</A>&nbsp;--&nbsp;Search LDAP tree</DT><DT><A HREF="function.ldap-set-option.html">ldap_set_option</A>&nbsp;--&nbsp;Set the value of the given option</DT><DT><A HREF="function.ldap-set-rebind-proc.html">ldap_set_rebind_proc</A>&nbsp;--&nbsp;
+Set a callback function to do re-binds on referral chasing.
+</DT><DT><A HREF="function.ldap-sort.html">ldap_sort</A>&nbsp;--&nbsp;
+Sort LDAP result entries
+</DT><DT><A HREF="function.ldap-start-tls.html">ldap_start_tls</A>&nbsp;--&nbsp;
+Start TLS
+</DT><DT><A HREF="function.ldap-t61-to-8859.html">ldap_t61_to_8859</A>&nbsp;--&nbsp;
+Translate t61 characters to 8859 characters
+</DT><DT><A HREF="function.ldap-unbind.html">ldap_unbind</A>&nbsp;--&nbsp;Unbind from LDAP directory</DT></DL></DIV></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.java-last-exception-get.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.ldap-8859-to-t61.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">java_last_exception_get</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="funcref.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">ldap_8859_to_t61</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

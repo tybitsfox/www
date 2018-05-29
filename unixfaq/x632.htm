@@ -1,0 +1,72 @@
+<html><head><title>怎样创建动态连接库(shared library)/dlls？</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="工具的使用" href="./c619.htm"><link rel="PREVIOUS" title="怎样通过其他库文件建立新的库文件？" href="./x629.htm"><link rel="NEXT" title="我能更改一个动态连接库里的目标吗？" href="./x653.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x629.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 6. 工具的使用</td><td align="right" valign="bottom" width="10%"><a href="./x653.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN632">6.3. 怎样创建动态连接库(shared library)/dlls？</a></h1><p>创建动态连接库(shared libraries)的方法根据不同的系统有所不同。这个过程主要
+分两步；第一步要求包括在动态连接库中的目标必须首先是编译好的，通常需
+要某个编译选项指示这串代码是位置无关的(position-indepenent)；第二步，是将
+这些目标连接在一起形成一个库文件。
+    </p><p>这里是一个演示以上道理的小程序：
+    </p><pre class="PROGRAMLISTING">     /* shrobj.c 文件 */
+
+     const char *myfunc()
+     {
+         return "Hello World";
+     }
+
+     /* shrobj.c 结束 */
+
+     /* hello.c 文件 */
+
+     #include &lt;stdio.h&gt;
+
+     extern const char *myfunc();
+
+     main()
+     {
+         printf("%s\n", myfunc());
+         return 0;
+     }
+
+     /* hello.c 结束 */
+
+     $ gcc -fpic -c shrobj.c
+     $ gcc -shared -o libshared.so shrobj.o
+     $ gcc hello.c libshared.so
+     $ ./a.out
+     Hello World
+    </pre><p>到目前为止，如果你希望库文件和它的创建过程是都可以移植的话，那么最好
+的办法是使用GNU Libtool程序包。它是个小型的工具程序套件，这些工具程序
+知道建立动态连接库的平台无关性；你可以只发布你的程序必要的部分，从而
+当一个安装者配置你的软件包时，他能决定生成什么库。Libtool程序包在不支持
+动态连接库的系统上也能工作得很好。它而且知道与GNU Autoconf程序和GNU
+Automake程序挂钩(如果你使用这些工具来管理你程序的编译创建过程)。
+    </p><p>如果你不想使用Libtool程序包，那么对于gcc以外的编译器，你需要按照下面所
+列修改编译器参数：
+    </p><pre class="PROGRAMLISTING">AIX 3.2 使用 xlc (未证实)
+     取消‘-fpic’选项，以‘-bM:SRE -bE:libshared.exp’取代‘-shared’。你并且
+     需要创建一个名为‘libshared.exp’的文件保存一个所有输出符号(symbols to export)
+     的列表，比如以上的范例程序，就需要输出‘myfunc’符号。另外，在连接库
+     时使用‘-e _nostart’参数(在较新的AIX版本上，我相信应该将其变成‘-bnoentry’)。
+
+SCO OpenServer 5 使用 SCO 开发系统(Development System) (未证实)
+     如果你使用ELF(译者注：ELF：执行与连接格式Executable and Linking Forrmat，
+     一种Unix可执行目标文件的格式)格式，那么共享库只能在OS5上可用，而它
+     需要‘-belf’选项。并以‘-Kpic’取代‘-fpic’，在连接时使用‘cc -belf -G’。
+
+Solaris 使用 SparcWorks 编译器
+     以‘-pic’取代‘-fpic’，并以‘ld -G’取代‘gcc -shared’。
+    </pre><p>(鼓励大家提供更多的材料丰富上述列表)
+    </p><p>其它要当心的问题：
+    </p><p></p><ul><li><p>    AIX和(我相信)Digital Unix不需要-fpic选项，因为所有代码都是位置无关的。
+        </p></li><li><p>    AIX一般需要你创建一个‘输出文件’，即一个保存所有动态连接库中输出
+     符号的列表。一些连接器(linker)版本(可能只有SLHS连接器，是svld?)有一个
+     选项可以输出所有符号。
+        </p></li><li><p>    如果你对于连接器想使用普遍的‘-l’参数来引用你的动态连接库，你必须
+     理解你的系统在实际运行时是怎样寻找动态连接库的。最普通的方法是使用
+     ‘LD_LIBRARY_PATH’环境变量，但是通常在连接时有一种其它选项可以
+     设定。
+        </p></li><li><p>    大多数实现方法是在程序内部记录所希望的动态连接库在运行时的位置。这
+     样把一个动态连接库从一个目录移到另一个目录将导致程序无法工作。许多
+     系统对于连接器有一个选项用以设定希望运行时动态连接库的位置(比如在
+     Solaris系统上是‘-R’连接器选项，或者是‘LD_RUN_PATH’环境变量)。
+        </p></li><li><p>    ELF和a.out的实现方法可能有一个连接器选项‘-Bsymbolic’，它导致在库本
+     身内部的引用被解释好。否则，在这些系统上，所有符号的解释将推迟到最
+     后连接时再进行，这样在main程序中的单一函数将重载库中的对应函数。
+        </p></li></ul></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x629.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x653.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">怎样通过其他库文件建立新的库文件？</td><td align="center" valign="top" width="34%"><a href="./c619.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">我能更改一个动态连接库里的目标吗？</td></tr></tbody></table></div></body></html>

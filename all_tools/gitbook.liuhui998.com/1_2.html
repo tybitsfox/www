@@ -1,0 +1,257 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+  "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<meta http-equiv="content-language" content="en">
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+	<title>Git Book 中文版 - GIT对象模型</title>
+	<link rel="icon" href="favicon.png" type="image/png">
+	<link rel="stylesheet" href="assets/blueprint/screen.css" type="text/css" media="screen, projection">
+  <link rel="stylesheet" href="assets/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="assets/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="assets/stylesheets/mac_classic.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="assets/stylesheets/style.css" type="text/css" media="screen, projection">
+</head>
+
+<body>
+<div class="container chapter showgrids">
+
+  <div class="span-21 header">
+    <div class="nav"><a href="1_1.html">Prev</a>  <a href="1_3.html">Next</a></div>
+    <div class="title"><a href='index.html'>Git Community Book 中文版</a></div>
+  </div>
+  
+  <div class="span-21">
+    <br/>
+  </div>
+  
+  <div class="span-21">
+    <h2>GIT对象模型</h2>
+
+<h3>SHA</h3>
+
+<p>所有用来表示项目历史信息的文件,是通过一个40个字符的（40-digit）“对象名”来索引的，对象名看起来像这样:</p>
+
+<pre><code>6ff87c4664981e4397625791c8ea3bbb5f2279a3
+</code></pre>
+
+<p>你会在Git里到处看到这种“40个字符”字符串。每一个“对象名”都是对“对象”内容做SHA1哈希计算得来的，（SHA1是一种密码学的哈希算法）。这样就意味着两个不同内容的对象不可能有相同的“对象名”。</p>
+
+<p>这样做有会有几个好处：</p>
+
+<ul>
+<li>Git只要比较对象名，就可以很快的判断两个对象是否相同。</li>
+<li>因为在每个仓库（repository）的“对象名”的计算方法都完全一样，如果同样的内容存在两个不同的仓库中，就会存在相同的“对象名”下。</li>
+<li>Git还可以通过检查对象内容的SHA1的哈希值和“对象名”是否相同，来判断对象内容是否正确。</li>
+</ul>
+
+
+<h3>对象</h3>
+
+<p>每个对象(object) 包括三个部分：<strong>类型</strong>，<strong>大小</strong>和<strong>内容</strong>。大小就是指内容的大小，内容取决于对象的类型，有四种类型的对象："blob"、"tree"、 "commit" 和"tag"。</p>
+
+<ul>
+<li><strong>“blob”</strong>用来存储文件数据，通常是一个文件。</li>
+<li><strong>“tree”</strong>有点像一个目录，它管理一些<strong>“tree”</strong>或是 <strong>“blob”</strong>（就像文件和子目录）</li>
+<li>一个<strong>“commit”</strong>只指向一个"tree"，它用来的标记项目某一个特定时间点的状态。它包括一些关于时间点的元数据，如时间戳、最近一次提交的作者、指前上次提交（commits）的指针等等。</li>
+<li>一个<strong>“tag”</strong>是来标记某一个提交(commit) 的方法。</li>
+</ul>
+
+
+<p>几乎所有的Git功能都是使用这四个简单的对象类型来完成的。它就是像是在你本机的文件系统之上构建一个小的文件系统。</p>
+
+<h3>与SVN的区别</h3>
+
+<p>Git与你熟悉的大部分版本控制系统的差别是很大的。也许你熟悉Subversion、CVS、Perforce、Mercurial 等等，他们使用 <em>“增量文件系统”</em> （Delta Storage systems）, 就是说它们存储每次提交(commit)之间的差异。Git正好与之相反，它会把你的每次提交的文件的全部内容（snapshot）都会记录下来。这会是在使用Git时的一个很重要的理念。</p>
+
+<h3>Blob对象</h3>
+
+<p>一个blob通常用来存储文件的内容.</p>
+
+<p><div class="center"><img src="assets/images/figure/object-blob.png"></div></p>
+
+<p>你可以使用<a href="http://www.kernel.org/pub/software/scm/git/docs/git-show.html">git show</a>命令来查看一个blob对象里的内容。假设我们现在有一个Blob对象的SHA1哈希值，我们可以通过下面的的命令来查看内容：</p>
+
+<pre><code>$ git show 6ff87c4664
+
+ Note that the only valid version of the GPL as far as this project
+ is concerned is _this_ particular version of the license (ie v2, not
+ v2.2 or v3.x or whatever), unless explicitly otherwise stated.
+...
+</code></pre>
+
+<p>一个"blob对象"就是一块二进制数据，它没有指向任何东西或有任何其它属性，甚至连文件名都没有.</p>
+
+<p>因为blob对象内容全部都是数据，如两个文件在一个目录树（或是一个版本仓库）中有同样的数据内容，那么它们将会共享同一个blob对象。Blob对象和其所对应的文件所在路径、文件名是否改被更改都完全没有关系。</p>
+
+<h3>Tree 对象</h3>
+
+<p>一个tree对象有一串(bunch)指向blob对象或是其它tree对象的指针，它一般用来来表示内容之间的目录层次关系。</p>
+
+<p><div class="center"><img src="assets/images/figure/object-tree.png"></div></p>
+
+<p><a href="http://www.kernel.org/pub/software/scm/git/docs/git-show.html">git show</a>命令还可以用来查看tree对象，但是<a href="http://www.kernel.org/pub/software/scm/git/docs/git-ls-tree.html">git ls-tree</a>能让你看到更多的细节。如果我们有一个tree对象的SHA1哈希值，我们可以像下面一样来查看它：</p>
+
+<pre><code>$ git ls-tree fb3a8bdd0ce
+100644 blob 63c918c667fa005ff12ad89437f2fdc80926e21c    .gitignore
+100644 blob 5529b198e8d14decbe4ad99db3f7fb632de0439d    .mailmap
+100644 blob 6ff87c4664981e4397625791c8ea3bbb5f2279a3    COPYING
+040000 tree 2fb783e477100ce076f6bf57e4a6f026013dc745    Documentation
+100755 blob 3c0032cec592a765692234f1cba47dfdcc3a9200    GIT-VERSION-GEN
+100644 blob 289b046a443c0647624607d471289b2c7dcd470b    INSTALL
+100644 blob 4eb463797adc693dc168b926b6932ff53f17d0b1    Makefile
+100644 blob 548142c327a6790ff8821d67c2ee1eff7a656b52    README
+...
+</code></pre>
+
+<p>就如同你所见，一个tree对象包括一串(list)条目，每一个条目包括：mode、对象类型、SHA1值 和名字(这串条目是按名字排序的)。它用来表示一个目录树的内容。</p>
+
+<p>一个tree对象可以指向(reference): 一个包含文件内容的blob对象, 也可以是其它包含某个子目录内容的其它tree对象. Tree对象、blob对象和其它所有的对象一样，都用其内容的SHA1哈希值来命名的；只有当两个tree对象的内容完全相同（包括其所指向所有子对象）时，它的名字才会一样，反之亦然。这样就能让Git仅仅通过比较两个相关的tree对象的名字是否相同，来快速的判断其内容是否不同。</p>
+
+<p>(注意：在submodules里，trees对象也可以指向commits对象. 请参见 <strong>Submodules</strong> 章节)</p>
+
+<p>注意：所有的文件的mode位都是644 或 755，这意味着Git只关心文件的可执行位.</p>
+
+<h3>Commit对象</h3>
+
+<p>"commit对象"指向一个"tree对象", 并且带有相关的描述信息.</p>
+
+<p><div class="center"><img src="assets/images/figure/object-commit.png"></div></p>
+
+<p>你可以用 --pretty=raw 参数来配合 <a href="http://www.kernel.org/pub/software/scm/git/docs/git-show.html">git show</a> 或 <a href="http://www.kernel.org/pub/software/scm/git/docs/git-log.html">git log</a> 去查看某个提交(commit):</p>
+
+<pre><code>$ git show -s --pretty=raw 2be7fcb476
+commit 2be7fcb4764f2dbcee52635b91fedb1b3dcf7ab4
+tree fb3a8bdd0ceddd019615af4d57a53f43d8cee2bf
+parent 257a84d9d02e90447b149af58b271c19405edb6a
+author Dave Watson &lt;dwatson@mimvista.com&gt; 1187576872 -0400
+committer Junio C Hamano &lt;gitster@pobox.com&gt; 1187591163 -0700
+
+    Fix misspelling of 'suppress' in docs
+
+    Signed-off-by: Junio C Hamano &lt;gitster@pobox.com&gt;
+</code></pre>
+
+<p>你可以看到, 一个提交(commit)由以下的部分组成:</p>
+
+<ul>
+<li><p>一个 <strong>tree</strong>　对象: tree对象的SHA1签名, 代表着目录在某一时间点的内容.</p></li>
+<li><p><strong>父对象</strong> (parent(s)): 提交(commit)的SHA1签名代表着当前提交前一步的项目历史. 上面的那个例子就只有一个父对象; 合并的提交(merge commits)可能会有不只一个父对象.  如果一个提交没有父对象, 那么我们就叫它“根提交"(root commit), 它就代表着项目最初的一个版本(revision). 每个项目必须有至少有一个“根提交"(root commit). 一个项目可能有多个"根提交“，虽然这并不常见(这不是好的作法).</p></li>
+<li><p><strong>作者</strong> : 做了此次修改的人的名字,　还有修改日期.</p></li>
+<li><p><strong>提交者</strong>（committer): 实际创建提交(commit)的人的名字, 同时也带有提交日期. TA可能会和作者不是同一个人; 例如作者写一个补丁(patch)并把它用邮件发给提交者, 由他来创建提交(commit).</p></li>
+</ul>
+
+
+<p>－<strong>注释</strong> 用来描述此次提交.</p>
+
+<p>注意: 一个提交(commit)本身并没有包括任何信息来说明其做了哪些修改; 所有的修改(changes)都是通过与父提交(parents)的内容比较而得出的. 值得一提的是, 尽管git可以检测到文件内容不变而路径改变的情况, 但是它不会去显式(explicitly)的记录文件的更名操作.　(你可以看一下 <a href="http://www.kernel.org/pub/software/scm/git/docs/git-diff.html">git diff</a> 的 -M　参数的用法)</p>
+
+<p>一般用 <a href="http://www.kernel.org/pub/software/scm/git/docs/git-commit.html">git commit</a> 来创建一个提交(commit), 这个提交(commit)的父对象一般是当前分支(current HEAD),　同时把存储在当前索引(index)的内容全部提交.</p>
+
+<h3>对象模型</h3>
+
+<p>现在我们已经了解了3种主要对象类型(blob, tree 和 commit), 好现在就让我们大概了解一下它们怎么组合到一起的.</p>
+
+<p>如果我们一个小项目, 有如下的目录结构:</p>
+
+<pre><code>$&gt;tree
+.
+|-- README
+`-- lib
+    |-- inc
+    |   `-- tricks.rb
+    `-- mylib.rb
+
+2 directories, 3 files
+</code></pre>
+
+<p>如果我们把它提交(commit)到一个Git仓库中, 在Git中它们也许看起来就如下图:</p>
+
+<p><div class="center"><img src="assets/images/figure/objects-example.png"></div></p>
+
+<p>你可以看到: 每个目录都创建了 <strong>tree对象</strong> (包括根目录), 每个文件都创建了一个对应的 <strong>blob对象</strong> . 最后有一个 <strong>commit对象</strong> 来指向根tree对象(root of trees), 这样我们就可以追踪项目每一项提交内容.</p>
+
+<h3>标签对象</h3>
+
+<p><div class="center"><img src="assets/images/figure/object-tag.png"></div></p>
+
+<p>一个标签对象包括一个对象名(译者注:就是SHA1签名), 对象类型, 标签名, 标签创建人的名字("tagger"), 还有一条可能包含有签名(signature)的消息. 你可以用 <a href="http://www.kernel.org/pub/software/scm/git/docs/git-cat-file.html">git cat-file</a> 命令来查看这些信息:</p>
+
+<pre><code>$ git cat-file tag v1.5.0
+object 437b1b20df4b356c9342dac8d38849f24ef44f27
+type commit
+tag v1.5.0
+tagger Junio C Hamano &lt;junkio@cox.net&gt; 1171411200 +0000
+
+GIT 1.5.0
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBF0lGqwMbZpPMRm5oRAuRiAJ9ohBLd7s2kqjkKlq1qqC57SbnmzQCdG4ui
+nLE/L9aUXdWeTFPron96DLA=
+=2E+0
+-----END PGP SIGNATURE-----
+</code></pre>
+
+<p>点击 <a href="http://www.kernel.org/pub/software/scm/git/docs/git-tag.html">git tag</a>, 可以了解如何创建和验证标签对象. (注意: <a href="http://www.kernel.org/pub/software/scm/git/docs/git-tag.html">git tag</a> 同样也可以用来创建 "轻量级的标签"(lightweight tags), 但它们并不是标签对象, 而只一些以 "refs/tags/" 开头的引用罢了).</p>
+
+
+  </div>
+  
+  <div class="span-21">
+    <hr/>
+    <div class="center"><a href="1_1.html">Prev</a>  <a href="1_3.html">Next</a></div>
+    <hr/>
+  </div>
+  
+  <div class="span-17 footer">
+  	<div class="menu">
+  		This book is maintained by Scott Chacon, and hosting is donated by GitHub.
+  		<br>
+  		Please email me at <a href="mailto:schacon@gmail.com">schacon@gmail.com</a>
+  		with patches, suggestions and comments.<br>
+		中文版是由 <a href="http://liuhui998.com">liuhui998.com</a>维护,如果有任何意见建议或发现有bug,请联系我.
+	  </div>
+
+  </div>
+  <div class="span-4 last center">
+    <a href="http://github.com/liuhui998/gitbook"><img src="assets/images/github.png" alt="github logo"></a>
+  </div>
+  
+</div>
+
+
+
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-82337-12");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>
+<script src="http://static.getclicky.com/40584.js" type="text/javascript"></script>
+<noscript><p><img alt="Clicky" src="http://in.getclicky.com/40584-db6.gif" /></p></noscript>
+
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-6896227-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+
+</script>
+
+<div style="display:none">
+<script src="http://s9.cnzz.com/stat.php?id=2459744&web_id=2459744" language="JavaScript"></script>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,516 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>继承 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="数据定义" HREF="ddl.html"><LINK REL="PREVIOUS" TITLE="模式" HREF="ddl-schemas.html"><LINK REL="NEXT" TITLE="分区" HREF="ddl-partitioning.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="ddl-schemas.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="ddl.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 5. 数据定义</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="ddl.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="ddl-partitioning.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="DDL-INHERIT" >5.8. 继承</A
+></H1
+><A NAME="AEN2556" ></A
+><A NAME="AEN2558" ></A
+><P
+>   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 实现了表继承，这个特性可能对数据库设计人员来说是一个大好消息。
+   （SQL:1999 以及以后的标准定义了类型继承特性，和我们在这里描述的很多特性有区别。）
+  </P
+><P
+>   让我们从一个例子开始：假设我们试图制作一个城市的数据模型。
+   每个州都有许多城市，但是只有一个首府。我们希望能够迅速检索任何州的首府。
+   这个任务可以通过创建两个表来实现，一个是州府，一个是非州府。
+   不过，如果我们不管什么城市都想查会怎么办？继承的特性可以帮助我们解决这个问题。
+   我们定义 <TT
+CLASS="STRUCTNAME"
+>capitals</TT
+> 表，它继承 <TT
+CLASS="STRUCTNAME"
+>cities</TT
+>：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE cities (
+    name            text,
+    population      float,
+    altitude        int     -- (单位：英尺)
+);
+
+CREATE TABLE capitals (
+    state           char(2)
+) INHERITS (cities);</PRE
+><P>
+
+	在这种情况下，一行首府从它的父表，<TT
+CLASS="STRUCTNAME"
+>cities</TT
+> 中<I
+CLASS="FIRSTTERM"
+>继承</I
+>所有属性。
+	州首府有一个额外的属性， <TT
+CLASS="STRUCTFIELD"
+>state</TT
+>，显示它们所在的州。
+   </P
+><P
+>	在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里，
+	一个表可以从零个或多个其它表中继承属性，而且一个查询既可以引用一个表中的所有行，
+	也可以引用一个表的所有行加上所有其后代表的行。后面这个行为是缺省。
+	比如，下面的查询查找所有海拔 500 英尺以上的所有城市的名字，包括州首府：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT name, altitude
+    FROM cities
+    WHERE altitude &gt; 500;</PRE
+><P>
+
+	使用 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 教程里面的数据（参阅 <A HREF="tutorial-sql.html#TUTORIAL-SQL-INTRO" >Section 2.1</A
+>），
+	它返回：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>   name    | altitude
+-----------+----------
+ Las Vegas |     2174
+ Mariposa  |     1953
+ Madison   |      845</PRE
+><P>
+  </P
+><P
+>	另一方面，如果要找出不包括州首府在内的所有海拔超过500英尺的城市，
+	查询应该是这样的：
+
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT name, altitude
+    FROM ONLY cities
+    WHERE altitude &gt; 500;
+
+   name    | altitude
+-----------+----------
+ Las Vegas |     2174
+ Mariposa  |     1953</PRE
+><P>         
+  </P
+><P
+>   这里的 cities 前面的 <SPAN
+CLASS="QUOTE"
+>"ONLY"</SPAN
+> 表面该查询应该只对 cities 进行查找而不包括继承级别低于 cities 的表。
+   许多我们已经讨论过的命令 -- <TT
+CLASS="COMMAND"
+>SELECT</TT
+>，
+   <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> 和 <TT
+CLASS="COMMAND"
+>DELETE</TT
+> -- 支持这个 <SPAN
+CLASS="QUOTE"
+>"ONLY"</SPAN
+> 符号。
+  </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>继承与权限: </B
+>   因为权限并非是自动继承的，所以，企图访问一个父表的用户必须要么有和子表相同的权限，
+   要么必须使用 <SPAN
+CLASS="QUOTE"
+>"ONLY"</SPAN
+> 表示法。或者在现有的系统里创建一个新的继承关系，
+   不过要小心这样做不会带来更多问题。
+  </P
+></BLOCKQUOTE
+></DIV
+><P
+>   另外，下面的查询找出所有不是州府并且海拔高于 500 英尺的城市：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT name, altitude
+    FROM ONLY cities
+    WHERE altitude &gt; 500;
+
+   name    | altitude
+-----------+----------
+ Las Vegas |     2174
+ Mariposa  |     1953</PRE
+><P>
+  </P
+><P
+>   这里的 <TT
+CLASS="LITERAL"
+>ONLY</TT
+> 关键子表示这个查询只检索
+   <TT
+CLASS="STRUCTNAME"
+>cities</TT
+>，而不包括继承级别里 <TT
+CLASS="STRUCTNAME"
+>cities</TT
+> 下面的表。
+   许多我们已经讨论过的命令 &mdash; <TT
+CLASS="COMMAND"
+>SELECT</TT
+>，<TT
+CLASS="COMMAND"
+>UPDATE</TT
+> 和
+   <TT
+CLASS="COMMAND"
+>DELETE</TT
+> &mdash; 支持 <TT
+CLASS="LITERAL"
+>ONLY</TT
+> 关键子。
+   
+  </P
+><P
+>  有时候你可能想知道某条行版本来自哪个表。在每个表里我们都有一个系统属性叫
+  <TT
+CLASS="STRUCTFIELD"
+>tableoid</TT
+>，它可以告诉你源表是谁：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT c.tableoid, c.name, c.altitude
+FROM cities c
+WHERE c.altitude &gt; 500;</PRE
+><P>
+
+	它返回：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+> tableoid |   name    | altitude
+----------+-----------+----------
+   139793 | Las Vegas |     2174
+   139793 | Mariposa  |     1953
+   139798 | Madison   |      845</PRE
+><P>
+
+	（如果你想复现这个例子，你可能会得到不同的数字 OID。）
+	通过和<TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+>做一个连接，你可以看到实际的表名字∶
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT p.relname, c.name, c.altitude
+FROM cities c, pg_class p
+WHERE c.altitude &gt; 500 and c.tableoid = p.oid;</PRE
+><P>
+
+	它返回：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+> relname  |   name    | altitude
+----------+-----------+----------
+ cities   | Las Vegas |     2174
+ cities   | Mariposa  |     1953
+ capitals | Madison   |      845</PRE
+><P>
+   
+  </P
+><P
+>   继承并不自动从 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 或者 <TT
+CLASS="COMMAND"
+>COPY</TT
+> 中向继承级别中的其它表填充数据。
+   在我们的例子里，下面的
+   <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 语句不会成功：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT INTO cities (name, population, altitude, state)
+VALUES ('New York', NULL, NULL, 'NY');</PRE
+><P>
+   我们可能希望数据被传递到
+   <TT
+CLASS="STRUCTNAME"
+>capitals</TT
+> 表里面去，但是这是不会发生的：
+   <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 总是插入明确声明的那个表。
+   在某种场合下，我们可以使用规则重定向插入
+   （参阅 <A HREF="rules.html" >Chapter 34</A
+>）。不过它不能对上面的例子有什么帮助，
+   因为 <TT
+CLASS="STRUCTNAME"
+>cities</TT
+> 表并不包含字段 <TT
+CLASS="STRUCTFIELD"
+>state</TT
+>，
+   因此命令在规则施加之前就会被拒绝掉。
+  </P
+><P
+>   在表上可以定义广播到继承层次里的检查约束。所有父表的检查约束都会自动被所有子表继承。
+   不过其它类型的约束没有被继承。
+  </P
+><P
+>   一个表可以从多个父表继承，这种情况下它拥有父表们的字段的总和。
+   子表中任意定义的字段也会加入其中。如果同一个字段名出现在多个父表中，
+   或者同时出现在父表和子表的定义里，那么这些字段就会被<SPAN
+CLASS="QUOTE"
+>"融合"</SPAN
+>，
+   这样在子表里面就只有一个这样的字段。要想融合，字段必须是相同的数据类型，
+   否则就会抛出一个错误。融合的字段将会拥有它所继承的字段的所有约束。
+  </P
+><P
+>   表继承目前只能用 <A HREF="sql-createtable.html" ><I
+>CREATE TABLE</I
+></A
+> 语句定义。
+   相关的语句 <TT
+CLASS="COMMAND"
+>CREATE TABLE AS</TT
+> 不允许声明继承。
+   目前没有办法给现有的表加一个连接使之成为一个子表。
+   相似的还有，继承定义了之后，没有办法从一个子表上删除一个继承关系，
+   除非是删除整个表。如果子表存在，则不能删除父表。
+   如果你想删除一个表和其所有后代，一个简单的方法是用
+   <TT
+CLASS="LITERAL"
+>CASCADE</TT
+> 选项删除全部表。
+  </P
+><P
+>   <A HREF="sql-altertable.html" ><I
+>ALTER TABLE</I
+></A
+> 
+   会把所有数据定义和检查约束广播到继承层次里面去。
+   另外，只有在使用 <TT
+CLASS="LITERAL"
+>CASCADE</TT
+> 选项的情况下，才能删除父表的字段或者约束。
+   <TT
+CLASS="COMMAND"
+>ALTER TABLE</TT
+> 在重复字段融合和拒绝方面和 <TT
+CLASS="COMMAND"
+>CREATE TABLE</TT
+> 的情况一样。
+  </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="DDL-INHERIT-CAVEATS" >5.8.1. 注意事项</A
+></H2
+><P
+>   表访问权限并不会自动继承。因此，一个试图访问父表的用户还必须具有访问它的所有子表的权限，
+   或者必须使用 <TT
+CLASS="LITERAL"
+>ONLY</TT
+> 表示法。在向现有的继承层次添加新的子表的时候，
+   请注意给它赋予所有权限。
+  </P
+><P
+>	继承特性的一个严重的局限性是索引（包括唯一约束）和外键约束只施用于单个表，
+	而不包括它们的继承的子表。这一点不管对引用表还是被引用表都是事实，因此，在上面的例子里：
+
+   <P
+></P
+></P><UL
+><LI
+><P
+>      如果我们声明 <TT
+CLASS="STRUCTNAME"
+>cities</TT
+>.<TT
+CLASS="STRUCTFIELD"
+>name</TT
+> 为 <TT
+CLASS="LITERAL"
+>UNIQUE</TT
+> 或者是一个 <TT
+CLASS="LITERAL"
+>PRIMARY KEY</TT
+>，
+      那么也不会阻止 <TT
+CLASS="STRUCTNAME"
+>capitals</TT
+> 表拥有重复了名字的 <TT
+CLASS="STRUCTNAME"
+>cities</TT
+> 数据行。
+      并且这些重复的行缺省时在查询 <TT
+CLASS="STRUCTNAME"
+>cities</TT
+> 表的时候会显示出来。
+      实际上，缺省时 <TT
+CLASS="STRUCTNAME"
+>capitals</TT
+> 将完全没有唯一约束，因此可能包含带有同名的多个行。
+      你应该给 <TT
+CLASS="STRUCTNAME"
+>capitals</TT
+> 增加唯一约束，但是这样做也不会避免与 <TT
+CLASS="STRUCTNAME"
+>cities</TT
+> 的重复。
+     </P
+></LI
+><LI
+><P
+>      类似，如果我们声明 <TT
+CLASS="STRUCTNAME"
+>cities</TT
+>.<TT
+CLASS="STRUCTFIELD"
+>name</TT
+> <TT
+CLASS="LITERAL"
+>REFERENCES</TT
+> 某些其它的表，
+      这个约束不会自动广播到 <TT
+CLASS="STRUCTNAME"
+>capitals</TT
+>。在这种条件下，你可以通过手工给 <TT
+CLASS="STRUCTNAME"
+>capitals</TT
+>
+      增加同样的 <TT
+CLASS="LITERAL"
+>REFERENCES</TT
+> 约束来做到这点。
+     </P
+></LI
+><LI
+><P
+>      声明其它一个表的字段为 <TT
+CLASS="LITERAL"
+>REFERENCES cities(name)</TT
+> 将允许其它表包含城市名，
+      但是不包含首府名。这种情况下没有很好的绕开办法。
+     </P
+></LI
+></UL
+><P>
+
+   这些缺点很可能在将来的版本中修补，但同时你也需要考虑一下，继承是否对你的问题真正有用。
+  </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>废弃: </B
+>     在以前的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本里，
+     缺省的行为是不在查询里包含子表。后来发现这么做很容易出错并且也违反了 SQL 标柱。
+     在老的语法里，要包含子表，你需要在表名字后面附加一个 <TT
+CLASS="LITERAL"
+>*</TT
+>。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * from cities*;</PRE
+><P>
+     你仍然可以用附加 <TT
+CLASS="LITERAL"
+>*</TT
+> 的方法明确声明扫描子表，
+     以及写 <TT
+CLASS="LITERAL"
+>ONLY</TT
+> 的方法明确声明不扫描子表。
+     不过，从版本 7.1 开始，对无修饰的表名称的缺省行为已经修改成扫描其子表，
+     而以前的缺省是不这么做。要想获得老的缺省行为，
+     可以关闭配置参数 <A HREF="runtime-config-compatible.html#GUC-SQL-INHERITANCE" >sql_inheritance</A
+>。
+   </P
+></BLOCKQUOTE
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="ddl-schemas.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="ddl-partitioning.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >模式</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="ddl.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >分区</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

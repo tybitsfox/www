@@ -1,0 +1,579 @@
+<HTML
+><HEAD
+><TITLE
+>用 C 写触发器</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="触发器"
+HREF="triggers.html"><LINK
+REL="PREVIOUS"
+TITLE="数据改变的可视性"
+HREF="trigger-datachanges.html"><LINK
+REL="NEXT"
+TITLE="一个完整的例子"
+HREF="trigger-example.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="trigger-datachanges.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="triggers.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 33. 触发器</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="triggers.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="trigger-example.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="TRIGGER-INTERFACE"
+>33.3. 用 C 写触发器</A
+></H1
+><A
+NAME="AEN33447"
+></A
+><P
+>	本章描述触发器函数的低层细节。只有当你用 C 书写触发器函数的时候才需要这些信息。
+	如果你用某种高级语言写触发器，那么系统就会为你处理这些细节。
+	在大多数情况下，你在书写自己的 C 触发器之前应该考虑使用过程语言。
+	每种过程语言的文档里面有关于如何用该语言书写触发器的解释。
+   </P
+><P
+>    触发器函数必须使用<SPAN
+CLASS="QUOTE"
+>"版本 1（version 1）"</SPAN
+>的函数管理器接口。
+   </P
+><P
+>	当一个函数被触发器管理器调用时，它不会收到任何普通参数，而是收到一个指向<TT
+CLASS="STRUCTNAME"
+>TriggerData</TT
+>结构的<SPAN
+CLASS="QUOTE"
+>"环境"</SPAN
+>指针。
+	C 函数可以通过执行实际上被扩展为
+</P><PRE
+CLASS="PROGRAMLISTING"
+>((fcinfo)-&gt;context != NULL &#38;&#38; IsA((fcinfo)-&gt;context, TriggerData))</PRE
+><P>
+	的宏
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CALLED_AS_TRIGGER(fcinfo)</PRE
+><P>
+	<TT
+CLASS="LITERAL"
+>CALLED_AS_TRIGGER(fcinfo)</TT
+>，
+	来判断自己是否从触发器管理器中调用的。
+	如果此宏返回真(TRUE)，则可以安全地把<TT
+CLASS="LITERAL"
+>fcinfo-&gt;context</TT
+>转换成类型
+	<TT
+CLASS="LITERAL"
+>TriggerData *</TT
+> 然后使用这个指向
+	<TT
+CLASS="STRUCTNAME"
+>TriggerData</TT
+> 的结构。
+	函数本身绝<I
+CLASS="EMPHASIS"
+>不能</I
+>更改 <TT
+CLASS="STRUCTNAME"
+>TriggerData</TT
+> 结构或者它指向的任何数据。
+   </P
+><P
+>	<TT
+CLASS="STRUCTNAME"
+>struct TriggerData</TT
+> 是在
+	<TT
+CLASS="FILENAME"
+>commands/trigger.h</TT
+> 里面定义的：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct TriggerData
+{
+    NodeTag       type;
+    TriggerEvent  tg_event;
+    Relation      tg_relation;
+    HeapTuple     tg_trigtuple;
+    HeapTuple     tg_newtuple;
+    Trigger      *tg_trigger;
+    Buffer        tg_trigtuplebuf;
+    Buffer        tg_newtuplebuf;
+} TriggerData;</PRE
+><P>
+
+	这些成员的定义如下：
+
+    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="STRUCTFIELD"
+>type</TT
+></DT
+><DD
+><P
+>	总是 <TT
+CLASS="LITERAL"
+>T_TriggerData</TT
+>。
+       </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+>tg_event</TT
+></DT
+><DD
+><P
+>	描述调用函数的事件。你可以用下面的宏检查 <TT
+CLASS="LITERAL"
+>tg_event</TT
+>：
+
+	<P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>TRIGGER_FIRED_BEFORE(tg_event)</TT
+></DT
+><DD
+><P
+>		如果触发器是在操作前触发，返回真。
+	   </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>TRIGGER_FIRED_AFTER(tg_event)</TT
+></DT
+><DD
+><P
+>		如果触发器是在操作后触发，返回真。
+	   </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>TRIGGER_FIRED_FOR_ROW(tg_event)</TT
+></DT
+><DD
+><P
+>		如果触发器是行级别事件触发，返回真。
+	   </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>TRIGGER_FIRED_FOR_STATEMENT(tg_event)</TT
+></DT
+><DD
+><P
+>		如果触发器是语句级别事件触发，返回真。
+	   </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>TRIGGER_FIRED_BY_INSERT(tg_event)</TT
+></DT
+><DD
+><P
+>		如果触发器是由<TT
+CLASS="COMMAND"
+>INSERT</TT
+>触发，返回真。
+	   </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>TRIGGER_FIRED_BY_UPDATE(tg_event)</TT
+></DT
+><DD
+><P
+>		如果触发器是由<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>触发，返回真。
+	   </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>TRIGGER_FIRED_BY_DELETE(tg_event)</TT
+></DT
+><DD
+><P
+>		如果触发器是由<TT
+CLASS="COMMAND"
+>DELETE</TT
+>触发，返回真。
+	   </P
+></DD
+></DL
+></DIV
+><P>
+       </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+>tg_relation</TT
+></DT
+><DD
+><P
+>	是一个指向描述被触发的关系的结构的指针。
+	请参考<TT
+CLASS="FILENAME"
+>utils/rel.h</TT
+>获取关于此结构的详细信息。
+	最让人感兴趣的事情是
+	<TT
+CLASS="LITERAL"
+>tg_relation-&gt;rd_att</TT
+>（关系行的描述）
+	和<TT
+CLASS="LITERAL"
+>tg_relation-&gt;rd_rel-&gt;relname</TT
+>（关系名。这个变量的类型不是
+	<TT
+CLASS="TYPE"
+>char*</TT
+>，而是<TT
+CLASS="TYPE"
+>NameData</TT
+>。
+	如果你需要一份名字的拷贝，用
+	<TT
+CLASS="LITERAL"
+>SPI_getrelname(tg_relation)</TT
+>获取<TT
+CLASS="TYPE"
+>char*</TT
+> ）。
+       </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+>tg_trigtuple</TT
+></DT
+><DD
+><P
+>	是一个指向触发触发器的行的指针。这是一个正在被插入（<TT
+CLASS="COMMAND"
+>INSERT</TT
+>），
+	删除（<TT
+CLASS="COMMAND"
+>DELETE</TT
+>）或更新（<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>）的行。如果是
+	<TT
+CLASS="COMMAND"
+>INSERT</TT
+>或<TT
+CLASS="COMMAND"
+>DELETE</TT
+>，
+	那么这就是你将返回给执行者的东西 &mdash; 如果你不想用另一条行覆盖此行（<TT
+CLASS="COMMAND"
+>INSERT</TT
+>）或忽略操作（在<TT
+CLASS="COMMAND"
+>DELETE</TT
+>的时候）。
+       </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+>tg_newtuple</TT
+></DT
+><DD
+><P
+>	如果是<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>，这是一个指向新版本的行的指针，如果是<TT
+CLASS="COMMAND"
+>INSERT</TT
+> 或<TT
+CLASS="COMMAND"
+>DELETE</TT
+>，
+	就是<TT
+CLASS="SYMBOL"
+>NULL</TT
+>。
+	这就是你将返回给执行者的东西 &mdash; 如果事件是 <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> 并且你不想用另一条行替换这条行或忽略操作。
+       </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+>tg_trigger</TT
+></DT
+><DD
+><P
+>	是一个指向结构<TT
+CLASS="STRUCTNAME"
+>Trigger</TT
+>的指针，该结构在<TT
+CLASS="FILENAME"
+>utils/rel.h</TT
+>里定义：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct Trigger
+{
+    Oid	 tgoid;
+    char       *tgname;
+    Oid	 tgfoid;
+    int16       tgtype;
+    bool	tgenabled;
+    bool	tgisconstraint;
+    Oid	 tgconstrrelid;
+    bool	tgdeferrable;
+    bool	tginitdeferred;
+    int16       tgnargs;
+    int16       *tgattr;
+    char      **tgargs;
+} Trigger;</PRE
+><P>
+
+	<TT
+CLASS="STRUCTFIELD"
+>tgname</TT
+>是触发器的名称，<TT
+CLASS="STRUCTFIELD"
+>tgnargs</TT
+>
+	是在<TT
+CLASS="STRUCTFIELD"
+>tgargs</TT
+>里参数的数量，
+	<TT
+CLASS="STRUCTFIELD"
+>tgargs</TT
+>是一个指针数组，数组里每个指针指向在
+	<TT
+CLASS="COMMAND"
+>CREATE TRIGGER</TT
+>语句里声明的参数。其他成员只在内部使用。
+       </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+>tg_trigtuplebuf</TT
+></DT
+><DD
+><P
+>	如果没有这样的远祖或者没有存储在磁盘缓冲区里，
+	则是包含 <TT
+CLASS="STRUCTFIELD"
+>tg_trigtuple</TT
+> 或者 <TT
+CLASS="SYMBOL"
+>InvalidBuffer</TT
+> 的缓冲区。
+       </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+>tg_newtuplebuf</TT
+></DT
+><DD
+><P
+>	如果没有这样的远祖或者它并未存储在磁盘缓冲区里，那么就是包含 <TT
+CLASS="STRUCTFIELD"
+>tg_newtuple</TT
+>，
+	或者 <TT
+CLASS="SYMBOL"
+>InvalidBuffer</TT
+> 的缓冲区。
+       </P
+></DD
+></DL
+></DIV
+><P>
+   </P
+><P
+>    一个触发器函数必须返回一个  <TT
+CLASS="STRUCTNAME"
+>HeapTuple</TT
+> 指针或者一个 <TT
+CLASS="SYMBOL"
+>NULL</TT
+> 指针
+    （<I
+CLASS="EMPHASIS"
+>不是</I
+> SQL NULL，也就是说，不要设置 <TT
+CLASS="PARAMETER"
+>isNull</TT
+> 为真）。
+    请注意如果你不想修改正在被操作的行，那么要根据情况返回 <TT
+CLASS="STRUCTFIELD"
+>tg_trigtuple</TT
+> 或者 <TT
+CLASS="STRUCTFIELD"
+>tg_newtuple</TT
+>。
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="trigger-datachanges.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="trigger-example.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>数据改变的可视性</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="triggers.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>一个完整的例子</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

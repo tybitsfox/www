@@ -1,0 +1,1089 @@
+<HTML
+><HEAD
+><TITLE
+>CREATE TYPE</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="SQL 命令"
+HREF="sql-commands.html"><LINK
+REL="PREVIOUS"
+TITLE="CREATE TRIGGER"
+HREF="sql-createtrigger.html"><LINK
+REL="NEXT"
+TITLE="CREATE USER"
+HREF="sql-createuser.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="REFENTRY"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sql-createtrigger.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sql-createtrigger.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sql-createuser.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sql-createuser.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SQL-CREATETYPE"
+>CREATE TYPE</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN43948"
+></A
+><H2
+>Name</H2
+>CREATE TYPE&nbsp;--&nbsp;定义一个新的数据类型</DIV
+><A
+NAME="AEN43951"
+></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN43953"
+></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>CREATE TYPE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> AS
+    ( <TT
+CLASS="REPLACEABLE"
+><I
+>attribute_name</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>data_type</I
+></TT
+> [, ... ] )
+
+CREATE TYPE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> (
+    INPUT = <TT
+CLASS="REPLACEABLE"
+><I
+>input_function</I
+></TT
+>,
+    OUTPUT = <TT
+CLASS="REPLACEABLE"
+><I
+>output_function</I
+></TT
+>
+    [ , RECEIVE = <TT
+CLASS="REPLACEABLE"
+><I
+>receive_function</I
+></TT
+> ]
+    [ , SEND = <TT
+CLASS="REPLACEABLE"
+><I
+>send_function</I
+></TT
+> ]
+    [ , ANALYZE = <TT
+CLASS="REPLACEABLE"
+><I
+>analyze_function</I
+></TT
+> ]
+    [ , INTERNALLENGTH = { <TT
+CLASS="REPLACEABLE"
+><I
+>internallength</I
+></TT
+> | VARIABLE } ]
+    [ , PASSEDBYVALUE ]
+    [ , ALIGNMENT = <TT
+CLASS="REPLACEABLE"
+><I
+>alignment</I
+></TT
+> ]
+    [ , STORAGE = <TT
+CLASS="REPLACEABLE"
+><I
+>storage</I
+></TT
+> ]
+    [ , DEFAULT = <TT
+CLASS="REPLACEABLE"
+><I
+>default</I
+></TT
+> ]
+    [ , ELEMENT = <TT
+CLASS="REPLACEABLE"
+><I
+>element</I
+></TT
+> ]
+    [ , DELIMITER = <TT
+CLASS="REPLACEABLE"
+><I
+>delimiter</I
+></TT
+> ]
+)</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN43970"
+></A
+><H2
+>描述</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>CREATE TYPE</TT
+> 为当前数据库注册一个新的数据类型。
+	定义该类型的用户成为其所有者。
+  </P
+><P
+>	如果给出模式名，那么该类型是在指定模式中创建。
+	否则它是在当前模式中创建。类型名必需和同一模式中任何现有的类型或者域不同。
+	（因为表和数据类型有联系，类型名不能和同模式中的表名字冲突。）
+  </P
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN43975"
+></A
+><H3
+>复合类型</H3
+><P
+>   第一种形式的 <TT
+CLASS="COMMAND"
+>CREATE TYPE</TT
+> 创建一个复合类型。
+   复合类型是通过一列属性名和数据类型声明的。这样实际上和一个表的行类型一样，
+   但是如果我们只是想定义一个类型，那么使用 <TT
+CLASS="COMMAND"
+>CREATE TYPE</TT
+> 避免了直接创建实际的表。
+   一个独立的复合类型做一个函数的参数或者返回类型是非常有用的。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN43980"
+></A
+><H3
+>基本类型</H3
+><P
+>	第二种形式的<TT
+CLASS="COMMAND"
+>CREATE TYPE</TT
+>创建一种新的基本类型（标量类型）。
+	参数可以以任意的顺序出现，而不是上面显示的那样。并且大多数都是可选的。
+	它要求要在定义类型之前先注册两个函数（用<TT
+CLASS="COMMAND"
+>CREATE FUNCTION</TT
+>命令）。
+	支持函数 <TT
+CLASS="REPLACEABLE"
+><I
+>input_function</I
+></TT
+> 和
+	<TT
+CLASS="REPLACEABLE"
+><I
+>output_function</I
+></TT
+> 是必须的，
+	而函数 <TT
+CLASS="REPLACEABLE"
+><I
+>receive_function</I
+></TT
+>，
+	<TT
+CLASS="REPLACEABLE"
+><I
+>send_function</I
+></TT
+> 和
+	<TT
+CLASS="REPLACEABLE"
+><I
+>analyze_function</I
+></TT
+> 是可选的。
+	通常，这些函数必须用 C 或者其它低层语言编写。
+  </P
+><P
+>	函数
+	<TT
+CLASS="REPLACEABLE"
+><I
+>input_function</I
+></TT
+>
+	将该类型的外部文本形式转换成可以被对该类型操作的操作符和函数识别的内部形式。
+	<TT
+CLASS="REPLACEABLE"
+><I
+>output_function</I
+></TT
+>
+	用做相反用途。 输入函数可以声明为接受一个类型为
+	<TT
+CLASS="TYPE"
+>c_string</TT
+> 的参数，或者接受三个类型分别为
+	<TT
+CLASS="TYPE"
+>c_string</TT
+>，<TT
+CLASS="TYPE"
+>oid</TT
+>，<TT
+CLASS="TYPE"
+>integer</TT
+> 的参数。
+	第一个参数是 C 字串形式的输入文本，第二个是在该类型为数组类型时其元素的类型 OID，
+	（如果类型是复合类型，就是自己的 OID）
+	第三个是目标字段的<TT
+CLASS="LITERAL"
+>typmod</TT
+>，如果已知的话（如果不是，将传递 -1）。
+	输入函数必须返回一个该数据类型本身的数值。
+	输出函数必须声明为接受一个类型为新数据类型的参数，
+	输出函数应该返回类型 <TT
+CLASS="TYPE"
+>cstring</TT
+>。
+  </P
+><P
+>   可选的 <TT
+CLASS="REPLACEABLE"
+><I
+>receive_function</I
+></TT
+> 把该类型的外部二进制表现形式转换成内部表现形式。
+   如果没有提供这个函数，那么该类型不能用二进制输入。二进制格式应该选取那种转换成内部格式比较容易的，同时还有一定移植性的。
+   （比如，标准的整数数据类型使用网络字节序作为外部的二进制表现形式，而内部表现形式是机器的本机字节序。）
+   接收函数应该声明为接受一个类型为 <TT
+CLASS="TYPE"
+>internal</TT
+> 的参数，
+   或者两个类型分别为 <TT
+CLASS="TYPE"
+>internal</TT
+> 和 <TT
+CLASS="TYPE"
+>oid</TT
+> 的参数。
+   它必须返回一个数据类型自身的数值。（第一个参数是一个指向一个 <TT
+CLASS="TYPE"
+>StringInfo</TT
+> 缓冲区的，保存接受字节串的指针；
+   可选的第二个参数是元素类型 OID ——如果类型是一个数组类型的话，如果是复合类型，则是类型自己的 OID。）
+   类似的，可选的 <TT
+CLASS="REPLACEABLE"
+><I
+>send_function</I
+></TT
+>
+   把类型转换为外部二进制表现形式。
+   如果没有提供这些函数，那么类型就不能用二进制方式输出。发送函数必须声明为接收一个新数据类型。
+   发送函数必须返回 <TT
+CLASS="TYPE"
+>bytea</TT
+>。
+  </P
+><P
+>	这个时候你应该觉得奇怪，就是输入和输出函数怎么可以声明为返回新类型的结果或者是接受新类型的参数，
+	而且是在新类型创建之前就需要创建它们。
+	答案是输入函数必须先创建，然后是输出函数，最后是数据类型。
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 将首先把新数据类型的名字看作输入函数的返回类型。
+	它将创建一个<SPAN
+CLASS="QUOTE"
+>"壳"</SPAN
+>类型，这个类型只是在
+	<TT
+CLASS="LITERAL"
+>pg_type</TT
+>里面的一个占位符，然后把输入函数定义和这个壳类型连接起来。
+	类似的是输出函数将连接到（现在已经存在）的壳类型。最后，
+	<TT
+CLASS="COMMAND"
+>CREATE TYPE</TT
+>  把这个壳类型替换成完整的类型定义，这样就可以使用新类型了。
+  </P
+><P
+>   可选的 <TT
+CLASS="REPLACEABLE"
+><I
+>analyze_function</I
+></TT
+> 为该数据类型的字段执行与该类型相关的统计信息手机。
+   缺省的时候，如果该类型有个缺省的 b-tree 操作符表，那么<TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 将视图使用该类型的<SPAN
+CLASS="QUOTE"
+>"等于"</SPAN
+>和<SPAN
+CLASS="QUOTE"
+>"小于"</SPAN
+>操作符。
+   对于非标量类型，这种行为很可能不合适，因此我们可以通过提供一个客户化的分析函数覆盖它。
+   分析函数必须声明为接收一个类型为 <TT
+CLASS="TYPE"
+>internal</TT
+> 的一个参数，并且返回一个 <TT
+CLASS="TYPE"
+>boolean</TT
+> 值。
+   分析函数的详细 API 在 <TT
+CLASS="FILENAME"
+>src/include/commands/vacuum.h</TT
+> 里。
+  </P
+><P
+>	尽管新类型的内部表现形式只有 I/O 函数和其它你创建来使用该类型的函数了解，
+	但内部表现还是有几个属性必须为 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 声明。
+	这些中最重要的是 <TT
+CLASS="REPLACEABLE"
+><I
+>internallength</I
+></TT
+>。
+	基本数据类型可定义成为定长，这时
+	<TT
+CLASS="REPLACEABLE"
+><I
+>internallength</I
+></TT
+>
+	是一个正整数，也可以是变长的，通过把
+	<TT
+CLASS="REPLACEABLE"
+><I
+>internallength</I
+></TT
+>
+	设置为 <TT
+CLASS="OPTION"
+>VARIABLE</TT
+> 表示。（在内部，这个状态
+	是通过将<TT
+CLASS="LITERAL"
+>typlen</TT
+>设置为 -1 实现的。）所有变长类型的内部形式都必须以一个四字节整数开头，这个整数给出此类型这个数值的全长。
+  </P
+><P
+>   可选的标记 <TT
+CLASS="LITERAL"
+>PASSEDBYVALUE</TT
+> 表明该类型的数值是用值传递的，
+   而不是用引用。你不能传递那些内部形式大于 <TT
+CLASS="TYPE"
+>Datum</TT
+> （大多数机器上是 4 字节，有些是 8 字节）类型的尺寸的数据类型的值。
+  </P
+><P
+>	<TT
+CLASS="REPLACEABLE"
+><I
+>alignment</I
+></TT
+> 参数声明该数据类型要求的对齐存储方式。
+	允许的数值等效于按照 1，2，4，或者 8 字节边界对齐。请注意变长类型必须有至少 4 字节的对齐，
+	因为它们必须包含一个 <TT
+CLASS="TYPE"
+>int4</TT
+> 作为它们的第一个成份。
+  </P
+><P
+>	<TT
+CLASS="REPLACEABLE"
+><I
+>storage</I
+></TT
+> 参数允许为变长数据类型选择存储策略。
+	（定长类型只允许使用 <TT
+CLASS="LITERAL"
+>plain</TT
+>）。
+	<TT
+CLASS="LITERAL"
+>plain</TT
+> 声明该数据类型总是用内联的方式而不是压缩的方式存储。
+	<TT
+CLASS="LITERAL"
+>extended</TT
+> 声明系统将首先试图压缩一个长的数据值，然后如果它仍然太长的话就将它的值移出主表的行，
+	但系统将不会压缩它。
+	<TT
+CLASS="LITERAL"
+>main</TT
+> 允许压缩，但是不赞成把数值移动出主表。
+	（用这种存储策略的数据项可能仍将移动出主表，如果不能放在一行里的话，
+	但是它们将比 <TT
+CLASS="LITERAL"
+>extended</TT
+> 和
+	<TT
+CLASS="LITERAL"
+>external</TT
+> 项更愿意呆在主表里。）
+  </P
+><P
+>	如果用户希望字段的数据类型缺省时不是 NULL，而是其它什么东西，
+	那么你可以声明一个缺省值。
+	在 <TT
+CLASS="LITERAL"
+>DEFAULT</TT
+> 关键字里面声明缺省值。
+	（这样的缺省可以被附着在特定字段上的明确的 <TT
+CLASS="OPTION"
+>DEFAULT</TT
+> 子句覆盖。）
+  </P
+><P
+>	要表示一个类型是数组，用 <TT
+CLASS="OPTION"
+>ELEMENT</TT
+> 关键字声明数组元素的类型。
+	比如，要定义一个 4 字节整数(<TT
+CLASS="TYPE"
+>int4</TT
+>)的数组，声明
+	</P><PRE
+CLASS="PROGRAMLISTING"
+>ELEMENT = int4</PRE
+><P>。
+	有关数组类型的更多细节在下面描述。
+  </P
+><P
+>	要声明用于这种类型数组的外部形式的数值之间的分隔符，可用
+	<TT
+CLASS="REPLACEABLE"
+><I
+>delimiter</I
+></TT
+>
+	声明指定分隔符。缺省的分隔符是逗号（<TT
+CLASS="LITERAL"
+>,</TT
+>）。
+	请注意分隔符是和数组元素类型相关联，而不是数组类型本身。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN44051"
+></A
+><H3
+>数组类型</H3
+><P
+>	在创建用户定义数据类型的时候，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	自动创建一个与之关联的数组类型，其名字由该基本类型的名字前缀一个下划线组成。
+	分析器理解这个命名传统，并且把对类型为
+	<TT
+CLASS="LITERAL"
+>foo[]</TT
+> 的字段的请求转换成对类型为 <TT
+CLASS="LITERAL"
+>_foo</TT
+>
+	的字段的请求。这个隐含创建的数组类型是变长并且使用内建的输入和输出函数 <TT
+CLASS="LITERAL"
+>array_in</TT
+> 和
+	<TT
+CLASS="LITERAL"
+>array_out</TT
+>。
+   </P
+><P
+>	你很可能会问如果系统自动制作正确的数组类型，那为什么有个
+	<TT
+CLASS="OPTION"
+>ELEMENT</TT
+>选项？使用 <TT
+CLASS="OPTION"
+>ELEMENT</TT
+> 有用的唯一的场合是在你制作的定长类型碰巧在内部是一个一定数目相同事物的数组，
+	而你又想允许这 N 个事物可以通过脚标直接关联，以及那些你准备把该类型当做整体进行的操作。
+	比如，类型 <TT
+CLASS="TYPE"
+>name</TT
+> 就允许其构成 <TT
+CLASS="TYPE"
+>char</TT
+> 用这种方法关联。
+	一个二维的 <TT
+CLASS="TYPE"
+>point</TT
+> 类型也可以允许其两个构成浮点型按照类似 <TT
+CLASS="LITERAL"
+>point[0]</TT
+> 和
+	<TT
+CLASS="LITERAL"
+>point[1]</TT
+> 的方法关联。
+	请注意这个功能只适用与那些内部形式是一个相同的定长域的序列的类型。
+	一个可以脚标化的变长类型必须有被
+	<TT
+CLASS="LITERAL"
+>array_in</TT
+> 和 <TT
+CLASS="LITERAL"
+>array_out</TT
+> 使用的一般化的内部表现形式。
+	出于历史原因（也就是说，那些明显错误但补救来得太迟的问题），定长数组类型的脚标从零开始，而不是象变长类型那样的从一开始。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN44069"
+></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+></DT
+><DD
+><P
+>	将要创建的类型名（可以有模式修饰）。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>attribute_name</I
+></TT
+></DT
+><DD
+><P
+>      复合类型的一个属性（字段）的名字。
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>data_type</I
+></TT
+></DT
+><DD
+><P
+>      一个要成为一个复合类型的字段的现有数据类型的名字。
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>input_function</I
+></TT
+></DT
+><DD
+><P
+>	一个函数的名称，
+	将数据从外部类型转换成内部类型。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>output_function</I
+></TT
+></DT
+><DD
+><P
+>	一个函数的名称，
+	将数据从内部格式转换成适于显示的形式。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>receive_function</I
+></TT
+></DT
+><DD
+><P
+>      把数据从类型的外部二进制形式转换成其内部形式的函数的名字。
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>send_function</I
+></TT
+></DT
+><DD
+><P
+>      把数据从类型的内部形式转换成其外部二进制形式的函数名。
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>analyze_function</I
+></TT
+></DT
+><DD
+><P
+>      为该数据类型执行统计分析的函数名。
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>internallength</I
+></TT
+></DT
+><DD
+><P
+>	一个数值常量，说明新类型的内部表现形式的长度。缺省的假设是它是变长的。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>alignment</I
+></TT
+></DT
+><DD
+><P
+>	该数据类型的存储对齐要求。如果声明了，必须是
+	<TT
+CLASS="LITERAL"
+>char</TT
+>， <TT
+CLASS="LITERAL"
+>int2</TT
+>，
+	<TT
+CLASS="LITERAL"
+>int4</TT
+> 或 <TT
+CLASS="LITERAL"
+>double</TT
+>；
+	缺省是 <TT
+CLASS="LITERAL"
+>int4</TT
+>。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>storage</I
+></TT
+></DT
+><DD
+><P
+>	该数据类型的存储策略。如果声明了，必须是
+	<TT
+CLASS="LITERAL"
+>plain</TT
+>，<TT
+CLASS="LITERAL"
+>external</TT
+>，
+	<TT
+CLASS="LITERAL"
+>extended</TT
+>，或 <TT
+CLASS="LITERAL"
+>main</TT
+>；
+	缺省是 <TT
+CLASS="LITERAL"
+>plain</TT
+>。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>default</I
+></TT
+></DT
+><DD
+><P
+>	该类型的缺省值。通常是省略它的，所以缺省是 NULL。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>element</I
+></TT
+></DT
+><DD
+><P
+>	被创建的类型是数组；这个声明数组元素的类型。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>delimiter</I
+></TT
+></DT
+><DD
+><P
+>	将用做数组的数据元素之间分隔符的字符。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="SQL-CREATETYPE-NOTES"
+></A
+><H2
+>注意</H2
+><P
+>	用户定义类型名不能以下划线（<TT
+CLASS="LITERAL"
+>_</TT
+>）
+	开头而且只能有 62 个字符长。（或者通常是 <TT
+CLASS="SYMBOL"
+>NAMEDATALEN-2</TT
+>，
+	而不是其它名字那样的可以有 <TT
+CLASS="SYMBOL"
+>NAMEDATALEN-1</TT
+> 个字符）。
+	以下划线开头的类型名被解析成内部创建的数组类型名。
+   </P
+><P
+>   在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本 7.3 以前，我们要通过使用占位伪类型 <TT
+CLASS="TYPE"
+>opaque</TT
+> 代替函数的前向引用来避免创建壳类型。
+   7.3 之前 <TT
+CLASS="TYPE"
+>cstring</TT
+> 参数和结果同样需要声明伪 <TT
+CLASS="TYPE"
+>opaque</TT
+>。
+   要支持装载旧的转储外那间，<TT
+CLASS="COMMAND"
+>CREATE TYPE</TT
+> 将接受那些用 <TT
+CLASS="TYPE"
+>opaque</TT
+>声明的函数，
+   但是它回发出一条通知并且用正确的类型改变函数的声明。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN44165"
+></A
+><H2
+>例子</H2
+><P
+>   这个例子创建一个复合类型并且在一个函数定义中使用它：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TYPE compfoo AS (f1 int, f2 text);
+
+CREATE FUNCTION getfoo() RETURNS SETOF compfoo AS $$
+  SELECT fooid, fooname FROM foo
+$$ LANGUAGE SQL;</PRE
+><P>
+  </P
+><P
+>	这个命令创建<TT
+CLASS="TYPE"
+>box</TT
+>数据类型，并且将这种类型用于一个表定义：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TYPE box (
+    INTERNALLENGTH = 16,
+    INPUT = my_box_in_function,
+    OUTPUT = my_box_out_function
+);
+
+CREATE TABLE myboxes (
+    id integer,
+    description box
+);</PRE
+><P>
+  </P
+><P
+>	如果 <TT
+CLASS="TYPE"
+>box</TT
+> 的内部结构是一个四个
+	<TT
+CLASS="TYPE"
+>float4</TT
+> 的数组，我们可以说
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TYPE box (
+    INTERNALLENGTH = 16,
+    INPUT = my_box_in_function,
+    OUTPUT = my_box_out_function,
+    ELEMENT = float4
+);</PRE
+><P>
+	它允许一个 box 的数值成分成员可以用脚标访问。
+	否则该类型和前面的行为一样。
+  </P
+><P
+>	这条命令创建一个大对象类型并将其用于一个表定义：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TYPE bigobj (
+    INPUT = lo_filein, OUTPUT = lo_fileout,
+    INTERNALLENGTH = VARIABLE
+);
+CREATE TABLE big_objs (
+    id integer,
+    obj bigobj
+);</PRE
+><P>
+  </P
+><P
+>   更多的例子，包括合适的输入和输出函数，在 <A
+HREF="xtypes.html"
+>Section 32.11</A
+>。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="SQL-CREATETYPE-COMPATIBILITY"
+></A
+><H2
+>兼容性</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>CREATE TYPE</TT
+> 命令是
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 扩展。在 SQL:1999 里有一个 <TT
+CLASS="COMMAND"
+>CREATE TYPE</TT
+> 语句，但是细节上和
+	PostgreSQL 的有比较大区别。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="SQL-CREATETYPE-SEE-ALSO"
+></A
+><H2
+>又见</H2
+><A
+HREF="sql-createfunction.html"
+><I
+>CREATE FUNCTION</I
+></A
+>, <A
+HREF="sql-droptype.html"
+><I
+>DROP TYPE</I
+></A
+>, <A
+HREF="sql-altertype.html"
+><I
+>ALTER TYPE</I
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sql-createtrigger.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sql-createuser.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>CREATE TRIGGER</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="sql-commands.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>CREATE USER</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

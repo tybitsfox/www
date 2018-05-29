@@ -1,0 +1,400 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>VACUUM PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="UPDATE" HREF="sql-update.html"><LINK REL="NEXT" TITLE="客户端应用" HREF="reference-client.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-update.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-update.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="reference-client.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="reference-client.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-VACUUM" >VACUUM</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN49132" ></A
+><H2
+>Name</H2
+>VACUUM&nbsp;--&nbsp;垃圾收集以及可选地分析一个数据库</DIV
+><A NAME="AEN49135" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN49137" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>VACUUM [ FULL | FREEZE ] [ VERBOSE ] [ <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> ]
+VACUUM [ FULL | FREEZE ] [ VERBOSE ] ANALYZE [ <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> [ (<TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> [, ...] ) ] ]</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN49142" ></A
+><H2
+>描述</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 回收已删除元组占据的存储空间。
+	在一般的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 操作里，
+	那些已经 DELETE 的元组或者被 UPDATE 过后过时的元组是没有从它们所属的表中物理删除的；
+	在完成 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 之前它们仍然存在。
+	因此我们有必须周期地运行  <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>，
+	特别是在常更新的表上。
+  </P
+><P
+>	如果没有参数，<TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 处理当前数据库里每个表，
+	如果有参数，<TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 只处理那个表。
+  </P
+><P
+>	<TT
+CLASS="COMMAND"
+>VACUUM ANALYZE</TT
+> 先执行一个 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>
+	然后是给每个选定的表执行一个 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+>。
+	对于日常维护脚本而言，这是一个很方便的组合。参阅
+	<A HREF="sql-analyze.html" ><I
+>ANALYZE</I
+></A
+>
+	获取更多有关其处理的细节。
+  </P
+><P
+>	简单的 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> （没有<TT
+CLASS="LITERAL"
+>FULL</TT
+>）
+	只是简单地回收空间并且令其可以再次使用。这种形式的命令可以和对表的普通读写并行操作，
+	因为没有请求排他锁。<TT
+CLASS="COMMAND"
+>VACUUM FULL</TT
+>
+	执行更广泛的处理，包括跨块移动元组，以便把表压缩到最少的磁盘块数目里。
+	这种形式要慢许多并且在处理的时候需要在表上施加一个排它锁。
+  </P
+><P
+>	<TT
+CLASS="LITERAL"
+>FREEZE</TT
+> 是一种特殊用途的选项，它导致元组尽可能快地标记为<SPAN
+CLASS="QUOTE"
+>"冻结(frozen)"</SPAN
+>，
+	而不是等到它们已经相当老的时候才标记。如果在同一个数据库上没有其它运行着的事务的时候完成这个命令，
+	那么系统就保证在数据库里的所有元组都是<SPAN
+CLASS="QUOTE"
+>"冻结(frozen)"</SPAN
+>的，
+	因此不会有事务 ID 重叠的问题，而和数据库未清理的时间没有关系。
+	我们不建议把 <TT
+CLASS="LITERAL"
+>FREEZE</TT
+> 用做日常用途。我们用它的唯一目的是准备和用户定义的模板数据库联接的时候，
+	或者是其它完全是只读的，
+	不会等到日常维护性 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 操作的数据库。
+	参阅 <A HREF="maintenance.html" >Chapter 22</A
+> 获取细节。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN49168" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>FULL</TT
+></DT
+><DD
+><P
+>	选择<SPAN
+CLASS="QUOTE"
+>"完全"</SPAN
+>清理，这样可以恢复更多的空间，
+	但是花的时间更多并且在表上施加了排它锁。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>FREEZE</TT
+></DT
+><DD
+><P
+>	选择激进的元组<SPAN
+CLASS="QUOTE"
+>"冻结"</SPAN
+>。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>VERBOSE</TT
+></DT
+><DD
+><P
+>        为每个表打印一份详细的清理工作报告。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>ANALYZE</TT
+></DT
+><DD
+><P
+>        更新用于优化器的统计信息，以决定执行查询的最有效方法。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+></DT
+><DD
+><P
+>	要清理的表的名称（可以有模式修饰）。缺省时是当前数据库中的所有表。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+></DT
+><DD
+><P
+>        要分析的具体的列/字段名称。缺省是所有列/字段。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN49203" ></A
+><H2
+>输出</H2
+><P
+>    如果声明了 <TT
+CLASS="LITERAL"
+>VERBOSE</TT
+>，<TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 发出过程信息，
+    以表明当前正在处理那个表。各种有关这些表的统计也会打印出来。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN49208" ></A
+><H2
+>注意</H2
+><P
+>	我们建议在经常<TT
+CLASS="COMMAND"
+>VACUUMM（清理）</TT
+>（至少每晚一次）生产数据库，
+	以保证不断地删除失效的行。尤其是在增删了大量记录之后，
+	对受影响的表执行 <TT
+CLASS="COMMAND"
+>VACUUM ANALYZE</TT
+>
+	命令是一个很好的习惯。这样做将更新系统目录为最近的更改，并且允许
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	查询优化器在规划用户查询时有更好的选择。
+   </P
+><P
+>	我们不建议日常使用 <TT
+CLASS="OPTION"
+>FULL</TT
+> 选项，但是可以在特殊情况下使用。
+	一个例子就是在你删除了一个表的大部分行之后，希望从物理上缩小该表以减少磁盘空间占用。<TT
+CLASS="COMMAND"
+>VACUUM FULL</TT
+>
+	通常要比单纯的  <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 收缩更多表的尺寸。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN49218" ></A
+><H2
+>例子</H2
+><P
+>        下面是一个在 regression （蜕变）数据库里某个表上执行
+        <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>的一个例子：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>regression=# VACUUM VERBOSE ANALYZE onek;
+INFO:  vacuuming "public.onek"
+INFO:  index "onek_unique1" now contains 1000 tuples in 14 pages
+DETAIL:  3000 index tuples were removed.
+0 index pages have been deleted, 0 are currently reusable.
+CPU 0.01s/0.08u sec elapsed 0.18 sec.
+INFO:  index "onek_unique2" now contains 1000 tuples in 16 pages
+DETAIL:  3000 index tuples were removed.
+0 index pages have been deleted, 0 are currently reusable.
+CPU 0.00s/0.07u sec elapsed 0.23 sec.
+INFO:  index "onek_hundred" now contains 1000 tuples in 13 pages
+DETAIL:  3000 index tuples were removed.
+0 index pages have been deleted, 0 are currently reusable.
+CPU 0.01s/0.08u sec elapsed 0.17 sec.
+INFO:  index "onek_stringu1" now contains 1000 tuples in 48 pages
+DETAIL:  3000 index tuples were removed.
+0 index pages have been deleted, 0 are currently reusable.
+CPU 0.01s/0.09u sec elapsed 0.59 sec.
+INFO:  "onek": removed 3000 tuples in 108 pages
+DETAIL:  CPU 0.01s/0.06u sec elapsed 0.07 sec.
+INFO:  "onek": found 3000 removable, 1000 nonremovable tuples in 143 pages
+DETAIL:  0 dead tuples cannot be removed yet.
+There were 0 unused item pointers.
+0 pages are entirely empty.
+CPU 0.07s/0.39u sec elapsed 1.56 sec.
+INFO:  analyzing "public.onek"
+INFO:  "onek": 36 pages, 1000 rows sampled, 1000 estimated total rows
+VACUUM</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN49223" ></A
+><H2
+>兼容性</H2
+><P
+>    <SPAN
+CLASS="ACRONYM"
+>SQL92</SPAN
+>里没有 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 语句。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN49228" ></A
+><H2
+>又见</H2
+><A HREF="app-vacuumdb.html" ><I
+><I
+>vacuumdb</I
+></I
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-update.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="reference-client.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >UPDATE</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >客户端应用</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

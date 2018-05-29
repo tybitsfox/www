@@ -1,0 +1,577 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>vacuumdb PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="客户端应用" HREF="reference-client.html"><LINK REL="PREVIOUS" TITLE="psql" HREF="app-psql.html"><LINK REL="NEXT" TITLE="PostgreSQL 服务器应用" HREF="reference-server.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="app-psql.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="app-psql.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="reference-server.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="reference-server.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="APP-VACUUMDB" ><SPAN
+CLASS="APPLICATION"
+>vacuumdb</SPAN
+></A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN53264" ></A
+><H2
+>Name</H2
+>vacuumdb&nbsp;--&nbsp;收集垃圾并且分析一个<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 数据库</DIV
+><A NAME="AEN53268" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN53270" ></A
+><H2
+>Synopsis</H2
+><P
+><TT
+CLASS="COMMAND"
+>vacuumdb</TT
+> [<TT
+CLASS="REPLACEABLE"
+><I
+>connection-option</I
+></TT
+>...] [--full | -f] [--verbose | -v] [--analyze | -z] [--table | -t <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+>
+     [( <TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> [,...] )]
+   ] [<TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+>]<BR><TT
+CLASS="COMMAND"
+>vacuumdb</TT
+> [<TT
+CLASS="REPLACEABLE"
+><I
+>connection-options</I
+></TT
+>...] [--all | -a] [--full | -f] [--verbose | -v] [--analyze | -z]</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="R1-APP-VACUUMDB-1" ></A
+><H2
+>描述</H2
+><P
+>   <SPAN
+CLASS="APPLICATION"
+>vacuumdb</SPAN
+> 是一个用于整理
+   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>  数据库的工具。
+   <SPAN
+CLASS="APPLICATION"
+>vacuumdb</SPAN
+> 还将会生成用于
+   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 查询优化器的内部统计数据。
+  </P
+><P
+>   <SPAN
+CLASS="APPLICATION"
+>vacuumdb</SPAN
+> 是
+   SQL 命令 <A HREF="sql-vacuum.html" ><I
+>VACUUM</I
+></A
+> 的封装。
+        因此，用哪种方法清理数据库都没什么特别的。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN53316" ></A
+><H2
+>输入</H2
+><P
+>    <SPAN
+CLASS="APPLICATION"
+>vacuumdb</SPAN
+> 接受下列命令行参数：
+    
+    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="OPTION"
+>-a</TT
+><BR><TT
+CLASS="OPTION"
+>--all</TT
+></DT
+><DD
+><P
+>	清理所有数据库。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>[<SPAN
+CLASS="OPTIONAL"
+>-d</SPAN
+>] <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>[<SPAN
+CLASS="OPTIONAL"
+>--dbname</SPAN
+>] <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        声明要被清理或分析的数据库名称。
+	如果没有声明这个参数并且没有使用 <TT
+CLASS="OPTION"
+>-a</TT
+>（或 <TT
+CLASS="OPTION"
+>--all</TT
+>），
+	那么从环境变量 <TT
+CLASS="ENVAR"
+>PGDATABASE</TT
+> 里读取数据库名。
+	如果那个也没有设置，则使用连接的用户名。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-e</TT
+><BR><TT
+CLASS="OPTION"
+>--echo</TT
+></DT
+><DD
+><P
+>        回显 <SPAN
+CLASS="APPLICATION"
+>vacuumdb</SPAN
+> 生成的查询并且把它发送到服务器。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-f</TT
+><BR><TT
+CLASS="OPTION"
+>--full</TT
+></DT
+><DD
+><P
+>	执行<SPAN
+CLASS="QUOTE"
+>"完全"</SPAN
+>清理．
+       </P
+></DD
+><DT
+>-q<BR>--quiet</DT
+><DD
+><P
+>        不显示响应。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-t</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> [ (<TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> [,...]) ]<BR><TT
+CLASS="OPTION"
+>--table</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> [ (<TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> [,...]) ]</DT
+><DD
+><P
+>        只是清理或分析 <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+>。
+        字段名称只是在与
+        <TT
+CLASS="OPTION"
+>--analyze</TT
+> 选项联合使用时才需要声明。
+       </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>        如果你声明了要清理的字段，你可能不得不在 shell 上逃逸圆括弧（见下面的例子）。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-v</TT
+><BR><TT
+CLASS="OPTION"
+>--verbose</TT
+></DT
+><DD
+><P
+>        在处理过程中打印详细信息。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-z</TT
+><BR><TT
+CLASS="OPTION"
+>--analyze</TT
+></DT
+><DD
+><P
+>        计算用于优化器的该数据库的统计值。
+       </P
+></DD
+></DL
+></DIV
+><P>
+   </P
+><P
+>    <SPAN
+CLASS="APPLICATION"
+>vacuumdb</SPAN
+>  还接受下面的命令行参数用于联接参数：
+    
+    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>-h <TT
+CLASS="REPLACEABLE"
+><I
+>host</I
+></TT
+><BR>--host <TT
+CLASS="REPLACEABLE"
+><I
+>host</I
+></TT
+></DT
+><DD
+><P
+>	声明运行服务器的机器的主机名。
+	如果主机名以斜杠开头，则它被用做到 Unix 域套接字的路径。
+       </P
+></DD
+><DT
+>-p <TT
+CLASS="REPLACEABLE"
+><I
+>port</I
+></TT
+><BR>--port <TT
+CLASS="REPLACEABLE"
+><I
+>port</I
+></TT
+></DT
+><DD
+><P
+>	声明服务器在侦听联接的 TCP 端口号或一个本地的 Unix 域套接字文件句柄。
+       </P
+></DD
+><DT
+>-U <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+><BR>--username <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+></DT
+><DD
+><P
+>        进行联接的用户名。
+       </P
+></DD
+><DT
+>-W<BR>--password</DT
+><DD
+><P
+>        强制口令输入提示。
+       </P
+></DD
+></DL
+></DIV
+><P>
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN53422" ></A
+><H2
+>环境</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="ENVAR"
+>PGDATABASE</TT
+><BR><TT
+CLASS="ENVAR"
+>PGHOST</TT
+><BR><TT
+CLASS="ENVAR"
+>PGPORT</TT
+><BR><TT
+CLASS="ENVAR"
+>PGUSER</TT
+></DT
+><DD
+><P
+>      缺省连接参数
+     </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN53436" ></A
+><H2
+>诊断</H2
+><P
+>        如果出差错了。参阅
+         <A HREF="sql-vacuum.html" ><I
+>VACUUM</I
+></A
+>
+        和 <A HREF="app-psql.html" ><I
+><I
+>psql</I
+></I
+></A
+>
+        获取关于错误信息和可能问题的详细描述。
+   数据库服务器必须在目标主机上运行。同时，前端库 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 使用的任何缺省连接设置和环境变量都适用。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN53442" ></A
+><H2
+>注意</H2
+><P
+>   <SPAN
+CLASS="APPLICATION"
+>vacuumdb</SPAN
+> 可能需要与 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+   服务器连接若干次，每次都询问口令。在这种情况下，设立一个 <TT
+CLASS="FILENAME"
+>~/.pgpass</TT
+>
+   是比较方便的。参阅 <A HREF="libpq-pgpass.html" >Section 28.12</A
+> 获取更多信息。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="R1-APP-VACUUMDB-3" ></A
+><H2
+>例子</H2
+><P
+>   整理数据库 <TT
+CLASS="LITERAL"
+>test</TT
+>：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$ </TT
+><TT
+CLASS="USERINPUT"
+><B
+>vacuumdb test</B
+></TT
+></PRE
+><P>
+   </P
+><P
+>   为优化器清理和分析一个名为 <TT
+CLASS="LITERAL"
+>bigdb</TT
+> 的数据库：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$ </TT
+><TT
+CLASS="USERINPUT"
+><B
+>vacuumdb --analyze bigdb</B
+></TT
+></PRE
+><P>
+   </P
+><P
+>        为清理数据库<TT
+CLASS="LITERAL"
+>xyzzy</TT
+>里表 <TT
+CLASS="LITERAL"
+>foo</TT
+>，
+        并且为优化器分析列 <TT
+CLASS="LITERAL"
+>bar</TT
+>：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$ </TT
+><TT
+CLASS="USERINPUT"
+><B
+>vacuumdb --analyze --verbose --table 'foo(bar)' xyzzy</B
+></TT
+></PRE
+><P>
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN53468" ></A
+><H2
+>又见</H2
+><A HREF="sql-vacuum.html" ><I
+>VACUUM</I
+></A
+>, 环境变量（<A HREF="libpq-envars.html" >Section 28.11</A
+>）</DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="app-psql.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="reference-server.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="reference-client.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >PostgreSQL 服务器应用</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

@@ -1,0 +1,65 @@
+<HTML><HEAD><TITLE>Declaring Exported Functions</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Source Discussion" HREF="zend.structure.html"><LINK REL="PREVIOUS" TITLE="Header File Inclusions" HREF="zend.structure.headers.html"><LINK REL="NEXT" TITLE="Declaration of the Zend Function Block" HREF="zend.structure.function-block.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="section" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="zend.structure.headers.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 31. Source Discussion</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="zend.structure.function-block.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="section"><H1 CLASS="section"><A NAME="zend.structure.exporting-functions"></A>Declaring Exported Functions</H1><P>&#13; To declare functions that are to be exported (i.e., made available to PHP
+as new native functions), Zend provides a set of macros. A sample declaration
+looks like this:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">ZEND_FUNCTION ( my_function );</PRE></TD></TR></TABLE>
+</P><P>&#13; <TT CLASS="literal">ZEND_FUNCTION</TT> declares a new C function that complies
+with Zend's internal API. This means that the function is of
+type <TT CLASS="literal">void</TT> and
+accepts <TT CLASS="literal">INTERNAL_FUNCTION_PARAMETERS</TT> (another macro) as
+parameters. Additionally, it prefixes the function name with
+<TT CLASS="literal">zif</TT>. The immediately expanded version of the above
+definitions would look like this:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">void zif_my_function ( INTERNAL_FUNCTION_PARAMETERS );</PRE></TD></TR></TABLE>
+Expanding <TT CLASS="literal">INTERNAL_FUNCTION_PARAMETERS</TT>
+results in the following:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">void zif_my_function( int ht
+                    , zval * return_value
+                    , zval * this_ptr
+                    , int return_value_used
+                    , zend_executor_globals * executor_globals
+                    );</PRE></TD></TR></TABLE>
+</P><P>&#13; Since the interpreter and executor core have been separated from
+the main PHP package, a second API defining macros and function
+sets has evolved: the Zend API. As the Zend API now handles quite
+a few of the responsibilities that previously belonged to PHP, a
+lot of PHP functions have been reduced to macros aliasing to calls
+into the Zend API. The recommended practice is to use the Zend API
+wherever possible, as the old API is only preserved for
+compatibility reasons. For example, the types <TT CLASS="envar">zval</TT>
+and <TT CLASS="envar">pval</TT> are identical. <TT CLASS="envar">zval</TT> is
+Zend's definition; <TT CLASS="envar">pval</TT> is PHP's definition
+(actually, <TT CLASS="envar">pval</TT> is an alias for <TT CLASS="envar">zval</TT>
+now). As the macro <TT CLASS="literal">INTERNAL_FUNCTION_PARAMETERS</TT>
+is a Zend macro, the above declaration contains
+<TT CLASS="envar">zval</TT>. When writing code, you should always use
+<TT CLASS="envar">zval</TT> to conform to the new Zend API.
+</P><P>&#13; The parameter list of this declaration is very important; you should keep these parameters in mind (see <A HREF="zend.structure.exporting-functions.html#tab.parameters">表格 31-1</A> for descriptions).
+<DIV CLASS="table"><A NAME="tab.parameters"></A><P><B>表格 31-1. Zend's Parameters to Functions Called from PHP</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD WIDTH="36%" ALIGN="LEFT" VALIGN="MIDDLE">Parameter</TD><TD WIDTH="64%" ALIGN="LEFT" VALIGN="MIDDLE">Description</TD></TR><TR><TD WIDTH="36%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">ht</TT></TD><TD WIDTH="64%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; The number of arguments passed to the Zend function.
+You should not touch this directly, but instead use ZEND_NUM_ARGS() to obtain the
+value.
+</TD></TR><TR><TD WIDTH="36%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="envar">return_value</TT></TD><TD WIDTH="64%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; This variable is used to pass any return values of
+your function back to PHP. Access to this variable is best done using the
+predefined macros. For a description of these see below.
+</TD></TR><TR><TD WIDTH="36%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">this_ptr</TT></TD><TD WIDTH="64%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Using this variable, you can gain access to the object
+in which your function is contained, if it's used within an object. Use
+the function <B CLASS="function">getThis()</B> to obtain this pointer.
+</TD></TR><TR><TD WIDTH="36%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">return_value_used</TT></TD><TD WIDTH="64%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; This flag indicates whether an eventual return value
+from this function will actually be used by the calling script.
+<TT CLASS="literal">0</TT> indicates that the return value is not used;
+<TT CLASS="literal">1</TT> indicates that the caller expects a return value.
+Evaluation of this flag can be done to verify correct usage of the function as
+well as speed optimizations in case returning a value requires expensive
+operations (for an example, see how <TT CLASS="filename">array.c</TT> makes use of
+this).
+</TD></TR><TR><TD WIDTH="36%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">executor_globals</TT></TD><TD WIDTH="64%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; This variable points to global settings of the Zend
+engine. You'll find this useful when creating new variables, for example
+(more about this later). The executor globals can also be introduced to your
+function by using the macro <TT CLASS="literal">TSRMLS_FETCH()</TT>.
+</TD></TR></TBODY></TABLE></DIV>
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="zend.structure.headers.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="zend.structure.function-block.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Header File Inclusions</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="zend.structure.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Declaration of the Zend Function Block</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

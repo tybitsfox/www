@@ -1,0 +1,64 @@
+<HTML><HEAD><TITLE>stream_socket_server</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Stream Functions" HREF="ref.stream.html"><LINK REL="PREVIOUS" TITLE="stream_socket_sendto" HREF="function.stream-socket-sendto.html"><LINK REL="NEXT" TITLE="stream_wrapper_register" HREF="function.stream-wrapper-register.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.stream-socket-sendto.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.stream-wrapper-register.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.stream-socket-server"></A>stream_socket_server</H1><DIV CLASS="refnamediv"><A NAME="AEN107111"></A><P> (PHP 5 CVS only)</P>stream_socket_server&nbsp;--&nbsp;
+Create an Internet or Unix domain server socket
+</DIV><DIV CLASS="refsect1"><A NAME="AEN107114"></A><H2>Description</H2>resource <B CLASS="methodname">stream_socket_server</B> ( string local_socket [, int &#38;errno [, string &#38;errstr [, int flags [, resource context]]]])<BR></BR><P>&#13; Creates a stream or datagram socket on the specified
+<TT CLASS="parameter"><I>local_socket</I></TT>. The type of socket created
+is determined by the transport specified using standard URL formatting:
+<TT CLASS="literal">transport://target</TT>. For Internet Domain sockets
+(AF_INET) such as TCP and UDP, the <TT CLASS="literal">target</TT> portion
+of the <TT CLASS="parameter"><I>remote_socket</I></TT> parameter should consist of
+a hostname or IP address followed by a colon and a port number. For Unix
+domain sockets, the <TT CLASS="parameter"><I>target</I></TT> portion should point
+to the socket file on the filesystem.
+<TT CLASS="parameter"><I>flags</I></TT> is a bitmask field which may be set to any
+combination of socket creation flags. The default value of flags is
+<TT CLASS="constant"><B>STREAM_SERVER_BIND</B></TT> | <TT CLASS="constant"><B>STREAM_SERVER_LISTEN</B></TT>.
+</P><P>&#13; This function only creates a socket, to begin accepting connections
+use <A HREF="function.stream-socket-accept.html"><B CLASS="function">stream_socket_accept()</B></A>.
+</P><P>&#13; If the call fails, it will return <TT CLASS="constant"><B>FALSE</B></TT> and if the optional
+<TT CLASS="parameter"><I>errno</I></TT> and <TT CLASS="parameter"><I>errstr</I></TT>
+arguments are present they will be set to indicate the actual
+system level error that occurred in the system-level
+<TT CLASS="literal">socket()</TT>, <TT CLASS="literal">bind()</TT>, and
+<TT CLASS="literal">listen()</TT> calls. If the value returned in
+<TT CLASS="parameter"><I>errno</I></TT> is <TT CLASS="literal">0</TT> and the
+function returned <TT CLASS="constant"><B>FALSE</B></TT>, it is an indication that the error
+occurred before the <TT CLASS="literal">bind()</TT> call. This is
+most likely due to a problem initializing the socket. Note that
+the <TT CLASS="parameter"><I>errno</I></TT> and
+<TT CLASS="parameter"><I>errstr</I></TT> arguments will always be passed by
+reference.
+</P><P>&#13; Depending on the environment, Unix domain sockets may not be available.
+A list of available transports can be retrieved using
+<A HREF="function.stream-get-transports.html"><B CLASS="function">stream_get_transports()</B></A>. See
+<A HREF="transports.html">附录 K</A> for a list of bulitin transports.
+</P><P>&#13; <B CLASS="function">stream_socket_server()</B>.
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN107163"></A><P><B>例子 1. <B CLASS="function">stream_socket_server()</B> Example</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$socket </font><font color="#007700">= </font><font color="#0000BB">stream_socket_server</font><font color="#007700">(</font><font color="#DD0000">"tcp://0.0.0.0:8000"</font><font color="#007700">, </font><font color="#0000BB">$errno</font><font color="#007700">, </font><font color="#0000BB">$errstr</font><font color="#007700">);<br />if (!</font><font color="#0000BB">$socket</font><font color="#007700">) {<br />&nbsp;&nbsp;echo </font><font color="#DD0000">"$errstr ($errno)&lt;br /&gt;\n"</font><font color="#007700">;<br />} else {<br />&nbsp;&nbsp;while (</font><font color="#0000BB">$conn </font><font color="#007700">= </font><font color="#0000BB">stream_socket_accept</font><font color="#007700">(</font><font color="#0000BB">$socket</font><font color="#007700">)) {<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">fputs</font><font color="#007700">(</font><font color="#0000BB">$conn</font><font color="#007700">, </font><font color="#DD0000">'The local time is ' </font><font color="#007700">. </font><font color="#0000BB">date</font><font color="#007700">(</font><font color="#DD0000">'n/j/Y g:i a'</font><font color="#007700">) . </font><font color="#DD0000">"\n"</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">fclose</font><font color="#007700">(</font><font color="#0000BB">$conn</font><font color="#007700">);<br />&nbsp;&nbsp;}<br />&nbsp;&nbsp;</font><font color="#0000BB">fclose</font><font color="#007700">(</font><font color="#0000BB">$socket</font><font color="#007700">);<br />}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; The example below shows how to act as a time server which can respond
+to time queries as shown in an example on <A HREF="function.stream-socket-client.html"><B CLASS="function">stream_socket_client()</B></A>.
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Most systems require root access to create a server socket on a port
+below 1024.
+</P></BLOCKQUOTE></DIV>
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN107171"></A><P><B>例子 2. Using UDP server sockets</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$socket </font><font color="#007700">= </font><font color="#0000BB">stream_socket_server</font><font color="#007700">(</font><font color="#DD0000">"udp://0.0.0.0:13"</font><font color="#007700">, </font><font color="#0000BB">$errno</font><font color="#007700">, </font><font color="#0000BB">$errstr</font><font color="#007700">, </font><font color="#0000BB">STREAM_SERVER_BIND</font><font color="#007700">);<br />if (!</font><font color="#0000BB">$socket</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"ERROR: $errno - $errstr&lt;br /&gt;\n"</font><font color="#007700">;<br />} else {<br />&nbsp;&nbsp;while (</font><font color="#0000BB">$conn </font><font color="#007700">= </font><font color="#0000BB">stream_socket_accept</font><font color="#007700">(</font><font color="#0000BB">$socket</font><font color="#007700">)) {<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">fwrite</font><font color="#007700">(</font><font color="#0000BB">$conn</font><font color="#007700">, </font><font color="#0000BB">date</font><font color="#007700">(</font><font color="#DD0000">"D M j H:i:s Y\r\n"</font><font color="#007700">));<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">fclose</font><font color="#007700">(</font><font color="#0000BB">$conn</font><font color="#007700">);<br />&nbsp;&nbsp;}<br />&nbsp;&nbsp;</font><font color="#0000BB">fclose</font><font color="#007700">(</font><font color="#0000BB">$socket</font><font color="#007700">);<br />}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>当指定数字的
+IPv6 地址（例如 fe80::1）时必须将 IP 地址放在方括号内。例如
+<TT CLASS="literal">tcp://[fe80::1]:80</TT>。</P></BLOCKQUOTE></DIV><P>&#13; See also <A HREF="function.stream-socket-client.html"><B CLASS="function">stream_socket_client()</B></A>,
+<A HREF="function.stream-set-blocking.html"><B CLASS="function">stream_set_blocking()</B></A>,
+<A HREF="function.stream-set-timeout.html"><B CLASS="function">stream_set_timeout()</B></A>,
+<A HREF="function.fgets.html"><B CLASS="function">fgets()</B></A>,
+<A HREF="function.fgetss.html"><B CLASS="function">fgetss()</B></A>, <A HREF="function.fputs.html"><B CLASS="function">fputs()</B></A>,
+<A HREF="function.fclose.html"><B CLASS="function">fclose()</B></A>, <A HREF="function.feof.html"><B CLASS="function">feof()</B></A>, and
+the <A HREF="ref.curl.html">Curl extension</A>.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.stream-socket-sendto.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.stream-wrapper-register.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">stream_socket_sendto</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.stream.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">stream_wrapper_register</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

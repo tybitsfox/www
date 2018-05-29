@@ -1,0 +1,220 @@
+<HTML
+><HEAD
+><TITLE
+>锁和索引</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="并发控制"
+HREF="mvcc.html"><LINK
+REL="PREVIOUS"
+TITLE="应用层的数据完整性检查"
+HREF="applevel-consistency.html"><LINK
+REL="NEXT"
+TITLE="性能提升技巧"
+HREF="performance-tips.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="applevel-consistency.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="mvcc.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 12. 并发控制</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="mvcc.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="performance-tips.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="LOCKING-INDEXES"
+>12.5. 锁和索引</A
+></H1
+><A
+NAME="AEN15580"
+></A
+><P
+>    尽管 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        提供对表数据访问的非阻塞的读/写，但并非所有
+    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        里实现的索引访问模式都能够进行非阻塞读/写。
+	不同的索引类型按照下面方法操作∶
+
+    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>B-tree 和 <SPAN
+CLASS="ACRONYM"
+>GiST</SPAN
+> 索引</DT
+><DD
+><P
+>        短期的页面级共享/排他锁用于读/写访问。
+        锁在索引行被插入/抓取后立即释放。
+        这种索引类型提供了无死锁条件的最高级的并行性。
+       </P
+></DD
+><DT
+>Hash （散列）索引</DT
+><DD
+><P
+>        散列桶级别的共享/排他锁用于读/写访问。锁在整个散列桶处理完成后释放。
+        散列桶级锁比索引级的锁提供了更好的并行性但是可能产生死锁，因为锁持有的时间比一次索引操作时间长。
+       </P
+></DD
+><DT
+>R-tree 索引</DT
+><DD
+><P
+>	索引级别的共享/排它锁用于读/写访问。
+	在整个命令完成之后，释放锁。
+       </P
+></DD
+></DL
+></DIV
+><P>
+   </P
+><P
+>        目前，B-tree 索引为并发应用提供了最好的性能；
+	因为它们还有比散列索引更多的特性，在那些需要对标量数据进行索引的并发应用中，
+	我们建议使用这种索引类型。
+	在处理非标量类型数据的时候，B-tree 就没什么用了；而应该使用 GiST 索引。
+	R-tree 索引已经废弃了，在将来的版本里很可能完全消失。
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="applevel-consistency.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="performance-tips.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>应用层的数据完整性检查</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="mvcc.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>性能提升技巧</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

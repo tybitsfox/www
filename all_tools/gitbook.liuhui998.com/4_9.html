@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+  "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<meta http-equiv="content-language" content="en">
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+	<title>Git Book 中文版 - Git的撤消操作 - 重置, 签出 和 撤消</title>
+	<link rel="icon" href="favicon.png" type="image/png">
+	<link rel="stylesheet" href="assets/blueprint/screen.css" type="text/css" media="screen, projection">
+  <link rel="stylesheet" href="assets/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="assets/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="assets/stylesheets/mac_classic.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="assets/stylesheets/style.css" type="text/css" media="screen, projection">
+</head>
+
+<body>
+<div class="container chapter showgrids">
+
+  <div class="span-21 header">
+    <div class="nav"><a href="4_8.html">Prev</a>  <a href="4_10.html">Next</a></div>
+    <div class="title"><a href='index.html'>Git Community Book 中文版</a></div>
+  </div>
+  
+  <div class="span-21">
+    <br/>
+  </div>
+  
+  <div class="span-21">
+    <h2>Git的撤消操作 - 重置, 签出 和 撤消</h2>
+
+<p>Git提供了多种修复你开发过程中的错误的方法. 方法的选择取决于你的情况: 包含有错误的文件是否提交了(commited); 如果你把它已经提交了, 那么你否把有错误的提交已与其它人共享这也很重要.</p>
+
+<h3>修复未提交文件中的错误(重置)</h3>
+
+<p>如果你现在的工作目录(work tree)里搞的一团乱麻, 但是你现在还没有把它们提交; 你可以通过下面的命令, 让工作目录回到上次提交时的状态(last committed state):</p>
+
+<pre><code>$ git reset --hard HEAD
+</code></pre>
+
+<p>你这条件命令会把你所以工作目录中所有未提交的内容清空(当然这不包括未置于版控制下的文件 untracked files). 从另一种角度来说, 这会让"git diff" 和"git diff --cached"命令的显示法都变为空.</p>
+
+<p>如果你只是要恢复一个文件,如"hello.rb", 你就要使用 <a href="http://www.kernel.org/pub/software/scm/git/docs/git-checkout.html">git checkout</a></p>
+
+<pre><code>$ git checkout -- hello.rb
+</code></pre>
+
+<p>这条命令把hello.rb从HEAD中签出并且把它恢复成未修改时的样子.</p>
+
+<p>译者:上面二行和原文有出入，经验证是原文有误,所以我据正确的重写了.</p>
+
+<h3>修复已提交文件中的错误</h3>
+
+<p>如果你已经做了一个提交(commit),但是你马上后悔了, 这里有两种截然不同的方法去处理这个问题:</p>
+
+<ol>
+<li>创建一个新的提交(commit), 在新的提交里撤消老的提交所作的修改. 这种作法在你已经把代码发布的情况下十分正确.</li>
+</ol>
+
+
+<p>2　你也可以去修改你的老提交(old commit). 但是如果你已经把代码发布了,那么千万别这么做; git不会处理项目的历史会改变的情况,如果一个分支的历史被改变了那以后就不能正常的合并.</p>
+
+<h4>创建新提交来修复错误</h4>
+
+<p>创建一个新的，撤消(revert)了前期修改的提交(commit)是很容易的; 只要把出错的提交(commit)的名字(reference)做为参数传给命令: <a href="http://www.kernel.org/pub/software/scm/git/docs/git-revert.html">git revert</a>就可以了; 下面这条命令就演示了如何撤消最近的一个提交:</p>
+
+<pre><code>$ git revert HEAD
+</code></pre>
+
+<p>这样就创建了一个撤消了上次提交(HEAD)的新提交, 你就有机会来修改新提交(new commit)里的提交注释信息.</p>
+
+<p>你也可撤消更早期的修改, 下面这条命令就是撤消“上上次”(next-to-last)的提交:</p>
+
+<pre><code>$ git revert HEAD^
+</code></pre>
+
+<p>在这种情况下,git尝试去撤消老的提交,然后留下完整的老提交前的版本.　如果你最近的修改和要撤消的修改有重叠(overlap),那么就会被求手工解决冲突(conflicts),　就像解决合并(merge)时出现的冲突一样.</p>
+
+<p>译者注: git revert 其实不会直接创建一个提交(commit), 把撤消扣的文件内容放到索引(index)里,你需要再执行git commit命令，它们才会成为真正的提交(commit).</p>
+
+<h4>修改提交来修复错误</h4>
+
+<p>如果你刚刚做了某个提交(commit), 但是你这里又想来马上修改这个提交;  <a href="http://www.kernel.org/pub/software/scm/git/docs/git-commit.html">git commit</a> 现在支持一个叫<strong>--amend</strong>的参数，你能让修改刚才的这个提交(HEAD commit). 这项机制能让你在代码发布前,添加一些新的文件或是修改你的提交注释(commit message).</p>
+
+<p>如果你在老提交(older commit)里发现一个错误, 但是现在还没有发布到代码服务器上. 你可以使用 <a href="http://www.kernel.org/pub/software/scm/git/docs/git-rebase.html">git rebase</a>命令的交互模式, "git rebase -i"会提示你在编辑中做相关的修改. 这样其实就是让你在rebase的过程来修改提交.</p>
+
+
+  </div>
+  
+  <div class="span-21">
+    <hr/>
+    <div class="center"><a href="4_8.html">Prev</a>  <a href="4_10.html">Next</a></div>
+    <hr/>
+  </div>
+  
+  <div class="span-17 footer">
+  	<div class="menu">
+  		This book is maintained by Scott Chacon, and hosting is donated by GitHub.
+  		<br>
+  		Please email me at <a href="mailto:schacon@gmail.com">schacon@gmail.com</a>
+  		with patches, suggestions and comments.<br>
+		中文版是由 <a href="http://liuhui998.com">liuhui998.com</a>维护,如果有任何意见建议或发现有bug,请联系我.
+	  </div>
+
+  </div>
+  <div class="span-4 last center">
+    <a href="http://github.com/liuhui998/gitbook"><img src="assets/images/github.png" alt="github logo"></a>
+  </div>
+  
+</div>
+
+
+
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-82337-12");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>
+<script src="http://static.getclicky.com/40584.js" type="text/javascript"></script>
+<noscript><p><img alt="Clicky" src="http://in.getclicky.com/40584-db6.gif" /></p></noscript>
+
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-6896227-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+
+</script>
+
+<div style="display:none">
+<script src="http://s9.cnzz.com/stat.php?id=2459744&web_id=2459744" language="JavaScript"></script>
+</div>
+
+</body>
+</html>

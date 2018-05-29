@@ -1,0 +1,99 @@
+<HTML><HEAD><TITLE>dbx_query</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="dbx Functions" HREF="ref.dbx.html"><LINK REL="PREVIOUS" TITLE="dbx_fetch_row" HREF="function.dbx-fetch-row.html"><LINK REL="NEXT" TITLE="dbx_sort" HREF="function.dbx-sort.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.dbx-fetch-row.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.dbx-sort.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.dbx-query"></A>dbx_query</H1><DIV CLASS="refnamediv"><A NAME="AEN19940"></A><P> (PHP 4 &#62;= 4.0.6)</P>dbx_query&nbsp;--&nbsp;Send a query and fetch all results (if any)</DIV><DIV CLASS="refsect1"><A NAME="AEN19943"></A><H2>Description</H2>object <B CLASS="methodname">dbx_query</B> ( object link_identifier, string sql_statement [, int flags])<BR></BR><P>&#13; <B CLASS="function">dbx_query()</B> returns an object or <TT CLASS="literal">1</TT>
+on success, and <TT CLASS="literal">0</TT> on failure. The result object is
+returned only if the query given in <TT CLASS="parameter"><I>sql_statement</I></TT>
+produces a result set (i.e. a SELECT query, even if the result set is
+empty).
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN19962"></A><P><B>例子 1. How to handle the returned value</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$link&nbsp;&nbsp;&nbsp;</font><font color="#007700">= </font><font color="#0000BB">dbx_connect</font><font color="#007700">(</font><font color="#0000BB">DBX_ODBC</font><font color="#007700">, </font><font color="#DD0000">""</font><font color="#007700">, </font><font color="#DD0000">"db"</font><font color="#007700">, </font><font color="#DD0000">"username"</font><font color="#007700">, </font><font color="#DD0000">"password"</font><font color="#007700">)<br />&nbsp;&nbsp;&nbsp;&nbsp;or die(</font><font color="#DD0000">"Could not connect"</font><font color="#007700">);<br /><br /></font><font color="#0000BB">$result </font><font color="#007700">= </font><font color="#0000BB">dbx_query</font><font color="#007700">(</font><font color="#0000BB">$link</font><font color="#007700">, </font><font color="#DD0000">'SELECT id, parentid, description FROM table'</font><font color="#007700">);<br /><br />if (</font><font color="#0000BB">is_object</font><font color="#007700">(</font><font color="#0000BB">$result</font><font color="#007700">) ) {<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// ... do some stuff here, see detailed examples below ...<br />&nbsp;&nbsp;&nbsp;&nbsp;// first, print out field names and types <br />&nbsp;&nbsp;&nbsp;&nbsp;// then, draw a table filled with the returned field values<br /></font><font color="#007700">} else {<br />&nbsp;&nbsp;&nbsp;&nbsp;exit(</font><font color="#DD0000">"Query failed"</font><font color="#007700">);<br />}<br /><br /></font><font color="#0000BB">dbx_close</font><font color="#007700">(</font><font color="#0000BB">$link</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE><P>&#13; The <TT CLASS="parameter"><I>flags</I></TT> parameter is used to control the amount of
+information that is returned. It may be any combination of the following
+constants with the bitwise OR operator (|). The DBX_COLNAMES_* flags
+override the dbx.colnames_case setting from <TT CLASS="filename">php.ini</TT>.
+<P></P><DIV CLASS="variablelist"><DL><DT><TT CLASS="constant"><B>DBX_RESULT_INDEX</B></TT></DT><DD><P>&#13; It is <SPAN CLASS="emphasis"><I CLASS="emphasis">always</I></SPAN> set, that is, the returned object
+has a <SPAN CLASS="property">data</SPAN> property which is a 2 dimensional
+array indexed numerically. For example, in the expression
+<TT CLASS="literal">data[2][3]</TT> <TT CLASS="literal">2</TT> stands for the row
+(or record) number and <TT CLASS="literal">3</TT> stands for the column
+(or field) number. The first row and column are indexed at 0.
+</P><P>&#13; If <TT CLASS="constant"><B>DBX_RESULT_ASSOC</B></TT> is also specified, the
+returning object contains the information related to
+<TT CLASS="constant"><B>DBX_RESULT_INFO</B></TT> too, even if it was not specified.
+</P></DD><DT><TT CLASS="constant"><B>DBX_RESULT_INFO</B></TT></DT><DD><P>&#13; It provides info about columns, such as field names and field types.
+</P></DD><DT><TT CLASS="constant"><B>DBX_RESULT_ASSOC</B></TT></DT><DD><P>&#13; It effects that the field values can be accessed with the respective
+column names used as keys to the returned object's
+<SPAN CLASS="property">data</SPAN> property.
+</P><P>&#13; Associated results are actually references to the numerically indexed
+data, so modifying <TT CLASS="literal">data[0][0]</TT> causes that
+<TT CLASS="literal">data[0]['field_name_for_first_column']</TT> is modified
+as well.
+</P></DD><DT><TT CLASS="constant"><B>DBX_RESULT_UNBUFFERED</B></TT> (CVS only)</DT><DD><P>&#13; This flag will not create the <SPAN CLASS="property">data</SPAN> property, and
+the <SPAN CLASS="property">rows</SPAN> property will initially be 0. Use this
+flag for large datasets, and use <A HREF="function.dbx-fetch-row.html"><B CLASS="function">dbx_fetch_row()</B></A> to
+retrieve the results row by row.
+</P><P>&#13; The <A HREF="function.dbx-fetch-row.html"><B CLASS="function">dbx_fetch_row()</B></A> function will return rows that
+are conformant to the flags set with this query. Incidentally, it will
+also update the <SPAN CLASS="property">rows</SPAN> each time it is called.
+</P></DD><DT><TT CLASS="constant"><B>DBX_COLNAMES_UNCHANGED</B></TT> (available from PHP 4.3.0)</DT><DD><P>&#13; The case of the returned column names will not be changed.
+</P></DD><DT><TT CLASS="constant"><B>DBX_COLNAMES_UPPERCASE</B></TT> (available from PHP 4.3.0)</DT><DD><P>&#13; The case of the returned column names will be changed to
+uppercase.
+</P></DD><DT><TT CLASS="constant"><B>DBX_COLNAMES_LOWERCASE</B></TT> (available from PHP 4.3.0)</DT><DD><P>&#13; The case of the returned column names will be changed to
+lowercase.
+</P></DD></DL></DIV>
+Note that <TT CLASS="constant"><B>DBX_RESULT_INDEX</B></TT> is always used, regardless
+of the actual value of <TT CLASS="parameter"><I>flags</I></TT> parameter. This means
+that only the following combinations are effective:
+<P></P><UL><LI><P>&#13; <TT CLASS="constant"><B>DBX_RESULT_INDEX</B></TT>
+</P></LI><LI><P>&#13; <TT CLASS="constant"><B>DBX_RESULT_INDEX</B></TT> |
+<TT CLASS="constant"><B>DBX_RESULT_INFO</B></TT>
+</P></LI><LI><P>&#13; <TT CLASS="constant"><B>DBX_RESULT_INDEX</B></TT> |
+<TT CLASS="constant"><B>DBX_RESULT_INFO</B></TT> |
+<TT CLASS="constant"><B>DBX_RESULT_ASSOC</B></TT> - this is the default, if
+<TT CLASS="parameter"><I>flags</I></TT> is not specified.
+</P></LI></UL>
+</P><P>&#13; The returned <TT CLASS="varname">object</TT> has four or five
+properties depending on <TT CLASS="parameter"><I>flags</I></TT>:
+<P></P><DIV CLASS="variablelist"><DL><DT><SPAN CLASS="property">handle</SPAN></DT><DD><P>&#13; It is a valid handle for the connected database, and as such it can be
+used in module specific functions (if required).
+<DIV CLASS="informalexample"><A NAME="AEN20047"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$result </font><font color="#007700">= </font><font color="#0000BB">dbx_query</font><font color="#007700">(</font><font color="#0000BB">$link</font><font color="#007700">, </font><font color="#DD0000">"SELECT id FROM table"</font><font color="#007700">);<br /></font><font color="#0000BB">mysql_field_len</font><font color="#007700">(</font><font color="#0000BB">$result</font><font color="#007700">-&gt;</font><font color="#0000BB">handle</font><font color="#007700">, </font><font color="#0000BB">0</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P></P></DIV>
+</P></DD><DT><SPAN CLASS="property">cols</SPAN> and <SPAN CLASS="property">rows</SPAN></DT><DD><P>&#13; These contain the number of columns (or fields) and rows (or records)
+respectively.
+<DIV CLASS="informalexample"><A NAME="AEN20055"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$result </font><font color="#007700">= </font><font color="#0000BB">dbx_query</font><font color="#007700">(</font><font color="#0000BB">$link</font><font color="#007700">, </font><font color="#DD0000">'SELECT id FROM table'</font><font color="#007700">);<br />echo </font><font color="#0000BB">$result</font><font color="#007700">-&gt;</font><font color="#0000BB">rows</font><font color="#007700">; </font><font color="#FF8000">// number of records<br /></font><font color="#007700">echo </font><font color="#0000BB">$result</font><font color="#007700">-&gt;</font><font color="#0000BB">cols</font><font color="#007700">; </font><font color="#FF8000">// number of fields <br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P></P></DIV>
+</P></DD><DT><SPAN CLASS="property">info</SPAN> (optional)</DT><DD><P>&#13; It is returned only if either <TT CLASS="constant"><B>DBX_RESULT_INFO</B></TT> or
+<TT CLASS="constant"><B>DBX_RESULT_ASSOC</B></TT> is specified in the
+<TT CLASS="parameter"><I>flags</I></TT> parameter. It is a 2 dimensional array,
+that has two named rows (<TT CLASS="literal">name</TT> and
+<TT CLASS="literal">type</TT>) to retrieve column information.
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN20067"></A><P><B>例子 2. lists each field's name and type</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$result </font><font color="#007700">= </font><font color="#0000BB">dbx_query</font><font color="#007700">(</font><font color="#0000BB">$link</font><font color="#007700">, </font><font color="#DD0000">'SELECT id FROM table'</font><font color="#007700">,<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">DBX_RESULT_INDEX </font><font color="#007700">| </font><font color="#0000BB">DBX_RESULT_INFO</font><font color="#007700">);<br /><br />for (</font><font color="#0000BB">$i </font><font color="#007700">= </font><font color="#0000BB">0</font><font color="#007700">; </font><font color="#0000BB">$i </font><font color="#007700">&lt; </font><font color="#0000BB">$result</font><font color="#007700">-&gt;</font><font color="#0000BB">cols</font><font color="#007700">; </font><font color="#0000BB">$i</font><font color="#007700">++ ) {<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#0000BB">$result</font><font color="#007700">-&gt;</font><font color="#0000BB">info</font><font color="#007700">[</font><font color="#DD0000">'name'</font><font color="#007700">][</font><font color="#0000BB">$i</font><font color="#007700">] . </font><font color="#DD0000">"\n"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#0000BB">$result</font><font color="#007700">-&gt;</font><font color="#0000BB">info</font><font color="#007700">[</font><font color="#DD0000">'type'</font><font color="#007700">][</font><font color="#0000BB">$i</font><font color="#007700">] . </font><font color="#DD0000">"\n"</font><font color="#007700">;&nbsp;&nbsp;<br />}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE></DD><DT><SPAN CLASS="property">data</SPAN></DT><DD><P>&#13; This property contains the actual resulting data, possibly associated
+with column names as well depending on <TT CLASS="parameter"><I>flags</I></TT>.
+If <TT CLASS="constant"><B>DBX_RESULT_ASSOC</B></TT> is set, it is possible to use
+<TT CLASS="literal">$result-&#62;data[2]["field_name"]</TT>.
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN20078"></A><P><B>例子 3. outputs the content of data property into HTML table</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$result </font><font color="#007700">= </font><font color="#0000BB">dbx_query</font><font color="#007700">(</font><font color="#0000BB">$link</font><font color="#007700">, </font><font color="#DD0000">'SELECT id, parentid, description FROM table'</font><font color="#007700">);<br /><br />echo </font><font color="#DD0000">"&lt;table&gt;\n"</font><font color="#007700">;<br />foreach (</font><font color="#0000BB">$result</font><font color="#007700">-&gt;</font><font color="#0000BB">data </font><font color="#007700">as </font><font color="#0000BB">$row</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"&lt;tr&gt;\n"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;foreach (</font><font color="#0000BB">$row </font><font color="#007700">as </font><font color="#0000BB">$field</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"&lt;td&gt;$field&lt;/td&gt;"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"&lt;/tr&gt;\n"</font><font color="#007700">;<br />}<br />echo </font><font color="#DD0000">"&lt;/table&gt;\n"</font><font color="#007700">;<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN20081"></A><P><B>例子 4. How to handle UNBUFFERED queries</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+$result = dbx_query ($link, 'SELECT id, parentid, description FROM table', DBX_RESULT_UNBUFFERED);<br /><br />echo "&lt;table&gt;\n";<br />while ($row = dbx_fetch_row($result)) {<br />&nbsp;&nbsp;&nbsp;&nbsp;echo "&lt;tr&gt;\n";<br />&nbsp;&nbsp;&nbsp;&nbsp;foreach ($row as $field) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "&lt;td&gt;$field&lt;/td&gt;";<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />&nbsp;&nbsp;&nbsp;&nbsp;echo "&lt;/tr&gt;\n";<br />}<br />echo "&lt;/table&gt;\n";</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE></DD></DL></DIV>
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Always refer to the module-specific documentation as well.
+</P><P>&#13; Column names for queries on an Oracle database are returned
+in lowercase.
+</P></BLOCKQUOTE></DIV><P>&#13; See also <A HREF="function.dbx-escape-string.html"><B CLASS="function">dbx_escape_string()</B></A>,
+<A HREF="function.dbx-fetch-row.html"><B CLASS="function">dbx_fetch_row()</B></A> and
+<A HREF="function.dbx-connect.html"><B CLASS="function">dbx_connect()</B></A>.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.dbx-fetch-row.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.dbx-sort.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">dbx_fetch_row</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.dbx.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">dbx_sort</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

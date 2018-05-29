@@ -1,0 +1,210 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>MOVE PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="LOCK" HREF="sql-lock.html"><LINK REL="NEXT" TITLE="NOTIFY" HREF="sql-notify.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-lock.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-lock.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-notify.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-notify.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-MOVE" >MOVE</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN46823" ></A
+><H2
+>Name</H2
+>MOVE&nbsp;--&nbsp;重定位一个游标</DIV
+><A NAME="AEN46826" ></A
+><A NAME="AEN46828" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN46831" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>MOVE [ <TT
+CLASS="REPLACEABLE"
+><I
+>direction</I
+></TT
+> { FROM | IN } ] <TT
+CLASS="REPLACEABLE"
+><I
+>cursorname</I
+></TT
+></PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46835" ></A
+><H2
+>描述</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>MOVE</TT
+> 在不检索数据的情况下重新定位一个游标。
+	<TT
+CLASS="COMMAND"
+>MOVE ALL</TT
+> 把游标移动到结尾。
+	<TT
+CLASS="COMMAND"
+>MOVE</TT
+> 的工作类似于 <TT
+CLASS="COMMAND"
+>FETCH</TT
+> 命令，
+	但只是重定位游标而不返回行。
+  </P
+><P
+>   请参考
+   <A HREF="sql-fetch.html" ><I
+>FETCH</I
+></A
+>
+	命令获取语法和参数的详细信息。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46844" ></A
+><H2
+>输出</H2
+><P
+>   成功完成时，<TT
+CLASS="COMMAND"
+>MOVE</TT
+> 命令返回一个下面形式的命令标签
+</P><PRE
+CLASS="SCREEN"
+>MOVE <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+></PRE
+><P>
+   <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+> 是一个带同参数的 <TT
+CLASS="COMMAND"
+>FETCH</TT
+> 命令会返回的行数（可能为零）。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46852" ></A
+><H2
+>例子</H2
+><P
+>	设置和使用一个游标：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>BEGIN WORK;
+DECLARE liahona CURSOR FOR SELECT * FROM films;
+
+-- 忽略开头 5 行：
+MOVE FORWARD 5 IN liahona;
+MOVE 5
+
+-- 抓取游标 liahona 里的第六行：
+FETCH 1 IN liahona;
+FETCH
+ code  | title  | did | date_prod | kind   | len
+-------+--------+-----+-----------+--------+-------
+ P_303 | 48 Hrs | 103 | 1982-10-22| Action | 01:37
+(1 row)
+
+-- 关闭游标 liahona 并提交工作：
+CLOSE liahona;
+COMMIT WORK;</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46856" ></A
+><H2
+>兼容性</H2
+><P
+>    SQL 标准里没有 <TT
+CLASS="COMMAND"
+>MOVE</TT
+> 语句。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46860" ></A
+><H2
+>又见</H2
+><A HREF="sql-close.html" ><I
+>CLOSE</I
+></A
+>, <A HREF="sql-declare.html" ><I
+>DECLARE</I
+></A
+>, <A HREF="sql-fetch.html" ><I
+>FETCH</I
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-lock.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-notify.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >LOCK</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >NOTIFY</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

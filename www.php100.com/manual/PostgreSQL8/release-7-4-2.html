@@ -1,0 +1,341 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>版本 7.4.2 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="版本" HREF="release.html"><LINK REL="PREVIOUS" TITLE="版本 7.4.3" HREF="release-7-4-3.html"><LINK REL="NEXT" TITLE="版本 7.4.1" HREF="release-7-4-1.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="release-7-4-3.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="release.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Appendix E. 版本</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="release.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="release-7-4-1.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="RELEASE-7-4-2" >E.14. 版本 7.4.2</A
+></H1
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>发布日期: </B
+>2004-03-08</P
+></BLOCKQUOTE
+></DIV
+><P
+>    这个版本包含自 7.4.1 以来的各种补丁。
+   </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN74432" >E.14.1. 移植到版本 7.4.2</A
+></H2
+><P
+>     对于运行 7.4.X 的用户，不需要转储/重载。不过，转储/重载是修复在 7.4.X 版本的系统表里面的两个错误的最简单的方法。
+     使用 7.4.2 的 initdb 然后走一遍转储/initdb/重载序列将自动修复这些问题。
+    </P
+><P
+>     这两个错误中更严重的是数据类型 <TT
+CLASS="TYPE"
+>anyarray</TT
+> 的对齐标签是错误的；
+     这个有问题是因为 <TT
+CLASS="STRUCTNAME"
+>pg_statistic</TT
+> 系统表使用 <TT
+CLASS="TYPE"
+>anyarray</TT
+> 字段。
+     这个标签错误可能导致规划器在规划涉及使用双精度对齐的字段（比如 <TT
+CLASS="TYPE"
+>float8</TT
+> 和 <TT
+CLASS="TYPE"
+>timestamp</TT
+>）的 <TT
+CLASS="LITERAL"
+>WHERE</TT
+>
+     子句的时候估计错误甚至是崩溃。我们强烈建议所有安装都修复这个错误，要么是通过 initdb，要么是使用下面介绍的手工修复方法。
+    </P
+><P
+>     弱一些的错误是系统视图 <TT
+CLASS="STRUCTNAME"
+>pg_settings</TT
+> 应该标志为公共的更新访问，
+     以允许 <TT
+CLASS="LITERAL"
+>UPDATE pg_settings</TT
+> 用于 <TT
+CLASS="COMMAND"
+>SET</TT
+> 的替代。
+     这个也可以通过 initdb 或者手工修复，不过除非你想使用 <TT
+CLASS="LITERAL"
+>UPDATE pg_settings</TT
+>，否则不是必须的。
+    </P
+><P
+>     如果你不想做 initdb，下面的步骤可以修复 <TT
+CLASS="STRUCTNAME"
+>pg_statistic</TT
+>。
+     以数据库超级用户身份，做下面的操作：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>-- 清除 pg_statistic 里的旧数据：
+DELETE FROM pg_statistic;
+VACUUM pg_statistic;
+-- 这个会更新 1 行：
+UPDATE pg_type SET typalign = 'd' WHERE oid = 2277;
+-- 这个会更新 6 行：
+UPDATE pg_attribute SET attalign = 'd' WHERE atttypid = 2277;
+--
+-- 这个时候你必须启动一个新的后端以避免崩溃！
+--
+-- 重新填充 pg_statistic：
+ANALYZE;</PRE
+><P>
+
+     这些工作可以在一个活跃的数据库里处理，但是要注意在安全地重新填充 <TT
+CLASS="STRUCTNAME"
+>pg_statistic</TT
+> 之前，
+     所有在更改的数据库里运行的后端都要重启。
+    </P
+><P
+>     要修复 <TT
+CLASS="STRUCTNAME"
+>pg_settings</TT
+> 错误，简单地：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>GRANT SELECT, UPDATE ON pg_settings TO PUBLIC;</PRE
+><P>
+    </P
+><P
+>     上面的过程必须在一个安装中的<I
+CLASS="EMPHASIS"
+>每个</I
+>数据库里执行，
+     包括 <TT
+CLASS="LITERAL"
+>template1</TT
+>，最好也包括 <TT
+CLASS="LITERAL"
+>template0</TT
+>。
+     如果你不修补模版数据库，那么随后创建的数据库将会也包含同样的错误。
+     <TT
+CLASS="LITERAL"
+>template1</TT
+> 可以像其它数据库那样修补，但修补 <TT
+CLASS="LITERAL"
+>template0</TT
+> 需要一些额外的步骤。
+     首先，从任意数据库里发出
+</P><PRE
+CLASS="PROGRAMLISTING"
+>UPDATE pg_database SET datallowconn = true WHERE datname = 'template0';</PRE
+><P>
+      然后连接到 <TT
+CLASS="LITERAL"
+>template0</TT
+> 然后执行上面的修复过程。最后，
+</P><PRE
+CLASS="PROGRAMLISTING"
+>-- 重新冻结 template0：
+VACUUM FREEZE;
+-- 然后保护它避免进一步的更改：
+UPDATE pg_database SET datallowconn = false WHERE datname = 'template0';</PRE
+><P>
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN74463" >E.14.2. 修改</A
+></H2
+><P
+>    版本 7.4.2 包含所有版本 7.3.6 的补丁，加上下面这些修补：</P
+><P
+></P
+><UL
+><LI
+><P
+>Fix <TT
+CLASS="STRUCTNAME"
+>pg_statistics</TT
+> alignment bug that could crash optimizer</P
+><P
+>See above for details about this problem.</P
+></LI
+><LI
+><P
+>Allow non-super users to update <TT
+CLASS="STRUCTNAME"
+>pg_settings</TT
+></P
+></LI
+><LI
+><P
+>Fix several optimizer bugs, most of which led to
+<SPAN
+CLASS="QUOTE"
+>"variable not found in subplan target lists"</SPAN
+> errors</P
+></LI
+><LI
+><P
+>Avoid out-of-memory failure during startup of large multiple
+index scan</P
+></LI
+><LI
+><P
+>Fix multibyte problem that could lead to <SPAN
+CLASS="QUOTE"
+>"out of
+memory"</SPAN
+> error during <TT
+CLASS="COMMAND"
+>COPY IN</TT
+></P
+></LI
+><LI
+><P
+>Fix problems with <TT
+CLASS="COMMAND"
+>SELECT INTO</TT
+> / <TT
+CLASS="COMMAND"
+>CREATE
+TABLE AS</TT
+> from tables without OIDs</P
+></LI
+><LI
+><P
+>Fix problems with <TT
+CLASS="FILENAME"
+>alter_table</TT
+> regression test
+during parallel testing</P
+></LI
+><LI
+><P
+>Fix problems with hitting open file limit, especially on OS X (Tom)</P
+></LI
+><LI
+><P
+>Partial fix for Turkish-locale issues</P
+><P
+>initdb will succeed now in Turkish locale, but there are still some
+inconveniences associated with the <TT
+CLASS="LITERAL"
+>i/I</TT
+> problem.</P
+></LI
+><LI
+><P
+>Make pg_dump set client encoding on restore</P
+></LI
+><LI
+><P
+>Other minor pg_dump fixes</P
+></LI
+><LI
+><P
+>Allow ecpg to again use C keywords as column names (Michael)</P
+></LI
+><LI
+><P
+>Added ecpg <TT
+CLASS="LITERAL"
+>WHENEVER NOT_FOUND</TT
+> to
+<TT
+CLASS="LITERAL"
+>SELECT/INSERT/UPDATE/DELETE</TT
+> (Michael)</P
+></LI
+><LI
+><P
+>Fix ecpg crash for queries calling set-returning functions (Michael)</P
+></LI
+><LI
+><P
+>Various other ecpg fixes (Michael)</P
+></LI
+><LI
+><P
+>Fixes for Borland compiler</P
+></LI
+><LI
+><P
+>Thread build improvements (Bruce)</P
+></LI
+><LI
+><P
+>Various other build fixes</P
+></LI
+><LI
+><P
+>Various JDBC fixes</P
+></LI
+></UL
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="release-7-4-3.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="release-7-4-1.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >版本 7.4.3</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="release.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >版本 7.4.1</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

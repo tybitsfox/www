@@ -1,0 +1,14 @@
+<html><head><title>父子进程如何通信？</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="进程控制" href="./c46.htm"><link rel="PREVIOUS" title="我怎样得到一个更细分时间单位的alarm函数版本？" href="./x166.htm"><link rel="NEXT" title="我怎样去除僵死进程？" href="./x178.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x166.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 1. 进程控制</td><td align="right" valign="bottom" width="10%"><a href="./x178.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN172">1.5. 父子进程如何通信？</a></h1><p>一对父子进程可以通过正常的进程间通信的办法(管道，套接字，消息队列，共
+享内存)进行通信，但也可以通过利用它们作为父子进程的相互关系而具有的一
+些特殊方法。
+    </p><p>一个最显然的方法是父进程可以得到子进程的退出状态。
+    </p><p>因为子进程从它的父进程继承文件描述符，所以父进程可以打开一个管道的两端，
+然后fork，然后父进程关闭管道这一端，子进程关闭管道另一端。这正是你从你的
+进程调用‘popen()’函数运行另一个程序所发生的情况，也就是说你可以向
+‘popen()’返回的文件描述符进行写操作而子进程将其当作自己的标准输入，或
+者你可以读取这个文件描述符来看子进程向标准输出写了什么。(‘popen()’函数
+的mode参数定义你的意图(译者注：mode=“r”为读，mode=“w”为写)；如果你
+想读写都做，那么你可以并不困难地用管道自己做到)
+    </p><p>而且，子进程继承由父进程用mmap函数映射的匿名共享内存段(或者通过映射特
+殊文件‘/dev/zero’)；这些共享内存段不能从无关的进程访问。
+    </p></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x166.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x178.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">我怎样得到一个更细分时间单位的alarm函数版本？</td><td align="center" valign="top" width="34%"><a href="./c46.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">我怎样去除僵死进程？</td></tr></tbody></table></div></body></html>

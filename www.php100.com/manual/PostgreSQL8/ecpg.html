@@ -1,0 +1,267 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>ecpg - 在 C 里嵌入 SQL PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="客户端接口" HREF="client-interfaces.html"><LINK REL="PREVIOUS" TITLE="例子程序" HREF="lo-examplesect.html"><LINK REL="NEXT" TITLE="与数据库服务器连接" HREF="ecpg-connect.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="CHAPTER" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="lo-examplesect.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="largeobjects.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="information-schema.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="ecpg-connect.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A NAME="ECPG" >Chapter 30. <SPAN
+CLASS="APPLICATION"
+>ecpg</SPAN
+> - 在 C 里嵌入 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+></A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>30.1. <A HREF="ecpg.html#ECPG-CONCEPT" >概念</A
+></DT
+><DT
+>30.2. <A HREF="ecpg-connect.html" >与数据库服务器连接</A
+></DT
+><DT
+>30.3. <A HREF="ecpg-disconnect.html" >关闭连接</A
+></DT
+><DT
+>30.4. <A HREF="ecpg-commands.html" >运行 SQL 命令</A
+></DT
+><DT
+>30.5. <A HREF="ecpg-set-connection.html" >选取一个连接</A
+></DT
+><DT
+>30.6. <A HREF="ecpg-variables.html" >使用宿主变量</A
+></DT
+><DD
+><DL
+><DT
+>30.6.1. <A HREF="ecpg-variables.html#AEN27227" >概述</A
+></DT
+><DT
+>30.6.2. <A HREF="ecpg-variables.html#AEN27235" >声明段</A
+></DT
+><DT
+>30.6.3. <A HREF="ecpg-variables.html#AEN27251" ><TT
+CLASS="COMMAND"
+>SELECT INTO</TT
+> 和 <TT
+CLASS="COMMAND"
+>FETCH INTO</TT
+></A
+></DT
+><DT
+>30.6.4. <A HREF="ecpg-variables.html#AEN27269" >指示器</A
+></DT
+></DL
+></DD
+><DT
+>30.7. <A HREF="ecpg-dynamic.html" >动态 SQL</A
+></DT
+><DT
+>30.8. <A HREF="ecpg-descriptors.html" >使用 SQL 描述符范围</A
+></DT
+><DT
+>30.9. <A HREF="ecpg-errors.html" >错误处理</A
+></DT
+><DD
+><DL
+><DT
+>30.9.1. <A HREF="ecpg-errors.html#AEN27402" >设置回调</A
+></DT
+><DT
+>30.9.2. <A HREF="ecpg-errors.html#AEN27483" >sqlca</A
+></DT
+><DT
+>30.9.3. <A HREF="ecpg-errors.html#AEN27529" ><TT
+CLASS="LITERAL"
+>SQLSTATE</TT
+> 与 <TT
+CLASS="LITERAL"
+>SQLCODE</TT
+> 之比较</A
+></DT
+></DL
+></DD
+><DT
+>30.10. <A HREF="ecpg-include.html" >头文件</A
+></DT
+><DT
+>30.11. <A HREF="ecpg-process.html" >处理嵌入的 SQL 程序</A
+></DT
+><DT
+>30.12. <A HREF="ecpg-library.html" >库函数</A
+></DT
+><DT
+>30.13. <A HREF="ecpg-develop.html" >内部</A
+></DT
+></DL
+></DIV
+><A NAME="AEN27053" ></A
+><A NAME="AEN27056" ></A
+><A NAME="AEN27058" ></A
+><P
+>	这章描写一种用于 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        的嵌入<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>包。它是由 Linus Tolke （<TT
+CLASS="EMAIL"
+>&#60;<A HREF="mailto:linus@epact.se" >linus@epact.se</A
+>&#62;</TT
+>）和
+	Michael Meskes （<TT
+CLASS="EMAIL"
+>&#60;<A HREF="mailto:meskes@postgresql.org" >meskes@postgresql.org</A
+>&#62;</TT
+>）写的。
+	最初它是为了在 <SPAN
+CLASS="ACRONYM"
+>C</SPAN
+> 里面使用书写的。它也可以用于 <SPAN
+CLASS="ACRONYM"
+>C++</SPAN
+>，
+	但是它还不能识别所有 <SPAN
+CLASS="ACRONYM"
+>C++</SPAN
+> 构造。
+  </P
+><P
+>	这份文档相当不完整。但是因为这个接口是标准，所以我们可以在有关 SQL 的资源里找到许多额外的信息。
+ </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="ECPG-CONCEPT" >30.1. 概念</A
+></H1
+><P
+>	嵌入 SQL 程序主要由一种普通的编程语言代码组成，在我们这个场合中是 C，
+	并且在其中与一些特殊标记的段混合。要制作这样的程序，源代码首先经过嵌入的 SQL 预处理器处理，它把源代码转换成普通的 C 程序，
+	然后这个程序可以用 C 编译器进行处理。
+   </P
+><P
+>	嵌入的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 相比于其它的从 C 代码中处理 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>
+	命令的优点有几条。首先，它替你照看那些从你的 <SPAN
+CLASS="ACRONYM"
+>C</SPAN
+> 程序中的变量中传来传去数值的事情。
+	第二，在 C 代码里嵌入 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 是定义在 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>
+	标准里的，并且被许多其它的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 数据库支持。
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的实现被设计成尽可能匹配这个标准，
+	并且通常可以把为其它 SQL 数据库书写的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 移植到
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 中来，反之亦然。
+   </P
+><P
+>	如上所述，为嵌入 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 接口写的程序通常是带着插入进来的特殊代码的 C 程序，
+	这些特殊代码用于执行与数据库相关的动作。这些特殊代码通常的形式是下面这样：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL ...;</PRE
+><P>
+	这些语句语法上占据 C 语句的位置。根据具体语句的不同，它们可以出现在全局环境中或者出现在一个函数里。
+	嵌入的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语句遵循普通 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 代码的大小写敏感规则，而不是遵循 C 代码的。
+   </P
+><P
+>	下面的小节都是用来解释所有的嵌入 SQL 语句的。
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="lo-examplesect.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="ecpg-connect.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >例子程序</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="client-interfaces.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >与数据库服务器连接</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

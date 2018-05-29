@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+  "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<meta http-equiv="content-language" content="en">
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+	<title>Git Book 中文版 - 交互式添加</title>
+	<link rel="icon" href="favicon.png" type="image/png">
+	<link rel="stylesheet" href="assets/blueprint/screen.css" type="text/css" media="screen, projection">
+  <link rel="stylesheet" href="assets/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="assets/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="assets/stylesheets/mac_classic.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="assets/stylesheets/style.css" type="text/css" media="screen, projection">
+</head>
+
+<body>
+<div class="container chapter showgrids">
+
+  <div class="span-21 header">
+    <div class="nav"><a href="4_3.html">Prev</a>  <a href="4_5.html">Next</a></div>
+    <div class="title"><a href='index.html'>Git Community Book 中文版</a></div>
+  </div>
+  
+  <div class="span-21">
+    <br/>
+  </div>
+  
+  <div class="span-21">
+    <h2>交互式添加</h2>
+
+<p>交互式添加提供友好的界面去操作Git索引（index），同时亦提供了可视化索引的能力。只需简单键入'git add -i'，即可使用此功能。Git会列出所有修改过的文件及它们的状态。</p>
+
+<pre><code>$&gt;git add -i
+           staged     unstaged path
+  1:    unchanged        +4/-0 assets/stylesheets/style.css
+  2:    unchanged      +23/-11 layout/book_index_template.html
+  3:    unchanged        +7/-7 layout/chapter_template.html
+  4:    unchanged        +3/-3 script/pdf.rb
+  5:    unchanged      +121/-0 text/14_Interactive_Rebasing/0_ Interactive_Rebasing.markdown
+
+*** Commands ***
+  1: status   2: update   3: revert   4: add untracked
+  5: patch    6: diff     7: quit     8: help
+What now&gt; 
+</code></pre>
+
+<p>在这个例子中，我们可以看到有5个修改过的文件还没有被加入到索引中（unstaged），甚至可以看到每个文件增加和减少的行数。紧接着是一个交互式的菜单，列出了我们可以在此模式中使用的命令。</p>
+
+<p>如果我们想要暂存（stage）这些文件，我们可以键入'2'或者'u'进入更新（update）模式。然后我们可以通过键入文件的范围（本例中是1-4）来决定把哪些文件加入到索引之中。</p>
+
+<pre><code>What now&gt; 2
+           staged     unstaged path
+  1:    unchanged        +4/-0 assets/stylesheets/style.css
+  2:    unchanged      +23/-11 layout/book_index_template.html
+  3:    unchanged        +7/-7 layout/chapter_template.html
+  4:    unchanged        +3/-3 script/pdf.rb
+  5:    unchanged      +121/-0 text/14_Interactive_Rebasing/0_ Interactive_Rebasing.markdown
+Update&gt;&gt; 1-4
+           staged     unstaged path
+* 1:    unchanged        +4/-0 assets/stylesheets/style.css
+* 2:    unchanged      +23/-11 layout/book_index_template.html
+* 3:    unchanged        +7/-7 layout/chapter_template.html
+* 4:    unchanged        +3/-3 script/pdf.rb
+  5:    unchanged      +121/-0 text/14_Interactive_Rebasing/0_ Interactive_Rebasing.markdown
+Update&gt;&gt; 
+</code></pre>
+
+<p>如果键入回车，我会回到主菜单中，同时可以看到那些指定文件的状态已经发生了改变：</p>
+
+<pre><code>What now&gt; status
+           staged     unstaged path
+  1:        +4/-0      nothing assets/stylesheets/style.css
+  2:      +23/-11      nothing layout/book_index_template.html
+  3:        +7/-7      nothing layout/chapter_template.html
+  4:        +3/-3      nothing script/pdf.rb
+  5:    unchanged      +121/-0 text/14_Interactive_Rebasing/0_ Interactive_Rebasing.markdown
+</code></pre>
+
+<p>现在我们可以看到前4个文件已经被暂存，但是最后一个没有。基本上，这是一个更加紧凑的查看状态的方式，实质上的信息与我们在命令行中运行'git status'是一致的：</p>
+
+<pre><code>$ git status
+# On branch master
+# Changes to be committed:
+#   (use "git reset HEAD &lt;file&gt;..." to unstage)
+#
+#   modified:   assets/stylesheets/style.css
+#   modified:   layout/book_index_template.html
+#   modified:   layout/chapter_template.html
+#   modified:   script/pdf.rb
+#
+# Changed but not updated:
+#   (use "git add &lt;file&gt;..." to update what will be committed)
+#
+#   modified:   text/14_Interactive_Rebasing/0_ Interactive_Rebasing.markdown
+#
+</code></pre>
+
+<p>我们可以进行数个有用的操作，包括取消文件的暂存（3: revert），加入未跟踪的文件（4: add untracked）和查看差异（6: diff）。这些功能都很易懂。还有一个很“酷”的功能，就是暂存补丁（staging patches）（5: patch）。</p>
+
+<p>如果你键入'5'或者'p'，git会一个一个补丁（一块一块）地显示出差异，然后询问是否对每一块进行暂存操作。通过这个方法，你可以暂存文件修改中的一部分。如果你编辑了一个文件，只想提交其中一部分而不包括其他未完成编辑的部分，或者把文档、空白字符从大量的修改中分开提交，你可以使用'git add -i'去相对轻松地完成任务。</p>
+
+<p>这里我暂存了book_index_template.html的部分修改，而不是全部修改：</p>
+
+<pre><code>         staged     unstaged path
+1:        +4/-0      nothing assets/stylesheets/style.css
+2:       +20/-7        +3/-4 layout/book_index_template.html
+3:        +7/-7      nothing layout/chapter_template.html
+4:        +3/-3      nothing script/pdf.rb
+5:    unchanged      +121/-0 text/14_Interactive_Rebasing/0_ Interactive_Rebasing.markdown
+6:    unchanged       +85/-0 text/15_Interactive_Adding/0_ Interactive_Adding.markdown
+</code></pre>
+
+<p>当你通过'git add -i'完成对索引的改动后，你只需要退出（7: quit），然后'git commit'去提交暂存的修改。切记<strong>不要</strong>运行'git commit -a'，它会忽视你刚才辛辛苦苦做的修改而把所有东西都提交到仓库中去。</p>
+
+<p><a href="" title="GitCast #3: Interactive Adding">gitcast:c3_add_interactive</a></p>
+
+
+  </div>
+  
+  <div class="span-21">
+    <hr/>
+    <div class="center"><a href="4_3.html">Prev</a>  <a href="4_5.html">Next</a></div>
+    <hr/>
+  </div>
+  
+  <div class="span-17 footer">
+  	<div class="menu">
+  		This book is maintained by Scott Chacon, and hosting is donated by GitHub.
+  		<br>
+  		Please email me at <a href="mailto:schacon@gmail.com">schacon@gmail.com</a>
+  		with patches, suggestions and comments.<br>
+		中文版是由 <a href="http://liuhui998.com">liuhui998.com</a>维护,如果有任何意见建议或发现有bug,请联系我.
+	  </div>
+
+  </div>
+  <div class="span-4 last center">
+    <a href="http://github.com/liuhui998/gitbook"><img src="assets/images/github.png" alt="github logo"></a>
+  </div>
+  
+</div>
+
+
+
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-82337-12");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>
+<script src="http://static.getclicky.com/40584.js" type="text/javascript"></script>
+<noscript><p><img alt="Clicky" src="http://in.getclicky.com/40584-db6.gif" /></p></noscript>
+
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-6896227-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+
+</script>
+
+<div style="display:none">
+<script src="http://s9.cnzz.com/stat.php?id=2459744&web_id=2459744" language="JavaScript"></script>
+</div>
+
+</body>
+</html>

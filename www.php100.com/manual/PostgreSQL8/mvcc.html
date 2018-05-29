@@ -1,0 +1,178 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>并发控制 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 语言" HREF="sql.html"><LINK REL="PREVIOUS" TITLE="检查索引的使用" HREF="indexes-examine.html"><LINK REL="NEXT" TITLE="事务隔离" HREF="transaction-iso.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="CHAPTER" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="indexes-examine.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="indexes.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="performance-tips.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="transaction-iso.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A NAME="MVCC" >Chapter 12. 并发控制</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>12.1. <A HREF="mvcc.html#MVCC-INTRO" >介绍</A
+></DT
+><DT
+>12.2. <A HREF="transaction-iso.html" >事务隔离</A
+></DT
+><DD
+><DL
+><DT
+>12.2.1. <A HREF="transaction-iso.html#XACT-READ-COMMITTED" >读已提交隔离级别</A
+></DT
+><DT
+>12.2.2. <A HREF="transaction-iso.html#XACT-SERIALIZABLE" >可串行化隔离级别</A
+></DT
+></DL
+></DD
+><DT
+>12.3. <A HREF="explicit-locking.html" >明确锁定</A
+></DT
+><DD
+><DL
+><DT
+>12.3.1. <A HREF="explicit-locking.html#LOCKING-TABLES" >表级锁</A
+></DT
+><DT
+>12.3.2. <A HREF="explicit-locking.html#LOCKING-ROWS" >行级锁</A
+></DT
+><DT
+>12.3.3. <A HREF="explicit-locking.html#LOCKING-DEADLOCKS" >死锁</A
+></DT
+></DL
+></DD
+><DT
+>12.4. <A HREF="applevel-consistency.html" >应用层的数据完整性检查</A
+></DT
+><DT
+>12.5. <A HREF="locking-indexes.html" >锁和索引</A
+></DT
+></DL
+></DIV
+><A NAME="AEN15221" ></A
+><P
+>	本章描述 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	数据库系统在两个或者更多会话试图同时访问同样的数据的时候表现出来的样子。
+	在那种并发访问的情况下的目标是为所有会话提供高效的访问，同时还要维护严格的数据完整性。
+	每个数据库应用的开发人员都应该熟悉本章讨论的话题。
+  </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="MVCC-INTRO" >12.1. 介绍</A
+></H1
+><A NAME="AEN15227" ></A
+><P
+>	与其他使用锁来进行并行控制的数据库系统不同，
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	利用多版本模型来维护数据的一致性。
+	（多版本并发控制，Multiversion Concurrency Control, <SPAN
+CLASS="ACRONYM"
+>MVCC</SPAN
+>）。
+	这就意味着当检索数据库时，每个事务都看到一个数据的一段时间前的快照
+	（一个<I
+CLASS="FIRSTTERM"
+>数据库版本</I
+>），
+	而不管正在处理的数据当前的状态。这样，如果对每个数据库会话进行<I
+CLASS="FIRSTTERM"
+>事务隔离</I
+>，
+	就可以避免一个事务看到因为其它并行的事务更新同一行数据而导致的不一致的数据。
+   </P
+><P
+>	使用<SPAN
+CLASS="ACRONYM"
+>MVCC</SPAN
+>多版本并发控制比锁定模型的主要优点是在<SPAN
+CLASS="ACRONYM"
+>MVCC</SPAN
+>里，
+	对检索（读）数据的锁要求与写数据的锁要求不冲突，
+	所以读不会阻塞写，而写也从不阻塞读。
+   </P
+><P
+>	在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里也有表和行级别的锁定机制，
+	用于给那些无法轻松接受 <SPAN
+CLASS="ACRONYM"
+>MVCC</SPAN
+> 行为的应用。
+	不过，恰当地使用 <SPAN
+CLASS="ACRONYM"
+>MVCC</SPAN
+> 总会提供比锁更好地性能。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="indexes-examine.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="transaction-iso.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >检查索引的使用</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >事务隔离</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

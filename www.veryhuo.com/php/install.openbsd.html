@@ -1,0 +1,58 @@
+<HTML><HEAD><TITLE>在 Unix/OpenBSD 系统上安装</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="安装" HREF="installation.html"><LINK REL="PREVIOUS" TITLE="Unix/Mac OS X installs" HREF="install.macosx.html"><LINK REL="NEXT" TITLE="Unix/Solaris 安装" HREF="install.solaris.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="sect1" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="install.macosx.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 3. 安装</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="install.solaris.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="sect1"><H1 CLASS="sect1"><A NAME="install.openbsd"></A>在 Unix/OpenBSD 系统上安装</H1><P>&#13; 本章节的内容和提示仅限于将 PHP 安装到
+<A HREF="http://www.openbsd.org/" TARGET="_top">OpenBSD 3.4</A> 系统上。
+</P><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="install.openbsd.packages"></A>使用二进制包安装</H2><P>&#13; 使用二进制包安装 PHP 到 OpenBSD 系统上是被推荐的同时也是最简单的方法。PHP
+核心包已经从其他模块中分离出来了并且每个模块可以被独立的安装/卸载而不影响其他模块。所有这些安装
+PHP 需要的文件你可以在 OpenBSD 光盘或者在 FTP 站点上找到。
+</P><P>&#13; 你需要安装的 PHP 核心包的文件是
+<TT CLASS="filename">php4-core-4.3.3.tgz</TT>，它包含了基本的引擎（包括
+gettext 和 iconv）。其次，你可能还需要安装一些模块包，如：<TT CLASS="filename">php4-mysql-4.3.3.tgz</TT>
+或 <TT CLASS="filename">php4-imap-4.3.3.tgz</TT>。你需要使用命令
+<B CLASS="command">phpxs</B> 去激活它，并且在通过修改 <TT CLASS="filename">php.ini</TT> 文件来屏蔽他们。
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="install.openbsd.ports.example"></A><P><B>例子 3-1. 在 OpenBSD 系统下的软件包的安装示例</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting"># pkg_add php4-core-4.3.3.tgz
+# /usr/local/sbin/phpxs -s
+# cp /usr/local/share/doc/php4/php.ini-recommended /var/www/conf/php.ini
+  (add in mysql)
+# pkg_add php4-mysql-4.3.3.tgz
+# /usr/local/sbin/phpxs -a mysql
+  (add in imap)
+# pkg_add php4-imap-4.3.3.tgz
+# /usr/local/sbin/phpxs -a imap
+  (remove mysql as a test)
+# pkg_delete php4-mysql-4.3.3
+# /usr/local/sbin/phpxs -r mysql
+  (install the PEAR libraries)
+# pkg_add php4-pear-4.3.3.tgz</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE><P>&#13; 阅读<A HREF="http://www.openbsd.org/cgi-bin/man.cgi?query=packages" TARGET="_top">packages(7)</A>
+的用户手册，可以得到更多的在 OpenBSD 系统下有关二进制软件包(binary packages)的信息.
+</P></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="install.openbsd.ports"></A>使用软件包</H2><P>&#13; 你同样可以使用 <A HREF="http://www.openbsd.org/ports.html" TARGET="_top">软件包目录（ports tree）</A>来编译
+PHP 的源代码。然而，这样的安装方式仅仅是建议对 OpenBSD 非常熟悉的高级用户去做。PHP4
+的软件包被分别分为了两个子目录：core 和 extensions。其中 extensions
+目录产生了所有 PHP 所支持的子模块。如果你不希望创建并且使用这些模块中的某些模块，请使用
+FLAVOR <B CLASS="command">no_*</B> 参数。例如，如果你希望跳过编译 imap
+模块，设置 FLAVOR 为 <B CLASS="command">no_imap</B> 即可。
+</P></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="install.openbsd.faq"></A>常见问题</H2><P></P><UL><LI><P>&#13; 默认安装的 Apache 运行于
+<A HREF="http://www.openbsd.org/cgi-bin/man.cgi?query=chroot" TARGET="_top">chroot(2) jail</A>，将限制
+PHP 脚本只能访问 <TT CLASS="filename">/var/www</TT> 下面的文件。你需要建立
+<TT CLASS="filename">/var/www/tmp</TT> 目录来存放
+PHP session 文件，或使用其它的 session 后端。此外，数据库套接字需要被放入
+jail 或者侦听 <TT CLASS="filename">localhost</TT> 接口。如果使用网络函数，某些
+<TT CLASS="filename">/etc</TT> 下面的文件例如
+<TT CLASS="filename">/etc/resolv.conf</TT> 和
+<TT CLASS="filename">/etc/services</TT> 需要被移动到
+<TT CLASS="filename">/var/www/etc</TT> 中去。OpenBSD PEAR
+包会自动安装到正确的 chroot 目录中，因此不需要作特殊改动。有关
+OpenBSD Apache 的更多信息见
+<A HREF="http://www.openbsd.org/faq/faq10.html#httpdchroot" TARGET="_top">OpenBSD FAQ</A>。
+</P></LI><LI><P>&#13; 对应于 <A HREF="http://www.boutell.com/gd/" TARGET="_top">gd</A> 扩展的 OpenBSD 3.4
+包需要预先安装 XFree86。如果你不想用那些需要 X11 的字体特性，则安装
+<TT CLASS="filename">php4-gd-4.3.3-no_x11.tgz</TT> 包来替代之。
+</P></LI></UL></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="install.openbsd.older"></A>早期发布版本</H2><P>&#13; 早期的 OpenBSD 系统使用 FLAVORS 系统把 PHP
+链接为静态形式。自从使用这种方法编译就造成了问题即：很难制作二进制软件包。你仍然可以使用早期
+stable ports trees，但这种方式已经不被 OpenBSD 小组所支持。如果你对此有任何建议和意见，软件包当前的维护人是
+Anil Madhavapeddy（avsm at openbsd dot org）。
+</P></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="install.macosx.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="install.solaris.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Unix/Mac OS X installs</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="installation.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Unix/Solaris 安装</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

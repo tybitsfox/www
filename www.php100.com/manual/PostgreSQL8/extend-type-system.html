@@ -1,0 +1,256 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+> PostgreSQL 类型系统 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="扩展 SQL" HREF="extend.html"><LINK REL="PREVIOUS" TITLE="扩展 SQL" HREF="extend.html"><LINK REL="NEXT" TITLE="用户定义函数" HREF="xfunc.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="extend.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="extend.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 32. 扩展 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="extend.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="xfunc.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="EXTEND-TYPE-SYSTEM" >32.2. <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 类型系统</A
+></H1
+><A NAME="AEN31335" ></A
+><A NAME="AEN31337" ></A
+><A NAME="AEN31340" ></A
+><A NAME="AEN31342" ></A
+><P
+>	数据类型可以分为基本类型，复合类型，域和伪类型。
+   </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN31346" >32.2.1. 基本类型</A
+></H2
+><P
+>	基本类型是那些在 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语言层次更低的级别上
+	实现的类型，比如 <TT
+CLASS="TYPE"
+>int4</TT
+>（通常是一种低级的语言，
+	比如 C）：它们通常与那些常被认为是抽象数据类型的类型对应；
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	对这些数据类型只能通过用户提供的方法来操作，
+	并且对这些数据类型的特性的理解只限于用户所描述的范围．
+	基本类型进一步分成标量和数组类型。对于每种标量类型，
+	系统都会自动创建一个对应的数组类型，可以保存该标量类型
+	变长的数组。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN31352" >32.2.2. 复合类型</A
+></H2
+><P
+>	复合类型，或者说行类型，是当用户创建表时创建的。
+	我们也可以用 <A HREF="sql-createtype.html" ><I
+>CREATE TYPE</I
+></A
+>
+	创建一个<SPAN
+CLASS="QUOTE"
+>"独立的"</SPAN
+>，没有关联表的复合类型。一种复合类型只是一个带着相关字段名称的基本类型的列表。
+	一个复合类型的数值是一行字段值或者一条字段值组成的记录。
+	用户可以从 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 查询里访问组成字段。
+	参考 <A HREF="rowtypes.html" >Section 8.11</A
+> 获取更多复合类型的相关信息。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN31359" >32.2.3. 域</A
+></H2
+><P
+>     域是基于一种特定的基本类型的，从很多角度来看，它们也可以和对应
+     的基本类型交换。但是，一个域可以有约束，把它的有效值限制在它
+     的下层基本类型允许的有效值范围的一个子集。
+    </P
+><P
+>     域可以用 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令 <A HREF="sql-createdomain.html" ><I
+>CREATE DOMAIN</I
+></A
+> 创建。
+     它们的创建和使用不在本章讨论。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN31365" >32.2.4. 伪类型</A
+></H2
+><P
+>     系统里有集中用于特殊目的的<SPAN
+CLASS="QUOTE"
+>"伪类型"</SPAN
+>。伪类型不能出现在表
+     的字段类型中，也不能用做复合类型的属性，但是它们可以用于声明函数的参数和
+     结果类型。这样就在类型系统里提供了一个机制用于标识特殊类型的函数。
+     <A HREF="datatype-pseudo.html#DATATYPE-PSEUDOTYPES-TABLE" >Table 8-20</A
+>  列出了现有的伪类型。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="EXTEND-TYPES-POLYMORPHIC" >32.2.5. 多态类型</A
+></H2
+><A NAME="AEN31372" ></A
+><A NAME="AEN31374" ></A
+><A NAME="AEN31376" ></A
+><A NAME="AEN31379" ></A
+><P
+>     两种特别有趣的伪类型是 <TT
+CLASS="TYPE"
+>anyelement</TT
+> 和 <TT
+CLASS="TYPE"
+>anyarray</TT
+>，
+     它们在一起称作<I
+CLASS="FIRSTTERM"
+>多态类型</I
+>。任何用这些类型定义
+     的函数就叫做<I
+CLASS="FIRSTTERM"
+>多态函数</I
+>。一种多态函数可以在许多不同
+     的数据类型上操作，它们判断具体类型的方法是在一次调用中，使用实际传递进来的数据类型
+     来判断。
+    </P
+><P
+>     多态参数和结果是相互绑定，并且在分析查询调用的函数时解析成特定的数据类型。
+     每个声明成 <TT
+CLASS="TYPE"
+>anyelement</TT
+> 的位置（参数或者返回类型）都允许拥有
+     一个特定的实际数据类型，但是在任何给定的调用过程中，它们<I
+CLASS="EMPHASIS"
+>都必须</I
+>
+     是<I
+CLASS="EMPHASIS"
+>同样</I
+>的类型。每个声明为 <TT
+CLASS="TYPE"
+>anyarray</TT
+> 的位置
+     都可以是任何数组数据类型，但是，类似的，它们也不许都是同样的类型。如果有些
+     位置声明为 <TT
+CLASS="TYPE"
+>anyarray</TT
+> 而其它的位置声明为 <TT
+CLASS="TYPE"
+>anyelement</TT
+>，
+     那么在 <TT
+CLASS="TYPE"
+>anyarray</TT
+> 位置上的类型必须是元素类型与那些出现在 <TT
+CLASS="TYPE"
+>anyelement</TT
+>
+     位置上的同类型的数组。
+    </P
+><P
+>     因此，如果多于一个参数位置声明为一个多态类型，其实际效果是只允许某些实际
+     参数类型的组合出现。比如，一个函数声明为 <TT
+CLASS="LITERAL"
+>equal(anyelement, anyelement)</TT
+>
+     将接受任何两个输入值，只要它们的数据类型相同。
+    </P
+><P
+>     如果一个函数的的返回值声明为多态类型，那么至少有一个参数位置也是多态的，
+     并且提供给参数的类型决定该词调用实际返回的类型。比如，如果没有数组下标
+     机制，那么我们可以定义一个函数实现下标的函数，像 <TT
+CLASS="LITERAL"
+>subscript(anyarray, integer) returns anyelement</TT
+>。
+     这个声明约束实际上的第一个参数是一个数组类型，并且允许分析器从第一个参数的
+     实际类型里推导出正确的返回类型。
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="extend.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="xfunc.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >扩展 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="extend.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >用户定义函数</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

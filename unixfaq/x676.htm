@@ -1,0 +1,52 @@
+<html><head><title>读取进程表 - AIX 4.2 版</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="范例程序" href="./c665.htm"><link rel="PREVIOUS" title="读取进程表 - SYSV 版" href="./x673.htm"><link rel="NEXT" title="使用popen函数和ps命令读取进程表" href="./x679.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x673.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 7. 范例程序</td><td align="right" valign="bottom" width="10%"><a href="./x679.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN676">读取进程表 - AIX 4.2 版</a></h1><pre class="PROGRAMLISTING">     #include &lt;stdio.h&gt;
+     #include &lt;procinfo.h&gt;
+    
+     int getprocs(struct procsinfo *, int, struct fdsinfo *,
+                  int, pid_t *, int);
+    
+     pid_t getpidbyname(char *name, pid_t *nextPid)
+     {
+       struct procsinfo  pi;
+       pid_t             retval = (pid_t) -1;
+       pid_t             pid;
+    
+       pid = *nextPid;
+    
+       while(1)
+       {
+         if(getprocs(&amp;pi, sizeof pi, 0, 0, &amp;pid, 1) != 1)
+           break;
+    
+         if(!strcmp(name, pi.pi_comm))
+         {
+           retval = pi.pi_pid;
+           *nextPid = pid;
+           break;
+         }
+       }
+    
+       return retval;
+     }
+    
+     int main(int argc, char *argv[])
+     {
+       int   curArg;
+       pid_t pid;
+       pid_t nextPid;
+    
+       if(argc == 1)
+       {
+         printf("syntax: %s &lt;program&gt; [program ...]\n",argv[0]);
+         exit(1);
+       }
+    
+       for(curArg = 1; curArg &lt; argc; curArg++)
+       {
+         printf("Process IDs for %s\n", argv[curArg]);
+    
+         for(nextPid = 0, pid = 0; pid != -1; )
+           if((pid = getpidbyname(argv[curArg], &amp;nextPid)) != -1)
+             printf("\t%d\n", pid);
+       }
+     }
+    </pre></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x673.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x679.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">读取进程表 - SYSV 版</td><td align="center" valign="top" width="34%"><a href="./c665.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">使用popen函数和ps命令读取进程表</td></tr></tbody></table></div></body></html>

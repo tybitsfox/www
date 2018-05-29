@@ -1,0 +1,425 @@
+<HTML
+><HEAD
+><TITLE
+>日期/时间支持</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="附录"
+HREF="appendixes.html"><LINK
+REL="PREVIOUS"
+TITLE="PostgreSQL 错误码"
+HREF="errcodes-appendix.html"><LINK
+REL="NEXT"
+TITLE="日期/时间关键字"
+HREF="datetime-keywords.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="APPENDIX"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="errcodes-appendix.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="errcodes-appendix.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sql-keywords-appendix.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="datetime-keywords.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="APPENDIX"
+><H1
+><A
+NAME="DATETIME-APPENDIX"
+>Appendix B. 日期/时间支持</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>B.1. <A
+HREF="datetime-appendix.html#AEN63816"
+>日期/时间输入解析</A
+></DT
+><DT
+>B.2. <A
+HREF="datetime-keywords.html"
+>日期/时间关键字</A
+></DT
+><DT
+>B.3. <A
+HREF="datetime-units-history.html"
+>日期单位的历史</A
+></DT
+></DL
+></DIV
+><P
+>        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 使用一个内部的启发式分析器用于所有的日期/时间支持。
+	日期和时间都是以字串形式输入的，然后用一个初步的判断分解为在该数域里可以有什么样的信息。
+        每个数域都被解释，并且要么是被赋予一个数字值，要么是忽略，
+        要么是被拒绝。分析器里包含内部的查询表，用于所有文本域，包括月份，星期几，和时区。
+  </P
+><P
+>        这份附录包含这些查询表的信息，以及描述了分析器用来对时间和日期解码的步骤。
+  </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="AEN63816"
+>B.1. 日期/时间输入解析</A
+></H1
+><P
+>        日期/时间类型输入都是使用下列的过程进行解码的。
+   </P
+><DIV
+CLASS="PROCEDURE"
+><OL
+TYPE="1"
+><LI
+><P
+>        把输入字串分解为一个个记号，然后把每个记号分成字串，时间，时区，或者数字几类。
+     </P
+><OL
+CLASS="SUBSTEPS"
+TYPE="a"
+><LI
+><P
+>        如果一个数字记号包含一个冒号（<TT
+CLASS="LITERAL"
+>:</TT
+>），那么这是一个时间字串。包括随后所有的数据位和冒号。
+       </P
+></LI
+><LI
+><P
+>        如果这个数字记号包含一个划线（<TT
+CLASS="LITERAL"
+>-</TT
+>），斜杠（<TT
+CLASS="LITERAL"
+>/</TT
+>），
+        或者两个或多个点（<TT
+CLASS="LITERAL"
+>.</TT
+>），那么它就是一个日期字串，可能有一个文本月份。
+       </P
+></LI
+><LI
+><P
+>        如果这个记号只是数字，那么它要么是一个单独的字段，
+        要么是一个 ISO 8601 连接的日期（比如，<TT
+CLASS="LITERAL"
+>19990113</TT
+>
+        是 1999 年一月 13 日）或者是连接的时间（比如，<TT
+CLASS="LITERAL"
+>141516</TT
+> 是 14:15:16）。
+       </P
+></LI
+><LI
+><P
+>        如果记号以一个加号（<TT
+CLASS="LITERAL"
+>+</TT
+>）开头或者减号（<TT
+CLASS="LITERAL"
+>-</TT
+>）开头，
+        那么它要么是一个时区，要么就是一个特殊的字段。
+       </P
+></LI
+></OL
+></LI
+><LI
+><P
+>        如果记号是一个文本字串，那么和可能的字串进行匹配。
+     </P
+><OL
+CLASS="SUBSTEPS"
+TYPE="a"
+><LI
+><P
+>        做一次二分表查找，看看这个记号是特殊字串（比如，<TT
+CLASS="LITERAL"
+>today</TT
+>），
+        日期（比如，<TT
+CLASS="LITERAL"
+>Thursday</TT
+>），月份（比如，<TT
+CLASS="LITERAL"
+>January</TT
+>），
+        还是一个无关痛痒的字（比如，<TT
+CLASS="LITERAL"
+>at</TT
+>，<TT
+CLASS="LITERAL"
+>on</TT
+>）。
+       </P
+><P
+>        为字段设置数值和位掩码。比如，为 <TT
+CLASS="LITERAL"
+>today</TT
+> 设置年，月，日，
+        以及为 <TT
+CLASS="LITERAL"
+>now</TT
+> 这样的还需要设置另外的时，分，秒。
+       </P
+></LI
+><LI
+><P
+>        如果没有找到，则做一次类似的二分表搜索，找与记号匹配的时区。
+       </P
+></LI
+><LI
+><P
+>        如果还没有找到，抛出一个错误。
+       </P
+></LI
+></OL
+></LI
+><LI
+><P
+>        记号是一个数字或者数字字段。
+     </P
+><OL
+CLASS="SUBSTEPS"
+TYPE="a"
+><LI
+><P
+>        如果有八位或者六位数字，而且前面也没有读到其它日期字段，
+        那么就解释成一个<SPAN
+CLASS="QUOTE"
+>"连接的日期"</SPAN
+>（比如，
+	<TT
+CLASS="LITERAL"
+>19990118</TT
+>　或者　<TT
+CLASS="LITERAL"
+>990118</TT
+>）。
+	这里的解析是　<TT
+CLASS="LITERAL"
+>YYYYMMDD</TT
+>　或者　<TT
+CLASS="LITERAL"
+>YYMMDD</TT
+>。
+       </P
+></LI
+><LI
+><P
+>        如果记号是三位数字，并且已经解码了一个年份，那么解释成年日。
+       </P
+></LI
+><LI
+><P
+>        如果已经读取了四和六位数字，并且已经读取了一个年份，
+        那么就解析成时间（<TT
+CLASS="LITERAL"
+>HHMM</TT
+>　或者　<TT
+CLASS="LITERAL"
+>HHMMSS</TT
+>）。
+       </P
+></LI
+><LI
+><P
+>        如果是三位或更多位并且还没有找到日期字段，则解析成一个年份
+	（这个解析强制剩余的日期字段的顺序为　yy-mm-dd）。
+       </P
+></LI
+><LI
+><P
+>        那么解析成某一天。
+	否则，日期字段的顺序被认为是尊循　<TT
+CLASS="VARNAME"
+>DateStyle</TT
+>　设置：
+	mm-dd-yy，dd-mm-yy，或者 yy-mm-dd。如果发现月份或者日期字段超出范围，
+	则抛出一个错误。
+       </P
+></LI
+></OL
+></LI
+><LI
+><P
+>        如果声明了 BC，则对年份取其负数并加一，用于内部保存。
+        （在格里高利历法里没有零年，所以数字上的 1 BC 是公元零年。）
+     </P
+></LI
+><LI
+><P
+>        如果没有声明 BC，并且年份字段有两个数据位的长度，
+        那么把年份调整为 4 位。如果该字段小于 70，那么加 2000；否则，加 1900。
+
+      <DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>        格里高利年份 AD 1－99可以用前导零的方式使用4位数字
+        （也就是说，<TT
+CLASS="LITERAL"
+>0099</TT
+> 是 AD 99）。
+	以前的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        版本接受三位数字的年份和一位数字的年份，
+	但是从版本 7.0 开始，这个规则更严格了，以减少可能的混淆。
+       </P
+></BLOCKQUOTE
+></DIV
+>
+     </P
+></LI
+></OL
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="errcodes-appendix.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="datetime-keywords.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 错误码</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="appendixes.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>日期/时间关键字</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

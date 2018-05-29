@@ -1,0 +1,157 @@
+<html><head><title>一般文件操作(包括管道和套接字)</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="PREVIOUS" title="我怎样杀死一个进程的所有派生进程？" href="./x286.htm"><link rel="NEXT" title="我如何才能知道和对方的连接被终止？" href="./x347.htm"></head><body class="CHAPTER" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x286.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%"></td><td align="right" valign="bottom" width="10%"><a href="./x347.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="CHAPTER"><h1><a name="AEN300">Chapter 2. 一般文件操作(包括管道和套接字)</a></h1><div class="TOC"><dl><dt><b>Table of Contents</b></dt><dt>2.1. <a href="./c300.htm#AEN304">如何管理多个连接？</a></dt><dt>2.2. <a href="./x347.htm">我如何才能知道和对方的连接被终止？</a></dt><dt>2.3. <a href="./x350.htm">什么是读取目录的最好方法？</a></dt><dt>2.4. <a href="./x355.htm">我如何才能知道一个文件被另外进程打开？</a></dt><dt>2.5. <a href="./x359.htm">我如何锁住一个文件？</a></dt><dt>2.6. <a href="./x374.htm">我如何能发现一个文件已由另外一个进程更新？</a></dt><dt>2.7. <a href="./x378.htm">请问du是怎样工作的？</a></dt><dt>2.8. <a href="./x383.htm">我如何得到一个文件的长度？</a></dt><dt>2.9. <a href="./x389.htm">我如何像shell里一样扩展在文件名里的'~'？</a></dt><dt>2.10. <a href="./x395.htm">有名管道(FIFO)能做什么？</a></dt></dl></div><p>请同时参考套接字FAQ，在<a href="http://www.lcg.org/sock-faq/" target="_top">http://www.lcg.org/sock-faq/</a>
+  </p><div class="SECT1"><h1 class="SECT1"><a name="AEN304">2.1. 如何管理多个连接？</a></h1><p>   “我想同时监控一个以上的文件描述符(fd)/连接(connection)/流(stream)，
+应该怎么办？”
+    </p><p>使用 select() 或 poll() 函数。
+    </p><p>注意：select() 在BSD中被引入，而poll()是SysV STREAM流控制的产物。因此，
+这里就有了平台移植上的考虑：纯粹的BSD系统可能仍然缺少poll()，而早一些
+的SVR3系统中可能没有select()，尽管在SVR4中将其加入。目前两者都是POSIX.
+1g标准，（译者注：因此在Linux上两者都存在）
+    </p><p>select()和poll()本质上来讲做的是同一件事，只是完成的方法不一样。两者都
+通过检验一组文件描述符来检测是否有特定的时间将在上面发生并在一定的时间
+内等待其发生。
+    </p><p>[重要事项：无论select()还是poll()都不对普通文件起很大效用，它们着重用
+于套接口(socket)、管道(pipe)、伪终端(pty)、终端设备(tty)和其他一些字符
+设备，但是这些操作都是系统相关(system-dependent)的。]
+    </p><div class="SECT2"><h2 class="SECT2"><a name="AEN311">2.1.1. 我如何使用select()函数？</a></h2><p>select()函数的接口主要是建立在一种叫'fd_set'类型的基础上。它('fd_set')
+是一组文件描述符(fd)的集合。由于fd_set类型的长度在不同平台上不同，因此
+应该用一组标准的宏定义来处理此类变量：
+      </p><pre class="PROGRAMLISTING">    fd_set set;
+    FD_ZERO(&amp;set);       /* 将set清零 */
+    FD_SET(fd, &amp;set);    /* 将fd加入set */
+    FD_CLR(fd, &amp;set);    /* 将fd从set中清除 */
+    FD_ISSET(fd, &amp;set);  /* 如果fd在set中则真　*/
+      </pre><p>在过去，一个fd_set通常只能包含少于等于32个文件描述符，因为fd_set其实只
+用了一个int的比特矢量来实现，在大多数情况下，检查fd_set能包括任意值的
+文件描述符是系统的责任，但确定你的fd_set到底能放多少有时你应该检查/修
+改宏FD_SETSIZE的值。*这个值是系统相关的*，同时检查你的系统中的select()
+的man手册。有一些系统对多于1024个文件描述符的支持有问题。[译者注：
+Linux就是这样的系统！你会发现sizeof(fd_set)的结果是128(*8 =
+FD_SETSIZE=1024)　尽管很少你会遇到这种情况。]
+      </p><p>select的基本接口十分简单：
+      </p><pre class="PROGRAMLISTING">    int select(int nfds, fd_set *readset, fd_set *writeset,
+               fd_set *exceptset, struct timeval *timeout);
+      </pre><p>其中：
+      </p><pre class="PROGRAMLISTING">nfds     
+     需要检查的文件描述符个数，数值应该比是三组fd_set中最大数
+     更大，而不是实际文件描述符的总数。
+readset    
+     用来检查可读性的一组文件描述符。
+writeset
+     用来检查可写性的一组文件描述符。
+exceptset
+     用来检查意外状态的文件描述符。(注：错误并不是意外状态)
+timeout
+     NULL指针代表无限等待，否则是指向timeval结构的指针，代表最
+     长等待时间。(如果其中tv_sec和tv_usec都等于0, 则文件描述符
+     的状态不被影响，但函数并不挂起)
+      </pre><p>函数将返回响应操作的对应操作文件描述符的总数，且三组数据均在恰当位置被
+修改，只有响应操作的那一些没有修改。接着应该用FD_ISSET宏来查找返回的文
+件描述符组。
+      </p><p>这里是一个简单的测试单个文件描述符可读性的例子：
+      </p><pre class="PROGRAMLISTING">     int isready(int fd)
+     {
+         int rc;
+         fd_set fds;
+         struct timeval tv;
+    
+         FD_ZERO(&amp;fds);
+         FD_SET(fd,&amp;fds);
+         tv.tv_sec = tv.tv_usec = 0;
+    
+	 rc = select(fd+1, &amp;fds, NULL, NULL, &amp;tv);
+         if (rc &lt; 0)
+           return -1;
+    
+         return FD_ISSET(fd,&amp;fds) ? 1 : 0;
+     }
+      </pre><p>当然如果我们把NULL指针作为fd_set传入的话，这就表示我们对这种操作的发生
+不感兴趣，但select() 还是会等待直到其发生或者超过等待时间。
+      </p><p>[译者注：在Linux中，timeout指的是程序在非sleep状态中度过的时间，而不是
+实际上过去的时间，这就会引起和非Linux平台移植上的时间不等问题。移植问
+题还包括在System V风格中select()在函数退出前会把timeout设为未定义的
+NULL状态，而在BSD中则不是这样，Linux在这点上遵从System V，因此在重复利
+用timeout指针问题上也应该注意。]
+      </p></div><div class="SECT2"><h2 class="SECT2"><a name="AEN325">2.1.2. 我如何使用poll()？</a></h2><p>poll()接受一个指向结构'struct pollfd'列表的指针，其中包括了你想测试的
+文件描述符和事件。事件由一个在结构中事件域的比特掩码确定。当前的结构在
+调用后将被填写并在事件发生后返回。在SVR4(可能更早的一些版本)中的
+"poll.h"文件中包含了用于确定事件的一些宏定义。事件的等待时间精确到毫秒
+(但令人困惑的是等待时间的类型却是int)，当等待时间为0时，poll()函数立即
+返回，-1则使poll()一直挂起直到一个指定事件发生。下面是pollfd的结构。
+      </p><pre class="PROGRAMLISTING">     struct pollfd {
+         int fd;        /* 文件描述符 */
+         short events;  /* 等待的事件 */
+         short revents; /* 实际发生了的事件 */
+     };
+      </pre><p>于select()十分相似，当返回正值时，代表满足响应事件的文件描述符的个数，
+如果返回0则代表在规定事件内没有事件发生。如发现返回为负则应该立即查看
+errno，因为这代表有错误发生。
+      </p><p>如果没有事件发生，revents会被清空，所以你不必多此一举。
+      </p><p>这里是一个例子
+      </p><pre class="PROGRAMLISTING">   /* 检测两个文件描述符，分别为一般数据和高优先数据。如果事件发生
+      则用相关描述符和优先度调用函数handler()，无时间限制等待，直到
+      错误发生或描述符挂起。*/
+   
+   #include &lt;stdlib.h&gt;
+   #include &lt;stdio.h&gt;
+  
+   #include &lt;sys/types.h&gt;
+   #include &lt;stropts.h&gt;
+   #include &lt;poll.h&gt;
+  
+   #include &lt;unistd.h&gt;
+   #include &lt;errno.h&gt;
+   #include &lt;string.h&gt;
+  
+   #define NORMAL_DATA 1
+   #define HIPRI_DATA 2
+  
+   int poll_two_normal(int fd1,int fd2)
+   {
+       struct pollfd poll_list[2];
+       int retval;
+  
+       poll_list[0].fd = fd1;
+       poll_list[1].fd = fd2;
+       poll_list[0].events = POLLIN|POLLPRI;
+       poll_list[1].events = POLLIN|POLLPRI;
+  
+       while(1)
+       {
+           retval = poll(poll_list,(unsigned long)2,-1);
+           /* retval 总是大于0或为-1，因为我们在阻塞中工作 */
+  
+           if(retval &lt; 0)
+           {
+               fprintf(stderr,"poll错误: %s\n",strerror(errno));
+               return -1;
+           }
+    
+           if(((poll_list[0].revents&amp;POLLHUP) == POLLHUP) ||
+              ((poll_list[0].revents&amp;POLLERR) == POLLERR) ||
+              ((poll_list[0].revents&amp;POLLNVAL) == POLLNVAL) ||
+              ((poll_list[1].revents&amp;POLLHUP) == POLLHUP) ||
+              ((poll_list[1].revents&amp;POLLERR) == POLLERR) ||
+              ((poll_list[1].revents&amp;POLLNVAL) == POLLNVAL))
+             return 0;
+  
+           if((poll_list[0].revents&amp;POLLIN) == POLLIN)
+             handle(poll_list[0].fd,NORMAL_DATA);
+           if((poll_list[0].revents&amp;POLLPRI) == POLLPRI)
+             handle(poll_list[0].fd,HIPRI_DATA);
+           if((poll_list[1].revents&amp;POLLIN) == POLLIN)
+             handle(poll_list[1].fd,NORMAL_DATA);
+           if((poll_list[1].revents&amp;POLLPRI) == POLLPRI)
+             handle(poll_list[1].fd,HIPRI_DATA);
+       }
+   }
+      </pre></div><div class="SECT2"><h2 class="SECT2"><a name="AEN333">2.1.3. 我是否可以同时使用SysV IPC和select()/poll()？</a></h2><p>*不能。* (除非在AIX上，因为它用一个无比奇怪的方法来实现这种组合)
+      </p><p>一般来说，同时使用select()或poll()和SysV 消息队列会带来许多麻烦。SysV
+IPC的对象并不是用文件描述符来处理的，所以它们不能被传递给select()和
+poll()。这里有几种解决方法，其粗暴程度各不相同：
+      </p><p></p><ul><li><p>完全放弃使用SysV IPC。 :-)</p></li><li><p>     用fork()，然后让子进程来处理SysV IPC，然后用管道或套接口和父进程
+     说话。父进程则使用select()。
+          </p></li><li><p>     同上，但让子进程用select()，然后和父亲用消息队列交流。
+          </p></li><li><p>     安排进程发送消息给你，在发送消息后再发送一个信号。*警告*：要做好
+     这个并不简单，非常容易写出会丢失消息或引起死锁的程序。
+          </p></li></ul><p>      另外还有其他方法。
+      </p></div></div></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x286.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x347.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">我怎样杀死一个进程的所有派生进程？</td><td align="center" valign="top" width="34%">&nbsp;</td><td align="right" valign="top" width="33%">我如何才能知道和对方的连接被终止？</td></tr></tbody></table></div></body></html>

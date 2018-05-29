@@ -1,0 +1,292 @@
+<HTML
+><HEAD
+><TITLE
+>错误和消息</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="PL/pgSQL - SQL 过程语言"
+HREF="plpgsql.html"><LINK
+REL="PREVIOUS"
+TITLE="游标"
+HREF="plpgsql-cursors.html"><LINK
+REL="NEXT"
+TITLE="触发器过程"
+HREF="plpgsql-trigger.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plpgsql-cursors.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plpgsql.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 36. <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> - <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 过程语言</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plpgsql.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plpgsql-trigger.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="PLPGSQL-ERRORS-AND-MESSAGES"
+>36.9. 错误和消息</A
+></H1
+><A
+NAME="AEN35448"
+></A
+><A
+NAME="AEN35450"
+></A
+><P
+>	利用<TT
+CLASS="COMMAND"
+>RAISE</TT
+>语句报告信息以及抛出错误。
+
+</P><PRE
+CLASS="SYNOPSIS"
+>RAISE <TT
+CLASS="REPLACEABLE"
+><I
+>level</I
+></TT
+> '<TT
+CLASS="REPLACEABLE"
+><I
+>format</I
+></TT
+>' [<SPAN
+CLASS="OPTIONAL"
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>, ...</SPAN
+>]</SPAN
+>];</PRE
+><P>
+
+	可能的级别有<TT
+CLASS="LITERAL"
+>DEBUG</TT
+>(向服务器日志写信息)，
+	<TT
+CLASS="LITERAL"
+>LOG</TT
+>（向服务器日志写信息，优先级更高），<TT
+CLASS="LITERAL"
+>INFO</TT
+>，
+	<TT
+CLASS="LITERAL"
+>NOTICE</TT
+>和<TT
+CLASS="LITERAL"
+>WARNING</TT
+>
+	（把信息写到服务器日志以及转发到客户端应用,优先级逐步升高）和
+	<TT
+CLASS="LITERAL"
+>EXCEPTION</TT
+>抛出一个错误（通常退出当前事务）。
+	某个优先级别的信息是报告给客户端还是写到服务器日志，
+	还是两个都做是由 <A
+HREF="runtime-config-logging.html#GUC-LOG-MIN-MESSAGES"
+>log_min_messages</A
+> 和
+	<A
+HREF="runtime-config-logging.html#GUC-CLIENT-MIN-MESSAGES"
+>client_min_messages</A
+> 配置变量控制的。
+	参阅 <A
+HREF="runtime-config.html"
+>Chapter 17</A
+>  获取更多细节。
+   </P
+><P
+>	在格式字串里，<TT
+CLASS="LITERAL"
+>%</TT
+> 被下一个可选参数的外部表现形式代替。
+	要发出一个文本的 <TT
+CLASS="LITERAL"
+>%</TT
+>，你要写 <TT
+CLASS="LITERAL"
+>%%</TT
+>。
+	参数可以是简单的变量或者表达式，而格式必须是一个简单的字串文本。
+   </P
+><P
+>	在这个例子里，<TT
+CLASS="LITERAL"
+>v_job_id</TT
+>的值将代替字串中的<TT
+CLASS="LITERAL"
+>%</TT
+>：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>RAISE NOTICE 'Calling cs_create_job(%)',v_job_id;</PRE
+><P>
+   </P
+><P
+>	这个例子将会带着给出的错误信息退出事务：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>RAISE EXCEPTION 'Inexistent ID --&#62; %',user_id;</PRE
+><P>
+   </P
+><P
+>     <TT
+CLASS="COMMAND"
+>RAISE EXCEPTION</TT
+> 目前总是生成同样的 SQLSTATE 代码，<TT
+CLASS="LITERAL"
+>P0001</TT
+>，
+     不管调用它的信息是什么。我们可以用 <TT
+CLASS="LITERAL"
+>EXCEPTION ... WHEN RAISE_EXCEPTION THEN ...</TT
+>
+     捕获这样的例外，但是我们无法从一个 <TT
+CLASS="COMMAND"
+>RAISE</TT
+> 里告诉另外一个相关的状态。
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plpgsql-cursors.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plpgsql-trigger.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>游标</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="plpgsql.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>触发器过程</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

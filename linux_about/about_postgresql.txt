@@ -1,0 +1,73 @@
+<font color=red>关于postgresql的应用，目前仅限于php的开发，涉及到c编程的方面还未触及。所以，下面的资料都是基本的操作</font>
+由于下载了一个开放的lims系统，其使用的是postgresql,无奈临时抱佛脚，赶紧的查看，安装postgresql,组建lapp服务器。可是之前我的系统已经是
+完整的lamp结构了，并且新版的主页已经采用mysql来实现的，不在万般无奈的情况下，我不想毁掉我的lamp。
+首先：查看debian源里postgresql的相关软件版本。为9.1.13
+开始安装：apt-get install postgresql 安装完成后，查看phpinfo没有psql的相关信息，呵呵，此时肯定不会有了，
+但主要的是我想在保留mysql的前提下再加入psql。于是尝试安装：php5-pgsql
+安装前查看已经安装的相关软件：
+aptitude search php5-gd
+aptitude search php5-mysql
+以上均已安装，这是php的PDO扩展，PDO扩展为PHP访问数据库定义了一个轻量级的、一致性的接口，它提供了一个数据访问抽象层，这样，无论使用什么
+数据库，都可以通过一致的函数执行查询和获取数据
+开始安装 apt-get install php5-pgsql
+安装成功后查看phpinfo...哈哈，在PDO一栏中mysql和pgsql均已显示为enable
+看来我的lamp构架保住了，并且还能开始使用lapp来进行lims的测试了
+postgresql的基本应用：
+1、登录：
+安装完成后，数据库默认的用户为postgres,（该账户为数据库内置账户，同时也有一个同名的linux系统账户）要使用该账户登录，
+需切换为linux的postgres账户：su postgres
+然后登录数据库：psql
+首次登录成功后使用password修改密码：\password postgres
+(账户密码一致)。然后添加新账户：
+我添加了root账户，因为psql如果内置账户和linux系统账户一致的话，在登录时可以省略账户输入，直接psql登录。
+添加账户命令： create role name;
+此时可使用\du查看所有的账户，可以看到你新建的账户没有任何权限，使用下列命令增加权限：
+alter role root superuser;  ---超级用户权限。
+alter role root login;		---登录的权限。
+alter role root createdb;   ---建立数据库的权限。
+alter role root createrole; ---建立角色的权限。
+
+如果要恢复外部数据，可以使用下面的命令。
+psql exampledb < exampledb.sql
+除了前面已经用到的\password命令（设置密码）和\q命令（退出）以外，控制台还提供一系列其他命令。
+\h：查看SQL命令的解释，比如\h select。
+\?：查看psql命令列表。
+\l：列出所有数据库。
+\c [database_name]：连接其他数据库。
+\d：列出当前数据库的所有表格。
+\d [table_name]：列出某一张表格的结构。
+\du：列出所有用户。
+\e：打开文本编辑器。
+\conninfo：列出当前数据库和连接的信息。
+
+关于postgresql一些特殊的操作：
+1、所有用户除了系统自带的postgres都必须要指定数据库名称才可登录。
+2、角色属性中\"复制\"属性的添加，只能是使用:create role root superuser;
+才能添加。使用alter role root superuser;命令只能加上超级用户属性但是没有\"复制\"属性，不过该属性有何用意现在不明。
+3、由于新建的用户必须要有关联的数据库才能登录，因此只建立新用户还不行，必须将其与某个数据库关联，并赋予权限：
+create database ty001;
+grant all privileges on database db_name to root;
+完成了上述操作后，就可以连接登录该数据库了，虽然该数据库的拥有者不是root
+退出postgres账户，使用新账户root进行登录：psql -d ty001  然后输入密码即可登录。
+要想改变拥有者可使用：
+alter database db_name owner to root;
+
+关于备份和恢复，在postgresql 9.0以上版本可以使用：pg_dump 和pg_restore命令备份和恢复数据库。
+备份： pg_dump -h localhost -U user database_name > db.bak
+使用这种方式备份的数据库，不能使用pg_restore 恢复的。
+要使用：psql -h localhost -U user -d database < db.bak
+目前还不清楚这种方式： pg_restore -d database_name db.bak 恢复的数据库是如何备份的。
+原数据库恢复问题不大，但是要迁移数据库的话需要注意，在恢复之前，数据库中必须有待恢复数据库相同的用户id.
+
+一种类似于mysql的load data infile的数据库表备份和恢复：
+备份：
+aaa=# copy basemsg to '/tmp/t1.csv' with delimiter ',';
+该命令将把basemsg表中所有数据拷贝至文件中，字段间以逗号区分。
+恢复：
+aaa=# copy basemsg from '/tmp/t1.csv' with delimiter ',';
+该命令将数据从文件中恢复至数据库表basemsg.
+据网上介绍，该方法比mysql的load data infile 更加快速。恢复同样一个百万条记录的时间
+mysql为23秒,而这种方法为7秒.
+
+
+

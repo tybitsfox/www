@@ -1,0 +1,453 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>二进制数据类型 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="数据类型" HREF="datatype.html"><LINK REL="PREVIOUS" TITLE="字符类型" HREF="datatype-character.html"><LINK REL="NEXT" TITLE="日期/时间类型" HREF="datatype-datetime.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="datatype-character.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="datatype.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 8. 数据类型</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="datatype.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="datatype-datetime.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="DATATYPE-BINARY" >8.4. 二进制数据类型</A
+></H1
+><A NAME="AEN4262" ></A
+><A NAME="AEN4264" ></A
+><P
+>	<TT
+CLASS="TYPE"
+>bytea</TT
+> 数据类型允许存储二进制字串。
+	参阅<A HREF="datatype-binary.html#DATATYPE-BINARY-TABLE" >Table 8-6</A
+>。
+   </P
+><DIV
+CLASS="TABLE"
+><A NAME="DATATYPE-BINARY-TABLE" ></A
+><P
+><B
+>Table 8-6. 二进制数据类型</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR ><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>名字</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>存储空间</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="TYPE"
+>bytea</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >4 字节加上实际的二进制字串</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >变长的二进制字串
+       </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	二进制字串是一个字节数值的序列。
+	二进制字串和字符字串的区别有两个：
+	首先，二进制字串完全可以允许存储字节零值以及其它<SPAN
+CLASS="QUOTE"
+>"不可打印的"</SPAN
+>字节
+	（定义为范围在 32 到 126 之外的字节）。
+	字符串不允许字节零，并且也不允许那些从数据库选定的字符集编码里面认为是非法的其它字节值或者字节序列。
+	第二，对二进制串的处理就是实际上的字节，而字符串的处理和取决于区域设置。
+	简单说，二进制字串适用于存储那些程序员认为是<SPAN
+CLASS="QUOTE"
+>"裸字节"</SPAN
+>的数据，
+	而字符串适合存储文本。
+   </P
+><P
+>	在输入 <TT
+CLASS="TYPE"
+>bytea</TT
+> 数值的时候，
+	在一个 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语句的文本串里面，
+	你<I
+CLASS="EMPHASIS"
+>必须</I
+>逃逸某些字节值（但<I
+CLASS="EMPHASIS"
+>可以</I
+>逃逸所有字节值）
+	通常，要逃逸一个字节值，需要把它的数值转换成与其十进制字节值对应的三位八进制数字，
+	并且前导两个反斜杠。有些八进制数值有可选的逃逸序列，
+	在 <A HREF="datatype-binary.html#DATATYPE-BINARY-SQLESC" >Table 8-7</A
+> 中显示，
+	同时给出了可选的逃逸序列。
+   </P
+><DIV
+CLASS="TABLE"
+><A NAME="DATATYPE-BINARY-SQLESC" ></A
+><P
+><B
+>Table 8-7. <TT
+CLASS="TYPE"
+>bytea</TT
+> 文本逃逸八进制</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR ><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>十进制数值</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>输入逃逸表现形式</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>例子</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>输出形式</TH
+></TR
+></THEAD
+><TBODY
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> 0 </TT
+> </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > 零的八进制 </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> '\\000' </TT
+> </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> select '\\000'::bytea; </TT
+> </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> \000 </TT
+></TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> 39 </TT
+> </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > 单引号 </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> '\'' 或者 '\\047' </TT
+> </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> select '\''::bytea; </TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> ' </TT
+></TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+>92</TT
+> </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > 反斜杠 </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> '\\\\' 或者 '\\134' </TT
+> </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> select '\\\\'::bytea; </TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> \\ </TT
+></TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" >0 到 31 和 127 到 255</TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><SPAN
+CLASS="QUOTE"
+>"不可打印"</SPAN
+>字节</TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="LITERAL"
+>'\\<TT
+CLASS="REPLACEABLE"
+><I
+>xxx'</I
+></TT
+></TT
+> （八进制值）</TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="LITERAL"
+>SELECT '\\001'::bytea;</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="LITERAL"
+>\001</TT
+></TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>    逃逸<SPAN
+CLASS="QUOTE"
+>"不可打印"</SPAN
+>字节的要求因区域设置而异。在某些场合下，你可以不逃逸它们。
+    请注意<A HREF="datatype-binary.html#DATATYPE-BINARY-SQLESC" >Table 8-7</A
+>里的每个例子都是刚好一个字节长，虽然字节零和反斜杠输出形式比一个字符要长。
+   </P
+><P
+>	你必须写这么多反斜杠的原因，如 <A HREF="datatype-binary.html#DATATYPE-BINARY-SQLESC" >Table 8-7</A
+> 所示，
+	是因为一个写成字串文本的输入字串必须通过 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器里的两个分析阶段。
+	每个反斜杠对的第一个反斜杠会被字串文本分析其理解成一个逃逸字符而消耗掉，
+	剩下反斜杠对中的第二个。剩下的反斜杠被 <TT
+CLASS="TYPE"
+>bytea</TT
+> 输入函数当作一个三位八进制值或者是逃逸另外一个反斜杠的开始。
+	比如，一个传递给服务器的字串文本 <TT
+CLASS="LITERAL"
+>'\\001'</TT
+> 在通过字串分析器之后会成为 <TT
+CLASS="LITERAL"
+>\001</TT
+>。而 <TT
+CLASS="LITERAL"
+>\001</TT
+>
+	则发送给 <TT
+CLASS="TYPE"
+>bytea</TT
+> 输入函数，在这里它被转换成一个十进制值为 1
+	的单个字节。请注意，省略字符不会被 <TT
+CLASS="TYPE"
+>bytea</TT
+> 特殊对待，
+	因此它遵循字串文本的普通规则。（又见 <A HREF="sql-syntax.html#SQL-SYNTAX-STRINGS" >Section 4.1.2.1</A
+>。）
+   </P
+><P
+>	<TT
+CLASS="TYPE"
+>Bytea</TT
+> 字节也在输出中逃逸的。通常，
+	每个<SPAN
+CLASS="QUOTE"
+>"不可打印"</SPAN
+>的字节值都转化成对应的前导反斜杠的三位八进制数值。
+	大多数<SPAN
+CLASS="QUOTE"
+>"可打印的"</SPAN
+>字节值是以客户端字符集的标准表现形式出现的。
+	十进制值为 92 （反斜杠）的字节有一个特殊的可选输出形式。细节在
+	<A HREF="datatype-binary.html#DATATYPE-BINARY-RESESC" >Table 8-8</A
+> 里描述。
+   </P
+><DIV
+CLASS="TABLE"
+><A NAME="DATATYPE-BINARY-RESESC" ></A
+><P
+><B
+>Table 8-8. <TT
+CLASS="TYPE"
+>bytea</TT
+> 输出逃逸序列</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR ><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>字节的十进制值</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>逃逸的输出形式</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>例子</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>输出结果</TH
+></TR
+></THEAD
+><TBODY
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> 92 </TT
+> </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > 反斜杠 </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> \\ </TT
+> </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> select '\\134'::bytea; </TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> \\ </TT
+></TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> 0 到 31 和 127 到 255 </TT
+> </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <SPAN
+CLASS="QUOTE"
+>"不可打印"</SPAN
+>八进制字符</TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> \<TT
+CLASS="REPLACEABLE"
+><I
+>xxx</I
+></TT
+>(octal value) </TT
+> </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> select '\\001'::bytea; </TT
+> </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> \001 </TT
+></TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> 32 到 126 </TT
+> </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <SPAN
+CLASS="QUOTE"
+>"可打印"</SPAN
+>八进制字符</TD
+><TD ALIGN="LEFT" VALIGN="TOP" > 客户端字符集表现形式 </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+>  select '\\176'::bytea; </TT
+> </TD
+><TD ALIGN="LEFT" VALIGN="TOP" > <TT
+CLASS="LITERAL"
+> ~ </TT
+></TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	根据你使用的前端的不同，在逃不逃逸 <TT
+CLASS="TYPE"
+>bytea</TT
+> 字串的问题上你可能有一些额外的工作要做。
+	比如，如果你的接口自动转换换行和回车，那你可能还要逃逸它们。
+   </P
+><P
+>	<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 标准定义了一种不同的二进制字串类型，
+	叫做 <TT
+CLASS="TYPE"
+>BLOB</TT
+> 或者 <TT
+CLASS="TYPE"
+>BINARY LARGE OBJECT</TT
+>。
+	其输入格式和 <TT
+CLASS="TYPE"
+>bytea</TT
+> 不同，但是提供的函数和操作符大多一样。
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="datatype-character.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="datatype-datetime.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >字符类型</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="datatype.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >日期/时间类型</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

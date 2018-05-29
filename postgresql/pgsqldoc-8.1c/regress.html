@@ -1,0 +1,480 @@
+<HTML
+><HEAD
+><TITLE
+>回归测试</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="服务器管理"
+HREF="admin.html"><LINK
+REL="PREVIOUS"
+TITLE="WAL 内部"
+HREF="wal-internals.html"><LINK
+REL="NEXT"
+TITLE="测试评估"
+HREF="regress-evaluation.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="wal-internals.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="wal.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="client-interfaces.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="regress-evaluation.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="REGRESS"
+>Chapter 27. 回归测试</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>27.1. <A
+HREF="regress.html#REGRESS-RUN"
+>运行测试</A
+></DT
+><DT
+>27.2. <A
+HREF="regress-evaluation.html"
+>测试评估</A
+></DT
+><DD
+><DL
+><DT
+>27.2.1. <A
+HREF="regress-evaluation.html#AEN24307"
+>错误信息差别</A
+></DT
+><DT
+>27.2.2. <A
+HREF="regress-evaluation.html#AEN24312"
+>区域差别</A
+></DT
+><DT
+>27.2.3. <A
+HREF="regress-evaluation.html#AEN24325"
+>日期和时间差别</A
+></DT
+><DT
+>27.2.4. <A
+HREF="regress-evaluation.html#AEN24336"
+>浮点数差别</A
+></DT
+><DT
+>27.2.5. <A
+HREF="regress-evaluation.html#AEN24350"
+>行顺序差别</A
+></DT
+><DT
+>27.2.6. <A
+HREF="regress-evaluation.html#AEN24360"
+>堆栈深度不够</A
+></DT
+><DT
+>27.2.7. <A
+HREF="regress-evaluation.html#AEN24368"
+><SPAN
+CLASS="QUOTE"
+>"随机"</SPAN
+>测试</A
+></DT
+></DL
+></DD
+><DT
+>27.3. <A
+HREF="regress-platform.html"
+>平台相关的比较文件</A
+></DT
+></DL
+></DIV
+><A
+NAME="AEN24230"
+></A
+><A
+NAME="AEN24232"
+></A
+><P
+>        回归测试是一套复杂完整的测试，
+        用来测试嵌入在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里的的 SQL 实现。
+        它同时测试标准 SQL 操作和<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>的扩展SQL。
+  </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="REGRESS-RUN"
+>27.1. 运行测试</A
+></H1
+><P
+>        回归测试可以就一套已经安装好并且在运行的服务器进行测试，
+        也可以就制作树里面临时安装的服务器进行测试。
+	详细些说，有<SPAN
+CLASS="QUOTE"
+>"并行"</SPAN
+>和<SPAN
+CLASS="QUOTE"
+>"串行"</SPAN
+>运行测试之分。
+        串行模式顺序运行每个测试，而并行模式启动多个服务器进程，并行地运行一组测试。
+        并行测试使我们对进程内部通讯和锁的正确工作有足够的信心。
+        由于历史原因，串行测试通常对一个现存的安装进行测试，而并行测试是<SPAN
+CLASS="QUOTE"
+>"独立"</SPAN
+>的，不过这么做没有什么技术原因。
+  </P
+><P
+>        制作之后和安装之前运行回归测试，你可以在顶级目录键入
+</P><PRE
+CLASS="SCREEN"
+>gmake check</PRE
+><P>
+        （或者你可以进入 <TT
+CLASS="FILENAME"
+>src/test/regress</TT
+> 然后在那里运行命令。）
+        这样将先制作几个辅助文件，比如一些用户定义的触发器函数，然后再运行测试驱动脚本。
+        最后你会看到类似下面的东西
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="COMPUTEROUTPUT"
+>======================
+ All 96 tests passed.
+======================</TT
+></PRE
+><P>
+        或者是一些关于某项测试失败的信息。先看看下面的
+        <A
+HREF="regress-evaluation.html"
+>Section 27.2</A
+> 然后再想想一个<SPAN
+CLASS="QUOTE"
+>"失败"</SPAN
+>是否代表严重的错误。
+  </P
+><P
+>        因为这个测试方法运行临时的服务器，所以如果你是 root 用户，
+        那这个方法不能运行（服务器不能以 root 身份启动）。
+        如果你已经以 root 身份制作了，你就什么也干不了。
+        这时候你应该把测试目录的权限变成某个用户可以写，
+        然后以那个用户身份登陆，再开始测试。比如
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>root# </TT
+><TT
+CLASS="USERINPUT"
+><B
+>chmod -R a+w src/test/regress</B
+></TT
+>
+<TT
+CLASS="PROMPT"
+>root# </TT
+><TT
+CLASS="USERINPUT"
+><B
+>chmod -R a+w contrib/spi</B
+></TT
+>
+<TT
+CLASS="PROMPT"
+>root# </TT
+><TT
+CLASS="USERINPUT"
+><B
+>su - joeuser</B
+></TT
+>
+<TT
+CLASS="PROMPT"
+>joeuser$ </TT
+><TT
+CLASS="USERINPUT"
+><B
+>cd <TT
+CLASS="REPLACEABLE"
+><I
+>top-level build directory</I
+></TT
+></B
+></TT
+>
+<TT
+CLASS="PROMPT"
+>joeuser$ </TT
+><TT
+CLASS="USERINPUT"
+><B
+>gmake check</B
+></TT
+></PRE
+><P>
+        （这里唯一可能的<SPAN
+CLASS="QUOTE"
+>"安全隐患"</SPAN
+>就是那个用户可能会背着你修改回归测试的结果。用你的常识管理用户权限。）
+   </P
+><P
+>        如果不是上面那样，安装后就可以运行测试．
+   </P
+><P
+>    如果你配置 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 安装到一个原来安装有老的
+    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的目录里，然后在安装新版本之前执行 <TT
+CLASS="LITERAL"
+>gmake check</TT
+>，
+    那么你可能发现测试失败，因为新程序试图使用已经存在的共享库。
+    （典型的症状是抱怨未定义的符号。）
+    如果你想在覆盖老版本之间运行测试，那么你需要带着 <TT
+CLASS="LITERAL"
+>configure --disable-rpath</TT
+> 制作。
+    不过，我们不建议你使用这个选项编译作为最终安装的数据库。
+   </P
+><P
+>	并行的回归测试会在你的用户 ID 下启动相当多的进程。
+	目前，最大的并发数是 20 给并行测试脚本，这意味着 60 个进程：
+	一个服务器进程，一个<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>以及通常还有一个 shell 父进程用于每个测试脚本的<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>。
+	因此，如果你的系统有每用户的进程数限制，那么请确保这个限制至少是 75，否则你就可能在并行测试时看到随机出现的失败。
+	如果你没有办法提升该限制，那么你可以通过设置 <TT
+CLASS="LITERAL"
+>MAX_CONNECTIONS</TT
+> 参数，把大的并行测试程度降低。
+   </P
+><P
+>        在某些系统上，缺省的 Bourne 兼容的 shell（<TT
+CLASS="FILENAME"
+>/bin/sh</TT
+>）在管理太多并行的子进程的时候会出乱子。
+	这可能导致并行测试锁住或者失败。
+        出现这种情况时，请在命令行上声明另外一个 Bourne 兼容的 shell，比如：
+</P><PRE
+CLASS="SCREEN"
+>gmake SHELL=/bin/ksh check</PRE
+><P>
+	如果没有可以替换的 shell，那么你可以象上面那样通过限制连接的个数来绕开。
+   </P
+><P
+>        安装后（（参阅 <A
+HREF="installation.html"
+>Chapter 14</A
+>）运行测试，
+        初始化一个数据区然后启动服务器，像我们在 <A
+HREF="runtime.html"
+>Chapter 16</A
+> 里面描述的那样，然后键入
+</P><PRE
+CLASS="SCREEN"
+>gmake installcheck</PRE
+><P>
+或者是跑一个并行测试
+</P><PRE
+CLASS="SCREEN"
+>gmake installcheck-parallel</PRE
+><P>
+	该测试将与在本地主机和缺省端口号上运行的服务器进行联接，
+	除非你用<TT
+CLASS="ENVAR"
+>PGHOST</TT
+>和<TT
+CLASS="ENVAR"
+>PGPORT</TT
+>环境变量设置为其它值。
+  </P
+><P
+>   源代码发布还包含给一些可选的过程语言和一些 <TT
+CLASS="FILENAME"
+>contrib</TT
+> 模块的回归测试。
+   目前，这些测试只能用于对一个已经安装的服务器进行测试。要给所有制作并安装的过程语言运行测试，
+   我们可以进入源代码树的 <TT
+CLASS="FILENAME"
+>src/pl</TT
+> 目录然后键入
+</P><PRE
+CLASS="SCREEN"
+>gmake installcheck</PRE
+><P>
+   你还可以在 <TT
+CLASS="FILENAME"
+>src/pl</TT
+> 的任何子目录里只针对一种过程语言进行运行。
+   要为所有 <TT
+CLASS="FILENAME"
+>contrib</TT
+> 模块运行现有的测试，进入 <TT
+CLASS="FILENAME"
+>contrib</TT
+>
+   目录，然后键入
+</P><PRE
+CLASS="SCREEN"
+>gmake installcheck</PRE
+><P>
+   必须首先制作并安装 <TT
+CLASS="FILENAME"
+>contrib</TT
+> 模块。你也可以在 <TT
+CLASS="FILENAME"
+>contrib</TT
+>
+   的子目录里只针对一个模块运行测试。
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="wal-internals.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="regress-evaluation.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>WAL 内部</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="admin.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>测试评估</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

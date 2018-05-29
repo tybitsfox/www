@@ -1,0 +1,319 @@
+<HTML
+><HEAD
+><TITLE
+>规则和权限</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="规则系统"
+HREF="rules.html"><LINK
+REL="PREVIOUS"
+TITLE="在 INSERT，UPDATE，和DELETE 上的规则"
+HREF="rules-update.html"><LINK
+REL="NEXT"
+TITLE="规则和命令状态"
+HREF="rules-status.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="rules-update.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="rules.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 34. 规则系统</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="rules.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="rules-status.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="RULES-PRIVILEGES"
+>34.4. 规则和权限</A
+></H1
+><A
+NAME="AEN34122"
+></A
+><A
+NAME="AEN34125"
+></A
+><P
+>	由于 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 规则系统对查询的重写，
+	非初始查询指定的其他表/视图被访问。
+	使用更新规则的时候，这可能包括对表的写权限。</P
+><P
+>	重写规则并不拥有一个独立的所有者。
+	关系（表或视图）的所有者自动成为重写规则的缺省所有者。
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	规则系统改变缺省的访问控制系统的特性。
+	因规则而使用的关系在（规则）重写时要对定义规则所有者进行权限检查，
+	而不是激活规则的用户这意味着一个用户只需要对他的查询里明确指定的表/视图拥有所需的权限就可进行操作。</P
+><P
+>	例如：某用户有一个电话号码列表，其中一些是私人的，
+	另外的一些是办公室秘书需要的。他可以用下面方法构建（查询）：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE phone_data (person text, phone text, private boolean);
+CREATE VIEW phone_number AS
+    SELECT person, phone FROM phone_data WHERE NOT private;
+GRANT SELECT ON phone_number TO secretary;</PRE
+><P>
+    
+	除了他以外（还有数据库超级用户）没有人可以访问 <TT
+CLASS="LITERAL"
+>phone_data</TT
+> 表。
+	但因为<TT
+CLASS="COMMAND"
+>GRANT</TT
+>，秘书可以从 <TT
+CLASS="LITERAL"
+>phone_number</TT
+> 视图上运行<TT
+CLASS="COMMAND"
+>SELECT</TT
+>。
+	规则系统将把从 <TT
+CLASS="LITERAL"
+>phone_number</TT
+> 里的<TT
+CLASS="COMMAND"
+>SELECT</TT
+>重写为从
+	<TT
+CLASS="LITERAL"
+>phone_data</TT
+> 里的<TT
+CLASS="COMMAND"
+>SELECT</TT
+>并将增加资格（条件）。
+	只有<TT
+CLASS="LITERAL"
+>private</TT
+>条件为假的记录才可以选出。因为用户是 <TT
+CLASS="LITERAL"
+>phone_number</TT
+> 的所有者，
+	因此也是规则的所有者，所以现在要检查他对 <TT
+CLASS="LITERAL"
+>phone_data</TT
+> 的读访问的权限，
+	而这个查询是被允许的。同时也要检查访问 <TT
+CLASS="LITERAL"
+>phone_number</TT
+> 的权限，
+	但这是对一个被撤消权限的用户进行检查的，所以除了用户自己和秘书外没有人可以使用它。</P
+><P
+>	权限检查是按规则逐条进行的。
+	所以此时的秘书是唯一的一个可以看到公共电话号码的人。
+	但秘书可以设立另一个视图并且赋予该视图公共权限。
+	这样，任何人都可以通过秘书的视图看到 <TT
+CLASS="LITERAL"
+>phone_number</TT
+> 数据。
+	秘书不能做的事情是创建一个直接访问 <TT
+CLASS="LITERAL"
+>phone_data</TT
+> 的视图（实际上他是可以的，但没有任何作用，
+	因为每个访问都会因通不过权限检查而被踢出事务）。
+	而且用户很快会认识到，秘书开放了他的 <TT
+CLASS="LITERAL"
+>phone_number</TT
+> 视图后，
+	他还可以<TT
+CLASS="COMMAND"
+>REVOKE</TT
+>（撤回）他的访问权限。
+	这样，所有对秘书视图的访问马上就失效了。</P
+><P
+>	有些人会认为这种逐条规则的检查是一个安全漏洞，但事实上不是。
+	如果这样做不能奏效，
+	秘书将必须建立一个与 <TT
+CLASS="LITERAL"
+>phone_number</TT
+>
+	有相同字段的表并且每天一次的拷贝数据进去。
+	那么这是他自己的数据因而他可以赋予他允许的任何人访问的权力。
+	一个<TT
+CLASS="COMMAND"
+>GRANT</TT
+>意味着 <SPAN
+CLASS="QUOTE"
+>"我信任你"</SPAN
+>。如果某个你信任的人做了上面的事情，
+	那你就该想想是否该<TT
+CLASS="COMMAND"
+>REVOKE</TT
+>了。</P
+><P
+>	这个机制同样可以用于更新规则。在上一章的例子里，
+	例子数据库里的表的所有者可以把（赋予）<TT
+CLASS="LITERAL"
+>shoelace</TT
+>视图
+	的权限 <TT
+CLASS="LITERAL"
+>SELECT</TT
+>，<TT
+CLASS="LITERAL"
+>INSERT</TT
+>，<TT
+CLASS="LITERAL"
+>UPDATE</TT
+> 和 <TT
+CLASS="LITERAL"
+>DELETE</TT
+> 赋予其它人。
+	但对 <TT
+CLASS="LITERAL"
+>shoelace</TT
+> 只有 <TT
+CLASS="LITERAL"
+>SELECT</TT
+> 权限。
+	写日志记录的规则动作（action）仍然可以成功的执行。
+	并且其它用户可以看到日志记录。但他不能创建伪记录，
+	而且他也不能对现有记录进行修改或删除。</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="rules-update.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="rules-status.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>在 <TT
+CLASS="COMMAND"
+>INSERT</TT
+>，<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>，和<TT
+CLASS="COMMAND"
+>DELETE</TT
+> 上的规则</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="rules.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>规则和命令状态</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

@@ -1,0 +1,2219 @@
+<HTML
+><HEAD
+><TITLE
+>命令执行函数</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="libpq - C 库"
+HREF="libpq.html"><LINK
+REL="PREVIOUS"
+TITLE="连接状态函数"
+HREF="libpq-status.html"><LINK
+REL="NEXT"
+TITLE="异步命令处理"
+HREF="libpq-async.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="libpq-status.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="libpq.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 28. <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> - C 库</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="libpq.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="libpq-async.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="LIBPQ-EXEC"
+>28.3. 命令执行函数</A
+></H1
+><P
+>一旦与数据库服务器的连接成功建立，便可用这里描述的函数执行 SQL 查询和命令。</P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="LIBPQ-EXEC-MAIN"
+>28.3.1. 主函数</A
+></H2
+><P
+><P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="FUNCTION"
+>PQexec</TT
+><A
+NAME="AEN25052"
+></A
+></DT
+><DD
+><P
+>	给服务器提交一条命令并且等待结果。
+</P><PRE
+CLASS="SYNOPSIS"
+>PGresult *PQexec(PGconn *conn, const char *command);</PRE
+><P></P
+><P
+>	返回一个<TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>指针或者也可能是一个 NULL 指针。
+	通常返回一个非空（non-NULL）的指针，
+	除非没有内存或发生了象不能把命令发送到服务器这样的严重错误。
+	如果返回的是 NULL，它应该被当作<TT
+CLASS="SYMBOL"
+>PGRES_FATAL_ERROR</TT
+>结果处理。
+	用<TT
+CLASS="FUNCTION"
+>PQerrorMessage</TT
+>获取有关错误的更多信息。</P
+></DD
+></DL
+></DIV
+><P>
+
+我们可以在命令行字串里包含多个 SQL 命令（用分号分隔）。在一次 <TT
+CLASS="FUNCTION"
+>PQexec</TT
+>
+调用中发送的多个查询是在一个事务里处理的，除非在查询字串里有明确的 <TT
+CLASS="COMMAND"
+>BEGIN</TT
+>/<TT
+CLASS="COMMAND"
+>COMMIT</TT
+>
+命令用于把整个字串分隔成多个事务。请注意这样返回的 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 结构只描述字串里执行的最后一条命令的结果。
+如果有一个命令失败，那么字串处理的过程就会停止并且返回的 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 会描述错误条件。</P
+><P
+><P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="FUNCTION"
+>PQexecParams</TT
+><A
+NAME="AEN25071"
+></A
+></DT
+><DD
+><P
+>	  向服务器提交一条命令并且等待结果，还有额外的传递与 SQL 命令文本独立的参数的能力。
+</P><PRE
+CLASS="SYNOPSIS"
+>PGresult *PQexecParams(PGconn *conn,
+                       const char *command,
+                       int nParams,
+                       const Oid *paramTypes,
+                       const char * const *paramValues,
+                       const int *paramLengths,
+                       const int *paramFormats,
+                       int resultFormat);</PRE
+><P></P
+><P
+><TT
+CLASS="FUNCTION"
+>PQexecParams</TT
+> 类似 <TT
+CLASS="FUNCTION"
+>PQexec</TT
+>，但是提供了额外的功能：
+参数值可以独立于命令串进行声明，并且可以要求查询结果的格式是文本或者二进制格式。
+<TT
+CLASS="FUNCTION"
+>PQexecParams</TT
+> 只是在协议 3.0 以及以后的版本中支持；在使用 2.0 的版本的时候会失败。</P
+><P
+>如果使用了参数，那么它们是以 <TT
+CLASS="LITERAL"
+>$1</TT
+>，<TT
+CLASS="LITERAL"
+>$2</TT
+>，等等在命令字串中引用的。
+<TT
+CLASS="PARAMETER"
+>nParams</TT
+> 是提供的参数的个数；它是数组 <TT
+CLASS="PARAMETER"
+>paramTypes[]</TT
+>，
+<TT
+CLASS="PARAMETER"
+>paramValues[]</TT
+>，<TT
+CLASS="PARAMETER"
+>paramLengths[]</TT
+>，和 <TT
+CLASS="PARAMETER"
+>paramFormats[]</TT
+> 的长度。
+（如果 <TT
+CLASS="PARAMETER"
+>nParams</TT
+> 是零，那么数组指针可以是 <TT
+CLASS="SYMBOL"
+>NULL</TT
+>。）
+<TT
+CLASS="PARAMETER"
+>paramTypes[]</TT
+> 用 OID 的形式声明了赋与参数符号的数据类型。
+如果 <TT
+CLASS="PARAMETER"
+>paramTypes</TT
+> 是 <TT
+CLASS="SYMBOL"
+>NULL</TT
+>，或者数组中任意元素是零，
+那么服务器给对应的参数符号赋与和无类型文本串一样的数据类型。
+<TT
+CLASS="PARAMETER"
+>paramValues[]</TT
+> 声明该参数的实际数值。这个数组中的空指针意味着对应的参数是空；
+否则，这个指针指向一个空零结尾的文本字串（文本格式）或者服务器期待的格式的二进制数据（用于二进制格式）。
+<TT
+CLASS="PARAMETER"
+>paramLengths[]</TT
+> 声明二进制格式参数的实际数据长度。
+对于空参数和文本格式的参数会忽略这个参数。如果没有二进制参数，那么这个数组指针可以是空。
+<TT
+CLASS="PARAMETER"
+>paramFormats[]</TT
+> 声明某个参数是文本（在数组中放一个零）还是二进制（在数组中放一个1）。
+如果这个数组指针是空，那么所有参数都认为是文本的。
+<TT
+CLASS="PARAMETER"
+>resultFormat</TT
+> 为零则获取以文本方式返回的结果，为一则获取以二进制形式返回的结果。
+（目前不能规定从不同的字段获取不同格式的结果，尽管对下层的协议是可能的。）</P
+></DD
+></DL
+></DIV
+><P>
+
+<TT
+CLASS="FUNCTION"
+>PQexecParams</TT
+> 比 <TT
+CLASS="FUNCTION"
+>PQexec</TT
+> 最主要的优势是我们可以和命令串分开声明参数值，
+这样就可以避免枯燥无聊并且很容易出错的引起和逃逸。
+
+和 <TT
+CLASS="FUNCTION"
+>PQexec</TT
+> 不同的是，<TT
+CLASS="FUNCTION"
+>PQexecParams</TT
+> 在一个给出的字串里最多允许一个 SQL 命令。
+（里面可以有分号，但是不得超过一个非空的命令。）这是下层的协议的一个限制，
+但是也有些额外的好处，比如可以有另外一层防止 SQL 注射攻击的层次。</P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>通过 OID 声明参数类型是非常烦琐的，尤其是你不希望在你的程序里写死特定的 OID
+值的时候。不过，你可以避免这么做，即使在服务器自己无法判断参数类型，
+或者是选择了一种与你预期不同的参数类型的时候也一样。
+在 SQL 命令文本里，给参数负号附加一个明确的类型转换，
+显示你准备发送的数据类型。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>select * from mytable where x = $1::bigint;</PRE
+><P>
+这样强制参数 <TT
+CLASS="LITERAL"
+>$1</TT
+> 当作 <TT
+CLASS="TYPE"
+>bigint</TT
+> 看待，
+即使缺省情况下它会被赋予和 <TT
+CLASS="LITERAL"
+>x</TT
+> 一样的类型。在以二进制格式发送参数值的时候，
+我们强烈建议通过这种方法或者是声明数字类型 OID 的方法强制类型判断，
+因为二进制格式比文本格式少一些冗余，因此服务器就会少一些机会捕捉类型的错误匹配。</P
+></BLOCKQUOTE
+></DIV
+><P
+><P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="FUNCTION"
+>PQprepare</TT
+><A
+NAME="AEN25113"
+></A
+></DT
+><DD
+><P
+>	  用给定的参数提交请求，创建一个准备好的语句，然后等待结束。
+</P><PRE
+CLASS="SYNOPSIS"
+>PGresult *PQprepare(PGconn *conn,
+                    const char *stmtName,
+                    const char *query,
+                    int nParams,
+                    const Oid *paramTypes);</PRE
+><P></P
+><P
+><TT
+CLASS="FUNCTION"
+>PQprepare</TT
+> 创建一个为后面 <TT
+CLASS="FUNCTION"
+>PQexecPrepared</TT
+> 执行用的准备好语句。
+这个特性允许那些重复使用的语句只分析和规划一次，而不是每次执行都分析规划。
+这个语句必须在当前会话的前面已经准备好。
+只是在协议 3.0 和以后的连接里支持 <TT
+CLASS="FUNCTION"
+>PQprepare</TT
+>；在使用 2.0 协议的时候，它会失败。</P
+><P
+>这个函数从 <TT
+CLASS="PARAMETER"
+>query</TT
+> 字串里创建一个叫 <TT
+CLASS="PARAMETER"
+>stmtName</TT
+> 的准备好的语句，
+<TT
+CLASS="PARAMETER"
+>query</TT
+> 必须只包含一个 SQL 命令。<TT
+CLASS="PARAMETER"
+>stmtName</TT
+> 可以是 <TT
+CLASS="LITERAL"
+>""</TT
+>，
+这样就创建一个无名的语句，这种情况下，任何前面存在的无名语句都会自动被代替；
+否则，如果语句名已经在当前会话里定义，那就是一个错误。
+如果使用了参数，那么在查询里它们引用成 <TT
+CLASS="LITERAL"
+>$1</TT
+>，<TT
+CLASS="LITERAL"
+>$2</TT
+> 等等。
+<TT
+CLASS="PARAMETER"
+>nParams</TT
+> 是参数的个数，参数的类型在数组 <TT
+CLASS="PARAMETER"
+>paramTypes[]</TT
+> 里事先声明好了。
+（如果 <TT
+CLASS="PARAMETER"
+>nParams</TT
+> 是零，那么这个数组指针可以是 <TT
+CLASS="SYMBOL"
+>NULL</TT
+>。）
+<TT
+CLASS="PARAMETER"
+>paramTypes[]</TT
+> 用 OID 的方式声明与参数符号关联的数据类型。
+如果 <TT
+CLASS="PARAMETER"
+>paramTypes</TT
+> 为 <TT
+CLASS="SYMBOL"
+>NULL</TT
+>，或者数组中某个特定元素是零，
+那么服务器将用处理无类型文本同样的方法给这个参数符号赋予数据类型。
+还有，查询可以使用比 <TT
+CLASS="PARAMETER"
+>nParams</TT
+> 数值更大的参数符号编号；
+这些参数的数据类型也是用一样的方法推导的。</P
+><P
+>和 <TT
+CLASS="FUNCTION"
+>PQexec</TT
+> 类似，结果通常是一个 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 对象，
+其内容表明服务器端是成功还是失败。空的结果表示内存耗尽或者完全不能发送命令。
+使用 <TT
+CLASS="FUNCTION"
+>PQerrorMessage</TT
+> 获取有关这类错误的更多信息。</P
+><P
+>目前，没有任何方法可以帮助我们得到所推导出来的那些 <TT
+CLASS="PARAMETER"
+>paramTypes[]</TT
+>
+里面没有声明类型之参数的实际数据类型。
+这是 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 的一个忽略，将来版本可能会纠正这点。</P
+></DD
+></DL
+></DIV
+><P>
+
+用于 <TT
+CLASS="FUNCTION"
+>PQexecPrepared</TT
+> 的准备好语句也可以通过执行 SQL 
+<A
+HREF="sql-prepare.html"
+><I
+>PREPARE</I
+></A
+> 语句来创建。
+（不过 <TT
+CLASS="FUNCTION"
+>PQprepare</TT
+> 更灵活，因为它不要求预先声明参数类型。）
+还有，尽管没有 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 函数可以删除一个准备好语句，
+SQL <A
+HREF="sql-deallocate.html"
+><I
+>DEALLOCATE</I
+></A
+> 语句却可以删除。</P
+><P
+><P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="FUNCTION"
+>PQexecPrepared</TT
+><A
+NAME="AEN25155"
+></A
+></DT
+><DD
+><P
+>	  发送一个请求，执行一个带有给出参数的准备好的语句，并且等待结果。
+</P><PRE
+CLASS="SYNOPSIS"
+>PGresult *PQexecPrepared(PGconn *conn,
+                         const char *stmtName,
+                         int nParams,
+                         const char * const *paramValues,
+                         const int *paramLengths,
+                         const int *paramFormats,
+                         int resultFormat);</PRE
+><P></P
+><P
+><TT
+CLASS="FUNCTION"
+>PQexecPrepared</TT
+> 和 <TT
+CLASS="FUNCTION"
+>PQexecParams</TT
+> 类似，
+但是要执行的命令是通过命名一个前面准备好的语句声明的，而不是给出一个查询字串。
+这个特性允许那些要重复使用的命令只进行一次分析和规划，而不是每次执行都来一遍。
+<TT
+CLASS="FUNCTION"
+>PQexecPrepared</TT
+> 只在协议 3.0 和以后的版本里支持；在使用 2.0 版本的协议的时候，它们会失败。</P
+><P
+>参数和 <TT
+CLASS="FUNCTION"
+>PQexecParams</TT
+> 一样，只是给出的是一个准备好语句的名字，而不是一个查询字串，
+并且没有 <TT
+CLASS="PARAMETER"
+>paramTypes[]</TT
+> 参数（没必要，因为准备好语句的参数类型是在创建的时候确定的）。</P
+></DD
+></DL
+></DIV
+><P></P
+><P
+><TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+><A
+NAME="AEN25169"
+></A
+>
+结构封装了服务器返回的结果。<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 应该小心维护 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 的抽象。
+使用下面的访问函数获取 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 的内容。避免直接引用 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 里面的字段，
+因为它们在未来版本里可能会被修改。
+
+<P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="FUNCTION"
+>PQresultStatus</TT
+><A
+NAME="AEN25179"
+></A
+></DT
+><DD
+><P
+>	返回命令的结果状态。
+</P><PRE
+CLASS="SYNOPSIS"
+>ExecStatusType PQresultStatus(const PGresult *res);</PRE
+><P></P
+><P
+><TT
+CLASS="FUNCTION"
+>PQresultStatus</TT
+>可以返回下面数值之一：
+
+<P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>PGRES_EMPTY_QUERY</TT
+></DT
+><DD
+><P
+>发送给服务器的字串是空的</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>PGRES_COMMAND_OK</TT
+></DT
+><DD
+><P
+>成功完成一个不返回数据的命令</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>PGRES_TUPLES_OK</TT
+></DT
+><DD
+><P
+>成功执行一个返回数据的查询查询（比如 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 或者 <TT
+CLASS="COMMAND"
+>SHOW</TT
+>）。</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>PGRES_COPY_OUT</TT
+></DT
+><DD
+><P
+>（从服务器）Copy Out （拷贝出）数据传输开始</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>PGRES_COPY_IN</TT
+></DT
+><DD
+><P
+>Copy In （拷贝入）（到服务器）数据传输开始</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>PGRES_BAD_RESPONSE</TT
+></DT
+><DD
+><P
+>服务器的响应无法理解</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>PGRES_NONFATAL_ERROR</TT
+></DT
+><DD
+><P
+>发生了一个非致命错误（通知或者警告）</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>PGRES_FATAL_ERROR</TT
+></DT
+><DD
+><P
+>发生了一个致命错误</P
+></DD
+></DL
+></DIV
+><P>
+
+
+如果结果状态是 <TT
+CLASS="LITERAL"
+>PGRES_TUPLES_OK</TT
+>，
+那么可以用下面的函数从查询的返回中抽取元组信息。
+注意一个碰巧检索了零条元组的<TT
+CLASS="COMMAND"
+>SELECT</TT
+>仍然显示
+<TT
+CLASS="LITERAL"
+>PGRES_TUPLES_OK</TT
+>。
+<TT
+CLASS="LITERAL"
+>PGRES_COMMAND_OK</TT
+>用于不返回元组的命令（<TT
+CLASS="COMMAND"
+>INSERT</TT
+>，<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>，等）。
+返回 <TT
+CLASS="LITERAL"
+>PGRES_EMPTY_QUERY</TT
+> 的响应通常意味着暴露了客户端软件里面的臭虫。</P
+><P
+>状态为 <TT
+CLASS="SYMBOL"
+>PGRES_NONFATAL_ERROR</TT
+> 的结果永远不会直接由 <TT
+CLASS="FUNCTION"
+>PQexec</TT
+>
+或者其它查询执行函数返回；这类的结果会被传递给通知处理器（参阅 <A
+HREF="libpq-notice-processing.html"
+>Section 28.10</A
+>）。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQresStatus</TT
+><A
+NAME="AEN25243"
+></A
+></DT
+><DD
+><P
+>	把<TT
+CLASS="FUNCTION"
+>PQresultStatus</TT
+>返回的枚举类型转换成一个描述状态码的字符串常量。
+	调用者不应该释放结果。
+</P><PRE
+CLASS="SYNOPSIS"
+>char *PQresStatus(ExecStatusType status);</PRE
+><P></P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQresultErrorMessage</TT
+><A
+NAME="AEN25252"
+></A
+></DT
+><DD
+><P
+>返回与查询关联的错误信息，或在没有错误时返回一个空字符串。
+</P><PRE
+CLASS="SYNOPSIS"
+>char *PQresultErrorMessage(const PGresult *res);</PRE
+><P>
+如果有错误，那么返回的字串将包括一个结尾的新行。
+调用者不应该直接释放结果。在相关的 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 句柄传递给 <TT
+CLASS="FUNCTION"
+>PQclear</TT
+> 之后，它会自动释放。</P
+><P
+>紧跟在一个 <TT
+CLASS="FUNCTION"
+>PQexec</TT
+> 或 <TT
+CLASS="FUNCTION"
+>PQgetResult</TT
+>
+调用后面，<TT
+CLASS="FUNCTION"
+>PQerrorMessage</TT
+> （对连接）将返回与
+<TT
+CLASS="FUNCTION"
+>PQresultErrorMessage</TT
+> （对结果）一样的字符串。
+不过，一个<TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>将保有其错误信息直到被删除，
+而连结的错误信息将在后续的操作完成时被改变。当你想知道与某个
+<TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>相关联的状态时用
+ <TT
+CLASS="FUNCTION"
+>PQresultErrorMessage</TT
+>；当你想知道与连接的最近一个操作相关联的状态时用
+ <TT
+CLASS="FUNCTION"
+>PQerrorMessage</TT
+>。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQresultErrorField</TT
+><A
+NAME="AEN25271"
+></A
+></DT
+><DD
+><P
+>返回一个独立的错误报告字段。
+</P><PRE
+CLASS="SYNOPSIS"
+>char *PQresultErrorField(const PGresult *res, int fieldcode);</PRE
+><P>
+<TT
+CLASS="PARAMETER"
+>fieldcode</TT
+> 是一个错误字段标识符；参阅下面列出的符号。
+如果 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 不是错误或者警告结果或者不包括指定的字段，那么返回 <TT
+CLASS="SYMBOL"
+>NULL</TT
+>。
+字段值通常将不包括结尾的新行。调用者不应该直接释放结果。
+在相关联的 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 句柄传递给 <TT
+CLASS="FUNCTION"
+>PQclear</TT
+> 之后，它将被自动释放。</P
+><P
+>下列代码是可用的：
+<P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="SYMBOL"
+>PG_DIAG_SEVERITY</TT
+></DT
+><DD
+><P
+>严重程度，这个字段的内容是 <TT
+CLASS="LITERAL"
+>ERROR</TT
+>，<TT
+CLASS="LITERAL"
+>FATAL</TT
+>，或者
+<TT
+CLASS="LITERAL"
+>PANIC</TT
+>（在错误信息里），或者 <TT
+CLASS="LITERAL"
+>WARNING</TT
+>，<TT
+CLASS="LITERAL"
+>NOTICE</TT
+>，
+<TT
+CLASS="LITERAL"
+>DEBUG</TT
+>，<TT
+CLASS="LITERAL"
+>INFO</TT
+>，或者 <TT
+CLASS="LITERAL"
+>LOG</TT
+>（在注意信息里），
+或者是这些东西的一个本地化翻译。总是出现。</P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>PG_DIAG_SQLSTATE</TT
+></DT
+><DD
+><P
+>这个错误的 SQLSTATE 代码。SQLSTATE 代码表示所发生的错误的类型；
+可以由前端应用用于对特定的数据库错误执行特定的操作（比如错误处理）。
+关于可能的 SQLSTATE 代码的列表，请参阅 <A
+HREF="errcodes-appendix.html"
+>Appendix A</A
+>。
+这个字段是不能区域化的，并且总是出现。</P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>PG_DIAG_MESSAGE_PRIMARY</TT
+></DT
+><DD
+><P
+>主要的人类可读的信息（通常是联机）。总是出现。</P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>PG_DIAG_MESSAGE_DETAIL</TT
+></DT
+><DD
+><P
+>细节：一个可选的从属错误信息，里面有更多有关该问题的细节。可能有多行。</P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>PG_DIAG_MESSAGE_HINT</TT
+></DT
+><DD
+><P
+>提示：一个可选的有关如何处理该问题的建议。
+它和细节的区别是它提供了建议（可能不太合适）而不光是事实。可能有好几行。</P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>PG_DIAG_STATEMENT_POSITION</TT
+></DT
+><DD
+><P
+>一个包含十进制整数的字串，当作一个错误游标使用，指出最初的语句串出错的地方的下标。
+第一个字符的索引是 1，并且这个位置是用字符计，而不是用字节计。</P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>PG_DIAG_INTERNAL_POSITION</TT
+></DT
+><DD
+><P
+>这个和 <TT
+CLASS="SYMBOL"
+>PG_DIAG_STATEMENT_POSITION</TT
+> 字段定义是一样的，
+区别是它用于内部生成的命令的下标指示，而不是客户端提交的命令。
+如果出现了这个字段，那么 <TT
+CLASS="SYMBOL"
+>PG_DIAG_INTERNAL_QUERY</TT
+> 字段也总是出现。</P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>PG_DIAG_INTERNAL_QUERY</TT
+></DT
+><DD
+><P
+>一个失败的内部生成的命令的文本。
+比如，这个可能是一个 PL/pgSQL 函数发出的 SQL 查询。</P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>PG_DIAG_CONTEXT</TT
+></DT
+><DD
+><P
+>一个指示器，表明错误发生的环境。目前这个包括活跃的过程语言函数和内部生成的查询的调用堆栈。
+堆栈是每行一条，最近的在上面。</P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>PG_DIAG_SOURCE_FILE</TT
+></DT
+><DD
+><P
+>所报告的错误的源代码位置的所在文件。</P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>PG_DIAG_SOURCE_LINE</TT
+></DT
+><DD
+><P
+>报告的这个错误所在的源代码位置的行号。</P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>PG_DIAG_SOURCE_FUNCTION</TT
+></DT
+><DD
+><P
+>报告这个错误的源代码函数的名字。</P
+></DD
+></DL
+></DIV
+><P></P
+><P
+>按照自身的要求格式化显示信息是客户端的责任；特别是根据需要对长行进行折行。
+在错误信息字段里出现的新行字符应该当作分段符号，而不是换行。</P
+><P
+><SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 生成的错误将会有严重性和主信息，
+但是通常没有其它字段。3.0 协议之前返回的错误将包含严重性和主信息，
+有时候还有详细信息，但是没有其它字段。</P
+><P
+>请注意这些错误字段只能从 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 对象里获得，
+而不是 <TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+> 对象；没有 <TT
+CLASS="FUNCTION"
+>PQerrorField</TT
+> 函数。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQclear</TT
+><A
+NAME="AEN25367"
+></A
+></DT
+><DD
+><P
+><TT
+CLASS="FUNCTION"
+>PQclear</TT
+> 释放于<TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>相关联的存储空间。
+	任何不再需要的查询结果在不需要的时候都应该用<TT
+CLASS="FUNCTION"
+>PQclear</TT
+>释放掉。
+</P><PRE
+CLASS="SYNOPSIS"
+>void PQclear(PGresult *res);</PRE
+><P></P
+><P
+>	只要你需要，你可以保留<TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>对象任意长的时间；
+	当你提交新的查询时它并不消失，甚至你断开连接后也是这样。
+	要删除它，你必须调用 <TT
+CLASS="FUNCTION"
+>PQclear</TT
+>。不这么做将导致你的应用中的内存泄漏。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQmakeEmptyPGresult</TT
+><A
+NAME="AEN25381"
+></A
+></DT
+><DD
+><P
+>	构造一个带有给出的状态的，空的<TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>对象。
+</P><PRE
+CLASS="SYNOPSIS"
+>PGresult* PQmakeEmptyPGresult(PGconn *conn, ExecStatusType status);</PRE
+><P></P
+><P
+>	这是<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>的内部函数，
+	用于分配和初始化一个空<TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>对象。
+	在无法分配内存的时候，这个函数返回 NULL。
+	它被输出是因为一些应用需要自行生成结果对象（尤其是特定的带有错误状态的对象）。
+	如果<TT
+CLASS="PARAMETER"
+>conn</TT
+>非空（NULL）并且状态指示一个错误，
+	连接当前的错误信息被拷贝到<TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>。
+	注意最终对该对象还是要调用<TT
+CLASS="FUNCTION"
+>PQclear</TT
+>，
+	正如<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>本身返回的<TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>一样。</P
+></DD
+></DL
+></DIV
+><P></P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="LIBPQ-EXEC-SELECT-INFO"
+>28.3.2. 检索查询结果信息</A
+></H2
+><P
+>这些函数用于从一个代表着成功查询结果（也就是说，状态为 <TT
+CLASS="LITERAL"
+>PGRES_TUPLES_OK</TT
+> 的查询）
+的 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 对象。对于其它状态值的对象，他们的行为会好像他们有零行和零列一样。</P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="FUNCTION"
+>PQntuples</TT
+><A
+NAME="AEN25404"
+></A
+></DT
+><DD
+><P
+>	返回查询结果里的行（元组）个数。
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQntuples(const PGresult *res);</PRE
+><P></P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQnfields</TT
+><A
+NAME="AEN25412"
+></A
+></DT
+><DD
+><P
+>	返回查询结果里数据行的数据域（字段）的个数。
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQnfields(const PGresult *res);</PRE
+><P></P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQfname</TT
+><A
+NAME="AEN25420"
+></A
+></DT
+><DD
+><P
+>返回与给出的数据域编号相关联的数据域（字段）的名称。数据域编号从 0 开始。
+调用者不应该直接释放结果。在相关联的 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 句柄传递给 <TT
+CLASS="FUNCTION"
+>PQclear</TT
+>
+之后，结果会被自动释放。
+</P><PRE
+CLASS="SYNOPSIS"
+>char *PQfname(const PGresult *res,
+	    int column_number);</PRE
+><P></P
+><P
+>如果字段编号超出范围，那么返回<TT
+CLASS="SYMBOL"
+>NULL</TT
+>。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQfnumber</TT
+><A
+NAME="AEN25432"
+></A
+></DT
+><DD
+><P
+>	返回与给出的数据域名称相关联的数据域（字段）的编号。
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQfnumber(const PGresult *res,
+	      const char *column_name);</PRE
+><P></P
+><P
+>	如果给出的名字不匹配任何字段，返回 -1。</P
+><P
+>	给出的名字是当作 SQL 命令里的一个标识符看待的，也就是说，如果没有加双引号，
+	那么会转换为小写。比如，如果我们有一个从 SQL 命令里生成的查询结果
+</P><PRE
+CLASS="PROGRAMLISTING"
+>select 1 as FOO, 2 as "BAR";</PRE
+><P>
+	那么我们会有下面的结果：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>PQfname(res, 0)              <I
+CLASS="LINEANNOTATION"
+>foo</I
+>
+PQfname(res, 1)              <I
+CLASS="LINEANNOTATION"
+>BAR</I
+>
+PQfnumber(res, "FOO")        <I
+CLASS="LINEANNOTATION"
+>0</I
+>
+PQfnumber(res, "foo")        <I
+CLASS="LINEANNOTATION"
+>0</I
+>
+PQfnumber(res, "BAR")        <I
+CLASS="LINEANNOTATION"
+>-1</I
+>
+PQfnumber(res, "\"BAR\"")    <I
+CLASS="LINEANNOTATION"
+>1</I
+></PRE
+><P></P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQftable</TT
+><A
+NAME="AEN25450"
+></A
+></DT
+><DD
+><P
+> 返回我们抓取的字段所在的表的 OID。字段编号从 0 开始。
+</P><PRE
+CLASS="SYNOPSIS"
+>Oid PQftable(const PGresult *res,
+             int column_number);</PRE
+><P></P
+><P
+>如果字段编号超出了范围，或者声明的字段不是一个指向某个表的字段的简单引用，
+或者使用了 3.0 版本之前的协议，那么就会返回 <TT
+CLASS="LITERAL"
+>InvalidOid</TT
+>。
+你可以查询系统表 <TT
+CLASS="LITERAL"
+>pg_class</TT
+> 来判断究竟引用了哪个表。</P
+><P
+>	  在你包含 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 头文件的时候，
+	  就会定义类型 <TT
+CLASS="TYPE"
+>Oid</TT
+> 和常量 <TT
+CLASS="LITERAL"
+>InvalidOid</TT
+>。
+	  他们都是相同的整数类型。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQftablecol</TT
+><A
+NAME="AEN25465"
+></A
+></DT
+><DD
+><P
+> 返回组成声明的查询结果字段的字段号（在它的表内部）。查询结果字段编号从 0 开始，但是表字段编号不会是 0。
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQftablecol(const PGresult *res,
+                int column_number);</PRE
+><P></P
+><P
+>如果字段编号超出范围，或者声明的字段并不是一个表字段的简单引用，或者使用的是 3.0 之前的协议，那么返回零。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQfformat</TT
+><A
+NAME="AEN25474"
+></A
+></DT
+><DD
+><P
+> 返回说明给出字段的格式的格式代码。字段编号从 0 开始。
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQfformat(const PGresult *res,
+              int column_number);</PRE
+><P></P
+><P
+>格式码为 0 表示文本数据，而格式码是一表示二进制数据。（其它编码保留给将来定义。）</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQftype</TT
+><A
+NAME="AEN25483"
+></A
+></DT
+><DD
+><P
+>	返回与给定数据域编号关联的数据域类型。
+	返回的整数是一个该类型的内部 OID 号。数据域编号从0 开始。
+</P><PRE
+CLASS="SYNOPSIS"
+>Oid PQftype(const PGresult *res,
+	    int column_number);</PRE
+><P></P
+><P
+>你可以查询系统表 <TT
+CLASS="LITERAL"
+>pg_type</TT
+> 以获取各种数据类型的名称和属性。
+内建的数据类型的 <SPAN
+CLASS="ACRONYM"
+>OID</SPAN
+> 在源码树的
+<TT
+CLASS="FILENAME"
+>src/include/catalog/pg_type.h</TT
+>
+文件里定义。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQfmod</TT
+><A
+NAME="AEN25495"
+></A
+></DT
+><DD
+><P
+>	返回与给定字段编号相关联的类型修饰词。
+	字段编号从 0 开始。
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQfmod(const PGresult *res,
+	   int column_number);</PRE
+><P></P
+><P
+>类型修饰符的值是类型相关的；他们通常包括精度或者尺寸限制。数值 -1 用于表示<SPAN
+CLASS="QUOTE"
+>"没有可用信息"</SPAN
+>。
+大多数数据类型不用修饰词，这种情况下该值总是 -1。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQfsize</TT
+><A
+NAME="AEN25505"
+></A
+></DT
+><DD
+><P
+>	返回与给定字段编号关联的字段以字节计的大小。
+	字段编号从0 开始。
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQfsize(const PGresult *res,
+	    int column_number);</PRE
+><P></P
+><P
+>	<TT
+CLASS="FUNCTION"
+>PQfsize</TT
+>返回在数据库行里面给该数据字段分配的空间，
+	换句话说就是该数据类型在服务器里的二进制形式的大小（尺寸）。
+	（因此，这个对客户端没有什么用。）
+	如果该数据域是可变尺寸，返回 -1。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQbinaryTuples</TT
+><A
+NAME="AEN25515"
+></A
+></DT
+><DD
+><P
+>	如果<TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>包含二进制元组数据时返回 1，
+	如果包含 ASCII 数据返回 0。
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQbinaryTuples(const PGresult *res);</PRE
+><P></P
+><P
+>这个函数已经废弃了（除了还用于与 <TT
+CLASS="COMMAND"
+>COPY</TT
+> 连接之外），因为我们可能在一个 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>
+的某些字段里包含文本数据，而另外一些字段包含二进制数据。
+更好的是使用 <TT
+CLASS="FUNCTION"
+>PQfformat</TT
+>。 <TT
+CLASS="FUNCTION"
+>PQbinaryTuples</TT
+> 只有在结果中的所有字段都是二进制（格式 1）的时候才返回 1。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQgetvalue</TT
+><A
+NAME="AEN25529"
+></A
+></DT
+><DD
+><P
+>	返回一个<TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>	里面一行的单独的一个字段的值。
+	行和字段编号从 0 开始。调用者不应该直接释放结果。在把 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>
+	句柄传递给 <TT
+CLASS="FUNCTION"
+>PQclear</TT
+> 之后，结果会被自动释放。
+</P><PRE
+CLASS="SYNOPSIS"
+>char *PQgetvalue(const PGresult *res,
+		 int row_number,
+		 int column_number);</PRE
+><P></P
+><P
+>对于文本格式的数据，
+ <TT
+CLASS="FUNCTION"
+>PQgetvalue</TT
+> 返回的值是一个表示字段值的空（NULL）结尾的字符串。
+对于二进制格式，
+返回的值就是由该数据类型的 <TT
+CLASS="FUNCTION"
+>typsend</TT
+> 和 <TT
+CLASS="FUNCTION"
+>typreceive</TT
+> 决定的二进制表现形式。
+（在这种情况下，数值实际上也跟着一个字节零，但是通常这个字节没什么用处，因为数值本身很可能包含内嵌的空。）</P
+><P
+>如果字段值是空，则返回一个空字串。参阅 <TT
+CLASS="FUNCTION"
+>PQgetisnull</TT
+> 来区别空值和空字串值。</P
+><P
+><TT
+CLASS="FUNCTION"
+>PQgetvalue</TT
+> 返回的指针指向一个本身是
+<TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>结构的一部分的存储区域。我们不能更改它，
+并且如果我们要在<TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>结构的生存期后还要使用它的话，
+我们必须明确地把该数值拷贝到其他存储器中。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQgetisnull</TT
+><A
+NAME="AEN25550"
+></A
+></DT
+><DD
+><P
+>	测试一个字段是否为空（NULL）。行和字段编号从 0 开始。
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQgetisnull(const PGresult *res,
+		int row_number,
+		int column_number);</PRE
+><P></P
+><P
+>	如果该域包含 NULL，函数返回 1，如果包含非空（non-null ）值，返回 0。
+	（注意，对一个 NULL 数据域，<TT
+CLASS="FUNCTION"
+>PQgetvalue</TT
+> 将返回一个空字符串，
+	不是一个空指针。）</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQgetlength</TT
+><A
+NAME="AEN25563"
+></A
+></DT
+><DD
+><P
+>	返回以字节计的字段的长度。行和字段编号从 0 开始。
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQgetlength(const PGresult *res,
+		int row_number,
+		int column_number);</PRE
+><P></P
+><P
+>这是某一特定数据值的实际数据长度。
+行和字段编号从 0 开始。
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQgetlength(const PGresult *res,
+                int row_number,
+                int column_number);</PRE
+><P></P
+><P
+>这是特定数值的实际数据长度，也就是说，<TT
+CLASS="FUNCTION"
+>PQgetvalue</TT
+> 指向的对象的大小。
+对于文本数据格式，它和 <TT
+CLASS="FUNCTION"
+>strlen()</TT
+> 相同。对于二进制格式，这是潜在的信息。
+请注意我们<I
+CLASS="EMPHASIS"
+>不</I
+>应该依靠 <TT
+CLASS="FUNCTION"
+>PQfsize</TT
+> 获取实际数据长度。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQprint</TT
+><A
+NAME="AEN25578"
+></A
+></DT
+><DD
+><P
+>	向指定的输出流打印所有的行和（可选的）字段名称。
+</P><PRE
+CLASS="SYNOPSIS"
+>void PQprint(FILE *fout,      /* 输出流 */
+	     const PGresult *res,
+	     const PQprintOpt *po);
+
+struct {
+    pqbool  header;      /* 打印输出域头和行计数 */
+    pqbool  align;       /* 填充对齐各字段 */
+    pqbool  standard;    /* 旧的傻格式 */
+    pqbool  html3;       /* 输出 HTML 表 */
+    pqbool  expanded;    /* 扩展表 */
+    pqbool  pager;       /* 必要时在输出中使用分页器 */
+    char    *fieldSep;   /* 字段分隔符 */
+    char    *tableOpt;   /* 在 HTML 中插入 <TT
+CLASS="REPLACEABLE"
+><I
+>table ...</I
+></TT
+> */
+    char    *caption;    /* HTML <TT
+CLASS="REPLACEABLE"
+><I
+>caption</I
+></TT
+> */
+    char    **fieldName; /* 替换字段名组成的空零结尾的数组 */
+} PQprintOpt;</PRE
+><P></P
+><P
+>这个函数以前被 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>
+用于打印查询结果，但是现在已经不用这个函数了。请注意它假设所有的数据都是文本格式。</P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="LIBPQ-EXEC-NONSELECT"
+>28.3.3. 检索其它命令的结果信息</A
+></H2
+><P
+>这些函数用于从 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 对象里检索那些非 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 结果的信息。</P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="FUNCTION"
+>PQcmdStatus</TT
+><A
+NAME="AEN25596"
+></A
+></DT
+><DD
+><P
+>	返回产生<TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>的 SQL 命令的命令状态字符串。
+</P><PRE
+CLASS="SYNOPSIS"
+>char *PQcmdStatus(PGresult *res);</PRE
+><P></P
+><P
+>通常这只是命令的名字，但是它可能包括额外的数据，比如处理过的行数。
+调用者不应该释放结果。结果会在把 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 句柄传递给 <TT
+CLASS="FUNCTION"
+>PQclear</TT
+> 的时候释放。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQcmdTuples</TT
+><A
+NAME="AEN25608"
+></A
+></DT
+><DD
+><P
+>	返回被 SQL 命令影响的行的数量。
+</P><PRE
+CLASS="SYNOPSIS"
+>char *PQcmdTuples(PGresult *res);</PRE
+><P></P
+><P
+>	这个函数返回一个生成这个 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 的这个 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语句影响的行数的字串。
+	这个函数只能用于 <TT
+CLASS="COMMAND"
+>INSERT</TT
+>，<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>，<TT
+CLASS="COMMAND"
+>DELETE</TT
+>，<TT
+CLASS="COMMAND"
+>MOVE</TT
+>，
+	或者 <TT
+CLASS="COMMAND"
+>FETCH</TT
+> 语句执行之后的结果。或者是一个包含 <TT
+CLASS="COMMAND"
+>INSERT</TT
+>，<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>，
+	或者 <TT
+CLASS="COMMAND"
+>DELETE</TT
+> 语句 <TT
+CLASS="COMMAND"
+>EXECUTE</TT
+> 的一个准备好的查询。
+	如果生成这个 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 的命令是其他的东西，那么 <TT
+CLASS="FUNCTION"
+>PQcmdTuples</TT
+> 返回一个空字串。
+	调用者不应该直接释放返回的数值。在相关联的 <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> 被传递给 <TT
+CLASS="FUNCTION"
+>PQclear</TT
+>
+	之后，它会被自动释放。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQoidValue</TT
+><A
+NAME="AEN25632"
+></A
+></DT
+><DD
+><P
+>	返回一个插入的行的对象标识（OID）<A
+NAME="AEN25636"
+></A
+>——
+	如果<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令是<TT
+CLASS="COMMAND"
+>INSERT</TT
+>，或者是一个包含合适 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 语句的准备好的
+	<TT
+CLASS="COMMAND"
+>EXECUTE</TT
+>的时候。否则，函数返回 <TT
+CLASS="LITERAL"
+>InvalidOid</TT
+>。如果受 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 影响的表不包含 OID，
+	也返回 <TT
+CLASS="LITERAL"
+>InvalidOid</TT
+>。
+</P><PRE
+CLASS="SYNOPSIS"
+>Oid PQoidValue(const PGresult *res);</PRE
+><P></P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQoidStatus</TT
+><A
+NAME="AEN25650"
+></A
+></DT
+><DD
+><P
+>	如果 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令是<TT
+CLASS="COMMAND"
+>INSERT</TT
+>，或者包含合适 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 的准备好语句
+	 <TT
+CLASS="COMMAND"
+>EXECUTE</TT
+> 了。返回一个被插入的行的 OID 的字串。
+	（如果 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 并非恰好插入一行，或者目标表没有OID，那么字串将是 <TT
+CLASS="LITERAL"
+>0</TT
+>。）
+	如果命令不是<TT
+CLASS="COMMAND"
+>INSERT</TT
+>，则返回一个空字串。
+</P><PRE
+CLASS="SYNOPSIS"
+>char *PQoidStatus(const PGresult *res);</PRE
+><P></P
+><P
+>这个函数已经废弃了，因为有了 <TT
+CLASS="FUNCTION"
+>PQoidValue</TT
+>，而且它也不是线程安全的。</P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="LIBPQ-EXEC-ESCAPE-STRING"
+>28.3.4. 逃逸包含在 SQL 命令中的字串</A
+></H2
+><A
+NAME="AEN25666"
+></A
+><A
+NAME="AEN25668"
+></A
+><P
+><TT
+CLASS="FUNCTION"
+>PQescapeString</TT
+>为在 SQL 命令中使用字串而对之进行逃逸处理。
+在我们向 SQL 命令里把数据值当作文本常量插入的时候很有用。有些字符（比如单引号和反斜杠）必须被逃逸，
+以避免他们被 SQL 分析器作为特殊字符解析。<TT
+CLASS="FUNCTION"
+>PQescapeString</TT
+> 执行这个操作。</P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>如果我们从一个不可信的来源收到一个字串的话，那么做恰当的逃逸就更重要了。
+否则就有安全性危险：你会收到<SPAN
+CLASS="QUOTE"
+>"SQL 注射"</SPAN
+>攻击，这个时候会有你不想看到的 SQL 喂给你的数据库。</P
+></BLOCKQUOTE
+></DIV
+><P
+>请注意，如果一个数据值是作为 <TT
+CLASS="FUNCTION"
+>PQexecParams</TT
+> 或者同族函数的一个独立参数传递的，
+那么逃逸就既不必要，也不正确。
+
+</P><PRE
+CLASS="SYNOPSIS"
+>size_t PQescapeString (char *to, const char *from, size_t length);</PRE
+><P></P
+><P
+>参数 <TT
+CLASS="PARAMETER"
+>from</TT
+> 指向将要逃逸的字串的第一个字符，
+<TT
+CLASS="PARAMETER"
+>length</TT
+> 参数给出在这个字串里的字符数量。字串结尾的字节零不是必须的，也不计入 <TT
+CLASS="PARAMETER"
+>length</TT
+>。
+（如果在处理 <TT
+CLASS="PARAMETER"
+>length</TT
+> 个字节之前出现了一个字节零，
+那么 <TT
+CLASS="FUNCTION"
+>PQescapeString</TT
+> 在这个字节零处停止；
+这个行为类似 <TT
+CLASS="FUNCTION"
+>strncpy</TT
+>。）
+<TT
+CLASS="PARAMETER"
+>to</TT
+> 应该指向一个缓冲区，这个缓冲区至少能保存
+<TT
+CLASS="PARAMETER"
+>length</TT
+> 数值的两倍还多一个的字符，否则该函数行为将不可预测。
+调用 <TT
+CLASS="FUNCTION"
+>PQescapeString</TT
+> 就会把逃逸的 <TT
+CLASS="PARAMETER"
+>from</TT
+> 字串转换到 <TT
+CLASS="PARAMETER"
+>to</TT
+> 缓冲区，把特殊字符以免它们导致任何问题，
+并且追加终止的字节零。那些必须包围在<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+字串文本周围的单引号不算结果字串的一部分；你应该在把单引号放在插入这个处理结果的SQL命令周围。</P
+><P
+><TT
+CLASS="FUNCTION"
+>PQescapeString</TT
+> 返回写到 <TT
+CLASS="PARAMETER"
+>to</TT
+> 里面的字符数目，
+不包括结尾的字节零。</P
+><P
+>如果 <TT
+CLASS="PARAMETER"
+>to</TT
+> 和 <TT
+CLASS="PARAMETER"
+>from</TT
+>
+字串相互重叠，那么其行为不可预测。</P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="LIBPQ-EXEC-ESCAPE-BYTEA"
+>28.3.5. 逃逸包含在 SQL 命令中的二进制字串</A
+></H2
+><A
+NAME="AEN25701"
+></A
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="FUNCTION"
+>PQescapeBytea</TT
+><A
+NAME="AEN25708"
+></A
+></DT
+><DD
+><P
+>	逃逸那些在 SQL 命令中使用的用 <TT
+CLASS="TYPE"
+>bytea</TT
+> 表示的二进制数据。
+	和 <TT
+CLASS="FUNCTION"
+>PQescapeString</TT
+> 一样，这个函数只有在直接向 SQL 字串插入数据的时候使用。
+</P><PRE
+CLASS="SYNOPSIS"
+>unsigned char *PQescapeBytea(const unsigned char *from,
+				 size_t from_length,
+				 size_t *to_length);</PRE
+><P>
+  </P
+><P
+>	在 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语句中用做 <TT
+CLASS="TYPE"
+>bytea</TT
+> 字串文本的一部分的时候，
+	有些字节值<I
+CLASS="EMPHASIS"
+>必需</I
+>逃逸（但是对于所有字节而言是<I
+CLASS="EMPHASIS"
+>可以</I
+>逃逸）。
+	通常，要逃逸一个字节，它是被转换成一个三位八进制数字，
+	该数字数值等于该字节的数值，然后前缀两个反斜杠。
+	单引号（<TT
+CLASS="LITERAL"
+>'</TT
+>）和反斜杠字符（<TT
+CLASS="LITERAL"
+>\</TT
+>）有自己特殊的逃逸序列。参阅
+	<A
+HREF="datatype-binary.html"
+>Section 8.4</A
+> 获取更多信息。
+	<TT
+CLASS="FUNCTION"
+>PQescapeBytea</TT
+> 执行这个操作，它只逃逸需要逃逸的最少的字符。
+  </P
+><P
+>	<TT
+CLASS="PARAMETER"
+>from</TT
+> 参数指向需要逃逸的字串的第一个字节，
+	<TT
+CLASS="PARAMETER"
+>from_length</TT
+> 参数反映在这个二进制字串（结尾的字节零既不必要也不计算在内的字串）里字节的个数。
+	<TT
+CLASS="PARAMETER"
+>to_length</TT
+> 参数应该是一个指向某个缓冲区的指针，
+	它的空间应该能够保存逃逸后的结果字串长度。
+	结果字串长度不包括结果结尾的字节零。
+  </P
+><P
+>	<TT
+CLASS="FUNCTION"
+>PQescapeBytea</TT
+> 在内存重返回一个 <TT
+CLASS="PARAMETER"
+>from</TT
+>
+	参数的二进制字串的逃逸后的版本，这片内存是用 <TT
+CLASS="FUNCTION"
+>malloc()</TT
+> 分配的
+	（如果无法分配内存，则返回空指针）。
+	在不再需要结果的时候，必须用 <TT
+CLASS="FUNCTION"
+>PQfreemem()</TT
+> 释放它。
+	返回的字串已经把所有特殊的字符替换掉了，这样他们就可以由
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的字串文本分析器以及 <TT
+CLASS="TYPE"
+>bytea</TT
+> 的输入函数正确地处理。
+	同时还追加了一个结尾的字节零。那些必需包围在
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>字串文本周围的单引号并非结果字串的一部分。
+  </P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQunescapeBytea</TT
+><A
+NAME="AEN25739"
+></A
+></DT
+><DD
+><P
+>	把一个二进制数据的逃逸后的字串表现形式转换成二进制数据 &mdash;
+	<TT
+CLASS="FUNCTION"
+>PQescapeBytea</TT
+> 的反作用。
+	在以文本格式抽取 <TT
+CLASS="TYPE"
+>bytea</TT
+> 数据的时候是必须的，
+	但是在以二进制格式抽取的时候是不必要的。
+</P><PRE
+CLASS="SYNOPSIS"
+>unsigned char *PQunescapeBytea(const unsigned char *from, size_t *to_length);</PRE
+><P>
+  </P
+><P
+>	<TT
+CLASS="PARAMETER"
+>from</TT
+> 参数指向一个逃逸后的字串，
+	比如 <TT
+CLASS="FUNCTION"
+>PQgetvalue</TT
+> 处理过一个 <TT
+CLASS="TYPE"
+>bytea</TT
+> 
+	字段后返回的。<TT
+CLASS="FUNCTION"
+>PQunescapeBytea</TT
+> 把它的字串表现形式转换成二进制形式，
+	它返回一个用 <TT
+CLASS="FUNCTION"
+>malloc()</TT
+> 分配的指向该缓冲区的指针，
+	或者是出错时返回空，缓冲区的尺寸放在 <TT
+CLASS="PARAMETER"
+>to_length</TT
+> 里。
+	在不再需要这个结果之后，这片内存必须用 <TT
+CLASS="FUNCTION"
+>PQfreemem()</TT
+> 释放。
+  </P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQfreemem</TT
+><A
+NAME="AEN25757"
+></A
+></DT
+><DD
+><P
+>	释放 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 分配的内存。
+</P><PRE
+CLASS="SYNOPSIS"
+>void PQfreemem(void *ptr);</PRE
+><P></P
+><P
+>	释放由 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 分配的内存，
+	特别是 <TT
+CLASS="FUNCTION"
+>PQescapeBytea</TT
+>，<TT
+CLASS="FUNCTION"
+>PQunescapeBytea</TT
+>，
+	和 <TT
+CLASS="FUNCTION"
+>PQnotifies</TT
+>。这是 Microsoft Windows 必须的，
+	因为它不能跨越 DLL 释放内存，除非使用了多线程的 DLL （VC6 中的 /MD）。
+	在其它平台上，这个函数和标准的库函数<TT
+CLASS="FUNCTION"
+>free()</TT
+>一样。
+  </P
+></DD
+></DL
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="libpq-status.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="libpq-async.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>连接状态函数</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="libpq.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>异步命令处理</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

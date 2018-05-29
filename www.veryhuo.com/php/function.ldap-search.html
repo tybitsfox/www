@@ -1,0 +1,81 @@
+<HTML><HEAD><TITLE>ldap_search</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="LDAP Functions" HREF="ref.ldap.html"><LINK REL="PREVIOUS" TITLE="ldap_rename" HREF="function.ldap-rename.html"><LINK REL="NEXT" TITLE="ldap_set_option" HREF="function.ldap-set-option.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.ldap-rename.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.ldap-set-option.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.ldap-search"></A>ldap_search</H1><DIV CLASS="refnamediv"><A NAME="AEN48599"></A><P> (PHP 3, PHP 4 )</P>ldap_search&nbsp;--&nbsp;Search LDAP tree</DIV><DIV CLASS="refsect1"><A NAME="AEN48602"></A><H2>Description</H2>resource <B CLASS="methodname">ldap_search</B> ( resource link_identifier, string base_dn, string filter [, array attributes [, int attrsonly [, int sizelimit [, int timelimit [, int deref]]]]])<BR></BR><P>&#13; Returns a search result identifier or <TT CLASS="constant"><B>FALSE</B></TT> on error.</P><P>
+<B CLASS="function">ldap_search()</B> performs the search for a
+specified filter on the directory with the scope of
+LDAP_SCOPE_SUBTREE. This is equivalent to searching the entire
+directory. <TT CLASS="parameter"><I>base_dn</I></TT> specifies the base DN
+for the directory.</P><P>&#13; There is an optional fourth parameter, that can be added to
+restrict the attributes and values returned by the server to just
+those required. This is much more efficient than the default
+action (which is to return all attributes and their associated
+values). The use of the fourth parameter should therefore be
+considered good practice.</P><P>&#13; The fourth parameter is a standard PHP string array of the
+required attributes, e.g. array("mail", "sn", "cn") Note that the
+"dn" is always returned irrespective of which attributes types
+are requested.</P><P>&#13; Note too that some directory server hosts will be configured to
+return no more than a preset number of entries. If this occurs,
+the server will indicate that it has only returned a partial
+results set. This occurs also if the sixth parameter
+<TT CLASS="parameter"><I>sizelimit</I></TT> has been used to limit the count
+of fetched entries.
+</P><P>&#13; The fifth parameter <TT CLASS="parameter"><I>attrsonly</I></TT> should be
+set to 1 if only attribute types are wanted.
+If set to 0 both attributes types and attribute values are fetched
+which is the default behaviour.
+</P><P>&#13; With the sixth parameter <TT CLASS="parameter"><I>sizelimit</I></TT> it is
+possible to limit the count of entries fetched.
+Setting this to 0 means no limit.
+NOTE: This parameter can NOT override server-side preset sizelimit.
+You can set it lower though.
+</P><P>&#13; The seventh parameter <TT CLASS="parameter"><I>timelimit</I></TT> sets the number
+of seconds how long is spend on the search.
+Setting this to 0 means no limit.
+NOTE: This parameter can NOT override server-side preset timelimit.
+You can set it lower though.
+</P><P>&#13; The eighth parameter <TT CLASS="parameter"><I>deref</I></TT> specifies how aliases
+should be handled during the search. It can be one of the following:
+<P></P><UL><LI><P>&#13; LDAP_DEREF_NEVER - (default) aliases are never dereferenced.
+</P></LI><LI><P>&#13; LDAP_DEREF_SEARCHING - aliases should be dereferenced during the search
+but not when locating the base object of the search.
+</P></LI><LI><P>&#13; LDAP_DEREF_FINDING - aliases should be dereferenced when
+locating the base object but not during the search.
+</P></LI><LI><P>&#13; LDAP_DEREF_ALWAYS - aliases should be dereferenced always.
+</P></LI></UL>
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+These optional parameters were added in 4.0.2:
+<TT CLASS="parameter"><I>attrsonly</I></TT>,
+<TT CLASS="parameter"><I>sizelimit</I></TT>,
+<TT CLASS="parameter"><I>timelimit</I></TT>,
+<TT CLASS="parameter"><I>deref</I></TT>.
+</P></BLOCKQUOTE></DIV><P>&#13; The search filter can be simple or advanced, using boolean
+operators in the format described in the LDAP documentation (see
+the <A HREF="http://developer.netscape.com/docs/manuals/directory/41/ag/find.htm" TARGET="_top">Netscape Directory SDK</A>
+for full information on filters).</P><P>&#13; The example below retrieves the organizational unit, surname,
+given name and email address for all people in "My Company" where
+the surname or given name contains the substring $person. This
+example uses a boolean filter to tell the server to look for
+information in more than one attribute.
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN48666"></A><P><B>例子 1. LDAP search</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#FF8000">// $ds is a valid link identifier for a directory server<br /><br />// $person is all or part of a person's name, eg "Jo"<br /><br /></font><font color="#0000BB">$dn </font><font color="#007700">= </font><font color="#DD0000">"o=My Company, c=US"</font><font color="#007700">;<br /></font><font color="#0000BB">$filter</font><font color="#007700">=</font><font color="#DD0000">"(|(sn=$person*)(givenname=$person*))"</font><font color="#007700">;<br /></font><font color="#0000BB">$justthese </font><font color="#007700">= array(</font><font color="#DD0000">"ou"</font><font color="#007700">, </font><font color="#DD0000">"sn"</font><font color="#007700">, </font><font color="#DD0000">"givenname"</font><font color="#007700">, </font><font color="#DD0000">"mail"</font><font color="#007700">);<br /><br /></font><font color="#0000BB">$sr</font><font color="#007700">=</font><font color="#0000BB">ldap_search</font><font color="#007700">(</font><font color="#0000BB">$ds</font><font color="#007700">, </font><font color="#0000BB">$dn</font><font color="#007700">, </font><font color="#0000BB">$filter</font><font color="#007700">, </font><font color="#0000BB">$justthese</font><font color="#007700">);<br /><br /></font><font color="#0000BB">$info </font><font color="#007700">= </font><font color="#0000BB">ldap_get_entries</font><font color="#007700">(</font><font color="#0000BB">$ds</font><font color="#007700">, </font><font color="#0000BB">$sr</font><font color="#007700">);<br /><br />echo </font><font color="#0000BB">$info</font><font color="#007700">[</font><font color="#DD0000">"count"</font><font color="#007700">].</font><font color="#DD0000">" entries returned\n"</font><font color="#007700">;<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; From 4.0.5 on it's also possible to do parallel searches. To do this
+you use an array of link identifiers, rather than a single identifier,
+as the first argument. If you don't want the same base DN and the
+same filter for all the searches, you can also use an array of base DNs
+and/or an array of filters. Those arrays must be of the same size as
+the link identifier array since the first entries of the arrays are
+used for one search, the second entries are used for another, and so
+on. When doing parallel searches an array of search result
+identifiers is returned, except in case of error, then the entry
+corresponding to the search will be <TT CLASS="constant"><B>FALSE</B></TT>. This is very much like
+the value normally returned, except that a result identifier is always
+returned when a search was made. There are some rare cases where the
+normal search returns <TT CLASS="constant"><B>FALSE</B></TT> while the parallel search returns an
+identifier.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.ldap-rename.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.ldap-set-option.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">ldap_rename</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.ldap.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">ldap_set_option</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

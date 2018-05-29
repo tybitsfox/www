@@ -1,0 +1,354 @@
+<HTML
+><HEAD
+><TITLE
+>创建数据库</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="管理数据库"
+HREF="managing-databases.html"><LINK
+REL="PREVIOUS"
+TITLE="管理数据库"
+HREF="managing-databases.html"><LINK
+REL="NEXT"
+TITLE="模板数据库"
+HREF="manage-ag-templatedbs.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="managing-databases.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="managing-databases.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 19. 管理数据库</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="managing-databases.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="manage-ag-templatedbs.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="MANAGE-AG-CREATEDB"
+>19.2. 创建数据库</A
+></H1
+><P
+>	为了创建和删除数据库，
+	必须先运行<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>服务器（参阅 <A
+HREF="postmaster-start.html"
+>Section 16.3</A
+>）。
+ </P
+><P
+>        数据库是用 SQL 命令 <A
+HREF="sql-createdatabase.html"
+><I
+>CREATE DATABASE</I
+></A
+>:<A
+NAME="AEN21233"
+></A
+> 创建的：
+</P><PRE
+CLASS="SYNOPSIS"
+>CREATE DATABASE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>;</PRE
+><P>
+	这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> 遵循<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>标识符的一般规则。
+	当前角色自动成为此新数据库的所有者。同时，以后删除这个数据库也是这个用户的特权（同时还会删除其中的所有对象，
+	即使那些对象有不同的所有者也这样。）
+  </P
+><P
+>        创建数据库是一个有限制的操作。参阅  <A
+HREF="role-attributes.html"
+>Section 18.2</A
+> 获取如何赋权限的信息。
+  </P
+><P
+>	因为你需要与数据库服务器联接才能执行命令<TT
+CLASS="COMMAND"
+>CREATE DATABASE</TT
+>，
+	那么还有一个问题是任意节点的<I
+CLASS="EMPHASIS"
+>第一个</I
+>数据库是怎样创建的？
+	第一个数据库总是由<TT
+CLASS="COMMAND"
+>initdb</TT
+>命令在初始化数据存储区的时候创建的。
+	（参阅<A
+HREF="creating-cluster.html"
+>Section 16.2</A
+>。）这个数据库叫<TT
+CLASS="LITERAL"
+>postgres</TT
+><A
+NAME="AEN21247"
+></A
+>而且不能被删除。
+	因此要创建第一个<SPAN
+CLASS="QUOTE"
+>"真正"</SPAN
+>的数据库的时候你可以与<TT
+CLASS="LITERAL"
+>postgres</TT
+>联接。
+   </P
+><P
+>	第二个数据库，<TT
+CLASS="LITERAL"
+>template1</TT
+>，<A
+NAME="AEN21253"
+></A
+>
+	也会被 <TT
+CLASS="COMMAND"
+>initdb</TT
+> 创建。在创建一个新的数据库时，
+	实际上就是克隆了（复制）了 <TT
+CLASS="LITERAL"
+>template1</TT
+> 数据库。
+	这就意味着你对 <TT
+CLASS="LITERAL"
+>template1</TT
+> 做的任何修改都会传播到所有随后创建的数据库。
+	这就意味着说把模板数据库用于真正的工作中并不明智，
+	但是如果有意地使用这个特性，那它可以带来许多方便。
+	更多细节见<A
+HREF="manage-ag-templatedbs.html"
+>Section 19.3</A
+>。（译注：比如增加用户定义函数等等。）
+  </P
+><P
+>	另外，为了方便，你还可以用一个可以在 shell 中执行的程序来创建新数据库，<TT
+CLASS="COMMAND"
+>createdb</TT
+>。
+
+</P><PRE
+CLASS="SYNOPSIS"
+>createdb <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></PRE
+><P>
+
+	<TT
+CLASS="COMMAND"
+>createdb</TT
+> 没变什么魔术，它和<TT
+CLASS="LITERAL"
+>postgres</TT
+>连接并执行
+	<TT
+CLASS="COMMAND"
+>CREATE DATABASE</TT
+> 命令。
+	<A
+HREF="app-createdb.html"
+><SPAN
+CLASS="APPLICATION"
+>createdb</SPAN
+></A
+> 的手册页包含使用它的细节。尤其是不带任何参数调用
+	<TT
+CLASS="COMMAND"
+>createdb</TT
+> 将以当前用户名为名称创建数据库，
+	这可能是也可能不是你要的。
+  </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	<A
+HREF="client-authentication.html"
+>Chapter 20</A
+> 包含有关如何限制某个用户可以连接的数据库的信息。
+   </P
+></BLOCKQUOTE
+></DIV
+><P
+>	有时候你想为其他什么人创建一个数据库。那个角色应该成为新数据库的所有者，这样他就可以自己配置和管理这个数据库。
+	要实现这个目标，
+	使用下列命令中的某一条：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE DATABASE <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+> OWNER <TT
+CLASS="REPLACEABLE"
+><I
+>rolename</I
+></TT
+>;</PRE
+><P>
+	上面的是在 SQL 环境中，或者是
+</P><PRE
+CLASS="PROGRAMLISTING"
+>createdb -O <TT
+CLASS="REPLACEABLE"
+><I
+>rolename</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></PRE
+><P>
+	要想为其他用户（也就是说，一个你不是成员的角色）创建一个数据库，你自己必须是数据库的超级用户。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="managing-databases.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="manage-ag-templatedbs.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>管理数据库</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="managing-databases.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>模板数据库</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

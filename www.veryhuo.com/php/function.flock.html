@@ -1,0 +1,40 @@
+<HTML><HEAD><TITLE>flock</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="文件系统函数库" HREF="ref.filesystem.html"><LINK REL="PREVIOUS" TITLE="filetype" HREF="function.filetype.html"><LINK REL="NEXT" TITLE="fnmatch" HREF="function.fnmatch.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.filetype.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.fnmatch.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.flock"></A>flock</H1><DIV CLASS="refnamediv"><A NAME="AEN28356"></A><P> (PHP 3&#62;= 3.0.7, PHP 4 )</P>flock&nbsp;--&nbsp;轻便的咨询文件锁定</DIV><DIV CLASS="refsect1"><A NAME="AEN28359"></A><H2>说明</H2>bool <B CLASS="methodname">flock</B> ( int handle, int operation [, int &#38;wouldblock])<BR></BR><P>&#13; PHP 支持以咨询方式（也就是说所有访问程序必须使用同一方式锁定, 否则它不会工作）锁定全部文件的一种轻便方法。
+</P><P>&#13; <B CLASS="function">flock()</B> 操作的 <TT CLASS="parameter"><I>handle</I></TT>
+必须是一个已经打开的文件指针。<TT CLASS="parameter"><I>operation</I></TT>
+可以是以下值之一：
+</P><P>&#13; <P></P><UL><LI><P>&#13; 要取得共享锁定（读取程序），将
+<TT CLASS="parameter"><I>operation</I></TT> 设为 <TT CLASS="constant"><B>LOCK_SH</B></TT>（PHP 4.0.1 以前的版本设置为 1）。
+</P></LI><LI><P>&#13; 要取得独占锁定（写入程序），将
+<TT CLASS="parameter"><I>operation</I></TT> 设为 <TT CLASS="constant"><B>LOCK_EX</B></TT>（PHP 4.0.1 以前的版本中设置为 2）。
+</P></LI><LI><P>&#13; 要释放锁定（无论共享或独占），将
+<TT CLASS="parameter"><I>operation</I></TT> 设为 <TT CLASS="constant"><B>LOCK_UN</B></TT>（PHP 4.0.1 以前的版本中设置为 3）。
+</P></LI><LI><P>&#13; 如果你不希望 <B CLASS="function">flock()</B> 在锁定时堵塞，则给
+<TT CLASS="parameter"><I>operation</I></TT> 加上 <TT CLASS="constant"><B>LOCK_NB</B></TT>（PHP 4.0.1 以前的版本中设置为 4）。
+</P></LI></UL>
+</P><P>&#13; <B CLASS="function">flock()</B> 允许你执行一个简单的可以在任何平台中使用的读取/写入模型（包括大部分的
+Unix 派生版和甚至是 Windows）。如果锁定会堵塞的话（EWOULDBLOCK 错误码情况下），请将可选的第三个参数设置为 <TT CLASS="constant"><B>TRUE</B></TT>。
+</P><P>&#13; 如果成功则返回 <TT CLASS="constant"><B>TRUE</B></TT>，失败则返回 <TT CLASS="constant"><B>FALSE</B></TT>。
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN28404"></A><P><B>例子 1. <B CLASS="function">flock()</B> 例子</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /><br />$fp </font><font color="#007700">= </font><font color="#0000BB">fopen</font><font color="#007700">(</font><font color="#DD0000">"/tmp/lock.txt"</font><font color="#007700">, </font><font color="#DD0000">"w+"</font><font color="#007700">);<br /><br />if (</font><font color="#0000BB">flock</font><font color="#007700">(</font><font color="#0000BB">$fp</font><font color="#007700">, </font><font color="#0000BB">LOCK_EX</font><font color="#007700">)) { </font><font color="#FF8000">// 进行排它型锁定<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">fwrite</font><font color="#007700">(</font><font color="#0000BB">$fp</font><font color="#007700">, </font><font color="#DD0000">"Write something here\n"</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">flock</font><font color="#007700">(</font><font color="#0000BB">$fp</font><font color="#007700">, </font><font color="#0000BB">LOCK_UN</font><font color="#007700">); </font><font color="#FF8000">// 释放锁定<br /></font><font color="#007700">} else {<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"Couldn't lock the file !"</font><font color="#007700">;<br />}<br /><br /></font><font color="#0000BB">fclose</font><font color="#007700">(</font><font color="#0000BB">$fp</font><font color="#007700">);<br /><br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+由于 <B CLASS="function">flock()</B>
+需要一个文件指针， 因此你可能需要一个锁定文件来保护到你打算通过写模式打开来截断的文件的访问（在
+<A HREF="function.fopen.html"><B CLASS="function">fopen()</B></A> 函数中加入 "w" 或 "w+"）。
+</P></BLOCKQUOTE></DIV><DIV CLASS="warning"><P></P><TABLE CLASS="warning" BORDER="1" WIDTH="100%"><TR><TD ALIGN="CENTER"><B>警告</B></TD></TR><TR><TD ALIGN="LEFT"><P>&#13; <B CLASS="function">flock()</B> 不能在 NFS
+以及其他的一些网络文件系统中正常工作。详细资料请检查你的操作系统文档。
+</P><P>&#13; 在部分操作系统中，<B CLASS="function">flock()</B> 以处理级执行。当用一个多线程服务器
+API（比如 ISAPI）时，您可能不可以依靠
+<B CLASS="function">flock()</B> 来保护文件，因为在同一服务器内运行在其它线程的
+PHP 脚本可以对该文件进行处理。
+</P><P>&#13; <B CLASS="function">flock()</B> 不支持旧的文件系统，如 <TT CLASS="literal">FAT</TT>
+以及它的派生系统。因此，它在这种情况下经常会返回一个 <TT CLASS="constant"><B>FALSE</B></TT>
+值（尤其是指 Windows 98 的用户）。
+</P></TD></TR></TABLE></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.filetype.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.fnmatch.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">filetype</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.filesystem.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">fnmatch</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

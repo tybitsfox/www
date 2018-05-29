@@ -1,0 +1,406 @@
+<HTML
+><HEAD
+><TITLE
+>模板数据库</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="管理数据库"
+HREF="managing-databases.html"><LINK
+REL="PREVIOUS"
+TITLE="创建数据库"
+HREF="manage-ag-createdb.html"><LINK
+REL="NEXT"
+TITLE="数据库配置"
+HREF="manage-ag-config.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="manage-ag-createdb.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="managing-databases.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 19. 管理数据库</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="managing-databases.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="manage-ag-config.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="MANAGE-AG-TEMPLATEDBS"
+>19.3. 模板数据库</A
+></H1
+><P
+>	<TT
+CLASS="COMMAND"
+>CREATE DATABASE</TT
+> 实际上是通过拷贝一个现有的数据库进行工作的。
+	缺省时，它拷贝名字叫 <TT
+CLASS="LITERAL"
+>template1</TT
+> <A
+NAME="AEN21284"
+></A
+> 的标准系统数据库。
+	所以该数据库是创建新数据库的<SPAN
+CLASS="QUOTE"
+>"模板"</SPAN
+>。如果你给
+	<TT
+CLASS="LITERAL"
+>template1</TT
+> 增加对象，这些对象将被拷贝到随后创建的用户数据库中。
+	这样的行为允许节点对数据库中的标准套件进行修改。
+	比如，如果你把过程语言 <TT
+CLASS="LITERAL"
+>PL/pgSQL</TT
+> 安装到
+	<TT
+CLASS="LITERAL"
+>template1</TT
+> 里，那么你在创建用户数据库的时候它们就会自动可得，而不需要额外的动作。
+  </P
+><P
+>	系统里还有第二个标准的系统数据库，叫 <TT
+CLASS="LITERAL"
+>template0</TT
+><A
+NAME="AEN21292"
+></A
+>。
+	这个数据库包含和 <TT
+CLASS="LITERAL"
+>template1</TT
+> 一开始时一样的数据内容，
+	也就是说，只有你使用的版本的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	标准的对象。在 <TT
+CLASS="COMMAND"
+>initdb</TT
+> 之后，我们不应该对
+	<TT
+CLASS="LITERAL"
+>template0</TT
+> 做任何修改。通过告诉 <TT
+CLASS="COMMAND"
+>CREATE DATABASE</TT
+>
+	使用 <TT
+CLASS="LITERAL"
+>template0</TT
+> 而不是 <TT
+CLASS="LITERAL"
+>template1</TT
+> 进行拷贝，
+	你可以创建一个<SPAN
+CLASS="QUOTE"
+>"纯净"</SPAN
+>的用户数据库，它不会包含任何
+	 <TT
+CLASS="LITERAL"
+>template1</TT
+> 里节点所特有的东西。
+	这一点在恢复 <TT
+CLASS="LITERAL"
+>pg_dump</TT
+> 转储的时候是非常方便的：
+	转储脚本应该在一个纯洁的数据库中恢复以确保我们创建了被转储出的数据库中的正确内容，
+	而不和任何现在可能已经存在在 <TT
+CLASS="LITERAL"
+>template1</TT
+> 中的附加物相冲突。
+  </P
+><P
+>	要通过拷贝 <TT
+CLASS="LITERAL"
+>template0</TT
+> 的方法创建一个数据库，
+	使用
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE DATABASE <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+> TEMPLATE template0;</PRE
+><P>
+	这条命令是在 SQL 环境里的，或者是在 shell 里
+</P><PRE
+CLASS="PROGRAMLISTING"
+>createdb -T template0 <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></PRE
+><P>
+  </P
+><P
+>	我们可以创建额外的模板数据库，而且实际上我们可以在一个集群中通过将
+	<TT
+CLASS="COMMAND"
+>CREATE DATABASE</TT
+> 的模板声明为相应的数据库名拷贝任何数据库。
+	不过，我们必需明白，这个功能并非一般性的<SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="COMMAND"
+>COPY DATABASE</TT
+>"</SPAN
+>工具。
+	实际上，在拷贝操作的过程中，源数据库必需是空闲状态（没有正在处理的数据修改事务）。
+	<TT
+CLASS="COMMAND"
+>CREATE DATABASE</TT
+> 在操作开始时将会检查确保没有会话（除它自己以外）与源数据库联接，
+	但是这样并不能保证在拷贝过程中不会发生修改的事情，如果发生这些事情，那么会导致一个不一致的结果数据库。
+	因此，我们建议那些用做模板的数据库应该当做只读库对待。
+  </P
+><P
+>	在 <TT
+CLASS="LITERAL"
+>pg_database</TT
+> 里有两个有用的标志可以用于每个数据库：
+	字段 <TT
+CLASS="LITERAL"
+>datistemplate</TT
+> 和 <TT
+CLASS="LITERAL"
+>datallowconn</TT
+>。
+	<TT
+CLASS="LITERAL"
+>datistemplate</TT
+> 表示该数据库是准备用做 <TT
+CLASS="COMMAND"
+>CREATE DATABASE</TT
+> 的模板的。
+	如果设置了这个标志，那么该数据库可以由任何有 <TT
+CLASS="LITERAL"
+>CREATEDB</TT
+>
+	权限的用户克隆；如果没有设置，那么只有超级用户和该数据库的所有者可以克隆它。
+	如果 <TT
+CLASS="LITERAL"
+>datallowconn</TT
+> 为假，那么将不允许与该数据库发生任何新的连接（不过现有的会话不会因为把该标志设置为假而被杀死）。
+	<TT
+CLASS="LITERAL"
+>template0</TT
+> 数据库通常被标记为
+	<TT
+CLASS="LITERAL"
+>datallowconn = false</TT
+> 以避免对它的修改。
+	<TT
+CLASS="LITERAL"
+>template0</TT
+> 和 <TT
+CLASS="LITERAL"
+>template1</TT
+>都应该总是标记为<TT
+CLASS="LITERAL"
+>datistemplate = true</TT
+>。
+  </P
+><P
+>	完成模板数据库的准备之后，或者对某个数据库做了任何标记修改之后，
+	在该数据库中执行一次 <TT
+CLASS="COMMAND"
+>VACUUM FREEZE</TT
+> 是一个好主意。
+	如果做这些的时候在同一个数据库中没有其它打开的事务，那么系统保证在数据库中的行是<SPAN
+CLASS="QUOTE"
+>"冻结"</SPAN
+>的，
+	并且不会受事务 ID 重叠的影响。这个动作对那些 <TT
+CLASS="LITERAL"
+>datallowconn</TT
+> 设置为假的数据库特别重要，
+	因为在这样的数据库上没有办法做日常维护性的<TT
+CLASS="COMMAND"
+>VACUUM</TT
+>。
+	参阅 <A
+HREF="maintenance.html#VACUUM-FOR-WRAPAROUND"
+>Section 22.1.3</A
+> 获取更多信息。
+  </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	<TT
+CLASS="LITERAL"
+>template1</TT
+> 和 <TT
+CLASS="LITERAL"
+>template0</TT
+> 没有任何特殊的状态，
+	除了 <TT
+CLASS="LITERAL"
+>template1</TT
+> 这个名字是 <TT
+CLASS="COMMAND"
+>CREATE DATABASE</TT
+> 的缺省源数据库名之外。
+	比如，我们可以删除 <TT
+CLASS="LITERAL"
+>template1</TT
+>，然后从 <TT
+CLASS="LITERAL"
+>template0</TT
+>
+	中创建它而不会有任何不良效果。如果我们不小心在 <TT
+CLASS="LITERAL"
+>template1</TT
+>
+	里加了一堆垃圾，那么我们就会建议做这样的操作。
+   </P
+><P
+>    在初始化数据库集群的时候，也会创建 <TT
+CLASS="LITERAL"
+>postgres</TT
+> 数据。
+    这个数据库用于做为用户和应用连接的缺省数据库。它只是 <TT
+CLASS="LITERAL"
+>template1</TT
+> 的一个简单拷贝，
+    需要的时候可以删除或者重建。
+   </P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="manage-ag-createdb.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="manage-ag-config.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>创建数据库</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="managing-databases.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>数据库配置</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

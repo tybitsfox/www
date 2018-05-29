@@ -1,0 +1,48 @@
+<HTML><HEAD><TITLE>udm_add_search_limit</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="mnoGoSearch Functions" HREF="ref.mnogo.html"><LINK REL="PREVIOUS" TITLE="mnoGoSearch Functions" HREF="ref.mnogo.html"><LINK REL="NEXT" TITLE="udm_alloc_agent_array" HREF="function.udm-alloc-agent-array.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="ref.mnogo.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.udm-alloc-agent-array.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.udm-add-search-limit"></A>udm_add_search_limit</H1><DIV CLASS="refnamediv"><A NAME="AEN63300"></A><P> (PHP 4 &#62;= 4.0.5)</P>udm_add_search_limit&nbsp;--&nbsp;Add various search limits</DIV><DIV CLASS="refsect1"><A NAME="AEN63303"></A><H2>Description</H2>bool <B CLASS="methodname">udm_add_search_limit</B> ( resource agent, int var, string val)<BR></BR><P>&#13; <B CLASS="function">udm_add_search_limit()</B> adds search restrictions.
+如果成功则返回 <TT CLASS="constant"><B>TRUE</B></TT>，失败则返回 <TT CLASS="constant"><B>FALSE</B></TT>。
+</P><P>&#13; <TT CLASS="parameter"><I>agent</I></TT> - a link to Agent, received after call to
+<A HREF="function.udm-alloc-agent.html"><B CLASS="function">udm_alloc_agent()</B></A>.
+</P><P>&#13; <TT CLASS="parameter"><I>var</I></TT> - defines parameter, indicating limit.
+</P><P>&#13; <TT CLASS="parameter"><I>val</I></TT> - defines the value of the current parameter.
+</P><P>&#13; Possible <TT CLASS="parameter"><I>var</I></TT> values:
+</P><P></P><UL><LI><P>&#13; UDM_LIMIT_URL - defines document URL limitations to limit the search
+through subsection of the database. It supports SQL % and _ LIKE wildcards,
+where % matches any number of characters, even zero characters,
+and _ matches exactly one character. E.g. http://www.example.___/catalog
+may stand for http://www.example.com/catalog and http://www.example.net/catalog.
+</P></LI><LI><P>&#13; UDM_LIMIT_TAG - defines site TAG limitations. In indexer-conf you can
+assign specific TAGs to various sites and parts of a site. Tags in
+mnoGoSearch 3.1.x are lines, that may contain metasymbols % and _.
+Metasymbols allow searching among groups of tags.
+E.g. there are links with tags ABCD and ABCE, and search restriction
+is by ABC_ - the search will be made among both of the tags.
+</P></LI><LI><P>&#13; UDM_LIMIT_LANG - defines document language limitations.
+</P></LI><LI><P>&#13; UDM_LIMIT_CAT - defines document category limitations. Categories are
+similar to tag feature, but nested. So you can have one category inside
+another and so on. You have to use two characters for each level. Use a
+hex number going from 0-F or a 36 base number going from 0-Z.
+Therefore a top-level category like 'Auto' would be 01. If it has a
+subcategory like 'Ford', then it would be 01 (the parent category) and then
+'Ford' which we will give 01. Put those together and you get 0101. If 'Auto'
+had another subcategory named 'VW', then it's id would be 01 because it
+belongs to the 'Ford' category and then 02 because it's the next category.
+So it's id would be 0102. If VW had a sub category called 'Engine' then it's
+id would start at 01 again and it would get the 'VW' id 02 and 'Auto' id of
+01, making it 010201. If you want to search for sites under that category
+then you pass it cat=010201 in the URL.
+</P></LI><LI><P>&#13; UDM_LIMIT_DATE - defines limitation by date the document was modified.
+</P><P>&#13; Format of parameter value: a string with first character &#60; or &#62;,
+then with no space - date in unixtime format, for example:
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN63343"></A><P><B>例子 1. </B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Udm_Add_Search_Limit</font><font color="#007700">(</font><font color="#0000BB">$udm</font><font color="#007700">, </font><font color="#0000BB">UDM_LIMIT_DATE</font><font color="#007700">, </font><font color="#DD0000">"&amp;lt;908012006"</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; If &#62; character is used, then the search will be restricted to those
+documents having a modification date greater than entered, if &#60;, then smaller.
+</P></LI></UL></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="ref.mnogo.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.udm-alloc-agent-array.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">mnoGoSearch Functions</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.mnogo.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">udm_alloc_agent_array</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<html><head><title>我能在一个运行着的程序中生成堆栈映象吗？</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="工具的使用" href="./c619.htm"><link rel="PREVIOUS" title="我能更改一个动态连接库里的目标吗？" href="./x653.htm"><link rel="NEXT" title="范例程序" href="./c665.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x653.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 6. 工具的使用</td><td align="right" valign="bottom" width="10%"><a href="./c665.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN657">6.5. 我能在一个运行着的程序中生成堆栈映象吗？</a></h1><p>一些系统提供库函数可以提取(unwinding)出堆栈，从而(比如)你可以在一个错误
+处理函数中生成一个堆栈映象，但是只有一小部分系统有这些函数。
+    </p><p>一个可能的变通方法(workaround)是让你的程序执行一个调试器调试*它自己* -
+详细方法仍然根据不同系统稍有不同，但一般的概念是这样：
+    </p><pre class="PROGRAMLISTING">     void dump_stack(void)
+     {
+         char s[160];
+
+         sprintf(s, "/bin/echo 'where\ndetach' | dbx -a %d", getpid());
+         system(s);
+
+         return;
+     }
+    </pre><p>你需要根据你不同的系统对dbx的参数和命令进行加工，或者甚至换另一个调试
+器，比如‘gdb’，但这仍然是我见过的对于这种问题最普遍的解决方法。为此，
+荣誉授予Ralph Corderoy。
+    </p><p>下面列表包含在一些系统上需要用到的命令行：
+    </p><pre class="PROGRAMLISTING">大多数使用dbx的系统
+    `"/bin/echo 'where\ndetach' | dbx /path/to/program %d"'
+
+AIX
+     `"/bin/echo 'where\ndetach' | dbx -a %d"'
+
+IRIX
+     `"/bin/echo 'where\ndetach' | dbx -p %d"'
+    </pre></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x653.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./c665.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">我能更改一个动态连接库里的目标吗？</td><td align="center" valign="top" width="34%"><a href="./c619.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">范例程序</td></tr></tbody></table></div></body></html>

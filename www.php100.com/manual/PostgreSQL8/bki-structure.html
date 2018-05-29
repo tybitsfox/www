@@ -1,0 +1,204 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>系统初始化的 BKI 文件的结构 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="BKI 后端接口" HREF="bki.html"><LINK REL="PREVIOUS" TITLE="BKI命令" HREF="bki-commands.html"><LINK REL="NEXT" TITLE="例子" HREF="bki-example.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="bki-commands.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="bki.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 51. <SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+> 后端接口</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="bki.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="bki-example.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="BKI-STRUCTURE" >51.3. 系统初始化的 <SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+> 文件的结构</A
+></H1
+><P
+>   <TT
+CLASS="LITERAL"
+>open</TT
+> 命令打开的表需要系统事先存在另外一些基本的表，
+   在这些表存在并拥有数据之前，我们不能使用 <TT
+CLASS="LITERAL"
+>open</TT
+> 命令。
+   （这些最低限度必须存在的表是 <TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+>，<TT
+CLASS="STRUCTNAME"
+>pg_attribute</TT
+>，
+   <TT
+CLASS="STRUCTNAME"
+>pg_proc</TT
+>，和 <TT
+CLASS="STRUCTNAME"
+>pg_type</TT
+>。）
+   为了允许这些表自己被填充，带着 <TT
+CLASS="LITERAL"
+>bootstrap</TT
+> 选项的 <TT
+CLASS="LITERAL"
+>create</TT
+> 隐含打开所创建的表用于插入数据。
+  </P
+><P
+>   因此，<TT
+CLASS="FILENAME"
+>postgres.bki</TT
+> 文件的结构必须是这样的：
+   <P
+></P
+></P><OL
+TYPE="1"
+><LI
+><P
+>      <TT
+CLASS="LITERAL"
+>create bootstrap</TT
+> 其中一个关键表
+     </P
+></LI
+><LI
+><P
+>      <TT
+CLASS="LITERAL"
+>insert</TT
+> 数据，这些数据至少描述这些关键表本身
+     </P
+></LI
+><LI
+><P
+>      <TT
+CLASS="LITERAL"
+>close</TT
+>
+     </P
+></LI
+><LI
+><P
+>      重复创建和填充其它关键表。
+     </P
+></LI
+><LI
+><P
+>      <TT
+CLASS="LITERAL"
+>create</TT
+> （不带 <TT
+CLASS="LITERAL"
+>bootstrap</TT
+>）一个非关键表
+     </P
+></LI
+><LI
+><P
+>      <TT
+CLASS="LITERAL"
+>open</TT
+>
+     </P
+></LI
+><LI
+><P
+>      <TT
+CLASS="LITERAL"
+>insert</TT
+> 需要的数据
+     </P
+></LI
+><LI
+><P
+>      <TT
+CLASS="LITERAL"
+>close</TT
+>
+     </P
+></LI
+><LI
+><P
+>      重复创建其它非关键表。
+     </P
+></LI
+><LI
+><P
+>      定义索引。
+     </P
+></LI
+><LI
+><P
+>      <TT
+CLASS="LITERAL"
+>build indices</TT
+>
+     </P
+></LI
+></OL
+><P>
+  </P
+><P
+>   当然，肯定还有其它未记录文档的顺序依赖关系。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="bki-commands.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="bki-example.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+>命令</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="bki.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >例子</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

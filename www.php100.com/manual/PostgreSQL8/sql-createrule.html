@@ -1,0 +1,514 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>CREATE RULE PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="CREATE ROLE" HREF="sql-createrole.html"><LINK REL="NEXT" TITLE="CREATE SCHEMA" HREF="sql-createschema.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-createrole.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-createrole.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-createschema.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-createschema.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-CREATERULE" >CREATE RULE</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN42848" ></A
+><H2
+>Name</H2
+>CREATE RULE&nbsp;--&nbsp;定义一个新的重写规则</DIV
+><A NAME="AEN42851" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN42853" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>CREATE [ OR REPLACE ] RULE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> AS ON <TT
+CLASS="REPLACEABLE"
+><I
+>event</I
+></TT
+>
+    TO <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> [ WHERE <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+> ]
+    DO [ ALSO | INSTEAD ] { NOTHING | <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+> | ( <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+> ; <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+> ... ) }</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42862" ></A
+><H2
+>描述</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>CREATE RULE</TT
+> 定义一个适用于特定表或者视图的新规则。
+	<TT
+CLASS="COMMAND"
+>CREATE OR REPLACE RULE</TT
+> 要么是创建一个新规则，
+	要么是用一个同表上的同名规则替换现有规则。
+  </P
+><P
+>   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>规则系统允许我们在从数据库或表中更新，
+        插入或删除东西时定义一个其它的动作来执行。
+	简单说，规则就是当我们在指定的表上执行指定的动作的时候，导致一些额外的动作被执行。
+	另外，一个 <TT
+CLASS="LITERAL"
+>INSTEAD</TT
+> 规则可以用另外一个命令取代某个特定的命令，或者令命令完全不被执行。
+	规则还用于实现表视图。我们要明白的是规则实际上只是一个命令转换机制，或者说命令宏。
+	这种转换发生在命令开始执行之前。如果你实际上想要一个为每个物理行独立发生的操作，
+	那么你可能还是要用一个触发器，而不是规则。有关规则的更多信息可以在 <A HREF="rules.html" >Chapter 34</A
+> 找到。
+  </P
+><P
+>        目前，<TT
+CLASS="LITERAL"
+>ON SELECT</TT
+>  规则必须是无条件的 <TT
+CLASS="LITERAL"
+>INSTEAD</TT
+> 规则并且必须有一个由一条 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 查询组成的动作。
+        因此，一条 <TT
+CLASS="LITERAL"
+>ON SELECT</TT
+> 规则有效地把对象表转成视图，
+	它的可见内容是规则的 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 查询返回的记录而不是存储在表中的内容（如果有的话）。
+        我们认为写一条 <TT
+CLASS="COMMAND"
+>CREATE VIEW</TT
+> 命令比创建一个表然后定义一条 <TT
+CLASS="LITERAL"
+>ON SELECT</TT
+> 规则在上面的风格要好。
+   </P
+><P
+>	你可以创建一个可以更新的视图的幻觉，
+	方法是在视图上定义
+	<TT
+CLASS="LITERAL"
+>ON INSERT</TT
+>，<TT
+CLASS="LITERAL"
+>ON UPDATE</TT
+>，和 <TT
+CLASS="LITERAL"
+>ON DELETE</TT
+>
+	规则（或者满足你需要的任何上述规则的子集），用合适的对其它表的更新替换在视图上更新的动作。
+   </P
+><P
+>	如果你想在视图更新上使用条件规则，那么这里就有一个补充：
+	对你希望在视图上允许的每个动作，你都<I
+CLASS="EMPHASIS"
+>必须</I
+>有一个无条件的 <TT
+CLASS="LITERAL"
+>INSTEAD</TT
+> 规则。
+	如果规则是有条件的，或者它不是 <TT
+CLASS="LITERAL"
+>INSTEAD</TT
+>，
+	那么系统仍将拒绝执行更新动作的企图，因为它认为它最终会在某种程度上在虚拟表上执行动作。
+	如果你想处理条件规则上的所由有用的情况，那只需要增加一个无条件的
+	<TT
+CLASS="LITERAL"
+>DO INSTEAD NOTHING</TT
+> 规则确保系统明白它将决不会被调用来更新虚拟表就可以了。
+	然后把条件规则做成非 <TT
+CLASS="LITERAL"
+>INSTEAD</TT
+>；
+	在这种情况下，如果它们被触发，那么它们就增加到缺省的 <TT
+CLASS="LITERAL"
+>INSTEAD NOTHING</TT
+>
+	动作中。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42890" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+></DT
+><DD
+><P
+>        创建的规则名。它必须在同一个表上的所有规则的名字中唯一。
+	同一个表上的同一个事件类型的规则是按照字母顺序运行的。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>event</I
+></TT
+></DT
+><DD
+><P
+>        事件是 <TT
+CLASS="LITERAL"
+>SELECT</TT
+>，
+        <TT
+CLASS="LITERAL"
+>UPDATE</TT
+>，<TT
+CLASS="LITERAL"
+>DELETE</TT
+>
+        或 <TT
+CLASS="LITERAL"
+>INSERT</TT
+>  之一。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+></DT
+><DD
+><P
+>	规则施用的表或者视图的名字（可以有模式修饰）。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+></DT
+><DD
+><P
+>	任意 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 条件表达式（返回 <TT
+CLASS="TYPE"
+>boolean</TT
+>）。
+	条件表达式除了引用 <TT
+CLASS="LITERAL"
+>NEW</TT
+> 和 <TT
+CLASS="LITERAL"
+>OLD</TT
+> 之外不能引用任何表，并且不能有聚集函数。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>INSTEAD</TT
+></DT
+><DD
+><P
+>      <TT
+CLASS="LITERAL"
+>INSTEAD</TT
+> 指示该命令<I
+CLASS="EMPHASIS"
+>代替</I
+>最初的命令执行。
+     </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>ALSO</TT
+></DT
+><DD
+><P
+>      <TT
+CLASS="LITERAL"
+>ALSO</TT
+> 只是该命令应该和最初的命令<I
+CLASS="EMPHASIS"
+>一起</I
+>执行。
+     </P
+><P
+>      如果既没有声明 <TT
+CLASS="LITERAL"
+>ALSO</TT
+> 也没有声明 <TT
+CLASS="LITERAL"
+>INSTEAD</TT
+>，
+      那么 <TT
+CLASS="LITERAL"
+>ALSO</TT
+> 是缺省。
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+></DT
+><DD
+><P
+>        组成规则动作的命令。有效的命令是
+        <TT
+CLASS="LITERAL"
+>SELECT</TT
+>，<TT
+CLASS="LITERAL"
+>INSERT</TT
+>，
+        <TT
+CLASS="LITERAL"
+>UPDATE</TT
+>，<TT
+CLASS="LITERAL"
+>DELETE</TT
+>，或
+        <TT
+CLASS="LITERAL"
+>NOTIFY</TT
+> 语句之一。
+       </P
+></DD
+></DL
+></DIV
+><P
+>        在 <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+>
+        和 <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+> 里，
+        特殊表名字 <TT
+CLASS="LITERAL"
+>NEW</TT
+> 和 <TT
+CLASS="LITERAL"
+>OLD</TT
+> 可以用于指向被引用表里的数值
+        <TT
+CLASS="LITERAL"
+>new</TT
+> 在 <TT
+CLASS="LITERAL"
+>ON INSERT</TT
+> 和 <TT
+CLASS="LITERAL"
+>ON UPDATE</TT
+> 规则里可以指向被插入或更新的新行。
+        <TT
+CLASS="LITERAL"
+>OLD</TT
+> 在 <TT
+CLASS="LITERAL"
+>ON UPDATE</TT
+>，和 <TT
+CLASS="LITERAL"
+>ON DELETE</TT
+> 
+        规则里可以指向现存的被更新，或者删除的行。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42960" ></A
+><H2
+>注意</H2
+><P
+>        为了在表上定义规则，你必须有 <TT
+CLASS="LITERAL"
+>RULE</TT
+> 权限。
+   </P
+><P
+>        有一件很重要的事情是要避免循环规则。
+        比如，尽管下面两条规则定义都是
+        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 可以接受的，
+        但一条 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 命令会导致 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 报告一条错误信息，因为该查询循环了太多次：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE RULE "_RETURN" AS
+    ON SELECT TO t1
+    DO INSTEAD
+        SELECT * FROM t2;
+
+CREATE RULE "_RETURN" AS
+    ON SELECT TO t2
+    DO INSTEAD
+        SELECT * FROM t1;
+
+SELECT * FROM t1;</PRE
+><P>
+  </P
+><P
+>	目前，如果一个规则包含一个 <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+> 查询，那么该 <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+> 将被无条件执行 --- 也就是说，如果规则不施加到任何行上头，
+	该 <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+> 也会被发出。比如，在
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE RULE notify_me AS ON UPDATE TO mytable DO ALSO NOTIFY mytable;
+
+UPDATE mytable SET name = 'foo' WHERE id = 42;</PRE
+><P>
+	里，一个 <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+> 事件将在 <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> 的时候发出，不管是否有满足条件
+	<TT
+CLASS="LITERAL"
+>id = 42</TT
+> 的行。这是一个实现的限制，将来的版本应该修补这个毛病。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42977" ></A
+><H2
+>兼容性</H2
+><P
+>    <TT
+CLASS="COMMAND"
+>CREATE RULE</TT
+>  <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        语言的扩展，整个规则重写系统也是如此。
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-createrole.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-createschema.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >CREATE ROLE</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >CREATE SCHEMA</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

@@ -1,0 +1,100 @@
+<HTML><HEAD><TITLE>hw_Modifyobject</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Hyperwave Functions" HREF="ref.hyperwave.html"><LINK REL="PREVIOUS" TITLE="hw_mapid" HREF="function.hw-mapid.html"><LINK REL="NEXT" TITLE="hw_mv" HREF="function.hw-mv.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.hw-mapid.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.hw-mv.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.hw-modifyobject"></A>hw_Modifyobject</H1><DIV CLASS="refnamediv"><A NAME="AEN35344"></A><P> (PHP 3&#62;= 3.0.7, PHP 4 )</P>hw_Modifyobject&nbsp;--&nbsp;modifies object record</DIV><DIV CLASS="refsect1"><A NAME="AEN35347"></A><H2>Description</H2>int <B CLASS="methodname">hw_modifyobject</B> ( int connection, int object_to_change, array remove, array add, int mode)<BR></BR><P>&#13; This command allows to remove, add, or modify individual attributes
+of an object record. The object is specified by the Object ID
+<TT CLASS="parameter"><I>object_to_change</I></TT>. The first array
+<TT CLASS="parameter"><I>remove</I></TT> is a list of attributes to remove.
+The second array <TT CLASS="parameter"><I>add</I></TT> is a list of attributes
+to add. In order to modify an attribute one will have to remove
+the old one and add a new one. <B CLASS="function">hw_modifyobject()</B>
+will always remove the attributes before it adds attributes unless
+the value of the attribute to remove is not a string or array.
+</P><P>&#13; The last parameter determines if the modification is performed
+recursively. 1 means recursive modification. If some of the objects
+cannot be modified they will be skipped without notice.
+<A HREF="function.hw-error.html"><B CLASS="function">hw_error()</B></A> may not indicate an error though
+some of the objects could not be modified.
+</P><P>&#13; The keys of both arrays are the attributes name. The value of each
+array element can either be an array, a string or anything else.
+If it is an array
+each attribute value is constructed by the key of each element plus
+a colon and the value of each element. If it is a string it is taken
+as the attribute value. An empty string will result in a complete
+removal of that attribute. If the value is neither a string nor an
+array but something else, e.g. an integer, no operation at all will
+be performed on the attribute. This is necessary if you want to
+to add a completely new attribute not just a new value for an existing
+attribute. If the remove array contained
+an empty string for that attribute, the attribute would be tried to be
+removed which would fail since it doesn't exist. The following addition of
+a new value for that attribute would also fail. Setting the value
+for that attribute to e.g. 0 would not even try to remove it and
+the addition will work.
+</P><P>&#13; If you would like to change the attribute 'Name' with the current
+value 'books' into 'articles' you will have to create two arrays
+and call <B CLASS="function">hw_modifyobject()</B>.
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN35377"></A><P><B>例子 1. modifying an attribute</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// $connect is an existing connection to the Hyperwave server<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// $objid is the ID of the object to modify<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$remarr </font><font color="#007700">= array(</font><font color="#DD0000">"Name" </font><font color="#007700">=&gt; </font><font color="#DD0000">"books"</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$addarr </font><font color="#007700">= array(</font><font color="#DD0000">"Name" </font><font color="#007700">=&gt; </font><font color="#DD0000">"articles"</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$hw_modifyobject</font><font color="#007700">(</font><font color="#0000BB">$connect</font><font color="#007700">, </font><font color="#0000BB">$objid</font><font color="#007700">, </font><font color="#0000BB">$remarr</font><font color="#007700">, </font><font color="#0000BB">$addarr</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+In order to delete/add a name=value pair from/to the object record just
+pass the remove/add array and set the last/third parameter to an empty
+array. If the attribute is the first one with that name to add, set
+attribute value in the remove array to an integer.
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN35380"></A><P><B>例子 2. adding a completely new attribute</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// $connect is an existing connection to the Hyperwave server<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// $objid is the ID of the object to modify<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$remarr </font><font color="#007700">= array(</font><font color="#DD0000">"Name" </font><font color="#007700">=&gt; </font><font color="#0000BB">0</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$addarr </font><font color="#007700">= array(</font><font color="#DD0000">"Name" </font><font color="#007700">=&gt; </font><font color="#DD0000">"articles"</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$hw_modifyobject</font><font color="#007700">(</font><font color="#0000BB">$connect</font><font color="#007700">, </font><font color="#0000BB">$objid</font><font color="#007700">, </font><font color="#0000BB">$remarr</font><font color="#007700">, </font><font color="#0000BB">$addarr</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; <DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Multilingual attributes, e.g. 'Title', can be modified in two
+ways. Either by providing the attributes value in its native
+form 'language':'title' or by providing an array with elements
+for each language as described above. The above example would
+than be:
+</P></BLOCKQUOTE></DIV>
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN35386"></A><P><B>例子 3. modifying Title attribute</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$remarr </font><font color="#007700">= array(</font><font color="#DD0000">"Title" </font><font color="#007700">=&gt; </font><font color="#DD0000">"en:Books"</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$addarr </font><font color="#007700">= array(</font><font color="#DD0000">"Title" </font><font color="#007700">=&gt; </font><font color="#DD0000">"en:Articles"</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$hw_modifyobject</font><font color="#007700">(</font><font color="#0000BB">$connect</font><font color="#007700">, </font><font color="#0000BB">$objid</font><font color="#007700">, </font><font color="#0000BB">$remarr</font><font color="#007700">, </font><font color="#0000BB">$addarr</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+or
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN35389"></A><P><B>例子 4. modifying Title attribute</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$remarr </font><font color="#007700">= array(</font><font color="#DD0000">"Title" </font><font color="#007700">=&gt; array(</font><font color="#DD0000">"en" </font><font color="#007700">=&gt; </font><font color="#DD0000">"Books"</font><font color="#007700">));<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$addarr </font><font color="#007700">= array(</font><font color="#DD0000">"Title" </font><font color="#007700">=&gt; array(</font><font color="#DD0000">"en" </font><font color="#007700">=&gt; </font><font color="#DD0000">"Articles"</font><font color="#007700">, </font><font color="#DD0000">"ge"</font><font color="#007700">=&gt;</font><font color="#DD0000">"Artikel"</font><font color="#007700">));<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$hw_modifyobject</font><font color="#007700">(</font><font color="#0000BB">$connect</font><font color="#007700">, </font><font color="#0000BB">$objid</font><font color="#007700">, </font><font color="#0000BB">$remarr</font><font color="#007700">, </font><font color="#0000BB">$addarr</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+This removes the English title 'Books' and adds the English title
+'Articles' and the German title 'Artikel'.
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN35392"></A><P><B>例子 5. removing attribute</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$remarr </font><font color="#007700">= array(</font><font color="#DD0000">"Title" </font><font color="#007700">=&gt; </font><font color="#DD0000">""</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$addarr </font><font color="#007700">= array(</font><font color="#DD0000">"Title" </font><font color="#007700">=&gt; </font><font color="#DD0000">"en:Articles"</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$hw_modifyobject</font><font color="#007700">(</font><font color="#0000BB">$connect</font><font color="#007700">, </font><font color="#0000BB">$objid</font><font color="#007700">, </font><font color="#0000BB">$remarr</font><font color="#007700">, </font><font color="#0000BB">$addarr</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+This will remove all attributes with the name 'Title' and adds
+a new 'Title' attribute. This comes in handy if you want to
+remove attributes recursively.
+</P></BLOCKQUOTE></DIV>
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+If you need to delete all attributes with a certain name you
+will have to pass an empty string as the attribute value.
+</P></BLOCKQUOTE></DIV>
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Only the attributes 'Title', 'Description' and 'Keyword' will
+properly handle the language prefix. If those attributes don't carry
+a language prefix, the prefix 'xx' will be assigned.
+</P></BLOCKQUOTE></DIV>
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+The 'Name' attribute is somewhat special. In some cases it cannot
+be complete removed. You will get an error message 'Change of base
+attribute' (not clear when this happens). Therefore you will always
+have to add a new Name first and than remove the old one.
+</P></BLOCKQUOTE></DIV>
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+You may not surround this function by calls to
+<A HREF="function.hw-getandlock.html"><B CLASS="function">hw_getandlock()</B></A> and <A HREF="function.hw-unlock.html"><B CLASS="function">hw_unlock()</B></A>.
+<B CLASS="function">hw_modifyobject()</B> does this internally.
+</P></BLOCKQUOTE></DIV>
+</P><P>&#13; 如果成功则返回 <TT CLASS="constant"><B>TRUE</B></TT>，失败则返回 <TT CLASS="constant"><B>FALSE</B></TT>。
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.hw-mapid.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.hw-mv.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">hw_mapid</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.hyperwave.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">hw_mv</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

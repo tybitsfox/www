@@ -1,0 +1,100 @@
+<HTML><HEAD><TITLE>Initialization File Support</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Zend API" HREF="zend.html"><LINK REL="PREVIOUS" TITLE="Calling User Functions" HREF="zend.calling-user-functions.html"><LINK REL="NEXT" TITLE="Where to Go from Here" HREF="zend.where-to-go.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="chapter" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="zend.calling-user-functions.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="zend.where-to-go.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="chapter"><H1><A NAME="zend.ini-file-support">章 39. Initialization File Support</A></H1><P>&#13; PHP 4 features a redesigned initialization file support. It's now
+possible to specify default initialization entries directly in your code, read
+and change these values at runtime, and create message handlers for change
+notifications.
+</P><P>&#13; To create an .ini section in your own module, use the
+macros <TT CLASS="literal">PHP_INI_BEGIN()</TT> to mark the beginning of such a
+section and <TT CLASS="literal">PHP_INI_END()</TT> to mark its end. In between you can
+use <TT CLASS="literal">PHP_INI_ENTRY()</TT> to create entries.
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">PHP_INI_BEGIN()
+PHP_INI_ENTRY("first_ini_entry",  "has_string_value", PHP_INI_ALL, NULL)
+PHP_INI_ENTRY("second_ini_entry", "2",                PHP_INI_SYSTEM, OnChangeSecond)
+PHP_INI_ENTRY("third_ini_entry",  "xyz",              PHP_INI_USER, NULL)
+PHP_INI_END()</PRE></TD></TR></TABLE>
+The <TT CLASS="literal">PHP_INI_ENTRY()</TT> macro accepts four
+parameters: the entry name, the entry value, its change permissions, and a
+pointer to a change-notification handler. Both entry name and value must be
+specified as strings, regardless of whether they really are strings or
+integers.
+</P><P>&#13; The permissions are grouped into three
+sections:<TT CLASS="literal">PHP_INI_SYSTEM</TT> allows a change only directly in
+the <TT CLASS="filename">php.ini</TT> file; <TT CLASS="literal">PHP_INI_USER</TT> allows
+a change to be overridden by a user at runtime using additional
+configuration files, such as <TT CLASS="filename">.htaccess</TT>; and <TT CLASS="literal">PHP_INI_ALL</TT> allows
+changes to be made without restrictions. There's also a fourth level,
+<TT CLASS="literal">PHP_INI_PERDIR</TT>, for which we couldn't verify its behavior
+yet.
+</P><P>&#13; The fourth parameter consists of a pointer to a change-notification
+handler. Whenever one of these initialization entries is changed, this handler
+is called. Such a handler can be declared using the
+<TT CLASS="literal">PHP_INI_MH</TT> macro:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">PHP_INI_MH(OnChangeSecond);             // handler for ini-entry "second_ini_entry"
+
+// specify ini-entries here
+
+PHP_INI_MH(OnChangeSecond)
+{
+
+    zend_printf("Message caught, our ini entry has been changed to %s&#60;br&#62;", new_value);
+
+    return(SUCCESS);
+
+}</PRE></TD></TR></TABLE>
+The new value is given to the change handler as string in
+the variable <TT CLASS="envar">new_value</TT>. When looking at the definition
+of <TT CLASS="literal">PHP_INI_MH</TT>, you actually have a few parameters to use:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">#define PHP_INI_MH(name) int name(php_ini_entry *entry, char *new_value,
+                                  uint new_value_length, void *mh_arg1,
+                                  void *mh_arg2, void *mh_arg3)</PRE></TD></TR></TABLE>
+All these definitions can be found
+in <TT CLASS="filename">php_ini.h</TT>. Your message handler will have access to a
+structure that contains the full entry, the new value, its length, and three
+optional arguments. These optional arguments can be specified with the additional
+macros <TT CLASS="literal">PHP_INI_ENTRY1</TT> (allowing one additional
+argument), <TT CLASS="literal">PHP_INI_ENTRY2</TT> (allowing two additional arguments),
+and <TT CLASS="literal">PHP_INI_ENTRY3</TT> (allowing three additional
+arguments).
+</P><P>&#13; The change-notification handlers should be used to cache initialization
+entries locally for faster access or to perform certain tasks that are
+required if a value changes. For example, if a constant connection to a
+certain host is required by a module and someone changes the hostname,
+automatically terminate the old connection and attempt a new one.
+</P><P>&#13; Access to initialization entries can also be handled with the macros
+shown in <A HREF="zend.ini-file-support.html#table.ini-macros">表格 39-1</A>.
+</P><DIV CLASS="table"><A NAME="table.ini-macros"></A><P><B>表格 39-1. Macros to Access Initialization Entries in PHP</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE">Macro</TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Description</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">INI_INT(name)</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Returns the current value of
+entry <TT CLASS="literal">name</TT> as integer (long).</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">INI_FLT(name)</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Returns the current value of
+entry <TT CLASS="literal">name</TT> as float (double).</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">INI_STR(name)</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Returns the current value of
+entry <TT CLASS="literal">name</TT> as string. <SPAN CLASS="emphasis"><I CLASS="emphasis">Note:</I></SPAN> This string is not duplicated, but
+instead points to internal data. Further access requires duplication to local
+memory.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">INI_BOOL(name)</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Returns the current value of
+entry <TT CLASS="literal">name</TT> as Boolean (defined as <TT CLASS="envar">zend_bool</TT>,
+which currently means <TT CLASS="envar">unsigned char</TT>).</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">INI_ORIG_INT(name)</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Returns the original value of
+entry <TT CLASS="literal">name</TT> as integer (long).</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">INI_ORIG_FLT(name)</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Returns the original value of
+entry <TT CLASS="literal">name</TT> as float (double).</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">INI_ORIG_STR(name)</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Returns the original value of
+entry <TT CLASS="literal">name</TT> as string. Note: This string is not duplicated, but
+instead points to internal data. Further access requires duplication to local
+memory.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">INI_ORIG_BOOL(name)</TT></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Returns the original value of
+entry <TT CLASS="literal">name</TT> as Boolean (defined as <TT CLASS="envar">zend_bool</TT>, which
+currently means <TT CLASS="envar">unsigned char</TT>).</TD></TR></TBODY></TABLE></DIV><P>&#13; Finally, you have to introduce your initialization entries to PHP.
+This can be done in the module startup and shutdown functions, using the macros
+<TT CLASS="literal">REGISTER_INI_ENTRIES()</TT> and <TT CLASS="literal">UNREGISTER_INI_ENTRIES()</TT>:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">ZEND_MINIT_FUNCTION(mymodule)
+{
+
+    REGISTER_INI_ENTRIES();
+
+}
+
+ZEND_MSHUTDOWN_FUNCTION(mymodule)
+{
+
+    UNREGISTER_INI_ENTRIES();
+
+}</PRE></TD></TR></TABLE>
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="zend.calling-user-functions.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="zend.where-to-go.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Calling User Functions</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="zend.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Where to Go from Here</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

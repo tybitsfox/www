@@ -1,0 +1,433 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>pg_locks PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="系统表" HREF="catalogs.html"><LINK REL="PREVIOUS" TITLE="pg_indexes" HREF="view-pg-indexes.html"><LINK REL="NEXT" TITLE="pg_prepared_xacts" HREF="view-pg-prepared-xacts.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="view-pg-indexes.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="catalogs.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 42. 系统表</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="catalogs.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="view-pg-prepared-xacts.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="VIEW-PG-LOCKS" >42.37. <TT
+CLASS="STRUCTNAME"
+>pg_locks</TT
+></A
+></H1
+><A NAME="AEN58901" ></A
+><P
+>   视图 <TT
+CLASS="STRUCTNAME"
+>pg_locks</TT
+> 提供有关在数据库服务器中由打开的事务持有的锁的信息。
+   参阅  <A HREF="mvcc.html" >Chapter 12</A
+> 获取有关锁的更多的讨论。
+  </P
+><P
+>   <TT
+CLASS="STRUCTNAME"
+>pg_locks</TT
+> 对每个活跃的可锁定对象，请求的锁模式，
+   以及相关的事务保存一行。因此，如果多个事务持有或者等待对同一个对象的锁，
+   那么同一个可锁定的对象可能出现多次。不过，一个目前没有锁在其上的对象将肯定不会出现。
+  </P
+><P
+>   有好几种不同的可锁定对象：一个关系（也就是说，一个表）、关系中独立页面、关系中独立的元组、一个事务 ID、
+   以及一般的数据库对象（用类别 OID 和对象 OID 标识，表示方法和 <TT
+CLASS="STRUCTNAME"
+>pg_description</TT
+> 或
+   <TT
+CLASS="STRUCTNAME"
+>pg_depend</TT
+> 一样。）
+   还有，扩展（extend）一个关系的权限也是用一种独立的可锁定对象表示的。
+  </P
+><DIV
+CLASS="TABLE"
+><A NAME="AEN58911" ></A
+><P
+><B
+>Table 42-37. <TT
+CLASS="STRUCTNAME"
+>pg_locks</TT
+> 字段</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR ><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>名字</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>类型</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>引用</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="STRUCTFIELD"
+>locktype</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >&nbsp;</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >       可锁定对象的类型：
+       <TT
+CLASS="LITERAL"
+>relation</TT
+>,
+       <TT
+CLASS="LITERAL"
+>extend</TT
+>,
+       <TT
+CLASS="LITERAL"
+>page</TT
+>,
+       <TT
+CLASS="LITERAL"
+>tuple</TT
+>,
+       <TT
+CLASS="LITERAL"
+>transactionid</TT
+>,
+       <TT
+CLASS="LITERAL"
+>object</TT
+>, 或者
+       <TT
+CLASS="LITERAL"
+>userlock</TT
+>
+      </TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="STRUCTFIELD"
+>database</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="LITERAL"
+><A HREF="catalog-pg-database.html" ><TT
+CLASS="STRUCTNAME"
+>pg_database</TT
+></A
+>.oid</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >       对象所在的数据库的 OID，如果对象是共享对象，
+       那么就是零，如果对象是一个事务 ID，就是 NULL。
+      </TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="STRUCTFIELD"
+>relation</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="LITERAL"
+><A HREF="catalog-pg-class.html" ><TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+></A
+>.oid</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >       关系的 OID，如果对象不是关系，也不是关系的一部分，则为 NULL
+      </TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="STRUCTFIELD"
+>page</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >&nbsp;</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >       关系内部的页面编号，如果对象不是元组页不是关系页，则为 NULL
+      </TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="STRUCTFIELD"
+>tuple</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="TYPE"
+>smallint</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >&nbsp;</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >       页面里面的元组编号，如果对象不是元组，则为 NULL
+      </TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="STRUCTFIELD"
+>transactionid</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="TYPE"
+>xid</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >&nbsp;</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >       事务的 ID，如果对象不是事务 ID，就是 NULL
+      </TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="STRUCTFIELD"
+>classid</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="LITERAL"
+><A HREF="catalog-pg-class.html" ><TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+></A
+>.oid</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >       包含该对象的系统表的 OID，如果对象不是普通数据库对象，则为 NULL
+      </TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="STRUCTFIELD"
+>objid</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >任何 OID 字段</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >       对象在其系统表内的 OID，如果对象不是普通数据库对象，则为 NULL
+      </TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="STRUCTFIELD"
+>objsubid</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="TYPE"
+>smallint</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >&nbsp;</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >       对于表的一个字段，这是字段编号（<TT
+CLASS="STRUCTFIELD"
+>classid</TT
+> 和 <TT
+CLASS="STRUCTFIELD"
+>objid</TT
+> 指向表自身）。
+       对于其它对象类型，这个字段是零。如果这个对象不是普通数据库对象，则为 NULL
+      </TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="STRUCTFIELD"
+>transaction</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="TYPE"
+>xid</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >&nbsp;</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >       持有此锁或者在等待此锁的事务的 ID。
+      </TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="STRUCTFIELD"
+>pid</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >&nbsp;</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >      　持有或者等待这个锁的服务器进程的进程 ID。
+      　如果锁是被一个准备好的事务持有的，那么为空（null）。
+      </TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="STRUCTFIELD"
+>mode</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >&nbsp;</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >这个进程持有的或者是期望的锁模式（参阅 <A HREF="explicit-locking.html#LOCKING-TABLES" >Section 12.3.1</A
+>）</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="STRUCTFIELD"
+>granted</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >&nbsp;</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >如果持有锁，为真，如果等待锁，为假</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>   一行里的 <TT
+CLASS="STRUCTFIELD"
+>granted</TT
+> 为真时表明指定事务持有一个锁。
+   假则表明该事务当前等待使用这个锁，这就暗示着某个其它的事务正在同样的可锁定对象上持有冲突的锁模式。
+   等待的会话将一直睡眠，直到另外一个锁释放（或者侦测到一个死锁条件）。一个事务一次最多等待一个锁。
+  </P
+><P
+>   每个事务都在它持续的时间里在他自己的事务 ID 上持有一个排他锁。
+   如果一个事务认为它必须等待另外一个事务，它会以企图在另外一个事务 ID 上获取共享锁的方式实现之。
+   这个锁只有在另外一个事务终止并且释放它的锁的前提下才能成功。
+  </P
+><P
+>   尽管元组是一种可以锁定的对象，但是有关行级别锁的信息是存储在磁盘上的，而不是在内存里，
+   因此，行级别的锁通常不会出现在这个视图里。如果一个事务在等待一个行级别的锁，
+   那么它通常会在这个视图里以等待当前持有该行锁的事务 ID 的方式出现。
+  </P
+><P
+>   如果使用了用户定义的锁，那么他们是使用那些给普通数据库对象的字段来显示的。
+   不过，这种情况下的锁字段的实际含义是取决于用户的。
+  </P
+><P
+>   在访问 <TT
+CLASS="STRUCTNAME"
+>pg_locks</TT
+> 视图的时候，内部的锁管理器数据结构会暂时被锁住，
+   然后制作一份这个视图的拷贝用于显示。这样就保证了视图生成一套连贯的结果，它不会不必要地过分阻塞普通的锁管理器。
+   但是如果这个视图访问得太频繁，肯定是会对数据库性能有些影响的。
+  </P
+><P
+>   <TT
+CLASS="STRUCTNAME"
+>pg_locks</TT
+> 提供了一个数据库集群里的所有的锁的全局视图，
+   而不仅仅那些和当前数据库相关的。尽管它的 <TT
+CLASS="STRUCTFIELD"
+>relation</TT
+>
+   字段可以和 <TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+>.<TT
+CLASS="STRUCTFIELD"
+>oid</TT
+> 连接起来以标识被锁住的关系，
+   但是这个方法目前只能对在当前数据库里的关系有用（那些 <TT
+CLASS="STRUCTFIELD"
+>database</TT
+>
+   字段是当前数据库的 OID 或者零的数据库）。
+  </P
+><P
+>   如果你打开了统计收集器，<TT
+CLASS="STRUCTFIELD"
+>pid</TT
+>
+   字段可以可以和 <TT
+CLASS="STRUCTNAME"
+>pg_stat_activity</TT
+> 视图的 <TT
+CLASS="STRUCTFIELD"
+>procpid</TT
+>
+   字段连接起来获取持有或者等待持有这个锁的会话的更多信息。
+   同样，如果你使用准备好的事务，可以把 <TT
+CLASS="STRUCTFIELD"
+>transaction</TT
+> 字段和
+   <TT
+CLASS="STRUCTNAME"
+>pg_prepared_xacts</TT
+> 视图的 <TT
+CLASS="STRUCTFIELD"
+>transaction</TT
+>
+   字段连接起来获取持有锁的那个已准备好事务的更多信息。
+   （一个已准备好的事务不能等待任何锁，但是在运行的时候，它继续持有它已经请求到的锁。）
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="view-pg-indexes.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="view-pg-prepared-xacts.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><TT
+CLASS="STRUCTNAME"
+>pg_indexes</TT
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="catalogs.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><TT
+CLASS="STRUCTNAME"
+>pg_prepared_xacts</TT
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

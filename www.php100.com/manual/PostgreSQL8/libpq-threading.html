@@ -1,0 +1,161 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>在多线程程序里的行为 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="libpq - C 库" HREF="libpq.html"><LINK REL="PREVIOUS" TITLE="SSL 支持" HREF="libpq-ssl.html"><LINK REL="NEXT" TITLE="制作 libpq 程序" HREF="libpq-build.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="libpq-ssl.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="libpq.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 28. <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> - C 库</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="libpq.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="libpq-build.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="LIBPQ-THREADING" >28.14. 在多线程程序里的行为</A
+></H1
+><A NAME="AEN26727" ></A
+><P
+>如果在制作 PostgreSQL 发布的时候，使用了 <TT
+CLASS="FILENAME"
+>configure</TT
+> 的命令行参数 <TT
+CLASS="LITERAL"
+>--enable-thread-safety</TT
+>，
+那么 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 是可重入的并且是线程安全的。另外，在你编译自己的应用代码时，
+可能需要使用额外的编译器命令行选项。请参考你的系统的文档获取有关如何编译多线程应用的信息。
+或者查阅 <TT
+CLASS="FILENAME"
+>src/Makefile.global</TT
+>，找 <TT
+CLASS="LITERAL"
+>PTHREAD_CFLAGS</TT
+> 和 <TT
+CLASS="LITERAL"
+>PTHREAD_LIBS</TT
+>。</P
+><P
+>一个现实是，两个线程不能试图同时操作同一个 <TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+> 对象。
+特别是，你不能从不同的线程里通过同一个连接对象发出并发的命令。
+（如果你需要运行并行命令，请使用多个连接。）</P
+><P
+><TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+>对象在创建后是只读的，因此可以自由地在线程之间传递。</P
+><P
+>过时了的函数 <TT
+CLASS="FUNCTION"
+>PQoidStatus</TT
+> 和
+<TT
+CLASS="FUNCTION"
+>PQoidStatus</TT
+> 都是线程不安全的，
+因此不应该在一个多线程的程序里面使用。
+<TT
+CLASS="FUNCTION"
+>PQrequestCancel</TT
+> 可以由 <TT
+CLASS="FUNCTION"
+>PQcancel</TT
+> 代替。
+<TT
+CLASS="FUNCTION"
+>PQoidStatus</TT
+> 可以由
+<TT
+CLASS="FUNCTION"
+>PQoidValue</TT
+>代替。</P
+><P
+>如果在你的应用内部使用了 Kerberos （而不仅仅是 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 里面），
+你就需要在 Kerberos 调用周围锁住，因为 Kerberos 函数不是线程安全的。
+参阅 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 源代码里面的 <TT
+CLASS="FUNCTION"
+>PQregisterThreadLock</TT
+>
+获取一个在 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 和你的应用之间进行恰当锁定的方法。</P
+><P
+>如果你的线程应用有问题，那么运行一个在 <TT
+CLASS="FILENAME"
+>src/tools/thread</TT
+> 里的程序，
+看看你的平台是否有线程安全的函数。这个程序由 <TT
+CLASS="FILENAME"
+>configure</TT
+> 运行，
+但如果是二进制版本，你的库可能就不能和制作二进制的那个库匹配了。</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="libpq-ssl.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="libpq-build.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >SSL 支持</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="libpq.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >制作 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 程序</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

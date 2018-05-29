@@ -1,0 +1,299 @@
+<HTML
+><HEAD
+><TITLE
+>基因算法</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="基因查询优化"
+HREF="geqo.html"><LINK
+REL="PREVIOUS"
+TITLE="基因查询优化"
+HREF="geqo.html"><LINK
+REL="NEXT"
+TITLE="PostgreSQL 里的基因查询优化（GEQO）"
+HREF="geqo-pg-intro.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="geqo.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="geqo.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 47. 基因查询优化</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="geqo.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="geqo-pg-intro.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="GEQO-INTRO2"
+>47.2. 基因算法</A
+></H1
+><P
+>	基因算法(<SPAN
+CLASS="ACRONYM"
+>GA</SPAN
+>)是一种启发式的优化法（heuristic optimization method），
+	它是通过不确定的随机搜索进行操作。
+	优化问题的可能的解的集合被认为是<I
+CLASS="FIRSTTERM"
+>个体（individuals）</I
+>组成的<I
+CLASS="FIRSTTERM"
+>人群（population）</I
+>。
+	一个个体对它的环境的适应程度由它的<I
+CLASS="FIRSTTERM"
+>健康度（fitness）</I
+>表示。
+   </P
+><P
+>	一个个体在搜索空间里的参照物是用<I
+CLASS="FIRSTTERM"
+>染色体（chromosomes）</I
+>表示的，
+	实际上那是一套字符串。
+	一个<I
+CLASS="FIRSTTERM"
+>基因 （gene）</I
+>是染色体的一个片段，基因是被优化的单个参数的编码。
+	对一个基因的典型的编码可以是<I
+CLASS="FIRSTTERM"
+>二进制（binary）</I
+>或<I
+CLASS="FIRSTTERM"
+>整数（integer）</I
+>。
+   </P
+><P
+>	通过仿真进化过程的<I
+CLASS="FIRSTTERM"
+>重组（recombination）</I
+>，
+	<I
+CLASS="FIRSTTERM"
+>突变（mutation）</I
+>和<I
+CLASS="FIRSTTERM"
+>选择（selection）</I
+>找到新一代的搜索点，
+	它们的平均健康度要比它们的祖先好。
+   </P
+><P
+>	根据 <SPAN
+CLASS="SYSTEMITEM"
+>comp.ai.genetic</SPAN
+>  <SPAN
+CLASS="ACRONYM"
+>FAQ</SPAN
+>，我们不论怎么强调
+	<SPAN
+CLASS="ACRONYM"
+>GA</SPAN
+> 在解决一个问题时不是纯随机搜索都不过份。
+	<SPAN
+CLASS="ACRONYM"
+>GA</SPAN
+> 使用随机处理，但是结果明显不是随机的（比随机更好）。
+   </P
+><DIV
+CLASS="FIGURE"
+><A
+NAME="GEQO-DIAGRAM"
+></A
+><P
+><B
+>Figure 47-1. 基因算法的结构化框图</B
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN61729"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>P(t)</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>t 时刻的父代</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>P''(t)</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>t 时刻的子代</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+><PRE
+CLASS="LITERALLAYOUT"
+>+=========================================+
+|&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  Algorithm GA  &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;|
++=========================================+
+| INITIALIZE t := 0                       |
++=========================================+
+| INITIALIZE P(t)                         |
++=========================================+
+| evalute FITNESS of P(t)                 |
++=========================================+
+| while not STOPPING CRITERION do         |
+|   +-------------------------------------+
+|   | P'(t)  := RECOMBINATION{P(t)}       |
+|   +-------------------------------------+
+|   | P''(t) := MUTATION{P'(t)}           |
+|   +-------------------------------------+
+|   | P(t+1) := SELECTION{P''(t) + P(t)}  |
+|   +-------------------------------------+
+|   | evalute FITNESS of P''(t)           |
+|   +-------------------------------------+
+|   | t := t + 1                          |
++===+=====================================+</PRE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="geqo.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="geqo-pg-intro.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>基因查询优化</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="geqo.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>PostgreSQL 里的基因查询优化（<SPAN
+CLASS="ACRONYM"
+>GEQO</SPAN
+>）</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

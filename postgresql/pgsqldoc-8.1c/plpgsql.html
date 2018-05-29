@@ -1,0 +1,773 @@
+<HTML
+><HEAD
+><TITLE
+>PL/pgSQL - SQL 过程语言</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="服务器端编程"
+HREF="server-programming.html"><LINK
+REL="PREVIOUS"
+TITLE="过程语言"
+HREF="xplang.html"><LINK
+REL="NEXT"
+TITLE="开发 PL/pgSQL 的一些提示"
+HREF="plpgsql-development-tips.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="xplang.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="xplang.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="pltcl.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plpgsql-development-tips.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="PLPGSQL"
+>Chapter 36. <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> - <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 过程语言</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>36.1. <A
+HREF="plpgsql.html#PLPGSQL-OVERVIEW"
+>概述</A
+></DT
+><DD
+><DL
+><DT
+>36.1.1. <A
+HREF="plpgsql.html#PLPGSQL-ADVANTAGES"
+>使用<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>的优点</A
+></DT
+><DT
+>36.1.2. <A
+HREF="plpgsql.html#PLPGSQL-ARGS-RESULTS"
+>所支持的参数和结果数据类型</A
+></DT
+></DL
+></DD
+><DT
+>36.2. <A
+HREF="plpgsql-development-tips.html"
+>开发 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 的一些提示</A
+></DT
+><DT
+>36.3. <A
+HREF="plpgsql-structure.html"
+><SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>的结构</A
+></DT
+><DT
+>36.4. <A
+HREF="plpgsql-declarations.html"
+>声明</A
+></DT
+><DD
+><DL
+><DT
+>36.4.1. <A
+HREF="plpgsql-declarations.html#PLPGSQL-DECLARATION-ALIASES"
+>函数参数的别名</A
+></DT
+><DT
+>36.4.2. <A
+HREF="plpgsql-declarations.html#PLPGSQL-DECLARATION-TYPE"
+>拷贝类型</A
+></DT
+><DT
+>36.4.3. <A
+HREF="plpgsql-declarations.html#PLPGSQL-DECLARATION-ROWTYPES"
+>行类型</A
+></DT
+><DT
+>36.4.4. <A
+HREF="plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS"
+>记录类型</A
+></DT
+><DT
+>36.4.5. <A
+HREF="plpgsql-declarations.html#PLPGSQL-DESCRIPTION-REMANING-VARS"
+><TT
+CLASS="LITERAL"
+>RENAME</TT
+></A
+></DT
+></DL
+></DD
+><DT
+>36.5. <A
+HREF="plpgsql-expressions.html"
+>表达式</A
+></DT
+><DT
+>36.6. <A
+HREF="plpgsql-statements.html"
+>基本语句</A
+></DT
+><DD
+><DL
+><DT
+>36.6.1. <A
+HREF="plpgsql-statements.html#PLPGSQL-STATEMENTS-ASSIGNMENT"
+>赋值</A
+></DT
+><DT
+>36.6.2. <A
+HREF="plpgsql-statements.html#PLPGSQL-SELECT-INTO"
+><TT
+CLASS="LITERAL"
+>SELECT INTO</TT
+></A
+></DT
+><DT
+>36.6.3. <A
+HREF="plpgsql-statements.html#PLPGSQL-STATEMENTS-PERFORM"
+>执行一个没有结果的表达式或者命令</A
+></DT
+><DT
+>36.6.4. <A
+HREF="plpgsql-statements.html#PLPGSQL-STATEMENTS-EXECUTING-DYN"
+>执行动态命令</A
+></DT
+><DT
+>36.6.5. <A
+HREF="plpgsql-statements.html#PLPGSQL-STATEMENTS-DIAGNOSTICS"
+>获取结果状态</A
+></DT
+></DL
+></DD
+><DT
+>36.7. <A
+HREF="plpgsql-control-structures.html"
+>控制结构</A
+></DT
+><DD
+><DL
+><DT
+>36.7.1. <A
+HREF="plpgsql-control-structures.html#PLPGSQL-STATEMENTS-RETURNING"
+>从函数返回</A
+></DT
+><DT
+>36.7.2. <A
+HREF="plpgsql-control-structures.html#PLPGSQL-CONDITIONALS"
+>条件</A
+></DT
+><DT
+>36.7.3. <A
+HREF="plpgsql-control-structures.html#PLPGSQL-CONTROL-STRUCTURES-LOOPS"
+>简单循环</A
+></DT
+><DT
+>36.7.4. <A
+HREF="plpgsql-control-structures.html#PLPGSQL-RECORDS-ITERATING"
+>遍历命令结果</A
+></DT
+><DT
+>36.7.5. <A
+HREF="plpgsql-control-structures.html#PLPGSQL-ERROR-TRAPPING"
+>捕获错误</A
+></DT
+></DL
+></DD
+><DT
+>36.8. <A
+HREF="plpgsql-cursors.html"
+>游标</A
+></DT
+><DD
+><DL
+><DT
+>36.8.1. <A
+HREF="plpgsql-cursors.html#PLPGSQL-CURSOR-DECLARATIONS"
+>声明游标变量</A
+></DT
+><DT
+>36.8.2. <A
+HREF="plpgsql-cursors.html#PLPGSQL-CURSOR-OPENING"
+>打开游标</A
+></DT
+><DT
+>36.8.3. <A
+HREF="plpgsql-cursors.html#PLPGSQL-CURSOR-USING"
+>使用游标</A
+></DT
+></DL
+></DD
+><DT
+>36.9. <A
+HREF="plpgsql-errors-and-messages.html"
+>错误和消息</A
+></DT
+><DT
+>36.10. <A
+HREF="plpgsql-trigger.html"
+>触发器过程</A
+></DT
+><DT
+>36.11. <A
+HREF="plpgsql-porting.html"
+>从<SPAN
+CLASS="PRODUCTNAME"
+>Oracle</SPAN
+>的 PL/SQL 移植</A
+></DT
+><DD
+><DL
+><DT
+>36.11.1. <A
+HREF="plpgsql-porting.html#AEN35655"
+>移植样例</A
+></DT
+><DT
+>36.11.2. <A
+HREF="plpgsql-porting.html#PLPGSQL-PORTING-OTHER"
+>其它要注意的东西</A
+></DT
+><DT
+>36.11.3. <A
+HREF="plpgsql-porting.html#PLPGSQL-PORTING-APPENDIX"
+>附录</A
+></DT
+></DL
+></DD
+></DL
+></DIV
+><A
+NAME="AEN34332"
+></A
+><P
+>   <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>是
+   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 数据库系统的一个可装载的过程语言。
+    <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>的设计目标是创建一种可装载的过程语言，可以
+
+    <P
+></P
+></P><UL
+><LI
+><P
+>       可用于创建函数和触发器过程，
+      </P
+></LI
+><LI
+><P
+>       为 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语言增加控制结构，
+      </P
+></LI
+><LI
+><P
+>       可以执行复杂的计算，
+      </P
+></LI
+><LI
+><P
+>       继承所有用户定义类型，函数和操作符，
+      </P
+></LI
+><LI
+><P
+>       可以定义为被服务器信任（的语言），
+      </P
+></LI
+><LI
+><P
+>       容易使用。
+      </P
+></LI
+></UL
+><P>
+   </P
+><P
+>	除了用于用户定义类型的输入/输出转换和计算函数以外，
+	任何可以在 C 语言函数里定义的东西都可以在
+	<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>里使用。
+	比如，我们可以创建复杂的条件计算函数，
+	并随后将之用于定义操作符或者用于函数索引中。
+   </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="PLPGSQL-OVERVIEW"
+>36.1. 概述</A
+></H1
+><P
+>	<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 函数第一次(在任何一个服务器进程内部)被调用时，
+	<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 的调用句柄分析函数源文本生成二进制指令树。
+	该指令树完全转换了 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 语句结构，
+	但是在函数内使用到的独立的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 表达式和
+	<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令并未立即转换。
+   </P
+><P
+>	在每个函数中用到的表达式和 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令在函数里首次使用的时候，
+	<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 解释器创建一个准备好的执行规划（使用 <SPAN
+CLASS="ACRONYM"
+>SPI</SPAN
+> 管理器的 <TT
+CLASS="FUNCTION"
+>SPI_prepare</TT
+>
+	和 <TT
+CLASS="FUNCTION"
+>SPI_saveplan</TT
+> 函数）。
+	随后对该表达式或者命令的访问都将使用已准备好的规划。
+	因此，一个在条件代码中有许多语句，可能需要执行规划的函数，
+	只需要准备和保存那些真正在数据库联接期间真正使用到的规划。
+	这样可以有效地减少为 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 函数里的语句生成分析和执行规划的总时间。
+	不过有个缺点是在特定表达式或者命令中的错误可能要到函数中的那部分执行到的时候才能发现。
+   </P
+><P
+>	一旦 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 在函数里为一个命令制定了执行计划，
+	那么它将在该次数据库联接的生命期内复用该规划。
+	这么做在性能上通常会更好一些，但是如果你动态地修改你的数据库模式，那么就可能有问题。
+	比如：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION populate() RETURNS integer AS $$
+DECLARE
+    -- 声明段
+BEGIN
+    PERFORM my_function();
+END;
+$$ LANGUAGE plpgsql;</PRE
+><P>
+
+	如果你执行上面的函数，那么它将在为<TT
+CLASS="COMMAND"
+>PERFORM</TT
+>语句生成的执行计划中中引用
+	<TT
+CLASS="FUNCTION"
+>my_function()</TT
+> 的 OID。
+	然后，如果你删除然后重新创建 <TT
+CLASS="FUNCTION"
+>my_function()</TT
+>，
+	那么 <TT
+CLASS="FUNCTION"
+>populate()</TT
+> 就会再也找不到 <TT
+CLASS="FUNCTION"
+>my_function()</TT
+>。
+	这时候你只能重新创建 <TT
+CLASS="FUNCTION"
+>populate()</TT
+>，
+	或者至少是重新开始一个新的数据库会话，好让该函数能重新编译一次。
+	另外一个避免这种问题的方法是在更新<TT
+CLASS="FUNCTION"
+>my_function</TT
+> 的定义的时候	使用
+	<TT
+CLASS="COMMAND"
+>CREATE OR REPLACE FUNCTION</TT
+> （如果一个函数被<SPAN
+CLASS="QUOTE"
+>"替换"</SPAN
+>，那么它的 OID 将不会变化）。
+   </P
+><P
+>	因为<SPAN
+CLASS="APPLICATION"
+>Pl/pgSQL</SPAN
+>用这种方法保存执行规划，
+	所以那些在<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>里直接出现的 SQL 命令必须在每次执行的时候引用相同的表和字段；
+	也就是说，你不能拿一个参数用做 SQL 命令中的表或者字段的名称。
+	要绕开这个限制，你可以用 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 的
+	<TT
+CLASS="COMMAND"
+>EXECUTE</TT
+>语句动态地构造命令 &mdash; 代价是每次执行的时候都构造一个新的命令计划。
+   </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 的<TT
+CLASS="COMMAND"
+>EXECUTE</TT
+>语句和 
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器支持的 <A
+HREF="sql-execute.html"
+><I
+>EXECUTE</I
+></A
+> 语句没有关系。
+	服务器的<TT
+CLASS="COMMAND"
+>EXECUTE</TT
+>语句不能在 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 函数中使用（而且也没必要）。
+        </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="PLPGSQL-ADVANTAGES"
+>36.1.1. 使用<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>的优点</A
+></H2
+><P
+>	<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 是<SPAN
+CLASS="APPLICATION"
+>PostgreSQL</SPAN
+>
+	和大多数其它关系型数据库用做命令语言的语言。
+	它是可以移植的，并且容易学习使用。
+	但是所有 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语句都必须由数据库服务器独立地执行。
+    </P
+><P
+>	这就意味着你的客户端应用必须把每条命令发送到数据库服务器，
+	等待它处理这个命令，接收结果，做一些运算，然后给服务器发送另外一条命令。
+	所有这些东西都会产生进程间通讯，并且如果你的客户端在另外一台机器上甚至还会导致网络开销。
+    </P
+><P
+>	如果使用了<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>，那么你可以把一块运算和一系列命令在数据库服务器<I
+CLASS="EMPHASIS"
+>里面</I
+>组成一个块，
+	这样就拥有了过程语言的力量并且简化 SQL 的使用，因而节约了大量的时间，因为你用不着付出客户端/服务器通讯的过热。
+	这样可能产生明显的性能提升。
+    </P
+><P
+>	同样，在 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 里，你可以使用 SQL 的所有数据类型，操作符和函数。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="PLPGSQL-ARGS-RESULTS"
+>36.1.2. 所支持的参数和结果数据类型</A
+></H2
+><P
+>     并且它们可以返回这种任何这种类型的数值。它们还可以接受或者返回任意用名字声明的复合类型（行类型）。
+     我们还可以声明一个 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 函数为返回 <TT
+CLASS="TYPE"
+>record</TT
+> 的函数，
+     意思是结果是一个行类型，这个行的字段是在调用它的查询中指定的，就像我们在 <A
+HREF="queries-table-expressions.html#QUERIES-TABLEFUNCTIONS"
+>Section 7.2.1.4</A
+> 里讨论的那样。
+    </P
+><P
+>     <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 函数还可以声明为接受并返回多态的类型 <TT
+CLASS="TYPE"
+>anyelement</TT
+> 和 <TT
+CLASS="TYPE"
+>anyarray</TT
+>。
+     一个多态的函数实际操作的数据类型可以在不同的调用环境中变化，
+     如我们在 <A
+HREF="extend-type-system.html#EXTEND-TYPES-POLYMORPHIC"
+>Section 32.2.5</A
+> 里讨论的那样。
+     一个例子是 <A
+HREF="plpgsql-declarations.html#PLPGSQL-DECLARATION-ALIASES"
+>Section 36.4.1</A
+>。
+    </P
+><P
+>     <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 还可以声明为返回一个它们可以返回的任何单个实例的<SPAN
+CLASS="QUOTE"
+>"集（set）"</SPAN
+>，或者表。
+     这样的函数通过为结果集每个需要返回的元素执行一个 <TT
+CLASS="LITERAL"
+>RETURN NEXT</TT
+> 生成它的输出。
+    </P
+><P
+>     最后，<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 函数可以声明为返回 <TT
+CLASS="TYPE"
+>void</TT
+>，如果它没啥有用的东西可以返回的话。
+    </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>     <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 目前还不是完全支持域类型：它看待域类型和下层的标量类型是一样的。
+     这就意味着与域关联的约束将不会被强制。对于函数参数，这不是什么问题，
+     但是如果你把 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 函数声明为返回一个域类型，那么就有危险。
+    </P
+></BLOCKQUOTE
+></DIV
+><P
+>     <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 函数也可以声明为输出某种类型的参数，代替明确的返回类型的声明。
+     这么做并未给该语言增加任何基础设施，只是通常更方便些，特别是返回多行数值的时候。
+    </P
+><P
+>     具体的例子在 <A
+HREF="plpgsql-declarations.html#PLPGSQL-DECLARATION-ALIASES"
+>Section 36.4.1</A
+> 和
+     <A
+HREF="plpgsql-control-structures.html#PLPGSQL-STATEMENTS-RETURNING"
+>Section 36.7.1</A
+> 里。
+    </P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="xplang.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plpgsql-development-tips.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>过程语言</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="server-programming.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>开发 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 的一些提示</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

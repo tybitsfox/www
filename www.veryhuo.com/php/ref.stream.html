@@ -1,0 +1,169 @@
+<HTML><HEAD><TITLE>Stream Functions</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="函数参考" HREF="funcref.html"><LINK REL="PREVIOUS" TITLE="RecursiveDirectoryIterator::rewind" HREF="function.recursivedirectoryiterator-rewind.html"><LINK REL="NEXT" TITLE="stream_context_create" HREF="function.stream-context-create.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="reference" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.recursivedirectoryiterator-rewind.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.stream-context-create.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="reference"><A NAME="ref.stream"></A><DIV CLASS="TITLEPAGE"><H1 CLASS="title">CV. Stream Functions</H1><DIV CLASS="PARTINTRO"><A NAME="AEN105863"></A><DIV CLASS="section"><H1 CLASS="section"><A NAME="stream.intro"></A>介绍</H1><P>&#13; Streams were introduced with <TT CLASS="literal">PHP</TT> 4.3.0 as
+a way of generalizing file, network, data compression, and other
+operations which share a common set of functions and uses. In
+its simplest definition, a <TT CLASS="literal">stream</TT> is a
+<TT CLASS="literal">resource</TT> object which exhibits streamable
+behavior. That is, it can be read from or written to in a linear
+fashion, and may be able to <A HREF="function.fseek.html"><B CLASS="function">fseek()</B></A> to an
+arbitrary locations within the stream.
+</P><P>&#13; A <TT CLASS="literal">wrapper</TT> is additional code which tells the stream how to handle
+specific protocols/encodings. For example, the <TT CLASS="literal">http</TT>
+wrapper knows how to translate a URL into an <TT CLASS="literal">HTTP/1.0</TT>
+request for a file on a remote server. There are many wrappers
+built into <TT CLASS="literal">PHP</TT> by default (See <A HREF="wrappers.html">附录 J</A>),
+and additional, custom wrappers may be added either within a
+PHP script using <A HREF="function.stream-wrapper-register.html"><B CLASS="function">stream_wrapper_register()</B></A>,
+or directly from an extension using the API Reference in <A HREF="streams.html">&#181;&#218; 43 章</A>.
+Because any variety of wrapper may be added to <TT CLASS="literal">PHP</TT>,
+there is no set limit on what can be done with them. To access the list
+of currently registered wrappers, use <A HREF="function.stream-get-wrappers.html"><B CLASS="function">stream_get_wrappers()</B></A>.
+</P><P>&#13; A stream is referenced as: <TT CLASS="parameter"><I>scheme</I></TT>://<TT CLASS="parameter"><I>target</I></TT>
+<P></P><UL><LI><P>&#13; <TT CLASS="parameter"><I>scheme</I></TT>(string) -
+The name of the wrapper to be used. Examples include: file,
+http, https, ftp, ftps, compress.zlib, compress.bz2, and php. See
+<A HREF="wrappers.html">附录 J</A> for a list of PHP builtin wrappers. If
+no wrapper is specified, the function default is used (typically
+<TT CLASS="literal">file</TT>://).
+</P></LI><LI><P>&#13; <TT CLASS="parameter"><I>target</I></TT> -
+Depends on the wrapper used. For filesystem related streams this is
+typically a path and filename of the desired file. For network related
+streams this is typically a hostname, often with a path appended. Again, see
+<A HREF="wrappers.html">附录 J</A> for a description of targets for builtin streams.
+</P></LI></UL>
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="stream.filters"></A>Stream Filters</H1><P>&#13; A <TT CLASS="literal">filter</TT> is a final piece of code which may perform
+operations on data as it is being read from or written to a stream.
+Any number of filters may be stacked onto a stream. Custom
+filters can be defined in a <TT CLASS="literal">PHP</TT> script using
+<A HREF="function.stream-filter-register.html"><B CLASS="function">stream_filter_register()</B></A> or in an extension using the
+API Reference in <A HREF="streams.html">&#181;&#218; 43 章</A>. To access the list of currently
+registered filters, use <A HREF="function.stream-get-filters.html"><B CLASS="function">stream_get_filters()</B></A>.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="stream.contexts"></A>Stream Contexts</H1><P>&#13; A <TT CLASS="literal">context</TT> is a set of <TT CLASS="literal">parameters</TT> and
+wrapper specific <TT CLASS="literal">options</TT> which modify or enhance the
+behavior of a stream. <TT CLASS="literal">Contexts</TT> are created using
+<A HREF="function.stream-context-create.html"><B CLASS="function">stream_context_create()</B></A> and can be passed to most
+filesystem related stream creation functions (i.e. <A HREF="function.fopen.html"><B CLASS="function">fopen()</B></A>,
+<A HREF="function.file.html"><B CLASS="function">file()</B></A>, <A HREF="function.file-get-contents.html"><B CLASS="function">file_get_contents()</B></A>, etc...).
+</P><P>&#13; <TT CLASS="literal">Options</TT> can be specified when calling
+<A HREF="function.stream-context-create.html"><B CLASS="function">stream_context_create()</B></A>, or later using
+<A HREF="function.stream-context-set-option.html"><B CLASS="function">stream_context_set_option()</B></A>.
+A list of wrapper specific <TT CLASS="literal">options</TT> can be found with
+the list of built-in wrappers (See <A HREF="wrappers.html">附录 J</A>).
+</P><P>&#13; In addition, <TT CLASS="literal">parameters</TT> may be set on a <TT CLASS="literal">context</TT>
+using <A HREF="function.stream-context-set-params.html"><B CLASS="function">stream_context_set_params()</B></A>. Currently the only
+<TT CLASS="literal">context parameter</TT> supported by <TT CLASS="literal">PHP</TT> is
+<TT CLASS="literal">notification</TT>. The value of this parameter must be the
+name of a function to be called when an event occurs on a stream.
+The notification function called during an event should accept the following
+six parameters:
+</P>void <B CLASS="methodname">my_notifier</B> ( int notification_code, int severity, string message, int message_code, int bytes_transferred, int bytes_max)<BR></BR><P>&#13; <TT CLASS="parameter"><I>notification_code</I></TT> and <TT CLASS="parameter"><I>severity</I></TT>
+are numerical values which correspond to the <TT CLASS="constant"><B>STREAM_NOTIFY_*</B></TT>
+constants listed below.
+If a descriptive message is available from the stream, <TT CLASS="parameter"><I>message</I></TT>
+and <TT CLASS="parameter"><I>message_code</I></TT> will be populated with the appropriate values.
+The meaning of these values is dependent on the specific wrapper in use.
+<TT CLASS="parameter"><I>bytes_transferred</I></TT> and <TT CLASS="parameter"><I>bytes_max</I></TT> will
+be populated when applicable.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="stream.installation"></A>安装</H1><P>&#13; Streams are an integral part of <TT CLASS="literal">PHP</TT>
+as of version 4.3.0. No steps are required to enable them.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="stream.resources"></A>Stream Classes</H1><P>&#13; User designed wrappers can be registered via <A HREF="function.stream-wrapper-register.html"><B CLASS="function">stream_wrapper_register()</B></A>,
+using the class definition shown on that manual page.
+</P><P>&#13; <TT CLASS="literal">class</TT> php_user_filter is predefined and is an abstract
+baseclass for use with user defined filters. See the manual page for
+<A HREF="function.stream-filter-register.html"><B CLASS="function">stream_filter_register()</B></A> for details on implementing
+user defined filters.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="stream.constants"></A>预定义常量</H1><P>&#13;由于这些常量是由该扩展模块定义的，因此只有在该扩展模块被编译到 PHP 中，或者在运行时被动态加载后，这些常量才有效。</P><P>&#13; <DIV CLASS="informaltable"><A NAME="AEN105970"></A><P></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">Constant</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Description</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_FILTER_READ</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; Used with <A HREF="function.stream-filter-append.html"><B CLASS="function">stream_filter_append()</B></A> and
+<A HREF="function.stream-filter-prepend.html"><B CLASS="function">stream_filter_prepend()</B></A> to indicate
+that the specified filter should only be applied when
+<SPAN CLASS="emphasis"><I CLASS="emphasis">reading</I></SPAN>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_FILTER_WRITE</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; Used with <A HREF="function.stream-filter-append.html"><B CLASS="function">stream_filter_append()</B></A> and
+<A HREF="function.stream-filter-prepend.html"><B CLASS="function">stream_filter_prepend()</B></A> to indicate
+that the specified filter should only be applied when
+<SPAN CLASS="emphasis"><I CLASS="emphasis">writing</I></SPAN>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_FILTER_ALL</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; This constant is equivalent to
+<TT CLASS="literal"><TT CLASS="constant"><B>STREAM_FILTER_READ</B></TT> |
+<TT CLASS="constant"><B>STREAM_FILTER_WRITE</B></TT></TT>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>PSFS_PASS_ON</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">Return Code</TT> indicating that the
+userspace filter returned buckets in <TT CLASS="parameter"><I>$out</I></TT>.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>PSFS_FEED_ME</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">Return Code</TT> indicating that the
+userspace filter did not return buckets in <TT CLASS="parameter"><I>$out</I></TT>
+(i.e. No data available).
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>PSFS_ERR_FATAL</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">Return Code</TT> indicating that the
+userspace filter encountered an unrecoverable error
+(i.e. Invalid data received).
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_USE_PATH</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">Flag</TT> indicating if the <TT CLASS="literal">stream</TT>
+used the include path.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_REPORT_ERRORS</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">Flag</TT> indicating if the <TT CLASS="literal">wrapper</TT>
+is responsible for raising errors using <A HREF="function.trigger-error.html"><B CLASS="function">trigger_error()</B></A>
+during opening of the stream. If this flag is not set, you
+should not raise any errors.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_CLIENT_ASYNC_CONNECT</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Open client socket asynchronously. Used with
+<A HREF="function.stream-socket-client.html"><B CLASS="function">stream_socket_client()</B></A>.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_CLIENT_PERSISTENT</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Client socket opened with <A HREF="function.stream-socket-client.html"><B CLASS="function">stream_socket_client()</B></A>
+should remain persistent between page loads.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_SERVER_BIND</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Tells a stream created with <A HREF="function.stream-socket-server.html"><B CLASS="function">stream_socket_server()</B></A>
+to bind to the specified target. Server sockets should always include this flag.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_SERVER_LISTEN</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Tells a stream created with <A HREF="function.stream-socket-server.html"><B CLASS="function">stream_socket_server()</B></A>
+and bound using the <TT CLASS="constant"><B>STREAM_SERVER_BIND</B></TT> flag to start
+listening on the socket. Server sockets should always include this flag.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_NOTIFY_RESOLVE</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; A remote address required for this stream has been resolved, or the resolution
+failed. See <TT CLASS="parameter"><I>severity</I></TT> for an indication of which happened.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_NOTIFY_CONNECT</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; A connection with an external resource has been established.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_NOTIFY_AUTH_REQUIRED</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; Additional authorization is required to access the specified resource.
+Typical issued with <TT CLASS="parameter"><I>severity</I></TT> level of
+<TT CLASS="constant"><B>STREAM_NOTIFY_SEVERITY_ERR</B></TT>.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_NOTIFY_MIME_TYPE_IS</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; The <TT CLASS="literal">mime-type</TT> of resource has been identified,
+refer to <TT CLASS="parameter"><I>message</I></TT> for a description of the
+discovered type.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_NOTIFY_FILE_SIZE_IS</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; The <TT CLASS="literal">size</TT> of the resource has been discovered.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_NOTIFY_REDIRECTED</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; The external resource has redirected the stream to an alternate
+location. Refer to <TT CLASS="parameter"><I>message</I></TT>.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_NOTIFY_PROGRESS</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; Indicates current progress of the stream transfer in
+<TT CLASS="parameter"><I>bytes_transferred</I></TT> and possibly
+<TT CLASS="parameter"><I>bytes_max</I></TT> as well.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_NOTIFY_COMPLETED</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; There is no more data available on the stream.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_NOTIFY_FAILURE</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; A generic error occurred on the stream, consult
+<TT CLASS="parameter"><I>message</I></TT> and <TT CLASS="parameter"><I>message_code</I></TT>
+for details.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_NOTIFY_AUTH_RESULT</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; Authorization has been completed (with or without success).
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_NOTIFY_SEVERITY_INFO</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; Normal, non-error related, notification.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_NOTIFY_SEVERITY_WARN</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; Non critical error condition. Processing may continue.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STREAM_NOTIFY_SEVERITY_ERR</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; A critical error occurred. Processing cannot continue.
+</TD></TR></TBODY></TABLE><P></P></DIV>
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="stream.errors"></A>Stream Errors</H1><P>&#13; As with any file or socket related function, an operation on a stream
+may fail for a variety of normal reasons (i.e.: Unable to connect to remote
+host, file not found, etc...). A stream related call may also fail because
+the desired stream is not registered on the running system. See the array returned
+by <A HREF="function.stream-get-wrappers.html"><B CLASS="function">stream_get_wrappers()</B></A> for a list of streams supported by your
+installation of <TT CLASS="literal">PHP</TT>. As with most PHP internal functions
+if a failure occurs an <TT CLASS="constant"><B>E_WARNING</B></TT> message will be generated
+describing the nature of the error.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="stream.examples"></A>范例</H1><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN106121"></A><P><B>例子 1. Using <A HREF="function.file-get-contents.html"><B CLASS="function">file_get_contents()</B></A>
+to retrieve data from multiple sources</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#FF8000">/* Read local file from /home/bar */<br /></font><font color="#0000BB">$localfile </font><font color="#007700">= </font><font color="#0000BB">file_get_contents</font><font color="#007700">(</font><font color="#DD0000">"/home/bar/foo.txt"</font><font color="#007700">);<br /><br /></font><font color="#FF8000">/* Identical to above, explicitly naming FILE scheme */<br /></font><font color="#0000BB">$localfile </font><font color="#007700">= </font><font color="#0000BB">file_get_contents</font><font color="#007700">(</font><font color="#DD0000">"file:///home/bar/foo.txt"</font><font color="#007700">);<br /><br /></font><font color="#FF8000">/* Read remote file from www.example.com using HTTP */<br /></font><font color="#0000BB">$httpfile&nbsp;&nbsp;</font><font color="#007700">= </font><font color="#0000BB">file_get_contents</font><font color="#007700">(</font><font color="#DD0000">"http://www.example.com/foo.txt"</font><font color="#007700">);<br /><br /></font><font color="#FF8000">/* Read remote file from www.example.com using HTTPS */<br /></font><font color="#0000BB">$httpsfile </font><font color="#007700">= </font><font color="#0000BB">file_get_contents</font><font color="#007700">(</font><font color="#DD0000">"https://www.example.com/foo.txt"</font><font color="#007700">);<br /><br /></font><font color="#FF8000">/* Read remote file from ftp.example.com using FTP */<br /></font><font color="#0000BB">$ftpfile&nbsp;&nbsp;&nbsp;</font><font color="#007700">= </font><font color="#0000BB">file_get_contents</font><font color="#007700">(</font><font color="#DD0000">"ftp://user:pass@ftp.example.com/foo.txt"</font><font color="#007700">);<br /><br /></font><font color="#FF8000">/* Read remote file from ftp.example.com using FTPS */<br /></font><font color="#0000BB">$ftpsfile&nbsp;&nbsp;</font><font color="#007700">= </font><font color="#0000BB">file_get_contents</font><font color="#007700">(</font><font color="#DD0000">"ftps://user:pass@ftp.example.com/foo.txt"</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN106126"></A><P><B>例子 2. Making a POST request to an https server</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#FF8000">/* Send POST request to https://secure.example.com/form_action.php<br /> * Include form elements named "foo" and "bar" with dummy values<br /> */<br /><br /></font><font color="#0000BB">$sock </font><font color="#007700">= </font><font color="#0000BB">fsockopen</font><font color="#007700">(</font><font color="#DD0000">"ssl://secure.example.com"</font><font color="#007700">, </font><font color="#0000BB">443</font><font color="#007700">, </font><font color="#0000BB">$errno</font><font color="#007700">, </font><font color="#0000BB">$errstr</font><font color="#007700">, </font><font color="#0000BB">30</font><font color="#007700">);<br />if (!</font><font color="#0000BB">$sock</font><font color="#007700">) die(</font><font color="#DD0000">"$errstr ($errno)\n"</font><font color="#007700">);<br /><br /></font><font color="#0000BB">$data </font><font color="#007700">= </font><font color="#DD0000">"foo=" </font><font color="#007700">. </font><font color="#0000BB">urlencode</font><font color="#007700">(</font><font color="#DD0000">"Value for Foo"</font><font color="#007700">) . </font><font color="#DD0000">"&amp;bar=" </font><font color="#007700">. </font><font color="#0000BB">urlencode</font><font color="#007700">(</font><font color="#DD0000">"Value for Bar"</font><font color="#007700">);<br /><br /></font><font color="#0000BB">fputs</font><font color="#007700">(</font><font color="#0000BB">$sock</font><font color="#007700">, </font><font color="#DD0000">"POST /form_action.php HTTP/1.0\r\n"</font><font color="#007700">);<br /></font><font color="#0000BB">fputs</font><font color="#007700">(</font><font color="#0000BB">$sock</font><font color="#007700">, </font><font color="#DD0000">"Host: secure.example.com\r\n"</font><font color="#007700">);<br /></font><font color="#0000BB">fputs</font><font color="#007700">(</font><font color="#0000BB">$sock</font><font color="#007700">, </font><font color="#DD0000">"Content-type: application/x-www-form-urlencoded\r\n"</font><font color="#007700">);<br /></font><font color="#0000BB">fputs</font><font color="#007700">(</font><font color="#0000BB">$sock</font><font color="#007700">, </font><font color="#DD0000">"Content-length: " </font><font color="#007700">. </font><font color="#0000BB">strlen</font><font color="#007700">(</font><font color="#0000BB">$data</font><font color="#007700">) . </font><font color="#DD0000">"\r\n"</font><font color="#007700">);<br /></font><font color="#0000BB">fputs</font><font color="#007700">(</font><font color="#0000BB">$sock</font><font color="#007700">, </font><font color="#DD0000">"Accept: */*\r\n"</font><font color="#007700">);<br /></font><font color="#0000BB">fputs</font><font color="#007700">(</font><font color="#0000BB">$sock</font><font color="#007700">, </font><font color="#DD0000">"\r\n"</font><font color="#007700">);<br /></font><font color="#0000BB">fputs</font><font color="#007700">(</font><font color="#0000BB">$sock</font><font color="#007700">, </font><font color="#DD0000">"$data\r\n"</font><font color="#007700">);<br /></font><font color="#0000BB">fputs</font><font color="#007700">(</font><font color="#0000BB">$sock</font><font color="#007700">, </font><font color="#DD0000">"\r\n"</font><font color="#007700">);<br /><br /></font><font color="#0000BB">$headers </font><font color="#007700">= </font><font color="#DD0000">""</font><font color="#007700">;<br />while (</font><font color="#0000BB">$str </font><font color="#007700">= </font><font color="#0000BB">trim</font><font color="#007700">(</font><font color="#0000BB">fgets</font><font color="#007700">(</font><font color="#0000BB">$sock</font><font color="#007700">, </font><font color="#0000BB">4096</font><font color="#007700">)))<br />&nbsp;&nbsp;</font><font color="#0000BB">$headers </font><font color="#007700">.= </font><font color="#DD0000">"$str\n"</font><font color="#007700">;<br /><br />echo </font><font color="#DD0000">"\n"</font><font color="#007700">;<br /><br /></font><font color="#0000BB">$body </font><font color="#007700">= </font><font color="#DD0000">""</font><font color="#007700">;<br />while (!</font><font color="#0000BB">feof</font><font color="#007700">(</font><font color="#0000BB">$sock</font><font color="#007700">))<br />&nbsp;&nbsp;</font><font color="#0000BB">$body </font><font color="#007700">.= </font><font color="#0000BB">fgets</font><font color="#007700">(</font><font color="#0000BB">$sock</font><font color="#007700">, </font><font color="#0000BB">4096</font><font color="#007700">);<br /><br /></font><font color="#0000BB">fclose</font><font color="#007700">(</font><font color="#0000BB">$sock</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN106130"></A><P><B>例子 3. Writing data to a compressed file</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#FF8000">/* Create a compressed file containing an arbitrarty string<br /> * File can be read back using compress.zlib stream or just<br /> * decompressed from the command line using 'gzip -d foo-bar.txt.gz'<br /> */<br /></font><font color="#0000BB">$fp </font><font color="#007700">= </font><font color="#0000BB">fopen</font><font color="#007700">(</font><font color="#DD0000">"compress.zlib://foo-bar.txt.gz"</font><font color="#007700">, </font><font color="#DD0000">"wb"</font><font color="#007700">);<br />if (!</font><font color="#0000BB">$fp</font><font color="#007700">) die(</font><font color="#DD0000">"Unable to create file."</font><font color="#007700">);<br /><br /></font><font color="#0000BB">fwrite</font><font color="#007700">(</font><font color="#0000BB">$fp</font><font color="#007700">, </font><font color="#DD0000">"This is a test.\n"</font><font color="#007700">);<br /><br /></font><font color="#0000BB">fclose</font><font color="#007700">(</font><font color="#0000BB">$fp</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P></DIV></DIV><DIV CLASS="TOC"><DL><DT><B>目录</B></DT><DT><A HREF="function.stream-context-create.html">stream_context_create</A>&nbsp;--&nbsp;Create a streams context</DT><DT><A HREF="function.stream-context-get-options.html">stream_context_get_options</A>&nbsp;--&nbsp;Retrieve options for a stream/wrapper/context</DT><DT><A HREF="function.stream-context-set-option.html">stream_context_set_option</A>&nbsp;--&nbsp;Sets an option for a stream/wrapper/context</DT><DT><A HREF="function.stream-context-set-params.html">stream_context_set_params</A>&nbsp;--&nbsp;Set parameters for a stream/wrapper/context</DT><DT><A HREF="function.stream-copy-to-stream.html">stream_copy_to_stream</A>&nbsp;--&nbsp;Copies data from one stream to another</DT><DT><A HREF="function.stream-filter-append.html">stream_filter_append</A>&nbsp;--&nbsp;Attach a filter to a stream.</DT><DT><A HREF="function.stream-filter-prepend.html">stream_filter_prepend</A>&nbsp;--&nbsp;Attach a filter to a stream.</DT><DT><A HREF="function.stream-filter-register.html">stream_filter_register</A>&nbsp;--&nbsp;
+Register a stream filter implemented as a PHP class
+derived from <TT CLASS="literal">php_user_filter</TT>
+</DT><DT><A HREF="function.stream-get-contents.html">stream_get_contents</A>&nbsp;--&nbsp;Reads remainder of a stream into a string</DT><DT><A HREF="function.stream-get-filters.html">stream_get_filters</A>&nbsp;--&nbsp;Retrieve list of registered filters</DT><DT><A HREF="function.stream-get-line.html">stream_get_line</A>&nbsp;--&nbsp;Gets line from stream resource up to a given delimiter</DT><DT><A HREF="function.stream-get-meta-data.html">stream_get_meta_data</A>&nbsp;--&nbsp;Retrieves header/meta data from streams/file pointers</DT><DT><A HREF="function.stream-get-transports.html">stream_get_transports</A>&nbsp;--&nbsp;Retrieve list of registered socket transports</DT><DT><A HREF="function.stream-get-wrappers.html">stream_get_wrappers</A>&nbsp;--&nbsp;Retrieve list of registered streams</DT><DT><A HREF="stream.stream-register-wrapper.html">stream_register_wrapper</A>&nbsp;--&nbsp;Alias of <A HREF="function.stream-wrapper-register.html"><B CLASS="function">stream_wrapper_register()</B></A></DT><DT><A HREF="function.stream-select.html">stream_select</A>&nbsp;--&nbsp;Runs the equivalent of the select() system call on the given
+arrays of streams with a timeout specified by tv_sec and tv_usec </DT><DT><A HREF="function.stream-set-blocking.html">stream_set_blocking</A>&nbsp;--&nbsp;Set blocking/non-blocking mode on a stream</DT><DT><A HREF="function.stream-set-timeout.html">stream_set_timeout</A>&nbsp;--&nbsp;Set timeout period on a stream</DT><DT><A HREF="function.stream-set-write-buffer.html">stream_set_write_buffer</A>&nbsp;--&nbsp;Sets file buffering on the given stream</DT><DT><A HREF="function.stream-socket-accept.html">stream_socket_accept</A>&nbsp;--&nbsp;
+Accept a connection on a socket created by <A HREF="function.stream-socket-server.html"><B CLASS="function">stream_socket_server()</B></A>
+</DT><DT><A HREF="function.stream-socket-client.html">stream_socket_client</A>&nbsp;--&nbsp;
+Open Internet or Unix domain socket connection
+</DT><DT><A HREF="function.stream-socket-get-name.html">stream_socket_get_name</A>&nbsp;--&nbsp;Retrieve the name of the local or remote sockets</DT><DT><A HREF="function.stream-socket-recvfrom.html">stream_socket_recvfrom</A>&nbsp;--&nbsp;Receives data from a socket, connected or not </DT><DT><A HREF="function.stream-socket-sendto.html">stream_socket_sendto</A>&nbsp;--&nbsp;Sends a message to a socket, whether it is connected or not </DT><DT><A HREF="function.stream-socket-server.html">stream_socket_server</A>&nbsp;--&nbsp;
+Create an Internet or Unix domain server socket
+</DT><DT><A HREF="function.stream-wrapper-register.html">stream_wrapper_register</A>&nbsp;--&nbsp;Register a URL wrapper implemented as a PHP class</DT></DL></DIV></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.recursivedirectoryiterator-rewind.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.stream-context-create.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">RecursiveDirectoryIterator::rewind</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="funcref.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">stream_context_create</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

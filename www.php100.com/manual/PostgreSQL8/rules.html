@@ -1,0 +1,486 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>规则系统 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="服务器端编程" HREF="server-programming.html"><LINK REL="PREVIOUS" TITLE="一个完整的例子" HREF="trigger-example.html"><LINK REL="NEXT" TITLE="视图和规则系统" HREF="rules-views.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="CHAPTER" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="trigger-example.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="triggers.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="xplang.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="rules-views.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A NAME="RULES" >Chapter 34. 规则系统</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>34.1. <A HREF="rules.html#QUERYTREE" >查询树</A
+></DT
+><DT
+>34.2. <A HREF="rules-views.html" >视图和规则系统</A
+></DT
+><DD
+><DL
+><DT
+>34.2.1. <A HREF="rules-views.html#RULES-SELECT" ><TT
+CLASS="COMMAND"
+>SELECT</TT
+>规则如何运转</A
+></DT
+><DT
+>34.2.2. <A HREF="rules-views.html#AEN33822" >非<TT
+CLASS="COMMAND"
+>SELECT</TT
+>语句的视图规则</A
+></DT
+><DT
+>34.2.3. <A HREF="rules-views.html#AEN33876" ><SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>里视图的强大能力</A
+></DT
+><DT
+>34.2.4. <A HREF="rules-views.html#RULES-VIEWS-UPDATE" >更新一个视图</A
+></DT
+></DL
+></DD
+><DT
+>34.3. <A HREF="rules-update.html" >在 <TT
+CLASS="COMMAND"
+>INSERT</TT
+>，<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>，和<TT
+CLASS="COMMAND"
+>DELETE</TT
+> 上的规则</A
+></DT
+><DD
+><DL
+><DT
+>34.3.1. <A HREF="rules-update.html#AEN33925" >更新规则是如何运转的</A
+></DT
+><DT
+>34.3.2. <A HREF="rules-update.html#RULES-UPDATE-VIEWS" >与视图合作</A
+></DT
+></DL
+></DD
+><DT
+>34.4. <A HREF="rules-privileges.html" >规则和权限</A
+></DT
+><DT
+>34.5. <A HREF="rules-status.html" >规则和命令状态</A
+></DT
+><DT
+>34.6. <A HREF="rules-triggers.html" >规则与触发器之比较</A
+></DT
+></DL
+></DIV
+><A NAME="AEN33608" ></A
+><P
+>本章讨论 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里的规则系统。
+生产规则系统的概念是很简单的，但是在实际使用的时候会碰到很多细微的问题。</P
+><P
+>	有些其它的数据库系统定义动态的数据库规则。这些通常是存储过程和触发器，
+	在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里，这些东西也可以通过函数和触发器来实现。</P
+><P
+>	规则系统，（更准确地说，查询重写规则系统）是和存储过程和触发器完全不同的东西。
+	它把查询修改为需要考虑规则的形式，然后把修改过的查询传递给查询规划器执行。
+	这是非常有效的工具并且可以用于许多象查询语言过程，视图，和版本等。
+	这个规则系统的理论基础和能力在 <A HREF="biblio.html#STON90B" ><I
+><A HREF="../../../s2k-ftp.cs.berkeley.edu+8000/postgres/papers/ERL-M90-36.pdf" TARGET="_top" >    有关数据库系统的规则，过程，缓存和视图
+    </A
+></I
+></A
+> 和 <A HREF="biblio.html#ONG90" ><I
+>A Unified Framework for Version Modeling Using Production Rules in a
+Database System</I
+></A
+> 里有讨论。</P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="QUERYTREE" >34.1. 查询树</A
+></H1
+><A NAME="AEN33619" ></A
+><P
+>	要理解规则系统如何工作，首先要知道规则何时被激发以及它的输入和结果是什么。</P
+><P
+>	规则系统位于分析器和规划器之间。以分析器的输出 -- 一个查询树，
+	以及用户定义的重写规则作为输入，
+	重写规则也是一个查询树，只不过增加了一些扩展信息，
+	然后创建零个或者多个查询树作为结果。
+	所以它的输入和输出仍然是那些分析器可以生成的东西，
+	因而任何它（规则系统）看到的东西都是可以用
+	<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语句表达的。</P
+><P
+>	那么什么是查询树呢？
+	它是一个 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语句的内部表现形式，
+	这时组成该语句的每个独立地部分都是分别存储的。
+	如果你设置了配置参数 <TT
+CLASS="VARNAME"
+>debug_print_parse</TT
+>，
+	<TT
+CLASS="VARNAME"
+>debug_print_rewritten</TT
+>，或 <TT
+CLASS="VARNAME"
+>debug_print_plan</TT
+>，
+	那么你可以在服务器日志中看到这些查询树。
+	规则动作也是以查询树的方式存储的，存放在系统表<TT
+CLASS="STRUCTNAME"
+>pg_rewirte</TT
+>
+	里面。不过不是用象调试输出那样的格式，但包含的内容是完全一样的。</P
+><P
+>	阅读一个裸查询树需要一定的经验，
+	但是因为理解查询树的
+	<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 表现就足以理解规则系统，
+	所以这份文档将不会告诉你如何读取它们。</P
+><P
+>	当我们读取本章中查询树的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 表现时，
+	我们必须能够识别该语句被分解后放在查询树里的成员。
+	查询树的成员有
+
+<P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>命令类型 （ command type ）</DT
+><DD
+><P
+>	这是一个简单的值，说明哪条命令
+	（<TT
+CLASS="COMMAND"
+>SELECT</TT
+>，<TT
+CLASS="COMMAND"
+>INSERT</TT
+>，<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>，<TT
+CLASS="COMMAND"
+>DELETE</TT
+>）
+	生成这个查询树。
+    </P
+></DD
+><DT
+>范围表 （range table）</DT
+><DD
+><P
+>	范围表是一个查询中使用的关系的列表。
+	在<TT
+CLASS="COMMAND"
+>SELECT</TT
+>语句里是在<TT
+CLASS="LITERAL"
+>FORM</TT
+>关键字后面给出的关系。
+    </P
+><P
+>	每个范围表表示一个表或一个视图，表明是查询里哪个成员调用了它。
+	在查询树里，范围表是用代号而不是用名字引用的，
+	所以这里不用象在
+	<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>语句里一样关心是否有重名问题。
+	这种情况在引入了规则的范围表后可能会发生。
+	本章的例子将不讨论这种情况。
+    </P
+></DD
+><DT
+>结果关系（result relation）</DT
+><DD
+><P
+>	这是一个范围表的索引，用于标识查询结果前往的表。
+    </P
+><P
+>	<TT
+CLASS="COMMAND"
+>SELECT</TT
+>查询通常没有结果关系表。特例<TT
+CLASS="COMMAND"
+>SELECT INTO</TT
+>
+	几乎等于一个 
+	<TT
+CLASS="COMMAND"
+>CREATE TABLE</TT
+>，
+	<TT
+CLASS="LITERAL"
+>INSERT ... SELECT</TT
+>序列，所以这里我们就不单独讨论了。
+    </P
+><P
+>	在<TT
+CLASS="COMMAND"
+>INSERT</TT
+>，<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>和<TT
+CLASS="COMMAND"
+>DELETE</TT
+>命令里，
+	结果关系是更改发生影响的表（或视图！）。
+    </P
+></DD
+><DT
+>目标列 （target list）</DT
+><DD
+><P
+>	目标列是一列定义查询结果的表达式。在<TT
+CLASS="COMMAND"
+>SELECT</TT
+>的情况下，
+	这些表达式就是构建查询的最终输出的东西。
+	它们是位于<TT
+CLASS="COMMAND"
+>SELECT</TT
+>和<TT
+CLASS="LITERAL"
+>FROM</TT
+>关键字之间的表达式
+	（<TT
+CLASS="LITERAL"
+>*</TT
+> 只是表明一个关系的所有字段的缩写，它被分析器扩展为独立的字段，
+	因此规则系统永远看不到它）。
+    </P
+><P
+>	<TT
+CLASS="COMMAND"
+>DELETE</TT
+> 不需要目标列是因为它们不产生任何结果。
+	实际上规划器会向空目的标列中增加一条特殊的<SPAN
+CLASS="ACRONYM"
+>CTID</SPAN
+>记录。
+	但这是在规则系统之后并且我们将稍后讨论；对于规则系统而言，目标列是空的。
+    </P
+><P
+>	对于<TT
+CLASS="COMMAND"
+>INSERT</TT
+>命令里面，目标列描述了应该进入结果关系的新行。
+	这些由那些在<TT
+CLASS="LITERAL"
+>VALUES</TT
+>子句里的表达式或在
+	<TT
+CLASS="LITERAL"
+>INSERT ... SELECT</TT
+> 语句里的 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 子句里面的表达式构成。
+	重写过程的第一步就是为任何不是由原始的查询赋值，并且有缺省值的字段增加目标列表项。
+	任何其它的字段（既无给出值，也无缺省的）将由规划器自动赋予一个常量 NULL 表达式。
+    </P
+><P
+>	对于<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>命令，它（目标列）描述应该替换旧行的新行。
+	在规则系统里，它只包含来自查询的
+	<TT
+CLASS="LITERAL"
+>SET attribute = expression</TT
+>部分抽取的表达式。
+	这时，规划器将通过插入从旧行抽取数据到新行的表达式的方法处理缺失的字段。
+	并且它也会象 在<TT
+CLASS="COMMAND"
+>DELETE</TT
+>里那样增加特殊的<SPAN
+CLASS="ACRONYM"
+>CTID</SPAN
+>记录。
+    </P
+><P
+>	目标列里的每个元素都包含着一个表达式，
+	它可以为常量值，可以为一个指向某个范围表里面的关系的一个字段的变量，
+	可以为一个由函数调用，常量，变量，操作符等构成的表达式树。
+    </P
+></DD
+><DT
+>条件 （qualification）</DT
+><DD
+><P
+>	查询条件是一个表达式，它非常类似那些包含在目标列里的条目。
+	这个表达式的值是一个布尔值，通过此值来判断对最终结果行是否要执操作
+	（<TT
+CLASS="COMMAND"
+>INSERT</TT
+>，<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>，<TT
+CLASS="COMMAND"
+>DELETE</TT
+> 或 <TT
+CLASS="COMMAND"
+>SELECT</TT
+>）。
+	它是一个<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语句 的<TT
+CLASS="LITERAL"
+>WHERE</TT
+>子句。
+    </P
+></DD
+><DT
+>连接树</DT
+><DD
+><P
+>	查询的连接树显示了<TT
+CLASS="LITERAL"
+>FROM</TT
+> 子句的结构。
+	对于象<TT
+CLASS="LITERAL"
+>SELECT FROM a, b, c</TT
+>这样的简单查询，
+	连接树只是一个<TT
+CLASS="LITERAL"
+>FROM</TT
+>项的简单列表，
+	因为我们允许以任意顺序连接它们。
+	但如果使用了 <TT
+CLASS="LITERAL"
+>JOIN</TT
+> 表达式 &mdash; 尤其是 outer join 的时候，
+	我们就必须按照该连接显示的顺序进行连接。
+	连接树显示 <TT
+CLASS="LITERAL"
+>JOIN</TT
+> 表达式的结构。
+	与特定的 <TT
+CLASS="LITERAL"
+>JOIN</TT
+> 子句（来自 <TT
+CLASS="LITERAL"
+>ON</TT
+> 或者 <TT
+CLASS="LITERAL"
+>USING</TT
+> 表达式）相关的限制做为附加在那些连接树节点的条件表达式存储。
+	事实证明把顶层 <TT
+CLASS="LITERAL"
+>WHERE</TT
+> 表达式也当做附加在顶层连接树项的条件来存储是非常方便的。所以实际上连接树代表<TT
+CLASS="COMMAND"
+>SELECT</TT
+>语句的
+	<TT
+CLASS="LITERAL"
+>FROM</TT
+> 和 <TT
+CLASS="LITERAL"
+>WHERE</TT
+> 子句。
+    </P
+></DD
+><DT
+>其他 （others）</DT
+><DD
+><P
+>	查询树的其他部分，像<TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> 子句，我们不准备在这里讨论。
+	规则系统在附加规则时将在那里（ORDER BY 子句）替换一些条目，
+	但是这对于规则系统的基本原理并没有多大关系。
+    </P
+></DD
+></DL
+></DIV
+><P></P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="trigger-example.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="rules-views.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >一个完整的例子</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="server-programming.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >视图和规则系统</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

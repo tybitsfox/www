@@ -1,0 +1,40 @@
+<HTML><HEAD><TITLE>php_stream_cast</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Streams Common API Reference" HREF="stream.common-api.html"><LINK REL="PREVIOUS" TITLE="php_stream_make_seekable" HREF="streams.php-stream-make-seekable.html"><LINK REL="NEXT" TITLE="php_stream_can_cast" HREF="streams.php-stream-can-cast.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="streams.php-stream-make-seekable.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="streams.php-stream-can-cast.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="streams.php-stream-cast"></A>php_stream_cast</H1><DIV CLASS="refnamediv"><A NAME="AEN124447"></A><P> (no version information, might be only in CVS)</P>php_stream_cast&nbsp;--&nbsp;Convert a stream into another form, such as a FILE* or socket</DIV><DIV CLASS="refsect1"><A NAME="AEN124450"></A><H2>Description</H2>int <B CLASS="methodname">php_stream_cast</B> ( php_stream * stream, int castas, void ** ret, int flags)<BR></BR><P>&#13; <B CLASS="function">php_stream_cast()</B> attempts to convert <TT CLASS="parameter"><I>stream</I></TT> into
+a resource indicated by <TT CLASS="parameter"><I>castas</I></TT>.
+If <TT CLASS="parameter"><I>ret</I></TT> is NULL, the stream is queried to find out if such a conversion is
+possible, without actually performing the conversion (however, some internal stream state *might*
+be changed in this case).
+If <TT CLASS="parameter"><I>flags</I></TT> is set to <TT CLASS="constant"><B>REPORT_ERRORS</B></TT>, an error
+message will be displayed is there is an error during conversion.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+This function returns <TT CLASS="constant"><B>SUCCESS</B></TT> for success or <TT CLASS="constant"><B>FAILURE</B></TT>
+for failure. Be warned that you must explicitly compare the return value with <TT CLASS="constant"><B>SUCCESS</B></TT>
+or <TT CLASS="constant"><B>FAILURE</B></TT> because of the underlying values of those constants. A simple
+boolean expression will not be interpreted as you intended.
+</P></BLOCKQUOTE></DIV><P>&#13; <DIV CLASS="table"><A NAME="AEN124481"></A><P><B>表格 43-1. Resource types for <TT CLASS="parameter"><I>castas</I></TT></B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">Value</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Meaning</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_STREAM_AS_STDIO</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Requests an ANSI FILE* that represents the stream</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_STREAM_AS_FD</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Requests a POSIX file descriptor that represents the stream</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_STREAM_AS_SOCKETD</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Requests a network socket descriptor that represents the stream</TD></TR></TBODY></TABLE></DIV>
+</P><P>&#13; In addition to the basic resource types above, the conversion process can be altered by using the
+following flags by using the OR operator to combine the resource type with one or more of the
+following values:
+<DIV CLASS="table"><A NAME="AEN124500"></A><P><B>表格 43-2. Resource types for <TT CLASS="parameter"><I>castas</I></TT></B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">Value</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Meaning</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_STREAM_CAST_TRY_HARD</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Tries as hard as possible, at the expense of additional resources, to ensure that the conversion succeeds</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_STREAM_CAST_RELEASE</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Informs the streams API that some other code (possibly a third party library) will be responsible for closing the
+underlying handle/resource. This causes the <TT CLASS="parameter"><I>stream</I></TT> to be closed in such a way the underlying
+handle is preserved and returned in <TT CLASS="parameter"><I>ret</I></TT>. If this function succeeds, <TT CLASS="parameter"><I>stream</I></TT>
+should be considered closed and should no longer be used.
+</TD></TR></TBODY></TABLE></DIV>
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+If your system supports <B CLASS="function">fopencookie()</B> (systems using glibc 2 or later), the streams API
+will always be able to synthesize an ANSI FILE* pointer over any stream.
+While this is tremendously useful for passing any PHP stream to any third-party libraries, such behaviour is not
+portable. You are requested to consider the portability implications before distributing you extension.
+If the fopencookie synthesis is not desirable, you should query the stream to see if it naturally supports FILE*
+by using <B CLASS="function">php_stream_is()</B>
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+If you ask a socket based stream for a FILE*, the streams API will use <B CLASS="function">fdopen()</B> to
+create it for you. Be warned that doing so may cause data that was buffered in the streams layer to be
+lost if you intermix streams API calls with ANSI stdio calls.
+</P></BLOCKQUOTE></DIV><P>&#13; See also <B CLASS="function">php_stream_is()</B> and <B CLASS="function">php_stream_can_cast()</B>.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="streams.php-stream-make-seekable.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="streams.php-stream-can-cast.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">php_stream_make_seekable</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="stream.common-api.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">php_stream_can_cast</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

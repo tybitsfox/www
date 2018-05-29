@@ -1,0 +1,1347 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+<!-- saved from url=(0056)http://www.gamedev.net/reference/articles/article290.asp --> 
+<HTML><HEAD><TITLE>Operating Systems Development Series</TITLE> 
+<META http-equiv=Content-Type content="text/html; charset=windows-1252"><LINK 
+href="Files/reference.css" 
+type=text/css rel=stylesheet> 
+<META content="MSHTML 6.00.6000.16441" name=GENERATOR></HEAD> 
+<BODY text=#000000 vLink=#666699 aLink=#000000 link=#666699 bgColor=#ffffff 
+leftMargin=0 
+background=Files/watermark.gif 
+topMargin=0 marginheight="0" marginwidth="0"> 
+
+
+<table border=0 cellpadding=0 cellspacing=0 width="100%"> 
+<tr> 
+     <td width="60%"> 
+	<a href="http://www.brokenthorn.com"><img src="site/5.png" border=0></a> 
+     </td> 
+     <td width="40%"> 
+ 
+        <div id="ad_main"> 
+ 
+     </td> 
+  </tr> 
+</table> 
+
+<TABLE cellSpacing=0 cellPadding=3 width="100%" border=0> 
+  <TBODY> 
+  <TR> 
+    <TD class=tblhdr>Operating Systems Development Series</TD> 
+</TR> 
+  <TR> 
+ 
+    <TD align=middle colSpan=2></TD></TR></TBODY></TABLE> 
+<TABLE cellSpacing=0 cellPadding=5 width="100%" border=0> 
+  <TBODY> 
+  <TR> 
+    <TD> 
+ 
+ 
+<!-- Title --> 
+ 
+      <CENTER><SPAN class=title>Operating Systems Development - Errors, Exceptions, Interruptions</SPAN> 
+ 
+ 
+<BR><SPAN class=author>by Mike, 2008</SPAN></CENTER> 
+ 
+ 
+      <P>This series is intended to demonstrate and teach operating system development from
+	the ground up.</p> 
+ 
+<i>Please note: This tutorial covers software interrupt handling, not hardware interrupt handling. If you are looking for hardware interrupts,
+please see our 8259A PIC tutorial. The software side of handling hardware interrupts is discussed here.</i> 
+<p/> 
+ 
+	<h1>Introduction</h1> 
+ 
+	Welcome back! :)<p/> 
+ 
+	
+	In the last tutorial we have covered the ground basics and design of our system. Yes, pretty basic and
+	easy so far, right?
+	<p/> 
+ 
+	You might be wondering when we will start getting into the system-level code again. Well.... *ahem* ...welcome back :)
+	<p/> 
+	This tutorial will cover a very important concept: <b>Error Handling</b>. Error Handling involves alot more then
+	simply handling problems, but <b>catching</b> them as well. This is where <b>Exception Handling</b> comes in.
+	Because <b>Exception Handling</b> requires <b>interrupts</b>, we will also cover <b>interrupt handling</b> as well.
+	<p/> 
+ 
+	Interrupts are architecture dependent. Because of this, we will be developing an interface for managing interrupts
+	through our uber 1337, yet very empty (at the moment) <b>Hardware Abstraction Layer</b>, and interfacing with our
+	Kernel to install our own <b>Trap Gates</b> which will be used to catch processor exception errors, and allow us to
+	prevent triple faults now, and forever, while remaining completely hardware independent.
+	<p/> 
+	Sound fun? So, heres whats up:
+ 
+	<p/> 
+	<ul> 
+	<li>Error Handling</li> 
+ 
+	<li>Exception Handling</li> 
+ 
+	<li>IRs, IRQs, ISRs</li> 
+	<li>Gates: Traps, Interrupts, Tasks</li> 
+	<li>IDTs and IVTs</li> 
+	<li>IDTR processor register</li> 
+	<li>LIDT and SIDT instructions</li> 
+ 
+	<li>FLIHs and SLIHs</li> 
+ 
+	<li>How interrupts work, stack, error codes</li> 
+	<li>Developing a kernel panic error screen. ie, BSoD</li> 
+	</ul> 
+ 
+	<p/> 
+	...Alot of stuff going on here, so lets get started, shall we?
+ 
+	<h1>Errors, Errors, Errors</h1> 
+ 
+Okay, lets face it: No one is perfect. With computers, this is even truer. As we are working in the wonderful world of kernel land, things are even worse as a simple error can cause unpredictable software to hardware problems.
+ 
+<p/> 
+I am sure a lot of our readers have already experienced this through Triple Faults. In applications programming, we are not working directly with the hardware. Because of this, there are less problems that can result to errors. In kernel land, things are a bit different. Triple faults are caused do to errors with our instructions or data. If there is a problem that the processor cannot resolve, it reboots the system before it gets worse.
+<p/> 
+Triple faults and no error handling is very bad in OS development, as the problems can get much worse?rom data corruption to hardware failures, to even completely destroying the system. Knowing the importance of error handling is critical in resolving these, and insuring that our system stays stable to its end release.
+ 
+<h1>Exception Handling</h1> 
+ 
+?xception Handling comes in two flavors: A programming language construct (For example, standard C++? try/catch/throw keywords. Some compilers also include additional keywords like _except; or mechanisms like SEH, or VEH). The other flavor is the one we are interested in: Hardware mechanisms that are designed to change (?nterrupt? the current flow of execution. The condition that changes this flow of execution is called an exception. Exceptions should only be used to signal error (exceptional) conditions, and not for conditionals that are used for normal operation.
+<p/> 
+When an exception occurs, the flow of execution changes as a subroutine (the ?xception handler? is executed. This allows the subroutine to handle the error condition in some way. Normally, the current state will be saved before the handler is called. This will allow the handler to continue execution later, if possible.
+<p/> 
+Remember that exceptions are designed from the hardware. i.e., They are hardware mechanisms. This is similar to hardware interrupts, and the bases of interrupt handling, as they are related.
+<p/> 
+Because of this, in order to understand exception handling from the hardware, we need to look at interrupts. Lets look at that next.
+ 
+<h1>Interrupt Handling</h1> 
+ 
+<h2>Interrupts</h2> 
+ 
+An Interrupt is an external asynchronous signal requiring a need for attention by software or hardware. It allows a way of interrupting the current task so that we can execute something more important.
+<p/> 
+Not to hard. Interrupts provide a way to help trap problems, such as divide by zeros. If the processor finds a problem with the currently executing code, it provides the processor alternative code to execute to fix that problem.
+<p/> 
+Other interrupts may be used to provide a way to service software as routines. These interrupts can be called by any software from within the system. This is used alot for System API's, which provide a way for ring 3 applications to execute ring 0 level routines.
+<p/> 
+Interrupts provide alot of use, especially as a way of receiving information from hardware that may change its state at asynchronous times.
+ 
+<h2>Interrupt Types</h2> 
+ 
+There are two types of interrupts: Hardware Interrupts and Software Interrupts. In the 8259A PIC tutorial, we have covered hardware interrupts. This tutorial focuses on software interrupts.
+ 
+<h3>Hardware Interrupts</h3> 
+ 
+A hardware interrupt is an interrupt triggered by a hardware device. Normally, these are hardware devices that require attention. The hardware Interrupt handler will be required to service this hardware request.
+ 
+<p/> 
+ 
+This tutorial does not cover hardware interrupt handling, as that is hardware specific. For the x86 architecture, hardware interrupts are handled by programming the 8259A Programmable Interrupt Controller (PIC). Please see our 8259A PIC tutorial for more information on hardware interrupt handling.
+<p/> 
+<b>Spurious Interrupt</b> 
+<p/> 
+This is a hardware interrupt generated by electrical interference in the interrupt line, or faulty hardware. We do NOT want this!
+ 
+<h3>Software Interrupts</h3> 
+ 
+This is where the fun stuff is at!
+ 
+ <p/> 
+ 
+Software Interrupts are interrupts implemented and triggered in software. Normally, the processor's instruction set will provide an instruction to service software interrupts. For the x86 architectures, these are normally INT imm, and INT 3. It alsu uses IRET and IRETD instructions.
+ 
+ 
+<p/> 
+ 
+ 
+INT imm and INT 3 instructions are used to generate an interrupt, while the IRET class of instructions are used to return from Interrupt Routines (IRs).
+<p/> 
+For example, here we generate an interrupt through a software instruction:
+ 
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>int     3              ; generates software interrupt 3</DIV></PRE></BLOCKQUOTE> 
+ 
+ 
+These instructions may be used to generate software interrupts and execute Interrupt Routines (IR)'s through software.
+<p/> 
+As you know, software interrupts were available in real mode. However, as soon as we made the jump to protected mode, the Interrupt Vector Table (IVT) became invalid. Because of this, we cannot use interrupts. Instead, we have to make our own.
+<p/> 
+We will cover software interrupt handling in this tutorial.
+ 
+<h2>Interrupt Routines (IRs)</h2> 
+ 
+An Interrupt Routine (IR) is a special function used to handle an Interrupt Request (IRQ).
+<p/> 
+ 
+When the processor executes an interrupt instruction, such as INT, it executes the Interrupt Routine (IR) at that location within the Interrupt Vector Table (IVT).
+ 
+<p/> 
+This means, it simply executes a routine that we define. Not to hard, huh? This special routine determins the Interrupt Function to execute normally based off of the value in the AX register. This allows us to define multiple functions in an interrupt call. Such as, the DOS INT 21h function 0x4c00.
+<p/> 
+Remember: Executing an interrupt simply executes an interrupt routine that you created. For example, the instruction INT 2 will execute the IR at index 2 in the IVT. Cool?
+<p/> 
+IRs are commonly also referred to as <b>Interrupt Requests (IRQs)</b>. However, the naming convention of IRs are still used within
+the ISA bus, so understanding both names is important.
+ 
+<h2>Interrupt Requests (IRQs)</h2> 
+ 
+<b>An Interrupt Request (IRQ) refers to the act of interrupting an event by signaling the system either
+through the Control Bus IR line or through one of the 8259A Programmable Interrupt Controller (PIC) IR lines.</b> 
+<p/> 
+For systems with a single 8259 PIC, there are 8 IRQ lines, labeled IR0  IR7. For systems with 2 8259 PICs, there are 16 possible IRQ? labeled IR0  IR15. On the system ISA bus, These lines are labeled as IRQ0  IRQ15.
+<p/> 
+ 
+Newer intel based systems integrate an Advanced Programmable Interrupt Controller (APIC) device that allows 255 IRQs per controller.
+ 
+<p/> 
+For more information about IRQs, please see either the 8259A PIC tutorial or the APIC tutorial.
+<p/> 
+What this means is that the 8259A PIC can signal the processor to generate a software interrupt call through a hardware
+device by activating the processors IR line, and the processor to execute the correct interrupt handler. <b>This allows us to handle hardware device requests through software.</b> 
+Please see the 8259A PIC tutorial for more information on this...It is very important to understand this.
+ 
+<h2>Interrupt Service Routines (ISRs)</h2> 
+ 
+Interrupt Service Routines (ISRs) is an Interrupt Handler. These are important to understand, so lets look closer.
+ 
+<h3>Interrupt Handlers</h3> 
+ 
+An interrupt handler is an IR for handling interrupts and IRQs. In other words, they are callback methods that we define for handling both hardware and software interrupts.
+<p/> 
+ 
+There are two types of ISRs: <b>FLIH</b>, and <b>SLIH</b>.
+ 
+<p/> 
+<b>First Level Interrupt Handler (FLIH)</b> 
+<p/> 
+A FLIH is considered to be part of the lower half of a device driver or kernel. These interrupt handlers are platform specific, and usually service hardware requests, executing similar to Interrupt Routines (IRs) and Interrupt Requests (IRQs). They have short execution time. Their primary duty is to service the interrupt, or to record platform specific information which is only available at the time of the interrupt (As it is running in a lower level.) It may also schedule or execute a SLIH, if needed.
+<p/> 
+<b>Second Level Interrupt Handler (SLIH)</b> 
+<p/> 
+These interrupt handlers are longer lived then FLIHs. In this way, it is similar to a task or process. SLIHs are normally executed and managed by a kernel program, or by FLIHs.
+<p/> 
+<b>Nested Interrupt Handlers</b><p/> 
+ 
+When an interrupt handler is executed and the Interrupt Flag (IF) is set, interrupts can still be executed during the current interrupt. This is known as a nested interrupt.
+ 
+<h1>Interrupts in Real Mode</h1> 
+ 
+Interrupts in Real Mode are handled through the Interrupt Vector Table (IVT). The Interrupt Vector Table (IVT) is a list of Interrupt Vectors. There are 256 Interrupts in the IVT.
+ 
+<h2>IVT Map</h2> 
+ 
+The IVT is located in the first 1024 bytes of physical memory, from addresses 0x0 through 0x3FF. Each entry inside of the IVT is 4 bytes, in the following format:
+ 
+<ul> 
+    <li>Byte 0: Offset Low Address of the Interrupt Routine (IR)</li> 
+    <li>Byte 1: Offset High Address of the IR</li> 
+ 
+    <li>Byte 2: Segment Low Address of the IR</li> 
+    <li>Byte 3: Segment High Address of the IR</li> 
+ 
+</ul> 
+ 
+Notice that each entry in the IVT simply contains the address of the IR to call. This allows us to create a simple function anywhere in memory (Our IR). As long as the IVT contains the addresses of our functions, everything will work fine.
+<p/> 
+Okay, Lets take a look at the IVT. The first few interrupts are reserved, and stay the same.
+ 
+	<p> 
+	<center> 
+	<table border=1 bgcolor="CCCCCC"> 
+ 
+	<th colspan=5 bgcolor="FFFFFF">x86 Interrupt Vector Table (IVT)</th> 
+	<tr bgcolor="AAAAAA"> 
+	<td>Base Address</td><td>Interrupt Number</td><td>Description</td> 
+ 
+	</tr> 
+ 
+	<tr><td bgcolor="ffffff">0x000</td><td>0</td><td colspan=4>Divide by 0</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">0x004</td><td>1</td><td colspan=4>Single step (Debugger)</td></tr> 
+	<tr><td bgcolor="ffffff">0x008</td><td>2</td><td colspan=4>Non Maskable Interrupt (NMI) Pin</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">0x00C</td><td>3</td><td colspan=4>Breakpoint (Debugger)</td></tr> 
+	<tr><td bgcolor="ffffff">0x010</td><td>4</td><td colspan=4>Overflow</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">0x014</td><td>5</td><td colspan=4>Bounds check</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">0x018</td><td>6</td><td colspan=4>Undefined Operation Code (OPCode) instruction</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">0x01C</td><td>7</td><td colspan=4>No coprocessor</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">0x020</td><td>8</td><td colspan=4>Double Fault</td></tr> 
+	<tr><td bgcolor="ffffff">0x024</td><td>9</td><td colspan=4>Coprocessor Segment Overrun</td></tr> 
+	<tr><td bgcolor="ffffff">0x028</td><td>10</td><td colspan=4>Invalid Task State Segment (TSS)</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">0x02C</td><td>11</td><td colspan=4>Segment Not Present</td></tr> 
+ 
+ 
+	<tr><td bgcolor="ffffff">0x030</td><td>12</td><td colspan=4>Stack Segment Overrun</td></tr> 
+	<tr><td bgcolor="ffffff">0x034</td><td>13</td><td colspan=4>General Protection Fault (GPF)</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">0x038</td><td>14</td><td colspan=4>Page Fault</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">0x03C</td><td>15</td><td colspan=4>Unassigned</td></tr> 
+	<tr><td bgcolor="ffffff">0x040</td><td>16</td><td colspan=4>Coprocessor error</td></tr> 
+	<tr><td bgcolor="ffffff">0x044</td><td>17</td><td colspan=4>Alignment Check (486+ Only)</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">0x048</td><td>18</td><td colspan=4>Machine Check (Pentium/586+ Only)</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">0x05C</td><td>19-31</td><td colspan=4>Reserved exceptions</td></tr> 
+	<tr><td bgcolor="ffffff">0x068 - 0x3FF</td><td>32-255</td><td colspan=4>Interrupts free for software use</td></tr> 
+	</table> 
+ 
+	</center> 
+<p/> 
+Not to hard. Each of these interrupts are located at a base address within the IVT.
+ 
+ 
+<h1>Interrupts in Protected Mode</h1> 
+ 
+As we are developing a protected mode operating system. This will be important to us. As you know, we cannot access the IVT in protected mode do to a lot of reasons. Because of this, we cannot access or use any more interrupts. So, instead, we need to create our own.
+<p/> 
+...And it all starts with the Interrupt Descriptor Table.
+ 
+<h1>Interrupt Descriptor Table (IDT)</h1> 
+ 
+The Interrupt Descriptor Table (IDT) is a special table used by the processor for the management of IRs. Its use depends on the mode of the processor.
+The IDT itself is an array of 256 <b>descriptors</b>, simular to the LDT and GDT.
+ 
+<h2>Real Mode</h2> 
+ 
+In Real Mode, The IDT is also known as the IVT. Please see the description of the IVT in the above sections for more information.
+ 
+<h2>Protected Mode</h2> 
+ 
+The way the IDT works in protected mode is very different then that of Real Mode (This is one of the many reasons why we cannot use the IVT in protected mode.) The IVT is still used, however.
+<p/> 
+The IDT is an array of 256 8 byte descriptors stored consecutively in memory and indexed by an interrupt vector within the IVT. We will take a look at these descriptors, descriptor types, and the details of the IDT next.
+ 
+<h2>Interrupt Descriptor: Structure</h2> 
+ 
+A descriptor for an IDT takes the following formats. Some of the format changes depending on what type of descriptor this is.
+ 
+<ul> 
+<li>Bits 0...15:</li> 
+<ul> 
+<li><b>Interrupt / Trap Gate:</b> Offset address Bits 0-15 of IR</li> 
+ 
+<li><b>Task Gate:</b></li> Not used.
+</ul> 
+<li>Bits 16...31:</li> 
+<ul> 
+<li><b>Interrupt / Trap Gate:</b> Segment Selector (Useually 0x10)</li> 
+<li><b>Task Gate:</b> TSS Selector</li> 
+</ul> 
+<li>Bits 31...35: Not used</li> 
+ 
+<li>Bits 36...38:</li> 
+<ul> 
+<li><b>Interrupt / Trap Gate:</b> Reserved. Must be 0.</li> 
+<li><b>Task Gate:</b> Not used.</li> 
+</ul> 
+<li>Bits 39...41:</li> 
+<ul> 
+<li><b>Interrupt Gate:</b> Of the format 0D110, where D determins size</li> 
+ 
+<ul> 
+<li><b>01110</b> - 32 bit descriptor</li> 
+<li><b>00110</b> - 16 bit descriptor</li> 
+</ul> 
+<li><b>Task Gate:</b> Must be 00101 </li> 
+<li><b>Trap Gate:</b> Of the format 0D111, where D determins size</li> 
+ 
+<ul> 
+<li><b>01111</b> - 32 bit descriptor</li> 
+<li><b>00111</b> - 16 bit descriptor</li> 
+</ul> 
+</ul> 
+<li>Bits 42...44: Descriptor Privedlge Level (DPL)</li> 
+<ul> 
+<li><b>00:</b> Ring 0</li> 
+ 
+<li><b>01:</b> Ring 1</li> 
+<li><b>10:</b> Ring 2</li> 
+<li><b>11:</b> Ring 3</li> 
+</ul> 
+<li>Bit 45: Segment is present (1: Present, 0:Not present)</li> 
+<li>Bits 46...62:</li> 
+ 
+<ul> 
+<li><b>Interrupt / Trap Gate:</b> Bits 16...31 of IR address</li> 
+ 
+<li><b>Task Gate:</b> Not used</li> 
+</ul> 
+</ul> 
+<p/> 
+Thats it!? Yep--Thats all there is to it ;)
+<p/> 
+All we need to do is fill in our IDT, and install it, just like what we done with the GDT. The IDT is
+alot more simpler then the IDT, so its even easier :)
+ 
+The above list is the complete descriptor format. We only need to worry about developing an interrupt gate for now,
+so we will only focus on that.
+ 
+<h2>Interrupt Descriptor: Example</h2> 
+ 
+Just like with the GDT, we will create an example at the bit level to help describe exactally how everything works.
+ 
+<p/> 
+First, lets look at an example interrupt descriptor. This is going to be in shown in assembly so we can get
+a better view of everything.
+ 
+     <BLOCKQUOTE><PRE><DIV class=code>idt_descriptor:
+   .m_baseLow     	dw   0 
+   .m_selector      	dw   0x8
+   .m_reserved     	db   0 
+   .m_flags      	db   010001110b
+   .m_baseHi      	dw   0</DIV></PRE></BLOCKQUOTE> 
+Yep--Thats all there is to a descriptor. Thats not that hard, is it?
+<p/> 
+Lets see how this relates to our table above by breaking it down and seeing each bit:
+     <BLOCKQUOTE><PRE><DIV class=code>00000000 00000000 00000000 00001000 00000000 10001110 00000000 00000000</DIV></PRE></BLOCKQUOTE> 
+This is our descriptor, but in binary form. For the most part this is easy as most of it is all 0's.
+<p/> 
+The first two bytes is our <b>m_baseLow</b> member shown in the above code. Looking at the table above, we can
+see that this is the first 16 bits of the descriptor. <b>Because this is an interrupt gate, this represents bits 0-15
+of the base address of the IR</b>. This means, if this was our field, our IR would be located at address 0. (This normally
+would NOT be the case, as the location of the IR varies. This works for this example, though.)
+ 
+ 
+<p/> 
+The next 2 bytes is our <b>m_selector</b> field. This is bytes 16-31 of the descriptor. Looking at our table, we can
+see that this represents our segment selector. Our interrupt handler containes code, so it should be using one of our
+code selectors. This is defined at offset 0x8 within the GDT, so that is our segment selector.
+ 
+<p/> 
+The next few bits are not used. We can see that bits 31-35 are not used, while bits 36-38 must be 0 for interrupt gates.
+Because of this, we can saftley say bits 31-38 are 0. This is the size of a byte, which is our <b>m_reserved</b> member.
+<p/> 
+The next byte is where the interesting stuff happens. Lets break it down, bit by bit--literally:
+      <BLOCKQUOTE><PRE><DIV class=code>10001110</DIV></PRE></BLOCKQUOTE> 
+Okay...Right now we are at bit 39. Looking at our table above, we can see <b>bits 39-41 must be 0D110. If the D bit is
+set, this is a 32bit descriptor.</b> It is equal to 01110, so it is indeed a 32bit descriptor.
+ 
+<p/> 
+The next two bits (00 above) are bytes 42-45 of the descriptor, which represents the privledge level (DPL). It is 00,
+so the DPL is to execute at ring 0.
+<p/> 
+The final two bytes within our example are the last two bytes within the above table. This is the high 16 bits of the IR
+base address (Which, in our case, is 0.) This is the <b>m_baseHi</b> member displayed above.
+ 
+<p/> 
+As you can see, there really is not that much going on here. The selector is always going to be that of the code selector
+within the GDT (0x8 for our needs); then all we need to do is set the flag bits and the IR base address within <b>m_baseLow</b> 
+and <b>m_baseHi</b>. We will see a complete example a little later which will help in understanding everything.
+ 
+<h2>IDTR Processor Register</h2> 
+ 
+The IDTR register is the processor register that stores the base address of the IDT.
+<p/> 
+The IDTR register has the following format:
+ 
+	<center> 
+	<table border=1 bgcolor="CCCCCC"> 
+	<th colspan=5 bgcolor="AAAAAA">IDTR Register</th> 
+ 
+	<tr> 
+	<td bgcolor="ffffff">Bits 16...46 (IDT Base Address)</td> 
+	<td bgcolor="ffffff">Bits 0...15 (IDT Limit)</td></tr> 
+ 
+	</table> 
+	</center> 
+<p/> 
+Simple enough, huh? Notice that the <b>base address</b> of our created IDT is stored in this register.
+The processor uses this register to determin where our IDT is located at.
+ 
+ 
+<p/> 
+Knowing this format is very important, as it containes <b>both</b> the limit and base address. Because of this,
+simply giving it the base address of our idt will NOT work. This is useually resolved by creating a new structure
+in the format shown above like this:
+      <BLOCKQUOTE><PRE><DIV class=code>idt_ptr:
+	.limit	dw idt_end - idt_start	; bits 0...15 is size of idt
+	.base	dd idt_start		; base of idt
+ 
+; load register with idt_ptr</DIV></PRE></BLOCKQUOTE> 
+ 
+<p/> 
+Oh, wait...How do we even access this register? Oh right...
+ 
+<h2>LIDT Instruction - Loading our IDT</h2> 
+ 
+This instruction is used to store a new address of an IDT into the IDTR register. This instruction can only be used if the Current Protection Level (CPL) is 0 (Ring 0). It is very easy to use:
+ 
+  
+      <BLOCKQUOTE><PRE><DIV class=code>lidt [idt_ptr]</DIV></PRE></BLOCKQUOTE> 
+ 
+Thats all there is to it. As long as idt_base is the base address of the IDT, this will copy the address into IDTR.
+ 
+<h2>SIDT Instruction - Storing our IDT</h2> 
+ 
+This instruction is used to store the value in IDTR into a 6 byte memory location. This instruction may be used in both ring 0 and ring 3 applications.
+ 
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>sidt [idt_ptr]</DIV></PRE></BLOCKQUOTE> 
+ 
+<h2>How Interrupts Work: Detail</h2> 
+ 
+<h3>Finding the interrupt procedure to call</h3> 
+ 
+When an interrupt or exception is fired, the processor uses the exception or interrupt number as an index into the IDT.
+As you know, our IDT is nothing more then an array of 256 descriptors of the format shown above. The processor performs
+the calculation <b>IDTR.baseAddress + index * 8</b>, where 8 is the size of a descriptor (Remember that descriptors
+are 8 bytes in size?), and index is the interrupt number.
+IDTR.baseAddress is the base address of the IDT stored within the upper bits of IDTR. This allows the processor to retrieve
+the base address of the descriptor index for the interrupt handler. <b>If the value of the calculation is greater then
+the IDT limit size (stored in IDTR.limit), the processor will execute a General Protection Fault (GPF)</b> as this will result into
+a call beyond the size of the IDT.
+ 
+<p/> 
+Remember that the descriptor is either an interrupt, trap, or task gate. If the index points to an interrupt or trap gate,
+the processor calls the exception or interrupt handler. This is done simular to CALLing a call gate. If the index points
+to a task gate, the processor executes a task switch to the exception or interrupt handler task simular to a CALL to a task gate.
+ 
+<p/> 
+The information and addresses for the handler are stored within this descriptor. When the processor performs the switch:
+ 
+<h3>Executing the handler</h3> 
+ 
+<ul> 
+<li>If the handler is going to be executed at a lower privilege level (bits 42-45 of descriptor), a stack switch occurs.</li> 
+<ol> 
+<li>The segment selector and stack pointer for the stack to be used by the handler are abtained from the TSS for the currently
+executing task. The processor pushes the stack segment selector and stack pointer of the interrupt handler on this new stack.</li> 
+<li>The processor saves the current state of EFLAGS,CS, and EIP on the new stack</li> 
+<li>If an exception causes an <b>error code</b> to be saved, <b>the error code is pushed on the new stack after EIP</b></li> 
+ 
+</ol> 
+ 
+<li>If the handler is going to be executed at the same privilege level (current privilege level (cpl) is the same as (bits 42-45 of descriptor)</li> 
+<ol> 
+<li>The processor saves the current state of EFLAGS, CS, EIP on the <b>current stack</b>.</li> 
+<li>If an exception causes an error code to be saved, <b>the error code is pushed on the current stack after EIP</b></li> 
+</ol> 
+ 
+</ul> 
+ 
+<p/> 
+ 
+<b>It is very important to know how the stack is pushed when our interrupt handler is called, and what exceptions also push error
+codes.</b> We will look at this next.
+ 
+<h3>Inside of our interrupt handler</h3> 
+ 
+Because the location of our interrupt handler is stored within the descriptor, the processor is now able to execute our handler.
+<p/> 
+As you know, when the processor executes our handler, it pushes some extra information on the stack. If our handler is running in
+the same ring level as ours (As it will be), then we must remember that <b>the processor will push EFLAGS, CS, EIP</b> and an <b>Error code</b> 
+on <b>our current</b> stack. This allows us to continue execution if we are able to.
+ 
+ 
+ 
+<p/> 
+<b>Putting all of this together, when our handler is called, our stack will be set up like this:</b> 
+     <BLOCKQUOTE><PRE><DIV class=code>+---------------+ -- Bottom of stack
+|   EFLAGS      |
++---------------+
+|   Return CS   |
++---------------+
+|  Return EIP   |
++---------------+
+|   Error Code  |
++---------------+ -- ESP points here when handler is executed.
+                    If there is no error code, ESP points to return EIP</DIV></PRE></BLOCKQUOTE> 
+We use this information to return back from our handler, and to determin what caused the exception (If there
+is an error code.)
+ 
+<h3>Inside of our interrupt handler: Error code format</h3> 
+ 
+If an error code is pushed on the stack when our handler is called, we can use its information to help in determing
+the error.
+ 
+<p/>It has the following format:
+ 
+<p/> 
+<ul> 
+<li>Bit 0: External event</li> 
+<ul> 
+ 
+<li>0: Internal or software event triggered the error.</li> 
+<li>1: External or hardware event triggered the error.</li> 
+</ul> 
+<li>Bit 1: Description location</li> 
+<ul> 
+<li>0: Index portion of error code refers to descriptor in GDT or current LDT.</li> 
+<li>1: Index portion of error code refers to gate descriptor in IDT.</li> 
+</ul> 
+<li>Bit 2: GDT/LDT. Only use if the descriptor location is 0.</li> 
+<ul> 
+ 
+<li>0: This indicates the index portion of the error code refers to a descriptor in the current GDT.</li> 
+ 
+<li>1: This indicates the index portion of the error code refers to a segment or gate descriptor in the LDT.</li> 
+</ul> 
+<li>Bits 3-15: Segment selector index. This is an index into the IDT, GDT, or current LDT to the segment or gate
+selector bring refrenced by the error code.</li> 
+<li>Bits 16-31: Reserved</li> 
+</ul> 
+ 
+<p/> 
+<b>Error codes are not pushed on the stack for exceptions that are generated externally (via the INTR,LINT0,LINT1 pins),
+or INT n instruction.</b> 
+ 
+<p/> 
+ 
+The error code format is different for page fault exception errors. We will look at that in the next section.
+ 
+<h3>Returning from a handler</h3> 
+ 
+All handlers must use either <b>IRET</b> or <b>IRETD</b> instructions to return. IRET is simular to RET except that it restores
+the saved EFLAGS (that was pushed on the stack when the handler was getting executed), and the IOPL field in EFLAGS is only set to
+0 if the current protection level (CPL) is 0. The IF flag is also changed only if the CPL is less then or equal to the IOPL.
+<p/> 
+If a stack switch occured when executing the handler, IRET switches back to the interrupted procedures stack as well.
+ 
+<h1>x86 Exceptions</h1> 
+ 
+<h2>Exceptions: Listing</h2> 
+ 
+All of the exceptions are defined as the first few interrupts within the IVT or IDT. Here is the complete list of
+generated exceptions from the x86 class of processors.
+ 
+ 
+<p/> 
+<ul> 
+<li><b>Fault</b> - the return address (Return CS:EIP that was pushed on stack when handler was called. See <b>Inside of our interrupt handler</b> for more information.) points to the instruction that caused the exception. The exception handler may fix the problem and then restart the program, making it look like nothing has happened. </li> 
+<li><b>Trap</b> - the return address points to the instruction after the one that has just completed. </li> 
+<li><b>Abort</b> - the return address is not always reliably supplied. A program which causes an abort is never meant to be continued. </li> 
+ 
+</ul> 
+	<p> 
+	<center> 
+	<table border=1 bgcolor="CCCCCC"> 
+	<th colspan=5 bgcolor="FFFFFF">x86 Processor Exceptions</th> 
+	<tr bgcolor="AAAAAA"> 
+	<td>Interrupt Number</td><td>Class</td><td>Description</td><td>Error Code</td> 
+ 
+	</tr> 
+ 
+	<tr><td bgcolor="ffffff">0</td><td>Fault</td><td>Divide by 0</td><td>None</td></tr> 
+	<tr><td bgcolor="ffffff">1</td><td>Trap or Fault</td><td>Single step (Debugger)</td><td>None. Can be retrived from debug registers</tr> 
+	<tr><td bgcolor="ffffff">2</td><td>Unclassed</td><td>Non Maskable Interrupt (NMI) Pin</td><td>Not applicable</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">3</td><td>Trap</td><td>Breakpoint (Debugger)</td><td>None</td></tr> 
+	<tr><td bgcolor="ffffff">4</td><td>Trap</td><td>Overflow</td><td>None</td></tr> 
+	<tr><td bgcolor="ffffff">5</td><td>Fault</td><td>Bounds check</td><td>None</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">6</td><td>Fault</td><td>Unvalid OPCode</td><td>None</td></tr> 
+	<tr><td bgcolor="ffffff">7</td><td>Fault</td><td>Device not available</td><td>None</td></tr> 
+	<tr><td bgcolor="ffffff">8</td><td>Abort</td><td>Double Fault</td><td>Always 0</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">9</td><td>Abort (Reserved, do not use)</td><td>Coprocessor Segment Overrun</td><td>None</td></tr> 
+	<tr><td bgcolor="ffffff">10</td><td>Fault</td><td>Invalid Task State Segment (TSS)</td><td>See error code below</tr> 
+	<tr><td bgcolor="ffffff">11</td><td>Fault</td><td>Segment Not Present</td><td>See error code below</tr> 
+ 
+	<tr><td bgcolor="ffffff">12</td><td>Fault</td><td>Stack Fault Exception</td><td>See error code below</td></tr> 
+	<tr><td bgcolor="ffffff">13</td><td>Fault</td><td>General Protection Fault (GPF)</td><td>See error code below</td></tr> 
+	<tr><td bgcolor="ffffff">14</td><td>Fault</td><td>Page Fault</td><td>See error code below</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">15</td><td>-</td><td>Unassigned</td><td>-</td></tr> 
+	<tr><td bgcolor="ffffff">16</td><td>Fault</td><td>x87 FPU Error</td><td>None. x87 FPU provides own error information</td></tr> 
+	<tr><td bgcolor="ffffff">17</td><td>Fault</td><td>Alignment Check (486+ Only)</td><td>Always 0</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">18</td><td>Abort</td><td>Machine Check (Pentium/586+ Only)</td><td>None. Error information abtained from MSRs</td></tr> 
+	<tr><td bgcolor="ffffff">19</td><td>Fault</td><td>SIMD FPU Exception</td><td>None</td></tr> 
+	<tr><td bgcolor="ffffff">20-31</td><td>-</td><td>Reserved</td><td>-</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">32-255</td><td>-</td><td>Avilable for software use</td><td>Not applicable</td></tr> 
+	</table> 
+	</center> 
+<p/> 
+ 
+<h3>IRQ 0 and the System Timer</h3> 
+ 
+As you know, if we enter protected mode all interrupts must be disabled. If we have not done this,
+our system will triple fault immediately on the next clock tick. Why is this?
+ 
+<p/> 
+ 
+The <b>System Timer</b>, useually a form of the <b>8253 Programmable Interval Timer (PIT)</b> uses
+<b>IRQ 0</b> to let us know when a clock tick happens. This device is configured this way by the
+system BIOS.
+<p/> 
+But WAIT! *looks at above table*, Isn't that the <b>Divide by 0</b> error? <b><i>Bingo.</i></b> 
+ 
+<p/> 
+ 
+Because the tables are now invalid because we switched to protected mode, Who knows where this
+will lead us. Because of this, an immediate triple fault on the next system tick, and the reason we must disable interrupts
+before switching.
+<p/> 
+We should also note that the <b>8253 Programmable Interval Timer (PIT)</b> is a <b>hardware device</b>.
+Notice how, using the table above, it will fire an exception (IRQ 0)? How will we know its an actual
+error, or just a simple tick?
+<p/> 
+Lets take a look closer...
+ 
+<h3>Remapping the 8259A Programmable Interrupt Controller (PIC)</h3> 
+ 
+The 8259A PIC is a standard controller used to control hardware interrupts. Hardware microcontrollers
+signal the PIC on their respective IR line that connects to the PIC. This allows the PIC to "know" a
+hardware device needs attention, and to signal the processor to fire an interrupt to handle the devices
+request.
+ 
+<p/> 
+ 
+In our above example, the 8253 PIT was signalling the 8259A PIC to handle a system tick in this manner,
+which caused IRQ 0 (Remember that the 8253 PIT uses IRQ 0) to fire--which caused a triple fault as it was
+also a) a divide by 0 exception, and b) invalid code as we have not written it yet.
+<p/> 
+ 
+To resolve this problem, we will need to reprogram the 8259A PIC Microcontroller to remap the hardware
+devices to use different IRQs.
+<p/> 
+Please keep in mind that we *can* still use software interrupts if the IF is 0 (interrupts disabled), as
+IF only applies to hardware interrupts. However, if we want to re-enable hardware interrupts, we must
+reprogram the PIC.
+<p/> 
+The 8259A PIC is a fairly complex microcontroller to program. Luckly, most of its modes do not apply to us.
+<p/> 
+The demo at the end reprograms the PIC and re-enable interrupts. In order to completely get the most out
+of this tutorial, it is recommended to read our <a href="OSDevPic.html">8259A Programmable Interrupt Controller</a> 
+tutorial.
+ 
+<h1>Demo</h1> 
+ 
+<a href="#DEMOCONSLUDION">SKIP TO DEMO CONCLUSION</a><p/> 
+ 
+<i>Note: These images have been scaled down to better fit the screen.</i> 
+<center> 
+<table border=0 width="80%"><tr><td><img width="80%" src="images/intStarting.jpg"></td> 
+<td><img width="80%" src="images/intGen.jpg"></td></tr></table> 
+</center> 
+<p/> 
+<i>The first screenshot displays the kernel initializing the HAL. The second screenshot displays what happens
+when an interrupt is fired. Notice how our default handler catches the interrupt.</i> 
+<p/> 
+ 
+This demo is fairly complex, as we have covered a lot of material in this tutorial.
+<p/> 
+This demo installs a new Global Descriptor Table (GDT) for the kernel to use and an Interrupt Descriptor Table (IDT).
+It also creates a nice interface that we can use to handle software interrupts. Note that we do NOT cover hardware interrupts
+yet. In the next tutorial, we will be adding both <b>8259A PIC</b> and <b>8253 PIT</b> microcontroller interfaces to the HAL.
+This will allow us to catch hardware interrupts, enable hardware interrupts, and provide ourself with a system timer. It will
+be fun :)
+ 
+<p/> 
+Lets cover the demo a little more so that we can see everything working.
+ 
+<p/> 
+<h2>Hardware Abstraction</h2> 
+ 
+This demo includes alot of extra files that we have not seen until now. Because of this, it is kind of like a code
+dump, which is what I want to avoid here. Alot of it is very simple and things that we have looked at and even implimented
+in our bootloader. Some of it (Inside <b>idt.h</b> and <b>idt.cpp</b> may be new to you, and covers what we have learned here:
+The <b>Interrupt Descriptor Table (IDT)</b>.
+<p/> 
+This is also the beginning of our <b>Hardware Abstraction Layer (HAL)</b>!
+ 
+<p/> 
+As you know, I have been stressing hardware abstraction, and the importance of it, sense this series begun. You will see
+why soon as we continue to build on the Hal. You might even see the pluses of keeping the Hal completely independent of the
+kernel here!
+<p/> 
+Without further ado, lets look at the beginnings of the primary interface for the HAL.
+ 
+<h2>Hal - include/hal.h - Platform independent interface for the HAL</h2> 
+ 
+This is the interface between the HAL and the kernel. It is part of the standard include directory, and is completely
+separate from its implimentation. All routines are declared <b>extern</b> as the header file is meant to be used by any
+implimentation that defines the routines inside of it. The implimentations are architecture specific, but the interface
+is in no way coupled to any specific implimentation, making it completely hardware independent.
+<p/> 
+While the implimentations themselves are architecture specific, we can simply build the implimentations for different
+architectures. Because each implimentation uses this common interface, and we can support dynamic loading (like hal.dll),
+we can either a)link what static hal implimentation to use when building for different architectures, or b)Build the different
+Hals independently, and choose which HAL to use at startup. Because they all use the same interface (Hal.h), we dont need
+any changes in the kernel to use different implimentations (and hence different hardware setups.) Cool?
+<p/> 
+There are currently only two functions in it. We will add more when we need to:
+ 
+   <BLOCKQUOTE><PRE><DIV class=code>//! Initialize and shutdown hal
+extern int Hal_Initialize ();
+extern int Hal_Shutdown ();</DIV></PRE></BLOCKQUOTE> 
+ 
+I will most likley change the prototypes of these routines to allow startup and shutdown paramaters. In any case,
+these are very generic routines that is meant to provide a way to setup and shutdown the hardware, if needed, for
+the implimentation.
+<p/> 
+There are a couple of very simple layers of software within the hal for the gdt, idt, and cpu, and hal.cpp. Because all
+they do is initialize the layer below it (Hal.cpp calls the cpu initialize routine, which calls the gdt and idt initialize
+methods), I am not going to post it here as it may add more complexity in this tutorial then is required.
+<p/> 
+Instead, lets focus on the bulk of the hal: The gdt setup code, The idt setup code (This containes the bulk of what we looked
+at in this tutorial), and the kenrel's main() routine. Cool?
+ 
+<p/> 
+We will not cover the GDT in detail. Plaese see  <a href="OSDev8.html">Tutorial 8</a> for a complete description of it.
+ 
+<h2>Hal - hal/gdt.h - global descriptor table</h2> 
+ 
+<h3>Descriptor Tables ...again!</h3> 
+ 
+Yes, the GDT has come back to haunt you!!! ...yes, YOU!!
+<p/> 
+Anywhoo... the GDT is quite a complex structure, huh? As you know, a GDT is an array of descriptors. What was the format
+of a GDT descriptor again? Right, okay then...
+ 
+	<ul> 
+ 
+ 
+		<li><b>Bits 56-63:</b> Bits 24-32 of the base address</li> 
+		<li><b>Bit  55:</b> Granularity</li> 
+ 
+		<ul> 
+			<li><b>0:</b> None</li> 
+			<li><b>1:</b> Limit gets multiplied by 4K</li> 
+		</ul> 
+		<li><b>Bit  54:</b> Segment type</li> 
+ 
+		<ul> 
+			<li><b>0:</b> 16 bit</li> 
+			<li><b>1:</b> 32 bit</li> 
+		</ul> 
+		<li><b>Bit  53:</b> Reserved-Should be zero</li> 
+ 
+		<li><b>Bits 52:</b> Reserved for OS use</li> 
+		<li><b>Bits 48-51:</b> Bits 16-19 of the segment limit</li> 
+		<li><b>Bit  47</b> Segment is in memory (Used with Virtual Memory)</li> 
+		<li><b>Bits 45-46:</b> Descriptor Privilege Level</li> 
+ 
+		<ul> 
+			<li><b>0:</b> (Ring 0) Highest</li> 
+			<li><b>3:</b> (Ring 3) Lowest</li> 
+		</ul> 
+		<li><b>Bit  44:</b> Descriptor Bit</li> 
+ 
+		<ul> 
+			<li><b>0:</b> System Descriptor</li> 
+			<li><b>1:</b> Code or Data Descriptor</li> 
+		</ul> 
+		<li><b>Bits 41-43:</b> Descriptor Type</li> 
+ 
+		<ul> 
+			<li><b>Bit 43:</b> Executable segment</li> 
+				<ul> 
+				<li><b>0:</b> Data Segment</li> 
+				<li><b>1:</b> Code Segment</li> 
+ 
+				</ul> 
+			<li><b>Bit 42:</b> Expansion direction (Data segments), conforming (Code Segments)</li> 
+			<li><b>Bit 41:</b> Readable and Writable</li> 
+			<ul> 
+				<li><b>0:</b> Read only (Data Segments); Execute only (Code Segments)</li> 
+ 
+				<li><b>1:</b> Read and write (Data Segments); Read and Execute (Code Segments)</li> 
+			</ul> 
+		</ul> 
+		<li><b>Bit  40:</b> Access bit (Used with Virtual Memory)</li> 
+		<li><b>Bits 16-39:</b> Bits 0-23 of the Base Address</li> 
+ 
+		<li><b>Bits 0-15:</b> Bits 0-15 of the Segment Limit</li> 
+	</ul> 
+	*runs off screeming in horror*
+	<p/> 
+	Okay, okay I'll stop now :) But serously, Intel could have made the structure more nicer, don't you think? :)
+ 
+<h3>Building the C structure</h3> 
+ 
+	We can hide this structure behind a nice C style structure using C's built in types. Knowing that the first
+	15 bits is the segment limit (Size of an uint16_t), <b>thats data member one</b>. The next 16 bits is bits 0-23
+	of the base address, and that can be either expressed as 1 uint16_t or 2 uint8_t's. <b>Thats data member two and/or three</b>.
+	The next 16 bits (bits 41-56 of GDT) is 16 bits. This is the bulk of the ugly structure that containes flag values,
+	and can be represented, of course, using either 2 uint8_t's or 1 uint16_t. <b>Thats the next data member.</b> The
+	last byte is our base address. <b>Thats the last data member!</b> 
+ 
+	<p/> 
+	Looking at the above, that ugly structure can be represented in 4 to 5 nice members within a structure. Here
+	is our structure. Try to compare this structure with the above description and table to see where everything fits in.
+	Also, remember that this structure is packed to 1 byte, so it is guaranteed to be 64 bits in size.
+ 
+   <BLOCKQUOTE><PRE><DIV class=code>#ifdef _MSC_VER
+#pragma pack (push, 1)
+#endif
+ 
+//! gdt descriptor. A gdt descriptor defines the properties of a specific
+//! memory block and permissions.
+ 
+struct gdt_descriptor {
+ 
+	//! bits 0-15 of segment limit
+	uint16_t		limit;
+ 
+	//! bits 0-23 of base address
+	uint16_t		baseLo;
+	uint8_t			baseMid;
+ 
+	//! descriptor bit flags. Set using bit masks above
+	uint16_t		flags;
+ 
+	//! bits 24-32 of base address
+	uint8_t			baseHi;
+};
+ 
+#ifdef _MSC_VER
+#pragma pack (pop, 1)
+#endif</DIV></PRE></BLOCKQUOTE> 
+ 
+Easy enough! There are alot of bit flags that can be set to help build the flags bytes within the structure.
+Please see the header file to see them all, and notice how they work. Basically, we would bitwise OR the bit flags
+that we want to set. You will see us do this in the next section.
+ 
+<h3>gdtr abstraction</h3> 
+ 
+Remember from <a href="OSDev8.html">tutorial 8</a>, we have covered protected mode, the gdt, and gdtr? gdtr Is the
+processors internal register used to point to the GDT to be used. It is a 48 bit pointer that must follow the
+following format:
+ 
+<ul> 
+	<li><b>Bits 0-15:</b> size of entire gdt</li> 
+ 
+	<li><b>Bits 16-48:</b> base address of gdt</li> 
+</ul> 
+ 
+Okay...This one is an easy one to convert to a C struct. Notice how it follows the above format:
+ 
+   <BLOCKQUOTE><PRE><DIV class=code>#ifdef _MSC_VER
+#pragma pack (push, 1)
+#endif
+ 
+//! processor gdtr register points to base of gdt. This helps
+//! us set up the pointer
+struct gdtr {
+ 
+	//! size of gdt
+	uint16_t		m_limit;
+ 
+	//! base address of gdt
+	uint32_t		m_base;
+};
+ 
+#ifdef _MSC_VER
+#pragma pack (pop, 1)
+#endif
+ 
+// Global Descriptor Table (GDT)
+static struct gdt_descriptor			_gdt [MAX_DESCRIPTORS];
+ 
+//! gdtr data
+static struct gdtr				_gdtr;
+</DIV></PRE></BLOCKQUOTE> 
+Here you can also see our new GDT and _gdtr, which will be used for refrence when setting up the processors GDTR register.
+ 
+<h3>gdt_install(): Installs a gdt into gdtr</h3> 
+ 
+This routine is a very simple one. All it does is use the lgdt instruction to load GDTR with our gdtr pointer.
+We do not need to do any far jumps here, though, as CS should never change.
+   <BLOCKQUOTE><PRE><DIV class=code>//! installs gdtr
+static void gdt_install () {
+#ifdef _MSC_VER
+	_asm lgdt [_gdtr]
+#endif
+}</DIV></PRE></BLOCKQUOTE> 
+ 
+<h3>gdt_set_descriptor(): Sets up a new descriptor in the gdt</h3> 
+ 
+This routine is used to install a new descriptor in the GDT. For the most part, it is not too hard;
+the ugly code is when we get to setting up the flags.
+ 
+<BLOCKQUOTE><PRE><DIV class=code>//! Setup a descriptor in the Global Descriptor Table
+void gdt_set_descriptor(uint32_t i, uint64_t base, uint64_t limit, uint8_t access, uint8_t grand)
+{
+	if (i > MAX_DESCRIPTORS)
+		return;
+ 
+	//! null out the descriptor
+	memset ((void*)&_gdt[i], 0, sizeof (gdt_descriptor));
+ 
+	//! set limit and base addresses
+	_gdt[i].baseLo	= base & 0xffff;
+	_gdt[i].baseMid	= (base >> 16) & 0xff;
+	_gdt[i].baseHi	= (base >> 24) & 0xff;
+	_gdt[i].limit	= limit & 0xffff;
+ 
+	//! set flags and grandularity bytes
+	_gdt[i].flags = access;
+	_gdt[i].grand = (limit >> 16) & 0x0f;
+	_gdt[i].grand |= grand & 0xf0;
+ 
+}</DIV></PRE></BLOCKQUOTE> 
+ 
+ 
+ 
+<h3>i86_gdt_initialize() - initializes the gdt</h3> 
+ 
+This brings everything together. All it does is set up our GDTR structure, installs some default descriptors
+into our GDT, and finally installs the GDT. To make things easier, this GDT is the same one we have used for
+our bootloader. The base address is 0, the limit (Maximum addressable address) is 4GB (0xffffffff). All of the flags
+are defined in <b>gdt.h</b>. They are defined to increase readability and to get rid of ugly magic numbers. It should
+be much easier to see what the descriptors are for with the flags!
+ 
+<BLOCKQUOTE><PRE><DIV class=code>//! initialize gdt
+int i86_gdt_initialize () {
+ 
+	//! set up gdtr
+	_gdtr.m_limit = (sizeof (struct gdt_descriptor) * MAX_DESCRIPTORS)-1;
+	_gdtr.m_base = (uint32_t)&_gdt[0];
+ 
+	//! set null descriptor
+	gdt_set_descriptor(0, 0, 0, 0, 0);
+ 
+	//! set default code descriptor
+	gdt_set_descriptor (1,0,0xffffffff,
+		I86_GDT_DESC_READWRITE|I86_GDT_DESC_EXEC_CODE|I86_GDT_DESC_CODEDATA|I86_GDT_DESC_MEMORY,
+		I86_GDT_GRAND_4K | I86_GDT_GRAND_32BIT | I86_GDT_GRAND_LIMITHI_MASK);
+ 
+	//! set default data descriptor
+	gdt_set_descriptor (2,0,0xffffffff,
+		I86_GDT_DESC_READWRITE|I86_GDT_DESC_CODEDATA|I86_GDT_DESC_MEMORY,
+		I86_GDT_GRAND_4K | I86_GDT_GRAND_32BIT | I86_GDT_GRAND_LIMITHI_MASK);
+ 
+	//! install gdtr
+	gdt_install ();
+ 
+	return 0;
+}</DIV></PRE></BLOCKQUOTE> 
+ 
+ 
+<h2>Hal: Interrupt Descriptor Table</h2> 
+ 
+THIS is where the fun stuff is at! The IDT interface is within the idt.h and idt.cpp source files.
+ 
+<h3>hal.h - idt_descriptor</h3> 
+ 
+This is the structure for an interrupt descriptor. Compare this format with the descriptor format we looked at in this
+tutorial, and you should notice that they follow exactally the same format:
+ 
+   <BLOCKQUOTE><PRE><DIV class=code>#ifdef _MSC_VER
+#pragma pack (push, 1)
+#endif
+ 
+//! interrupt descriptor
+struct idt_descriptor {
+ 
+	//! bits 0-16 of interrupt routine (ir) address
+	uint16_t		baseLo;
+ 
+	//! code selector in gdt
+	uint16_t		sel;
+ 
+	//! reserved, shold be 0
+	uint8_t			reserved;
+ 
+	//! bit flags. Set with flags above
+	uint8_t			flags;
+ 
+	//! bits 16-32 of ir address
+	uint16_t		baseHi;
+};
+ 
+#ifdef _MSC_VER
+#pragma pack (pop, 1)
+#endif</DIV></PRE></BLOCKQUOTE> 
+ 
+Lets look at what each member represents, and where at within the interrupt descriptor:
+<ul> 
+<li><b>baseLo</b> - This is the first 16 bits of the base address of the interrupt routine (IR)</li> 
+<ul> 
+<li>This is bits 0-15 within the overall interrupt descriptor. Compare this with the table listed in <b>Interrupt Descriptor: Structure</b></li> 
+</ul> 
+<li><b>sel</b> - Segment Selector</li> 
+ 
+<ul> 
+<li>This is bits 16-31 within the overall interrupt descriptor.</li> 
+</ul> 
+<li><b>reserved</b> - er... very usefull information here ;)</li> 
+<ul> 
+<li>This is bits 31-38 within the overall interrupt descriptor.</li> 
+</ul> 
+<li><b>flags</b> - Where the fun stuff is at!</li> 
+<ul> 
+ 
+<li>Interrupt Descriptor Bits 39-41. This is where the bit flags are at </li> 
+<li>Interrupt Descriptor Bits 42-45. This is the Descriptor Priveldge Level (DPL)</li> 
+</ul> 
+<li><b>baseHi</b> - Bits 16-31 of base address of the IR</li> 
+<ul> 
+<li>This is bits 46-64 within the overall interrupt descriptor.</li> 
+</ul> 
+</ul> 
+Simple enough! Notice how this struct directly matches how the interrupt descriptor is laid out.
+ 
+So, now that we have the description for an interrupt descriptor, lets take a look at installing a IDT!
+ 
+<h3>idt.cpp - idtr</h3> 
+ 
+Simular to how we set up the gdtr structure, we also have one for idtr. Notice how this structure followes
+the exact structure for the idtr register.
+   <BLOCKQUOTE><PRE><DIV class=code>#ifdef _MSC_VER
+#pragma pack (push, 1)
+#endif
+ 
+//! describes the structure for the processors idtr register
+struct idtr {
+ 
+	//! size of the interrupt descriptor table (idt)
+	uint16_t		limit;
+ 
+	//! base address of idt
+	uint32_t		base;
+};
+ 
+#ifdef _MSC_VER
+#pragma pack (pop, 1)
+#endif
+ 
+ 
+//! interrupt descriptor table
+static struct idt_descriptor	_idt [I86_MAX_INTERRUPTS];
+ 
+//! idtr structure used to help define the cpu's idtr register
+static struct idtr				_idtr;</DIV></PRE></BLOCKQUOTE> 
+ 
+Okay... Remember that the IDT is nothing more then an array of interrupt descriptors? With this, _idtr is here
+for refrence; it stores the current information in the processors IDTR register for our use. Basically, all we need
+to do from here is to set up the IDT, and _idtr; then install the IDT! Not to hard :)
+ 
+<h3>idt_install() - installs a new IDT</h3> 
+This is used to install the IDT into IDTR, no more, and no less. It is a helper method used to abstract the inline assembly
+language (Which is compiler dependent) behind a common interface to help with portability between compilers.
+ 
+   <BLOCKQUOTE><PRE><DIV class=code>//! installs idtr into processors idtr register
+static void idt_install () {
+#ifdef _MSC_VER
+	_asm lidt [_idtr]
+#endif}</DIV></PRE></BLOCKQUOTE> 
+ 
+<h3>i86_default_handler() - default interrupt handler</h3> 
+ 
+Our IDT interface will provide a way to install our own interrupt handling routines directly into the IDT,
+which is as cool as it can get! Because there are 256 interrupts, there are 256 interrupt handlers. Odds are,
+we will not be using every one of them early on. So, what happens if an interrupt is generated that the kernel
+does not yet handle?
+<p/> 
+ 
+That is what this is for! This is a basic unhandled exception handler that our IDT interface will install (You
+will see this later on.) All it does is, if being built for debug mode, prints out an error. It then halts the system.
+   <BLOCKQUOTE><PRE><DIV class=code>//! default handler to catch unhandled system interrupts.
+void i86_default_handler () {
+ 
+#ifdef _DEBUG
+	DebugClrScr (0x18);
+	DebugGotoXY (0,0);
+	DebugSetColor (0x1e);
+	DebugPrintf ("*** [i86 Hal] i86_default_handler: Unhandled Exception");
+#endif
+ 
+	for(;;);
+}</DIV></PRE></BLOCKQUOTE> 
+ 
+<p/><b>Returning from an interrupt...</b><p/> 
+C and C++ automatically pops the values off the stack and issues a RET instruction when returning from an IR. This is bad! Because
+of this, we need to issue our own way of returning through an IRET instruction.
+ 
+<h3>geninterrupt() - generrate interrupt call</h3> 
+ 
+This is a little tricky. This is another helper method provided to abstract the inline assembly language behind
+a common interface for better portability for more compiliers. However, it also hides the challenge of generating
+an abritary interrupt call.
+<p/> 
+The problem is that of the OPCode for an interrupt (INT instruction) only has one format: 0xCDimm, where imm is an intermediate
+value. Because of this, we cannot use any registers nor memory locations in the INT instruction; as there is no OPCode form
+that accepts that (Invalid instruction.) So, how do we fix this? There are alot of different ways, of course. I opted to use
+a fast and small solution: self modifying code.
+<p/> 
+Basically, all we need to do is modify the second byte of the INT OPCode. Knowing it is always two bytes (First being 0xCD,
+second is the interrupt number to call) it is quite an easy solution:
+   <BLOCKQUOTE><PRE><DIV class=code>//! generate interrupt call
+void geninterrupt (int n) {
+#ifdef _MSC_VER
+	_asm {
+		mov al, byte ptr [n]
+		mov byte ptr [genint+1], al
+		jmp genint
+	genint:
+		int 0	// above code modifies the 0 to int number to generate
+	}
+#endif
+}
+</DIV></PRE></BLOCKQUOTE> 
+ 
+<h3>i86_install_ir () - installs interrupt handler into IDT</h3> 
+ 
+This is a little tricky, but not too hard. Remember that the <b>baseLo</b> and <b>baseHi</b> members of our
+structure contain the high and low bits of our <b>Interrupt Routine (IR)</b>? So, all we need to do is get
+the address of the IR function, and store its high and low bits. This is done here by means of a <b>function pointer</b>.
+<p/> 
+We pass in a function pointer as a parameter. This routine gets
+the address of the function the pointer points to, and masks out the low and high bits, storing it into the structure
+at <b>_idt [i]</b>, where i is the descriptor offset (the Interrupt number) in the IDT.
+ 
+   <BLOCKQUOTE><PRE><DIV class=code>//! installs a new interrupt handler
+int i86_install_ir (uint32_t i, uint16_t flags, uint16_t sel, I86_IRQ_HANDLER irq) {
+ 
+	if (i>I86_MAX_INTERRUPTS)
+		return 0;
+ 
+	if (!irq)
+		return 0;
+ 
+	//! get base address of interrupt handler
+	uint64_t		uiBase = (uint64_t)&(*irq);
+ 
+	//! store base address into idt
+	_idt[i].baseLo		=	uiBase & 0xffff;
+	_idt[i].baseHi		=	(uiBase >> 16) & 0xffff;
+	_idt[i].reserved	=	0;
+	_idt[i].flags		=	flags;
+	_idt[i].sel		=	sel;
+ 
+	return	0;
+}</DIV></PRE></BLOCKQUOTE> 
+ 
+There is some bueaty in this. Remember that, when an interrupt is generated, the processor pushes
+some information on the stack for us? This information will now be in the paramaters list when our routine is called!
+Cool, huh? This also means, however, that we need to be careful as only some interrupts push error codes, others do not.
+ 
+<h3>i86_idt_initialize () - Initialize IDT Interface</h3> 
+ 
+Now, lets bring everything together. The following code sets up IDTR, sets our default interrupt handler to catch all interrupts
+(This is so we only need to define the needed interrupts in the Kernel); and finally installs the IDT using the above methods.
+<p/> 
+The bit flags used for setting up the IDT are defined in <b>idt.h</b> and are provided to make the code more
+readable and easier to modify.
+   <BLOCKQUOTE><PRE><DIV class=code>//! initialize idt
+int i86_idt_initialize (uint16_t codeSel) {
+ 
+	//! set up idtr for processor
+	_idtr.limit = sizeof (struct idt_descriptor) * I86_MAX_INTERRUPTS -1;
+	_idtr.base	= (uint32_t)&_idt[0];
+ 
+	//! null out the idt
+	memset ((void*)&_idt[0], 0, sizeof (idt_descriptor) * I86_MAX_INTERRUPTS-1);
+ 
+	//! register default handlers
+	for (int i=0; i&lt;I86_MAX_INTERRUPTS; i++)
+		i86_install_ir (i, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32,
+			codeSel, (I86_IRQ_HANDLER)i86_default_handler);
+ 
+	//! install our idt
+	idt_install ();
+ 
+	return 0;
+}</DIV></PRE></BLOCKQUOTE> 
+ 
+<a name="DEMOCONSLUDION"></a> 
+ 
+<h2>Demo Conclusion</h2> 
+ 
+This demo is a bit complex, I am to admit. At least we got the ugly neccessities out of the way! You will see that,
+if you issue any INT instruction, the default handler will be called. If you install your own interrupt handlers,
+try to experiement with them - both the ones with the error codes, and the ones without them. You will see the interrupts
+being fired. Anytime you call geninterrupt() or an INT instruction, you will see that the correct interrupt handler (Or,
+if the interrupt handler was not defined, the default handler) is executed.
+ 
+<p/> 
+To keep this tutorial from getting much more complex, I decided to NOT handle hardware interrupts yet. We will cover this
+in the next tutorial, as well as developing the code for the <b>8253 Programmable Interval Timer (PIT)</b> for use as the
+Kernels System Timer as well as for the <b>8259A Programmable Interrupt Controller</b>, which is needed for hardware interrupts.
+<p/> 
+Study the demo well and how everything works. Modify a few things; try to register your own interrupt handlers
+using <b>i86_install_ir()</b> and generrating the interrupts. To do this, all we need to do is:
+ 
+   <BLOCKQUOTE><PRE><DIV class=code>//! our uber 1337 interrupt handler. handles int 5 request
+void int_handler_5 () {
+ 
+	_asm add esp, 12
+	_asm pushad
+ 
+	// do whatever...
+ 
+	_asm popad
+	_asm iretd
+}
+ 
+//! registers our interrupt handler
+i86_install_ir (5, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32,
+	0x8, (I86_IRQ_HANDLER)int_handler_5);
+ 
+//! generates int 5 instruction. You can also use inline assembly, of course
+geninterrupt (5);</DIV></PRE></BLOCKQUOTE> 
+ 
+I decided to leave out the paramater lists for the interrupt handlers as the format may change.
+So, in order to access paramaters, we would need to access it through ESP. I might decide to
+give it paramaters later on to make things easier, though.
+ 
+<p/> 
+<a href="Demos/Demo7.zip">Demo Download Here</a> (MSVC++)
+ 
+<h1>Conclusion</h1> 
+ 
+A lot of fun stuff this time, huh?
+ 
+We covered a lot of ground in this tutorial. We have looked at a lot of important topics,
+covered exception and interrupt handling, and have re-enabled interrupts in our system.
+This might even be the last time we ever see a triple fault. Woohoo!
+<p/> 
+I am to admit this tutorial is a bit complex. <i>Isn't OS programming fun? ^_^</i> 
+<p/> 
+ 
+In the next tutorial, we will be starting to develop our kernel even more. We will be handling timing through
+the <b>8254 Programmable Interval Timer (PIT) microcontroller</b>, which will be covered simular to the 8259A PIC
+tutorial. Afterwords, we plan on moving onto more memory management and process management. ...We might even develop
+a basic debugging text based console to spice things up a bit ;)
+ 
+	<p>
+	Until next time,
+	<p>
+	~Mike<br>
+	<i>BrokenThorn Entertainment. Currently developing DoE and the <a href="http://www.brokenthorn.com/mos/site2/">Neptune Operating System</a></i>
+
+	<br><br>
+	<i>Questions or comments? Feel free to <a href="mailto:neon6000@aol.com">Contact me</a>.</i>
+
+	<br><br>
+	Would you like to contribute and help improve the articles? If so, please <a href="mailto:neon6000@aol.com">let me know!</a>
+
+
+<br><br> 
+<table width=100% border=0> 
+<tr> 
+<td><p align=left> 
+<a class="anchor" href="OSDev14.html"> 
+<img src="images/left.jpg" border=0></a> 
+&nbsp;&nbsp;
+<a class="anchor" href="OSDev14.html"> 
+<font size=4>Chapter 14</font> 
+</a> 
+ 
+</p></td> 
+<td> 
+<p align=center> 
+<font size=4><a class="anchor" href="OSDevIndex.html">Home</a></font> 
+</p> 
+</td> 
+<td><p align=right> 
+<a class="anchor" href="OSDev16.html"><font size=4>Chapter 16</font></a> 
+&nbsp;&nbsp;
+<a class="anchor" href="OSDev16.html"><img src="images/right.jpg" border=0></a> 
+</p></td> 
+</tr> 
+</table> 
+ 
+ 
+</BODY></HTML> 

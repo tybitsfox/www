@@ -1,0 +1,519 @@
+<HTML
+><HEAD
+><TITLE
+>向数据库中添加记录</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="性能提升技巧"
+HREF="performance-tips.html"><LINK
+REL="PREVIOUS"
+TITLE="用明确的 JOIN （连接）控制规划器"
+HREF="explicit-joins.html"><LINK
+REL="NEXT"
+TITLE="服务器管理"
+HREF="admin.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="explicit-joins.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="performance-tips.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 13. 性能提升技巧</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="performance-tips.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="admin.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="POPULATE"
+>13.4. 向数据库中添加记录</A
+></H1
+><P
+>        我们第一次填充数据库时可能需要做大量的表插入。
+        下面是一些建议，可以尽可能高效地处理这些事情。
+  </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="DISABLE-AUTOCOMMIT"
+>13.4.1. 关闭自动提交</A
+></H2
+><A
+NAME="AEN15836"
+></A
+><P
+>        关闭自动提交，并且只在每次（数据拷贝）结束的时候做一次提交。
+	（在纯 SQL 里，这就意味着在开始的时候发出 <TT
+CLASS="COMMAND"
+>BEGIN</TT
+>，
+	并且在结束的时候执行 <TT
+CLASS="COMMAND"
+>COMMIT</TT
+>。有些客户端的库可能背着你干这些事情，
+	这种情况下你必须确信只有在你要那些库干这些事情的时候它才做。）
+	如果你允许每个插入都独立地提交，那么 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	会为所增加的每行记录做大量的处理。
+	在一个事务里完成所有插入的动作的最大的好处就是，如果有一条记录插入失败，
+	那么，到该点为止的所有已插入记录都将被回滚，这样你就不会很难受地面对一个只装载了一部分数据的表。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="POPULATE-COPY-FROM"
+>13.4.2. 使用 <TT
+CLASS="COMMAND"
+>COPY</TT
+></A
+></H2
+><P
+>	使用 <A
+HREF="sql-copy.html"
+><I
+>COPY</I
+></A
+> 在一条命令里装载所有记录，
+	而不是一连串的<TT
+CLASS="COMMAND"
+>INSERT</TT
+>命令。<TT
+CLASS="COMMAND"
+>COPY</TT
+> 命令是为装载数量巨大的数据行优化过的；
+	它没 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 那么灵活，但是在大量装载数据的情况下，导致的过荷也少很多。
+	因为 <TT
+CLASS="COMMAND"
+>COPY</TT
+> 是单条命令，因此填充表的时候就没有必要关闭自动提交了。
+   </P
+><P
+>    如果你不能使用 <TT
+CLASS="COMMAND"
+>COPY</TT
+>，那么
+    使用 <A
+HREF="sql-prepare.html"
+><I
+>PREPARE</I
+></A
+> 来创建一个准备好的 <TT
+CLASS="COMMAND"
+>INSERT</TT
+>，
+    然后使用 <TT
+CLASS="COMMAND"
+>EXECUTE</TT
+> 多次效率更高。
+    这样就避免了重复分析和规划 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 的开销。
+   </P
+><P
+>    请注意，在装载大量数据行的时候，<TT
+CLASS="COMMAND"
+>COPY</TT
+> 几乎总是比 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 快，
+    即使使用了 <TT
+CLASS="COMMAND"
+>PREPARE</TT
+> 并且把多个 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 命令绑在一个事务中也是这样的。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="POPULATE-RM-INDICES"
+>13.4.3. 删除索引</A
+></H2
+><P
+>	如果你正在装载一个新创建的表，最快的方法是创建表，
+	用<TT
+CLASS="COMMAND"
+>COPY</TT
+>批量装载，然后创建表需要的任何索引。
+	在已存在数据的表上创建索引要比递增地更新所装载的每一行记录要快。
+   </P
+><P
+>	如果你对现有表增加大量的数据，可能先删除索引，装载表，然后重新创建索引更快些。
+	当然，在缺少索引的期间，其他数据库用户的数据库性能将有负面的影响。
+	并且我们在删除唯一索引之前还需要仔细考虑清楚，因为唯一约束
+	提供的错误检查在缺少索引的时候会消失．
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="POPULATE-RM-FKEYS"
+>13.4.4. 删除外键约束</A
+></H2
+><P
+>    和索引一样，<SPAN
+CLASS="QUOTE"
+>"批量地"</SPAN
+>检查外键约束比一行行检查更高效。
+    因此，也许我们先删除外键约束，装载数据，然后重建约束会更高效。
+    同样，装载数据和缺少约束而失去错误检查之间也有一个平衡。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="POPULATE-WORK-MEM"
+>13.4.5. 增大 <TT
+CLASS="VARNAME"
+>maintenance_work_mem</TT
+></A
+></H2
+><P
+>    在装载大量的数据的时候，临时增大 <A
+HREF="runtime-config-resource.html#GUC-MAINTENANCE-WORK-MEM"
+>maintenance_work_mem</A
+> 配置变量可以改进性能。
+    这个参数也可以帮助加速 <TT
+CLASS="COMMAND"
+>CREATE INDEX</TT
+> 命令和 <TT
+CLASS="COMMAND"
+>ALTER TABLE ADD FOREIGN KEY</TT
+> 
+    命令。它不会对 <TT
+CLASS="COMMAND"
+>COPY</TT
+> 本身有多大作用，所以这个建议只有在你使用上面的两个技巧中的一个或两个才有效。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="POPULATE-CHECKPOINT-SEGMENTS"
+>13.4.6. 增大 <TT
+CLASS="VARNAME"
+>checkpoint_segments</TT
+></A
+></H2
+><P
+>    临时增大 <A
+HREF="runtime-config-wal.html#GUC-CHECKPOINT-SEGMENTS"
+>checkpoint_segments</A
+> 配置变量也可以让大量数据装载得更快。
+    这是因为向 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里面装载大量的数据可以导致检查点操作
+    （由配置变量 <TT
+CLASS="VARNAME"
+>checkpoint_timeout</TT
+> 声明）
+    比平常更加频繁发生。在发生一个检查点的时候，所有脏数据都必须刷新到磁盘上。
+    通过在大量数据装载的时候临时增加 <TT
+CLASS="VARNAME"
+>checkpoint_segments</TT
+>，
+    所要求的检查点的数目可以减少。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="POPULATE-ANALYZE"
+>13.4.7. 事后运行<TT
+CLASS="COMMAND"
+>ANALYZE</TT
+></A
+></H2
+><P
+>	不管甚么时候，如果你在增加或者更新了大量数据之后，
+	运行  <A
+HREF="sql-analyze.html"
+><I
+>ANALYZE</I
+></A
+>
+	都是个好习惯。
+	运行 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+>（或者 <TT
+CLASS="COMMAND"
+>VACUUM ANALYZE</TT
+>）
+	可以保证规划器有最新的表的数据的统计。
+	如果没有统计数据或者统计数据太陈旧，那么规划器可能选择很差劲的查询规划，导致检索你的表的查询性能的恶化。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="POPULATE-PG-DUMP"
+>13.4.8. <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 的一些事项</A
+></H2
+><P
+>    <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 生成的转储脚本自动使用上面的若干个技巧，
+    但不是全部。要尽可能快地装载 <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 转储，
+    我们需要手工做几个事情。（请注意，这些要点适用于<I
+CLASS="EMPHASIS"
+>恢复</I
+>一个转储，
+    而不是<I
+CLASS="EMPHASIS"
+>创建</I
+>一个转储的时候。同样的要点也适用于使用
+    <SPAN
+CLASS="APPLICATION"
+>pg_restore</SPAN
+> 从 <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 归档文件装载数据的时候。）
+   </P
+><P
+>    缺省的时候，<SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 使用 <TT
+CLASS="COMMAND"
+>COPY</TT
+>，
+    在它生成一个完整的模式和数据的转储的时候，它会很小心地先装载数据，然后创建索引和外键。
+    因此，在这个情况下，头几条技巧是自动处理的。你需要做的只是在装载转储脚本之前设置合适的（也就是说，比正常状况要大的）
+    <TT
+CLASS="VARNAME"
+>maintenance_work_mem</TT
+> 值和 <TT
+CLASS="VARNAME"
+>checkpoint_segments</TT
+> 值，
+    然后在装载完成之后运行 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+>。
+   </P
+><P
+>    只保存数据的转储仍然会使用 <TT
+CLASS="COMMAND"
+>COPY</TT
+>，但是它不会删除或者重建索引，
+    并且它不会自动修改外键。
+
+     <A
+NAME="AEN15913"
+HREF="#FTN.AEN15913"
+>[1]</A
+>
+
+    因此，在装载只有数据的转储的时候，是否使用删除以及重建索引和外键等技巧完全取决于你。
+    装载数据的时候，增大 <TT
+CLASS="VARNAME"
+>checkpoint_segments</TT
+> 仍然是有用的，
+    但是增大 <TT
+CLASS="VARNAME"
+>maintenance_work_mem</TT
+> 就没什么必要了；
+    你只是应该在事后手工创建索引和外键的事后增大它。
+   </P
+></DIV
+></DIV
+><H3
+CLASS="FOOTNOTES"
+>Notes</H3
+><TABLE
+BORDER="0"
+CLASS="FOOTNOTES"
+WIDTH="100%"
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+WIDTH="5%"
+><A
+NAME="FTN.AEN15913"
+HREF="populate.html#AEN15913"
+>[1]</A
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+WIDTH="95%"
+><P
+>       你可以通过使用 <TT
+CLASS="OPTION"
+>-X disable-triggers</TT
+> 选项的方法获取关闭外键的效果 &mdash;
+       不过要意识到这么做是消除，而不只是推迟违反外键约束，因此如果你使用这个选项，
+       是有可能插入坏数据的。
+      </P
+></TD
+></TR
+></TABLE
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="explicit-joins.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="admin.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>用明确的 <TT
+CLASS="LITERAL"
+>JOIN</TT
+> （连接）控制规划器</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="performance-tips.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>服务器管理</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

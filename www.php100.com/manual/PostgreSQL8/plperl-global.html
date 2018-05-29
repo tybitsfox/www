@@ -1,0 +1,125 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>PL/Perl 里的全局变量 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="PL/Perl - Perl 过程语言" HREF="plperl.html"><LINK REL="PREVIOUS" TITLE="PL/Perl 里的数据值" HREF="plperl-data.html"><LINK REL="NEXT" TITLE="可信的和不可信的 PL/Perl" HREF="plperl-trusted.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="plperl-data.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="plperl.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 38. PL/Perl - Perl 过程语言</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="plperl.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="plperl-trusted.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="PLPERL-GLOBAL" >38.4. PL/Perl 里的全局变量</A
+></H1
+><P
+>  你可以利用 <TT
+CLASS="VARNAME"
+>%_SHARED</TT
+> 在函数调用间保存数据，包括代码引用，
+  持续时间可以达到当前会话的生命期。
+  </P
+><P
+>  下面是一个共享数据的例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE OR REPLACE FUNCTION set_var(name text, val text) RETURNS text AS $$
+    if ($_SHARED{$_[0]} = $_[1]) {
+        return 'ok';
+    } else {
+        return "can't set shared variable $_[0] to $_[1]";
+    }
+$$ LANGUAGE plperl;
+
+CREATE OR REPLACE FUNCTION get_var(name text) RETURNS text AS $$
+    return $_SHARED{$_[0]};
+$$ LANGUAGE plperl;
+
+SELECT set_var('sample', 'Hello, PL/Perl!  How's tricks?');
+SELECT get_var('sample');</PRE
+><P>
+  </P
+><P
+>   下面是一个使用代码引用的稍微复杂些的例子：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE OR REPLACE FUNCTION myfuncs() RETURNS void AS $$
+    $_SHARED{myquote} = sub {
+        my $arg = shift;
+        $arg =~ s/(['\\])/\\$1/g;
+        return "'$arg'";
+    };
+$$ LANGUAGE plperl;
+
+SELECT myfuncs(); /* 初始化函数 */
+
+/* 建立一个使用引用的函数的函数 */
+
+CREATE OR REPLACE FUNCTION use_quote(TEXT) RETURNS text AS $$
+    my $text_to_quote = shift;
+    my $qfunc = $_SHARED{myquote};
+    return &amp;$qfunc($text_to_quote);
+$$ LANGUAGE plperl;</PRE
+><P>
+
+   （如果不在乎易读性，你可以用一行
+   <TT
+CLASS="LITERAL"
+>return $_SHARED{myquote}-&gt;($_[0]);</TT
+>
+   代替上面的三行。）
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="plperl-data.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="plperl-trusted.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >PL/Perl 里的数据值</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="plperl.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >可信的和不可信的 PL/Perl</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

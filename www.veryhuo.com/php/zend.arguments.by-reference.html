@@ -1,0 +1,78 @@
+<HTML><HEAD><TITLE>Dealing with Arguments Passed by Reference</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Accepting Arguments" HREF="zend.arguments.html"><LINK REL="PREVIOUS" TITLE="Accessing Arguments" HREF="zend.arguments.access.html"><LINK REL="NEXT" TITLE="Assuring Write Safety for Other Parameters" HREF="zend.arguments.write-safety.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="section" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="zend.arguments.access.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 32. Accepting Arguments</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="zend.arguments.write-safety.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="section"><H1 CLASS="section"><A NAME="zend.arguments.by-reference"></A>Dealing with Arguments Passed by Reference</H1><P>&#13; If your function accepts arguments passed by reference that you
+intend to modify, you need to take some precautions.
+</P><P>&#13; What we didn't say yet is that under the circumstances presented so
+far, you don't have write access to any <TT CLASS="envar">zval</TT> containers
+designating function parameters that have been passed to you. Of course, you
+can change any <TT CLASS="envar">zval</TT> containers that you created within
+your function, but you mustn't change any <TT CLASS="envar">zval</TT>s that refer to
+Zend-internal data!
+</P><P>&#13; We've only discussed the so-called <B CLASS="function">*_ex()</B> API
+so far. You may have noticed that the API functions we've used are
+called <B CLASS="function">zend_get_parameters_ex()</B> instead of
+<B CLASS="function">zend_get_parameters()</B>,
+<B CLASS="function">convert_to_long_ex()</B> instead of
+<B CLASS="function">convert_to_long()</B>, etc. The
+<B CLASS="function">*_ex()</B> functions form the so-called new
+"extended" Zend API. They give a minor speed increase over the old
+API, but as a tradeoff are only meant for providing read-only
+access.
+</P><P>&#13; Because Zend works internally with references, different variables
+may reference the same value. Write access to a
+<TT CLASS="envar">zval</TT> container requires this container to contain
+an isolated value, meaning a value that's not referenced by any
+other containers. If a <TT CLASS="envar">zval</TT> container were
+referenced by other containers and you changed the referenced
+<TT CLASS="envar">zval</TT>, you would automatically change the contents
+of the other containers referencing this <TT CLASS="envar">zval</TT>
+(because they'd simply point to the changed value and thus change
+their own value as well).
+</P><P>&#13; <B CLASS="function">zend_get_parameters_ex()</B> doesn't care about
+this situation, but simply returns a pointer to the desired
+<TT CLASS="envar">zval</TT> containers, whether they consist of references
+or not. Its corresponding function in the traditional API,
+<B CLASS="function">zend_get_parameters()</B>, immediately checks for
+referenced values. If it finds a reference, it creates a new,
+isolated <TT CLASS="envar">zval</TT> container; copies the referenced data
+into this newly allocated space; and then returns a pointer to the
+new, isolated value.
+</P><P>&#13; This action is called <SPAN CLASS="emphasis"><I CLASS="emphasis">zval separation</I></SPAN>
+(or pval separation). Because the <B CLASS="function">*_ex()</B> API
+doesn't perform zval separation, it's considerably faster, while
+at the same time disabling write access.
+</P><P>&#13; To change parameters, however, write access is required. Zend deals
+with this situation in a special way: Whenever a parameter to a function is
+passed by reference, it performs automatic zval separation. This means that
+whenever you're calling a function like
+this in PHP, Zend will automatically ensure
+that <TT CLASS="envar">$parameter</TT> is being passed as an isolated value, rendering it
+to a write-safe state:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">my_function(&#38;$parameter);</PRE></TD></TR></TABLE>
+</P><P>&#13; But this <SPAN CLASS="emphasis"><I CLASS="emphasis">is not</I></SPAN> the case with regular parameters!
+All other parameters that are not passed by reference are in a read-only
+state.
+</P><P>&#13; This requires you to make sure that you're really working with a
+reference - otherwise you might produce unwanted results. To check for a
+parameter being passed by reference, you can use the macro
+<TT CLASS="literal">PZVAL_IS_REF</TT>. This macro accepts a <TT CLASS="literal">zval*</TT>
+to check if it is a reference or not. Examples are given in
+in <A HREF="zend.arguments.by-reference.html#example.pass-by-ref">例子 32-3</A>.
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="example.pass-by-ref"></A><P><B>例子 32-3. Testing for referenced parameter passing.</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">zval *parameter;
+
+if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &#38;parameter) == FAILURE)
+    return;
+
+/* check for parameter being passed by reference */
+if (!PZVAL_IS_REF(*parameter)) {
+{
+    zend_error(E_WARNING, "Parameter wasn't passed by reference");
+    RETURN_NULL();
+}
+
+/* make changes to the parameter */
+ZVAL_LONG(*parameter, 10);</PRE></TD></TR></TABLE><P><IMG SRC="figures/Extending_Zend_5_reference_test.png"></P></DIV></TD></TR></TABLE></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="zend.arguments.access.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="zend.arguments.write-safety.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Accessing Arguments</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="zend.arguments.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Assuring Write Safety for Other Parameters</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

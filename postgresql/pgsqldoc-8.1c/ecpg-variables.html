@@ -1,0 +1,409 @@
+<HTML
+><HEAD
+><TITLE
+>使用宿主变量</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="ecpg - 在 C 里嵌入 SQL"
+HREF="ecpg.html"><LINK
+REL="PREVIOUS"
+TITLE="选取一个连接"
+HREF="ecpg-set-connection.html"><LINK
+REL="NEXT"
+TITLE="动态 SQL"
+HREF="ecpg-dynamic.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="ecpg-set-connection.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="ecpg.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 30. <SPAN
+CLASS="APPLICATION"
+>ecpg</SPAN
+> - 在 C 里嵌入 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="ecpg.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="ecpg-dynamic.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="ECPG-VARIABLES"
+>30.6. 使用宿主变量</A
+></H1
+><P
+>   在 <A
+HREF="ecpg-commands.html"
+>Section 30.4</A
+> 里你看到了如何从嵌入的 SQL 程序里执行 SQL 语句。
+   那些语句有些只使用了固定的数值，并没有提供一个插入用户提供的数值到语句中的方法，
+   也没有提供让程序访问查询返回的数值的方法。这种类型的语句在真正的应用中并不是很有用。
+   本节详细解释如何在你的 C 程序和嵌入的 SQL 语句之间使用一种被称作<I
+CLASS="FIRSTTERM"
+>宿主变量</I
+>的机制传递数据。
+  </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN27227"
+>30.6.1. 概述</A
+></H2
+><P
+>    在 C 程序和 SQL 语句之间传递数据在嵌入的 SQL 里特别简单。我们不用把数据贴到语句中，
+    这样必然会有各种复杂事情需要处理，比如正确给数值加引号等等，我们只需要在 SQL 语句里写上 C 变量的名字，前缀一个冒号即可。
+    比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL INSERT INTO sometable VALUES (:v1, 'foo', :v2);</PRE
+><P>
+    这个语句引用了两个 C 变量，一个叫 <TT
+CLASS="VARNAME"
+>v1</TT
+>，另一个叫 <TT
+CLASS="VARNAME"
+>v2</TT
+>，
+    并且也使用一个普通的 SQL 字串文本，这样表明你并不局限于只使用某一种数据。
+   </P
+><P
+>    这种在 SQL 语句里插入 C 变量的方式在 SQL 语句里任何需要表达式的地方都可以用。
+    在 SQL 语句里，我们把引用的 C 变量叫做 <I
+CLASS="FIRSTTERM"
+>宿主变量</I
+>。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN27235"
+>30.6.2. 声明段</A
+></H2
+><P
+>	要从程序中向数据库传递数据，比如，查询中的参数，或者从数据库里向程序传回的数据，
+	想包含这类数据的 C 变量必须在一个特殊的标记段里面声明，这样嵌入的 SQL 预处理器就会明白要做什么。
+  </P
+><P
+>	这个段以下面的代码开头
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL BEGIN DECLARE SECTION;</PRE
+><P>
+	以下面的代码结束
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL END DECLARE SECTION;</PRE
+><P>
+	在这两行之间，是普通的 C 变量声明，比如
+</P><PRE
+CLASS="PROGRAMLISTING"
+>int   x;
+char  foo[16], bar[16];</PRE
+><P>
+       在程序里你可以有任意多个声明段。
+  </P
+><P
+>	这些声明也同时以普通 C 变量的形式回显到输出文件中，
+	因此，我们不必再次声明他们。那些不准备在 SQL 命令里使用的变量可以像通常一样在这些特殊的段外面声明。
+  </P
+><P
+>	结构或者联合的定义也必须在 <TT
+CLASS="LITERAL"
+>DECLARE</TT
+> 段中列出。
+	否则，预处理器就无法处理这些类型，因为它不知道定义。
+  </P
+><P
+>	特殊的类型 <TT
+CLASS="TYPE"
+>varchar</TT
+>
+	对每个变量都转化成一个叫 <TT
+CLASS="TYPE"
+>struct</TT
+> 的名字。像下面这样的声明：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>varchar var[180];</PRE
+><P>
+	转化成
+</P><PRE
+CLASS="PROGRAMLISTING"
+>struct varchar_var { int len; char arr[180]; } var;</PRE
+><P>
+	这个结构适合于和 SQL 数据类型 <TT
+CLASS="TYPE"
+>varchar</TT
+> 的数据交互。
+  </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN27251"
+>30.6.3. <TT
+CLASS="COMMAND"
+>SELECT INTO</TT
+> 和 <TT
+CLASS="COMMAND"
+>FETCH INTO</TT
+></A
+></H2
+><P
+>    现在你应该能把你的程序生成的数据传递到 SQL 命令里面去了。但是你如何检索一个查询的结果呢？
+    为了这个目的，嵌入的 SQL 提供了常用命令
+    <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 和 <TT
+CLASS="COMMAND"
+>FETCH</TT
+> 的特殊变体。
+    这些命令有了特殊的 <TT
+CLASS="LITERAL"
+>INTO</TT
+> 子句，声明检索出来的数值存储在哪个宿主变量里。
+   </P
+><P
+>    下面是一些例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>/*
+ * 假设表是这个：
+ * CREATE TABLE test1 (a int, b varchar(50));
+ */
+
+EXEC SQL BEGIN DECLARE SECTION;
+int v1;
+VARCHAR v2;
+EXEC SQL END DECLARE SECTION;
+
+ ...
+
+EXEC SQL SELECT a, b INTO :v1, :v2 FROM test;</PRE
+><P>
+    所以，<TT
+CLASS="LITERAL"
+>INTO</TT
+> 子句出现在选择列表和 <TT
+CLASS="LITERAL"
+>FROM</TT
+>
+    子句之间。选择列表和 <TT
+CLASS="LITERAL"
+>INTO</TT
+> 后面的列表的元素（也叫目标列表）个数必须相同。
+   </P
+><P
+>    下面是使用 <TT
+CLASS="COMMAND"
+>FETCH</TT
+> 命令的例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL BEGIN DECLARE SECTION;
+int v1;
+VARCHAR v2;
+EXEC SQL END DECLARE SECTION;
+
+ ...
+
+EXEC SQL DECLARE foo CURSOR FOR SELECT a, b FROM test;
+
+ ...
+
+do {
+    ...
+    EXEC SQL FETCH NEXT FROM foo INTO :v1, :v2;
+    ...
+} while (...);</PRE
+><P>
+    这里的 <TT
+CLASS="LITERAL"
+>INTO</TT
+> 子句出现在所有正常的子句后面。
+   </P
+><P
+>    这些方法只能一次检索一行。如果你需要处理可能多于一行的结果集，
+    那么你需要使用游标，就想我们第二个例子演示的那样。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN27269"
+>30.6.4. 指示器</A
+></H2
+><P
+>    上面的例子不能处理空值。实际上，如果从数据库中抓到一条空值，那么上面的检索例子会抛出一个错误。
+    要能够向数据库中传递空值，或者从数据库中检索空值，你需要给每个包含数据的宿主变量后面附加一个额外的宿主变量。
+    这第二个宿主变量叫<I
+CLASS="FIRSTTERM"
+>指示器</I
+>，里面包含一个标志，
+    告诉我们数据是否为空，如果为空，那么真正的宿主变量的数值就可以忽略。
+    下面是一个能正确检索空值的例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL BEGIN DECLARE SECTION;
+VARCHAR val;
+int val_ind;
+EXEC SQL END DECLARE SECTION:
+
+ ...
+
+EXEC SQL SELECT b INTO :val :val_ind FROM test1;</PRE
+><P>
+    如果数值不是空，那么指示器变量 <TT
+CLASS="VARNAME"
+>val_ind</TT
+> 将是零，
+    如果值是空，那么它将是负数。
+   </P
+><P
+>    指示器还有另外一个用途：如果它是正数，那么它标识数值不是空，
+    但是在数值存储到宿主变量里的时候被截断了。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="ecpg-set-connection.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="ecpg-dynamic.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>选取一个连接</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="ecpg.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>动态 SQL</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

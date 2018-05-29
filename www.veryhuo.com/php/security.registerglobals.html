@@ -1,0 +1,67 @@
+<HTML><HEAD><TITLE>Using Register Globals</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="安全" HREF="security.index.html"><LINK REL="PREVIOUS" TITLE="错误报告" HREF="security.errors.html"><LINK REL="NEXT" TITLE="用户提交的数据" HREF="security.variables.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="sect1" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="security.errors.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 15. 安全</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="security.variables.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="sect1"><H1 CLASS="sect1"><A NAME="security.registerglobals"></A>Using Register Globals</H1><P>&#13; Perhaps the most controversial change in PHP is when the default value
+for the PHP directive <A HREF="configuration.directives.html#ini.register-globals">&#13; register_globals</A> went from ON to OFF in PHP
+<A HREF="http://www.php.net/release_4_2_0.php" TARGET="_top">4.2.0</A>. Reliance on this
+directive was quite common and many people didn't even know it existed
+and assumed it's just how PHP works. This page will explain how one can
+write insecure code with this directive but keep in mind that the
+directive itself isn't insecure but rather it's the misuse of it.
+</P><P>&#13; When on, register_globals will inject (poison) your scripts will all
+sorts of variables, like request variables from html forms. This
+coupled with the fact that PHP doesn't require variable initialization
+means writing insecure code is that much easier. It was a difficult
+decision, but the PHP community decided to disable this directive by
+default. When on, people use variables yet really don't know for sure
+where they come from and can only assume. Internal variables that are
+defined in the script itself get mixed up with request data sent by
+users and disabling register_globals changes this. Let's demonstrate
+with an example misuse of register_globals:
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN6291"></A><P><B>例子 15-14. Example misuse with register_globals = on</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#FF8000">// define $authorized = true only if user is authenticated<br /></font><font color="#007700">if (</font><font color="#0000BB">authenticated_user</font><font color="#007700">()) {<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$authorized </font><font color="#007700">= </font><font color="#0000BB">true</font><font color="#007700">;<br />}<br /><br /></font><font color="#FF8000">// Because we didn't first initialize $authorized as false, this might be<br />// defined through register_globals, like from GET auth.php?authorized=1 <br />// So, anyone can be seen as authenticated!<br /></font><font color="#007700">if (</font><font color="#0000BB">$authorized</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;include </font><font color="#DD0000">"/highly/sensitive/data.php"</font><font color="#007700">;<br />}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; When register_globals = on, our logic above may be compromised. When
+off, <TT CLASS="varname">$authorized</TT> can't be set via request so it'll
+be fine, although it really is generally a good programming practice to
+initialize variables first. For example, in our example above we might
+have first done <TT CLASS="literal">$authorized = false</TT>. Doing this
+first means our above code would work with register_globals on or off as
+users by default would be unauthorized.
+</P><P>&#13; Another example is that of <A HREF="ref.session.html">sessions</A>.
+When register_globals = on, we could also use
+<TT CLASS="varname">$username</TT> in our example below but again you must
+realize that <TT CLASS="varname">$username</TT> could also come from other
+means, such as GET (through the URL).
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN6302"></A><P><B>例子 15-15. Example use of sessions with register_globals on or off</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#FF8000">// We wouldn't know where $username came from but do know $_SESSION is <br />// for session data <br /></font><font color="#007700">if (isset(</font><font color="#0000BB">$_SESSION</font><font color="#007700">[</font><font color="#DD0000">'username'</font><font color="#007700">])) {<br />&nbsp;&nbsp;&nbsp;&nbsp;<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"Hello &lt;b&gt;{$_SESSION['username']}&lt;/b&gt;"</font><font color="#007700">;<br /><br />} else {<br />&nbsp;&nbsp;&nbsp;&nbsp;<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"Hello &lt;b&gt;Guest&lt;/b&gt;&lt;br /&gt;"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"Would you like to login?"</font><font color="#007700">;<br /><br />}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; It's even possible to take preventative measures to warn when forging is
+being attempted. If you know ahead of time exactly where a variable
+should be coming from, you can check to see if the submitted data is
+coming from an inappropriate kind of submission. While it doesn't
+guarantee that data has not been forged, it does require an attacker to
+guess the right kind of forging. If you don't care where the request
+data comes from, you can use <TT CLASS="varname">$_REQUEST</TT> as it contains
+a mix of GET, POST and COOKIE data. See also the manual section on
+using <A HREF="language.variables.external.html">variables from outside
+of PHP</A>.
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN6309"></A><P><B>例子 15-16. Detecting simple variable poisoning</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#007700">if (isset(</font><font color="#0000BB">$_COOKIE</font><font color="#007700">[</font><font color="#DD0000">'MAGIC_COOKIE'</font><font color="#007700">])) {<br />&nbsp;&nbsp;&nbsp;&nbsp;<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// MAGIC_COOKIE comes from a cookie.<br />&nbsp;&nbsp;&nbsp;&nbsp;// Be sure to validate the cookie data!<br /><br /></font><font color="#007700">} elseif (isset(</font><font color="#0000BB">$_GET</font><font color="#007700">[</font><font color="#DD0000">'MAGIC_COOKIE'</font><font color="#007700">]) || isset(</font><font color="#0000BB">$_POST</font><font color="#007700">[</font><font color="#DD0000">'MAGIC_COOKIE'</font><font color="#007700">])) {<br />&nbsp;&nbsp;&nbsp;<br />&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">mail</font><font color="#007700">(</font><font color="#DD0000">"admin@example.com"</font><font color="#007700">, </font><font color="#DD0000">"Possible breakin attempt"</font><font color="#007700">, </font><font color="#0000BB">$_SERVER</font><font color="#007700">[</font><font color="#DD0000">'REMOTE_ADDR'</font><font color="#007700">]);<br />&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"Security violation, admin has been alerted."</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;exit;<br /><br />} else {<br />&nbsp;&nbsp;&nbsp;<br />&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// MAGIC_COOKIE isn't set through this REQUEST<br /><br /></font><font color="#007700">}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; Of course, simply turning off register_globals does not mean your code
+is secure. For every piece of data that is submitted, it should also be
+checked in other ways. Always validate your user data and initialize
+your variables! To check for unitialized variables you may turn up
+<A HREF="function.error-reporting.html"><B CLASS="function">error_reporting()</B></A> to show
+<TT CLASS="constant"><B>E_NOTICE</B></TT> level errors.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>超级全局数组：可用性说明: </B>自 PHP 4.1.0 开始，可以使用超级全局数组例如
+<TT CLASS="varname">$_GET</TT>，<TT CLASS="varname">$_POST</TT>
+和 <TT CLASS="varname">$_SERVER</TT> 等等。更多信息请阅读手册中的
+<A HREF="language.variables.predefined.html">superglobals</A></P></BLOCKQUOTE></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="security.errors.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="security.variables.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">错误报告</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="security.index.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">用户提交的数据</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

@@ -1,0 +1,828 @@
+<HTML
+><HEAD
+><TITLE
+>网络地址数据类型</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="数据类型"
+HREF="datatype.html"><LINK
+REL="PREVIOUS"
+TITLE="几何类型"
+HREF="datatype-geometric.html"><LINK
+REL="NEXT"
+TITLE="位串类型"
+HREF="datatype-bit.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="datatype-geometric.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="datatype.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 8. 数据类型</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="datatype.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="datatype-bit.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="DATATYPE-NET-TYPES"
+>8.8. 网络地址数据类型</A
+></H1
+><A
+NAME="AEN5363"
+></A
+><P
+>        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 提供用于存储 IPv4，IPv6 和 MAC 地址的数据类型，
+	在 <A
+HREF="datatype-net-types.html#DATATYPE-NET-TYPES-TABLE"
+>Table 8-17</A
+> 里显示。
+        用这些数据类型存储网络地址比用纯文本类型好，因为这些类型提供输入错误检查和好些种特殊的操作和功能。
+	（见 <A
+HREF="functions-net.html"
+>Section 9.11</A
+>）。
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="DATATYPE-NET-TYPES-TABLE"
+></A
+><P
+><B
+>Table 8-17. 网络地址类型</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>名字</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>存储空间</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>cidr</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>12 或 24 字节</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>IPv4 和 IPv6 网络</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>inet</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>12 或 24 字节</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>IPv4 或 IPv6 网络和主机</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>macaddr</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>6 字节</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>MAC 地址</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>    在对 <TT
+CLASS="TYPE"
+>inet</TT
+> 或者 <TT
+CLASS="TYPE"
+>cidr</TT
+> 数据类型进行排序的时候，
+    IPv4 地址将总是排在 IPv6 地址前面，包括那些封装或者是映射在 IPv6 地址里
+    的 IPv4 地址，比如 ::10.2.3.4 或者 ::ffff::10.4.3.2。
+   </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="DATATYPE-INET"
+>8.8.1. <TT
+CLASS="TYPE"
+>inet</TT
+></A
+></H2
+><A
+NAME="AEN5400"
+></A
+><P
+>        <TT
+CLASS="TYPE"
+>inet</TT
+> 在一个数据域里保存一个主机 IPv4 或 IPv6 地址，
+        以及一个可选的它所处的等效的子网。
+	子网的等效是通过计算主机地址中有多少位表示网络地址的方法来
+	表示的
+	（<SPAN
+CLASS="QUOTE"
+>"网络掩码"</SPAN
+>）。
+        如果网络掩码是 32 并且地址是 IPv4 ，那么不表示任何子网，只是一台主机。
+	在 IPv6 里，地址长度是 128 位，因此 128 位表明一个唯一的主机地址。
+        请注意如果你想只接受网络地址，你应该使用 <TT
+CLASS="TYPE"
+>cidr</TT
+>
+        类型而不是 <TT
+CLASS="TYPE"
+>inet</TT
+>。
+    </P
+><P
+>     该类型的输入格式是
+     <TT
+CLASS="REPLACEABLE"
+><I
+>地址/y</I
+></TT
+>
+     这里 <TT
+CLASS="REPLACEABLE"
+><I
+>地址</I
+></TT
+> 是
+     IPv4 或者 IPv6 主机，<TT
+CLASS="REPLACEABLE"
+><I
+>y</I
+></TT
+>
+     是网络掩码的位数。
+     如果 <TT
+CLASS="REPLACEABLE"
+><I
+>/y</I
+></TT
+> 部分未填，
+        则网络掩码对 IPv 而言是 32，对 IPv6 而言是 128，
+     所以该值表示只有一台主机。
+     显示时，如果 <TT
+CLASS="REPLACEABLE"
+><I
+>/y</I
+></TT
+> 部分是
+     <TT
+CLASS="LITERAL"
+>/32</TT
+>，将不会显示出来。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="DATATYPE-CIDR"
+>8.8.2. <TT
+CLASS="TYPE"
+>cidr</TT
+></A
+></H2
+><A
+NAME="AEN5417"
+></A
+><P
+>        <TT
+CLASS="TYPE"
+>cidr</TT
+> 保存一个 IPv4 或 IPv6 网络地址声明。
+        其输入和输出遵循无类的互联网域路由（Classless Internet Domain Routing）习惯。
+        声明一个网络的格式是
+        <TT
+CLASS="REPLACEABLE"
+><I
+>地址/y</I
+></TT
+>
+        这里 <TT
+CLASS="REPLACEABLE"
+><I
+>地址</I
+></TT
+> 是
+        IPv4 或 IPv6 网络地址而 <TT
+CLASS="REPLACEABLE"
+><I
+>/y</I
+></TT
+> 是
+        网络掩码的二进制位数。
+        如果省略 <TT
+CLASS="REPLACEABLE"
+><I
+>/y</I
+></TT
+>，
+        那么掩码部分用旧的有类的网络编号系统进行计算，但要求输入的数据已经包括了确定掩码的所需的所有字节。
+	如果声明了一个网络地址，它的指定掩码的右边置了位，那么算错误。
+    </P
+><P
+>     <A
+HREF="datatype-net-types.html#DATATYPE-NET-CIDR-TABLE"
+>Table 8-18</A
+>是些例子：
+    </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="DATATYPE-NET-CIDR-TABLE"
+></A
+><P
+><B
+>Table 8-18. <TT
+CLASS="TYPE"
+>cidr</TT
+> 类型输入举例</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>cidr</TT
+> 输入</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>cidr</TT
+> 显示</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="FUNCTION"
+>abbrev</TT
+>(<TT
+CLASS="TYPE"
+>cidr</TT
+>)</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>192.168.100.128/25</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>192.168.100.128/25</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>192.168.100.128/25</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>192.168/24</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>192.168.0.0/24</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>192.168.0/24</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>192.168/25</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>192.168.0.0/25</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>192.168.0.0/25</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>192.168.1</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>192.168.1.0/24</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>192.168.1/24</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>192.168</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>192.168.0.0/24</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>192.168.0/24</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>128.1</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>128.1.0.0/16</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>128.1/16</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>128</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>128.0.0.0/16</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>128.0/16</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>128.1.2</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>128.1.2.0/24</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>128.1.2/24</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>10.1.2</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>10.1.2.0/24</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>10.1.2/24</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>10.1</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>10.1.0.0/16</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>10.1/16</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>10</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>10.0.0.0/8</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>10/8</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>10.1.2.3/32</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>10.1.2.3/32</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>10.1.2.3/32</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>2001:4f8:3:ba::/64</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>2001:4f8:3:ba::/64</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>2001:4f8:3:ba::/64</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>2001:4f8:3:ba:2e0:81ff:fe22:d1f1/128</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>2001:4f8:3:ba:2e0:81ff:fe22:d1f1/128</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>2001:4f8:3:ba:2e0:81ff:fe22:d1f1</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>::ffff:1.2.3.0/120</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>::ffff:1.2.3.0/120</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>::ffff:1.2.3/120</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>::ffff:1.2.3.0/128</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>::ffff:1.2.3.0/128</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>::ffff:1.2.3.0/128</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="DATATYPE-INET-VS-CIDR"
+>8.8.3. <TT
+CLASS="TYPE"
+>inet</TT
+> 与 <TT
+CLASS="TYPE"
+>cidr</TT
+> 对比</A
+></H2
+><P
+>        <TT
+CLASS="TYPE"
+>inet</TT
+> 和 <TT
+CLASS="TYPE"
+>cidr</TT
+> 类型之间的基本区别是
+        <TT
+CLASS="TYPE"
+>inet</TT
+> 接受右边有非零位的网络掩码，
+        而 <TT
+CLASS="TYPE"
+>cidr</TT
+> 不接受。
+    </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>        如果你不喜欢 <TT
+CLASS="TYPE"
+>inet</TT
+> 或 <TT
+CLASS="TYPE"
+>cidr</TT
+> 值的输出
+        格式，请试一下 <TT
+CLASS="FUNCTION"
+>host</TT
+> ，<TT
+CLASS="FUNCTION"
+>text</TT
+> 和 <TT
+CLASS="FUNCTION"
+>abbrev</TT
+> 函数。
+        </P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="DATATYPE-MACADDR"
+>8.8.4. <TT
+CLASS="TYPE"
+>macaddr</TT
+></A
+></H2
+><A
+NAME="AEN5525"
+></A
+><A
+NAME="AEN5527"
+></A
+><P
+>     <TT
+CLASS="TYPE"
+>macaddr</TT
+> 类型存储 MAC 地址，也就是以太网卡硬件地址
+        （尽管 MAC 地址还用于其它用途）。可以接受多种客户化的格式，
+        包括
+     <P
+></P
+><TABLE
+BORDER="0"
+><TBODY
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>'08002b:010203'</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>'08002b-010203'</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>'0800.2b01.0203'</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>'08-00-2b-01-02-03'</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>'08:00:2b:01:02:03'</TT
+></TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+>
+
+	它们声明的都是同一个地址。
+        对于数据位 <TT
+CLASS="LITERAL"
+>a</TT
+> 到  <TT
+CLASS="LITERAL"
+>f</TT
+>，大小写都行。
+        输出总是我们上面给出的最后一种形式。
+    </P
+><P
+>	在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 源代码发布的
+	<TT
+CLASS="FILENAME"
+>contrib/mac</TT
+>
+	目录里有一些可以将 MAC 地址映射为硬件制造商的名字的工具。
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="datatype-geometric.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="datatype-bit.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>几何类型</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="datatype.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>位串类型</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

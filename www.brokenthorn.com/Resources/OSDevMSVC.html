@@ -1,0 +1,917 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+<!-- saved from url=(0056)http://www.gamedev.net/reference/articles/article290.asp --> 
+<HTML><HEAD><TITLE>Operating Systems Development Series</TITLE> 
+<META http-equiv=Content-Type content="text/html; charset=windows-1252"><LINK 
+href="Files/reference.css" 
+type=text/css rel=stylesheet> 
+<META content="MSHTML 6.00.6000.16441" name=GENERATOR></HEAD> 
+<BODY text=#000000 vLink=#666699 aLink=#000000 link=#666699 bgColor=#ffffff 
+leftMargin=0 
+background=Files/watermark.gif 
+topMargin=0 marginheight="0" marginwidth="0"> 
+
+
+<table border=0 cellpadding=0 cellspacing=0 width="100%"> 
+<tr> 
+     <td width="60%"> 
+	<a href="http://www.brokenthorn.com"><img src="site/5.png" border=0></a> 
+     </td> 
+     <td width="40%"> 
+ 
+        <div id="ad_main"> 
+ 
+<script type="text/javascript"><!--
+google_ad_client = "pub-9243579471203558";
+google_ad_width = 468;
+google_ad_height = 60;
+google_ad_format = "468x60_as";
+google_ad_type = "image";
+google_ad_channel = "";
+google_ui_features = "rc:6";
+//-->
+</script> 
+<script type="text/javascript"
+	src="http://pagead2.googlesyndication.com/pagead/show_ads.js"> 
+</script> 
+        </div> 
+ 
+     </td> 
+  </tr> 
+</table> 
+
+
+<TABLE cellSpacing=0 cellPadding=3 width="100%" border=0> 
+  <TBODY> 
+  <TR> 
+    <TD class=tblhdr>Operating Systems Development Series</TD> 
+</TR> 
+  <TR> 
+ 
+    <TD align=middle colSpan=2></TD></TR></TBODY></TABLE> 
+<TABLE cellSpacing=0 cellPadding=5 width="100%" border=0> 
+  <TBODY> 
+  <TR> 
+    <TD> 
+ 
+ 
+<!-- Title --> 
+ 
+      <CENTER><SPAN class=title>Operating Systems Development - MSVC++ 2005, 2008, 2010</SPAN> 
+ 
+<BR><SPAN class=author>by Mike, 2008, Updated 2010</SPAN></CENTER> 
+ 
+      <P>This series is intended to demonstrate and teach operating system development from
+	the ground up.</p> 
+ 
+	<h1>Introduction</h1> 
+	Welcome! :)<p> 
+	<p> 
+	This tutorial covers setting up Microsoft Visual C++ 2005 to work in Kernel Land. This will allow us
+	to use, and completely work in, the nice MSVC++ 2005 IDE.
+	<p> 
+	We will be using the Express Edition. If you have the professional edition, some of the screen shots
+	will be different. Do not worry as most of the options are still the same.
+	<p> 
+	This tutorial will also work fine if you have Visual C++ 2008 or Visual C++ 2010 (with some slight modifications
+	in what options to set). 
+	<p> 
+ 
+	Getting a high level language to work can be tricky to work and set up with. Getting the build envirement
+	to work itself adds on even more complexity.
+	<p> 
+	The first problem, for example, is that MSVC++ only outputs Win32-compilent PE executables and DLL's. And,
+	at our current stage, we only have a flat, pure binary program loaded at absolute address 1 MB. How do we
+	execute a full blown C++ program, from our flat pure-assembler program?
+	<p> 
+	And yet, that is the beginning of the problems. C++ itself relies on the C++ runtime library. So? <b>The C++ runtime
+	library relies on the operating system.</b> Because we are developing the operating system, <b>C++ has no standard
+	library to work with within our operating system</b>. This means, that we have to work without any standard runtime.
+	<p> 
+	But wait! Remember that, in application software, the <b>runtime</b> needs to initialize everything for our C++
+	envirement (Such as executing global constructors, providing basic C++ operation support, and executing our main())?
+	Because we have no runtime, we have to do everything ourselves. This produces an interesting chicken and egg scenario:
+	How can we develop a runtime envirement without a runtime for it to work in?
+	<p> 
+	As you can probably see, it can be quite tricky to get C++ to even <b>work</b> properly.
+	<p> 
+	In this tutorial, we are going to set up MSVC++ 2005 for kernel development, and set up the language to work for
+	us. We will also be watching for runtime integrations (i.e, watching where basic C++ relies on the runtime,
+	so we can build our own).
+	<p> 
+	Please note, however, that some C++ features rely on details that we have yet to impliment. These details are fairly
+	advanced. For example, the C++ <b>new</b> and <b>delete</b> operaters require that we have a working <b>memory manager</b> 
+ 
+	already. As such, this section cannot cover everything just yet. Nontheless, we will set as much things up as possible here.
+	<p> 
+	<i>Ready?</i> 
+
+	<h1>Setting up a new Project</h1> 
+
+	Just like almost any other project, creating a project is fairly straightfoward.
+	<p> 
+	Within the IDE, Select <b>File->New->Project</b>. You should see a nice dialog:
+	<center> 
+ 
+	<img src="images/Project.jpg"> 
+	</center> 
+	Notice that the <b>Empty Project</b> setting is selected under <b>Installed Templates</b>.
+	<p> 
+	Now, type in the name of the project, and choose the project location. When you are done,
+	select the "OK" button, which should be highlighted.
+	<p> 
+	Your new project should now be created.
+ 
+	<h1>The Build Envirement - Project Properties</h1> 
+ 
+	This is great! The problem, however, is that the compilier assumes we are building a basic Win32
+	application. As such, it sets all of the project properties to it's default configuation, and links
+	the <b>Standard C++ Runtime</b> libraries--which will not work for us.
+	<p> 
+	Because of this, we need to change the configuation settings.
+	<p> 
+	To access <b>Project Properties</b>, <b>Right Click</b> the project name, and select <b>Properties</b>.
+	You should recieve a dialog, simular to the following:
+	<p><center><img src="images/Project1_a.gif"></center><p> 
+ 
+	All of the configuation settings are discussed in the same format listed in the above picture (Please look
+	at the left plane).
+ 
+ 
+	<h2>Project Wide Settings</h2> 
+	Most configuation settings depend entirely on the envirement that is being built on. <b>Remember that we are still
+	in a very low level envirement.</b> A <b>Single</b> wrong instruction produced by the compilier can make our code
+	triple fault.
+	<p> 
+	Also, remember that <b>We are still at Ring 0</b>. As such, we still have control over every little thing. This is
+	important, because if the code the compilier produces does not work with our current operating system setup, the
+	code will triple fault.
+	<p> 
+ 
+	This is a problem. <b>Alot of the configuation settings effect the output code.</b> Weather these changes cause a triple
+	fault, or work completely depends on the layout of your operating system, and its configuations. Alot of these changes
+	do not need to be changed. However, because certain configuations may cause a triple fault, this indicates to be extra
+	careful when trying to produce "The fastest and greatest code" from your C++ compilier.
+	<p> 
+ 
+	There are, however, some options that <b>REQUIRE</b> changing. These are the options that I will look at here. I will
+	also cover some other options that one may find helpful. I will explain these specific options in depth.
+	<p> 
+	At the end of this section, I will post my current configuation, cool? This way, you can compare your configuations,
+	and learn about setting up MSVC++ 2005.
+ 
+	<h2>Configuation Type</h2> 
+ 
+	We are going to be building the kernel as an executable, so keep this as <b>Application (.exe)</b>.
+	This setting is located under <b>General</b> (Please see the image shown in the above section
+	to locate <b>Configuation Type</b>).
+ 
+	<h2>C++ Configuation Settings</h2> 
+ 
+	Looking at the above image again, you will see the <b>C/C++</b> and <b>Linker</b> properties expanded.
+	the C/C++ properties include General, Optomization, Preprocessor, Code Generation, etc. We will cover
+	these properties here.
+ 
+	<h3>C/C++ > General</h3> 
+	None of these options we are not required to change. There are a couple of options I want to look at here, however.
+ 
+	<p><b>Additional Include Directories</b><p> 
+ 
+	This option allows us to provide our own path for INCLUDE files. This will allow us to use the format when including our own files:
+      <BLOCKQUOTE><PRE><DIV class=code>#include &lt;myheader.h&gt;</DIV></PRE></BLOCKQUOTE> 
+	This can be usefull when seperating the inlcusion of files within the same directory (<b>#include "myheader.h"</b>) and
+	including files within a standard Kernel include directory (<b>#include &lt;myheader.h&gt;</b>)
+ 
+	<p><b>Debug Information Format</b><p> 
+	Although we are using MSVC++, we <b>Cannot</b> use it's debugging features. Debuggers require a runtime envirement
+	to run in (and to hook) with an application. Because we do not have a runtime envirement,
+	you should <b>Disable</b> this.
+	<p> 
+ 
+	Normally, Adding debuggng information will not cause any problems. However, because we are unable to use the debugger
+	right now, there is no reason to generate debug info.
+ 
+	<p><b>Warning Level</b><p> 
+ 
+	Operating System code can get very complex. It is important that we can track even the slightest of potential problems.
+	Because of this, I recommend to <b>Set this to the highest level</b>.
+ 
+	<h3>C/C++ > Optomization</h3> 
+ 
+	<b>Optimization</b><p/> 
+ 
+	This can be set to any option. If a specific setting causes the code to crash, disassemble the code and
+	try to find out why. All source code in this series have been tested with all optomization levels to work.
+ 
+	<p/><b>Omit Frame Pointers</b><p/> 
+ 
+	This is not required; but setting this option frees up ESP so we may use it.
+ 
+	<h3>C/C++ > Preprocessor</h3> 
+ 
+	<b>Preprocessor Definitions</b><p/> 
+ 
+	Throughout the source code, I will be hiding all x86 architecture dependencies behind
+	a special preprocessor constant. This makes it easier to port non-portable code to
+	other architectures. This constant is <b>ARCH_X86</b>. This can be #define'd, but putting
+	ARCH_X86 here is easier ;)
+ 
+	<p/><b>Ignore Standard Include Path</b><p/> 
+ 
+	Remember we do not have a standard library anymore? :)
+ 
+	<h3>C/C++ > Code Generation</h3> 
+ 
+	There are a few options that I want to go over.
+ 
+	<p><b>Enable C++ Exceptions</b><p> 
+ 
+	This requires runtime support, which we do not have. I plan on implimenting exception handling soon, though.
+	Until then, this should be set to <b>No</b>.
+ 
+	<p><b>Struct Member Alignment</b><p> 
+ 
+	While writing the Kernel, we will be using alot of classes and structures. Most of these must be byte aligned.
+	Most compiliers add extra padding (for speed) to these structures, which will throw off the alignment that we need.
+	Because of this, set this to <b>1 Byte (/Zp1)</b> 
+ 
+	<p><b>Buffer Security Check</b><p> 
+ 
+	When enabled, MSVC++ adds extra code to test for possible buffer under and overruns. This relies on the MSVC++ runtime,
+	which we cannot use. Because of this, we cannot use this. <b>Set this to No (/GS-)</b><p> 
+ 
+	<h3>C/C++ > Language</h3> 
+ 
+	<p><b>Enable Run-Time Type Info</b><p> 
+ 
+	Run Time Type Info (RTTI) requires runtime support. Because we are disabling the runtime, we cannot use this.
+	Set to <b>No (/GR-)</b> 
+ 
+	<h3>C/C++ > Advanced</h3> 
+ 
+	No changes needed here. I do personally recommend using <b>__cdecl</b> over <b>__stdcall</b>, as __cdecl seems to have
+	a cleaner symbol names. It does not really matter though.
+ 
+	<h3>C/C++ > Command Line</h3> 
+ 
+	Here is the command line that I am using. If you are having difficulty, feel free to use this as a refrence. You
+	can also see all of these options set in the demo at the end of this chapter.
+      <BLOCKQUOTE><PRE><DIV class=code>/O2 /Oy /I "..\Include\\" /D "ARCH_X86" /X /FD /MT /Zp1 /GS- /GR- /FAs /Fa"Debug\\"
+/Fo"Debug\\" /Fd"Debug\vc80.pdb" /W4 /nologo /c /Gd /TP /errorReport:prompt</DIV></PRE></BLOCKQUOTE> 
+ 
+	Compare this command line with the one you currently have. You may have additional options,
+	depending on weather you decided to add more options.
+ 
+	<h2>Linker Configuation Settings</h2> 
+	The linker is very important to us for a number of reasons. It is responsible for creating the final symbolic names
+	the compilier produces. These symbolic names represent numerical addresses for varables, routines, and constants.
+	For example, the routine "main()" might be compilied into the symbolic name "_main". <b>In assembly language,
+	we refrence varables and routines by their symbolic names.</b> Because of this, to call a C++ main() routine,
+	we will normally do this:
+     <BLOCKQUOTE><PRE><DIV class=code>call _main   ; call C++ main() routine</DIV></PRE></BLOCKQUOTE> 
+ 
+	The linker produces a linker map with all of these symbolic names. This will be very important with debugging and testing.
+	With this, there are some linker settings that are required, while others are optional. The optional settings may
+	or may not work depending on your envirement settings and configuations.
+ 
+	<h3>Linker > General</h3> 
+	There are no options that require changing here. If you are using a real (or virtual) floppy drive, I personally recommend
+	setting the <b>Output File</b> to point to the floppy drive. This way, the final binary will be placed into the floppy disk,
+	allowing us to immediately test the Kernel in the emulator.
+ 
+	<h3>Linker > Input</h3> 
+ 
+	<b>Additional Dependencies</b><p/> 
+ 
+	By default, MSVC++ automatically links in a number of its libraries, including kernel32.lib, user32.lib,
+	gdi32.lib, winspool.lib and more. Because we never use them, they will not cause any problems. They will
+	add extra uneeded bloat to your kernel, though. Setting this to <b>$(NOINHERIT)</b> will fix this so they
+	will not be linked.
+ 
+	<p/><b>Ignore Default Libraries</b><p/> 
+ 
+	There is no standard library, so set this to <b>Yes (/NODEFAULTLIB)</b> 
+ 
+	<h3>Linker > Debugging</h3> 
+	Remember that the linker can generate a mapfile? This allows us to see the relitive address locations of all
+	global symbolic names. This will be very important to us, coinsidering we are still at the binary image level.
+	To do this:
+	<p> 
+	<ul><li>Set <b>Generate Map File</b> to <b>Yes (/MAP)</b></li> 
+ 
+	<li>Set <b>Map File Name</b> to the name of the mapfile to generate.</li> 
+	<li>Hit <b>Apply</b></li></ul> 
+ 
+	<h3>Linker > System</h3> 
+	<p> 
+	<b>SubSystem</b><p/> 
+ 
+	This value is stored within the program file. It tells the operating system how to run the application.
+	Because this is a driver application, set this to <b>Native (/SUBSYSTEM:NATIVE)</b>.
+ 
+	<p/><b>Driver</b><p/> 
+ 
+	This option insures to build this program as a kernel-level driver. This automatically envokes the <b>/FIXED:NO</b> option
+	(instead of the standard <b>/FIXED</b> option), which generates a relocation section, instead of a fixed base address.
+	Because we are developing a driver application, set this option to <b>Driver (/DRIVER)</b>).
+ 
+	<h3>Linker > Optimization</h3> 
+ 
+	Setting <b>Refrences</b> to <b>Eleminate unrefrenced data</b> removes all unrefrenced symbols (such as varables and functions that are never used.)
+	<b>I recommend setting this option to reduce the number of symbols from the linker map, and to reduce kernel size.</b>	
+ 
+	<p> 
+	Setting <b>Enable COMDAT folding</b> to <b> Remove redundent COMDATS</b> will also reduce the size of the Kernel, and the number of redundent
+	COMDATS.
+ 
+	<h3>Linker > Advanced</h3> 
+ 
+	<p/><b>Entry Point</b><p/> 
+ 
+	This should be set to the entry point of your kernel. In our system, this will be <b>kernel_entry</b>.
+ 
+	<p/><b>Base Address</b><p/> 
+ 
+	This is the base address that the image will be loaded to. Remember that the kernel is loaded to 1MB?
+	Because of this, this should be set to 0x100000.
+ 
+	<p><b>Fixed Base Address</b></p> 
+ 
+	This will be automatically envoked by the linker. Set this to <b>Generate a relocation section (/FIXED:NO)</b>.
+ 
+	<h3>Linker > Command Line</h3> 
+ 
+	<p><b>Additional options</b><p> 
+ 
+	Add <b>/ALIGN:512</b> to the <b>Additional options</b> text box. This is required to insure proper section alignment.
+	<b>Not doing so will cause problems executing the kernel or triple faults</b>.
+ 
+	<p><b>The command line</b><p/> 
+ 
+Thats all! Compare your command line with the following. You may have additional options depending on your envirement setup.
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>/OUT:"A:\KRNL32.EXE" /INCREMENTAL:NO /NOLOGO /LIBPATH:"..\Lib\\" /MANIFEST:NO
+/NODEFAULTLIB /MAP:"Kernel.map" /SUBSYSTEM:NATIVE /DRIVER /OPT:REF /OPT:ICF /ENTRY:"kernel_entry"
+/BASE:"0x100000" /FIXED:No /ERRORREPORT:PROMPT</DIV></PRE></BLOCKQUOTE> 
+ 
+	<h1>Executing the PE Kernel</h1> 
+ 
+	I do not plan on going over the entire format of executable files here. Not until we cover program
+	and task managers, anyways.
+	<p> 
+ 
+	The problem, however, is that MSVC++ can only output COFF and PE file formats. Because of this, we have to find a way
+	of parsing it from within our Stage 2 bootloader.
+	<p> 
+ 
+	Because I do not plan on describing the PE format in detail yet, I will first describe its basic format, and how the code works.
+	Lets take a look!
+ 
+	<h2>File Format</h2> 
+	Once we have loaded a file image into memory, it is simply a direct copy of the image file on disk. Because
+	of this, in order to parse the file, all we need to do is read it from where we loaded it from memory.
+	<p> 
+	Understanding how to parse file formats are very important. Remember that the FIRST byte within the FIRST structure
+	actually represents the FIRST byte from where it is loaded at in memory.
+	<p><center><img src="images/PEload.jpg"></center> 
+	<p> 
+ 
+	<h3>_IMAGE_DOS_HEADER</h3> 
+	This structure is the very first structure within the PE file.
+      <BLOCKQUOTE><PRE><DIV class=code>typedef struct _IMAGE_DOS_HEADER {  // DOS .EXE header
+    USHORT e_magic;         // Magic number (Should be MZ)
+    USHORT e_cblp;          // Bytes on last page of file
+    USHORT e_cp;            // Pages in file
+    USHORT e_crlc;          // Relocations
+    USHORT e_cparhdr;       // Size of header in paragraphs
+    USHORT e_minalloc;      // Minimum extra paragraphs needed
+    USHORT e_maxalloc;      // Maximum extra paragraphs needed
+    USHORT e_ss;            // Initial (relative) SS value
+    USHORT e_sp;            // Initial SP value
+    USHORT e_csum;          // Checksum
+    USHORT e_ip;            // Initial IP value
+    USHORT e_cs;            // Initial (relative) CS value
+    USHORT e_lfarlc;        // File address of relocation table
+    USHORT e_ovno;          // Overlay number
+    USHORT e_res[4];        // Reserved words
+    USHORT e_oemid;         // OEM identifier (for e_oeminfo)
+    USHORT e_oeminfo;       // OEM information; e_oemid specific
+    USHORT e_res2[10];      // Reserved words
+    LONG   e_lfanew;        // File address of new exe header
+} IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;</DIV></PRE></BLOCKQUOTE> 
+	We do not need to fully understand this yet, until we create a full PE loader. For now, because we are only looking for the entry routine address,
+	we need to find the entry routine address from the _IMAGE_FILE_HEADER structure, which contains the start of the PE header.
+	<p> 
+	The address of the _IMAGE_FILE_HEADER structure is inside of the <b>e_lfanew</b> member of the _IMAGE_DOS_HEADER. So,
+	in order to access this member, we refrence the byte offset from where it is loaded in memory:
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>mov    ebx, [IMAGE_PMODE_BASE+60]	; e_lfanew is a 4 byte offset address of the PE header; it is 60th byte. Get it
+add    ebx, IMAGE_PMODE_BASE 		; add base</DIV></PRE></BLOCKQUOTE> 
+	Yey! Noe EBX contains the starting address of the _IMAGE_FILE_HEADER structure. This assumes our PE kernel image
+	was loaded at <b>IMAGE_PMODE_BASE</b>.
+ 
+	<h3>Real Mode DOS Stub Program</h3> 
+ 
+	Okay then! Lets look back up at the PE file image structure again (The above picture.) Notice how a DOS stub program
+	is right after the _IMAGE_DOS_HEADER. This is a useful program, actually. This is the program that displays "This program cannot
+	be run in DOS Mode", if you try to execute a Windows program from within DOS.
+	<p> 
+	It is possible to change the program that is executed. This allows us to embed our own program to execute, instead of the
+	dull default one. We do this is MSVC++ using the <b>STUB</b> command line option. For example:
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>/STUB=myprog.exe</DIV></PRE></BLOCKQUOTE> 
+	As long as <b>myprog.exe</b> is a 32 bit application, MSVC++ will embed that program as the DOS stub program, insead of the dull
+	default one. Cool? This can be usefull for a verity of reasons. Who knows--Perhaps provide a specialized DOS version of your
+	program?
+	<p> 
+	Because our kernel is an EXE file, it is possible for users to double-click and attempt to run it from Windows. Instead,
+	this DOS stub program will run instead. Cool, huh?
+	<p> 
+	Anywhoo...Because the size of this program is not constant, we need to jump over it to the next section--the _IMAGE_FILE_HEADER.
+	This is why we needed to get the location of _IMAGE_FILE_HEADER from the _IMAGE_DOS_HEADER struct.
+ 
+	<h3>_IMAGE_FILE_HEADER</h3> 
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>typedef struct _IMAGE_FILE_HEADER {
+    USHORT  Machine;
+    USHORT  NumberOfSections;
+    ULONG   TimeDateStamp;
+    ULONG   PointerToSymbolTable;
+    ULONG   NumberOfSymbols;
+    USHORT  SizeOfOptionalHeader;
+    USHORT  Characteristics;
+} IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;</DIV></PRE></BLOCKQUOTE> 
+ 
+	Okay...Remember that EBX now contains the starting address of this structure. This structure is useful, but not for what we need.
+	We need a way of executing the entry point routine, remember? Knowing that this struct is 24 bytes in size, and the _IMAGE_OPTIONAL_HEADER
+	structure is right after it, we can just skip this structure for now:
+ 
+     <BLOCKQUOTE><PRE><DIV class=code>mov    ebx, [IMAGE_PMODE_BASE+60]	; e_lfanew is a 4 byte offset address of the PE header; it is 60th byte. Get it
+add    ebx, IMAGE_PMODE_BASE 		; add base
+ 
+; EBX now points to beginning of _IMAGE_FILE_HEADER. Jump over it to the next section (_IMAGE_OPTIONAL_HEADER)
+add	ebx, 24</DIV></PRE></BLOCKQUOTE> 
+ 
+ 
+	<h3>_IMAGE_OPTIONAL_HEADER</h3> 
+      <BLOCKQUOTE><PRE><DIV class=code>struct _IMAGE_OPTIONAL_HEADER {
+    //
+    // Standard fields.
+    //
+    USHORT  Magic;
+    UCHAR   MajorLinkerVersion;
+    UCHAR   MinorLinkerVersion;
+    ULONG   SizeOfCode;
+    ULONG   SizeOfInitializedData;
+    ULONG   SizeOfUninitializedData;
+    ULONG   AddressOfEntryPoint;			<< IMPORTANT!
+    ULONG   BaseOfCode;
+    ULONG   BaseOfData;
+    //
+    // NT additional fields.
+    //
+    ULONG   ImageBase;
+    ULONG   SectionAlignment;
+    ULONG   FileAlignment;
+    USHORT  MajorOperatingSystemVersion;
+    USHORT  MinorOperatingSystemVersion;
+    USHORT  MajorImageVersion;
+    USHORT  MinorImageVersion;
+    USHORT  MajorSubsystemVersion;
+    USHORT  MinorSubsystemVersion;
+    ULONG   Reserved1;
+    ULONG   SizeOfImage;
+    ULONG   SizeOfHeaders;
+    ULONG   CheckSum;
+    USHORT  Subsystem;
+    USHORT  DllCharacteristics;
+    ULONG   SizeOfStackReserve;
+    ULONG   SizeOfStackCommit;
+    ULONG   SizeOfHeapReserve;
+    ULONG   SizeOfHeapCommit;
+    ULONG   LoaderFlags;
+    ULONG   NumberOfRvaAndSizes;
+    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+} IMAGE_OPTIONAL_HEADER, *PIMAGE_OPTIONAL_HEADER;</DIV></PRE></BLOCKQUOTE> 
+ 
+	THIS is an important structure. While its name states that it is "optional"--It is not, so do not worry about that.
+	It is a required structure for all PE programs.
+	<p> 
+	The important member here is <b>AddressOfEntryPoint</b> which contains...erm... The address of the entry point routine.
+	For example...main(), mainCRTStartup(), whatever suits your needs.
+	<p> 
+	Knowing that EBX points to the beginning of this structure, all we now need to do is refrence EBX+AddressOfEntryPoint.
+	Read from that location, and we have the beginning address of the starting routine to call. After we get this address, all we need to do is far jump to that
+	location, and we effectivly call our C++ entry point!
+ 
+	<h3>Putting it together</h3> 
+ 
+	Now that everything is set up, lets try to put this all together.
+	<p> 
+	Remember that the image is loaded at IMAGE_PMODE_BASE:
+      <BLOCKQUOTE><PRE><DIV class=code>	mov	ebx, [IMAGE_PMODE_BASE+60]	; e_lfanew is 60th byte. Get it
+	add	ebx, IMAGE_PMODE_BASE		; Add base address. EBX now points to file sig (PE00)</DIV></PRE></BLOCKQUOTE> 
+	Because the image is loaded at PMODE_IMAGE_BASE, that is where the first byte of the first structure--_IMAGE_DOS_HEADER, is located.
+	Remember that the e_lfanew member of the _DOS_IMAGE_FILE structure contains the address of the _IMAGE_FILE_HEADER. <b>Because this is
+	an offset address (Assuming base 0), we have to add the base address to where we loaded it in memory.</b> 
+      <BLOCKQUOTE><PRE><DIV class=code>	; jump over to optional header (Although it isnt optional o.0 )
+ 
+	add	ebx, 24
+	mov	eax, [ebx]		; _IMAGE_FILE_HEADER is 20 bytes + size of sig (4 bytes)
+	add	ebx, 16			; address of entry point is now in ebx</DIV></PRE></BLOCKQUOTE> 
+	Now EBX points to the beginning of _IMAGE_FILE_HEADER. The first lines jumps over this section (As we do not need it now).
+	So, <b>after the first instruction here, EBX now points to the beginning of the _IMAGE_OPTONAL_HEADER structure</b>,
+	where we can begin looking for the <b>AddressOfEntryPoint</b> member. This member is 16 bytes from the start, so we add 16
+	to EBX.
+	<p> 
+	Now, EBX contains the address of the entry point routine. Before calling it, however, we need to add the image
+	base address to the entry point address. That is, the entry point address is just an offset.
+	<p/> 
+	Looking back at the _IMAGE_OPTIONAL_HEADER structure, we can see the <b>ImageBase</b> member. This is 12 bytes
+	(A ULONG is 4 bytes) from <b>AddressOfEntryPoint</b>. Knowing EBX already points to <b>AddressOfEntryPoint</b>,
+	this is very easy:
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>	mov	ebp, dword [ebx]	; store entry point address
+	add	ebx, 12			; ImageBase member is 12 bytes from AddressOfEntryPoint member
+	mov	eax, dword [ebx]	; gets image base
+	add	ebp, eax		; add image base to entry point address</DIV></PRE></BLOCKQUOTE> 
+ 
+	Now that ebp contains the entry point address, call it:
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>	call	ebp	; Execute Kernel</DIV></PRE></BLOCKQUOTE> 
+	Not to hard, huh? Notice that we do not need to specify the code selector (0x8) here. The reason is that CS already contains 0x8.
+ 
+	<h1>Developing a C++ Runtime Envirement for MSVC++</h1> 
+	As you know, we cannot use the runtime that was provided with Windows. The reason is fairly simple. The C++
+	Windows runtime relies heavily on an existing Windows Operating system. Because we are developing a new operating
+	system, this runtime is nonexistant.
+	<p> 
+	Because of this, We have to create our own C++ runtime code. This can get tricky. Alot of C++ features requires the
+	use of a runtime. However, because we have disabled the runtime, the compilier will generate interesting errors
+	when using these features. Other times are simply unpredictable, and may cause a triple fault.
+	<p> 
+ 
+	Lets look at this, for a moment. In applications, what calls main()? The runtime library. What calls and initialzes
+	all global objects? The runtime library. What provides certain keyword supports that which tie with the system (such
+	as new and delete)? The runtime library. What sets up the initil stack information? Again: <b>The runtime library.</b> 
+	<p> 
+	Not defining a runtime library can cause unpredictable results. For one, global and static objects will never be initialized.
+	Another problem is that the use of certain keywords are unpredictable. Global and static objects will never be deallocated.
+	Also, the compilier relies on certain routines--useually defined by the standard runtime. Defining and calling virtual
+	functions may become unpredictable. The calling of pure virtual routines will immediately crash. And, say goodby to
+	<b>new, delete, typeid, and exceptions</b>.
+	<p> 
+	To make a story short: Creating a small C++ runtime is essental to get C++, the language itself, to even work properly
+	for us.
+ 
+	<h2>Global Operators</h2> 
+	You will need to define the global new and delete operators. The problem, however, is that we have no memory manager
+	to work around with. Because of this, for now, don't do anything:
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>void* __cdecl ::operator new (unsigned int size) { return 0; }
+void* __cdecl operator new[] (unsigned int size) { return 0; }
+void __cdecl ::operator delete (void * p) {}
+void __cdecl operator delete[] (void * p) { }</DIV></PRE></BLOCKQUOTE> 
+ 
+	Now we can use the <b>new</b> and <b>delete</b> keywords without error--although they do absolutly nothing...yet, anyways.
+ 
+	<h2>Pure virtual function call handler</h2> 
+	Pure virtual functions are functions declared in the class, but contain no definition. Their primary purpose
+	is to <b>force</b> derived classes to overload that function.
+	<p> 
+	It is not possible to call a pure virtual function directly through normal means. Calling a pure virtual function
+	will result into undefined behavior, because that function does not actually exist--It was never defined.
+	<p> 
+	If a pure virtual function has some how been called, the compilier attempts to use <b>_purecall()</b> as the call handler.
+	If this does not exist, the result is unpredictable--That is, a triple fault.
+	<p> 
+ 
+	Because of this, our C++ runtime will need to define it:
+      <BLOCKQUOTE><PRE><DIV class=code>int __cdecl ::_purecall() { for (;;); return 0; }</DIV></PRE></BLOCKQUOTE> 
+ 
+	Normally you would want to assert () when this happens as it should never happen.
+ 
+	<h2>Floating Point Support</h2> 
+ 
+	Everything is working great with our new MSVC++ kernel. That is, until we try to compile <b>float i=2/2;</b> 
+	and BAM! We get hit by errors. More specifically, unresolved external errors...Our favoriate ;)
+	<p/> 
+	There is nothing wrong with this...Just like with using the new and delete operators without them being defined.
+	Simulariy, MSVC++ needs some routines defined for working with floating point math.
+ 
+	<h3>_fltused</h3> 
+ 
+	This is used by MSVC++ to determin if floating point is currently in use. This should be set to 1 and must be given
+	C linkage if building for C++:
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>extern "C" int _fltused = 1;</DIV></PRE></BLOCKQUOTE> 
+ 
+	<h3>_ftol2_sse()</h3> 
+ 
+	Depending on your optomization level, MSVC++ may embed calls to _ftol2_sse() to convert a float to a long. I wont be
+	using SSE here, so I will just write my implimentation using the FPU:
+ 
+<BLOCKQUOTE><PRE><DIV class=code>extern "C" long __declspec (naked) _ftol2_sse() {
+ 
+	int a;
+#ifdef ARCH_X86
+	_asm	fistp 	[a]
+	_asm	mov	ebx, a
+	_asm	ret
+#endif
+}</DIV></PRE></BLOCKQUOTE> 
+ 
+	<h3>Other routines</h3> 
+ 
+	I have defined other routines, which are _CIcos(), _CIsqrt(), and _CIsin(). Until we can verify these routines
+	are needed, I will keep them inside of our runtime library.
+ 
+	<h2>Initializing globals and static data</h2> 
+ 
+	Everything is good so far, except what about globals? Remember that the runtime is responsible for executing all global
+	executed routines and initializing all global and static objects? Because we have disabled the runtime, we have to do it.
+	<p> 
+	To do this, we have to watch exactally how MSVC++ handles the constructors (ctors).
+	<p> 
+ 
+	MSVC++ uses a special section (Simular to .data, .bss, .text, etc.) within the final binary image for ctors. When the
+	MSVC++ compilier finds an object that must be executed by the startup code, it places a <b>Dynamic initializer</b> inside
+	of this section. This means that -- for every dynamic initializer that needs to be executed at startup, they can all
+	be found by looking inside of this special section.
+	<p> 
+	This section is the <b>.CRT</b> section. <b>These dynamic initializers are a an array
+	of 4 byte function pointers, which are stored within .CRT</b> So, if we can find a way of parsing this section, we can call each
+	function pointer that MSVC++ set for us to call each routine that needs to be called at startup.
+	<p> 
+ 
+	We cannot do this with C++ alone, however, as these section names are very MSVC++ specific. Also, as we are building
+	without any runtime, the .CRT section is currently nonexistant. We have to add this section ourselves. The <b>only</b> 
+	way of doing this is using the preprocessor.
+ 
+	<h3>Naming Conventions</h3> 
+ 
+	Alright...This section can be a little confusing. The section names used in MSVC++ are very strange. Serously--<i>.CRT$XCU</i>? What were they thinking!?
+	<p> 
+	Actually, these section names do have a purpose. the section names are composed of two parts, seperated by the dollar sign "$".
+	<b>The first part is used as the base section name</b>. The second part indicates where it is located at in the final image.
+ 
+	<p/>That is, we can think of a section name having this format:
+ 
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>.section_name$location_name</DIV></PRE></BLOCKQUOTE> 
+ 
+	<p/> 
+	The <b>section name</b> can be .code, .data, .bss, .CRT, or any other section name. The <b>location_name</b> 
+	is an alpabitic name that represents where we are in the section. For an example, in <b>.CRT$XCA</b>, .CRT is the
+	section name, <Mb>XCA</b> is its location in that section. It does not matter what this location name is; the
+	important thing to remember is that it is in <b>alphabitical order</b>.
+ 
+	<p/> 
+ 
+	Here is an example:
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>	.CRT$XCA
+	.CRT$XCU
+	.CRT$XCZ</DIV></PRE></BLOCKQUOTE> 
+ 
+	Notice the sections are arranged in the letters of the alphabit. The arrangement of the second part determins their location,
+	at which they are stored within the final image. In the above, <b>.CRT$XCA will be first, .CRT$XCU is second, .CRT$XCZ is the last one.</b> 
+	<p> 
+	Lets look at this anoher way, by mixing these up...
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>	.CRT$XCZ  
+	.CRT$XCA
+	.CRT$XCU</DIV></PRE></BLOCKQUOTE> 
+	The same thing applies here. .CRT$XCA is the first section, again. This example illustrates that: <b>The order of these sections depends
+	on their alphavalue--a comes before z, so .CRT$XCA comes before .CRT$XCZ.</b> Notice the last character. Not too hard, I hope :)
+	<p> 
+ 
+	We will be able to see these sections inside of the linker map, when we set them up.
+ 
+	<h3>Creating new segment names</h3> 
+ 
+	In order to create a new section, we need to use the <b>#pragma data_seg()</b> directive. This directive insures that all
+	data allocated after it is placed within this new section.
+	<p> 
+	This directive takes the form:
+      <BLOCKQUOTE><PRE><DIV class=code>	#pragma data_seg( ["section-name"[, "section-class"] ] )</DIV></PRE></BLOCKQUOTE> 
+	"section_class" is retained for compatibility purposes only, and is now ignored by MSVC++.
+	<p> 
+ 
+	The important part, thus, is the first parameter--"section-name", which gives the new section name a...er...name:
+      <BLOCKQUOTE><PRE><DIV class=code>#pragma data_seg(".CRT$XCA")
+ 
+// All varables allocated here are now placed within the .CRT$XCA section, rather then .data section</DIV></PRE></BLOCKQUOTE> 
+	To go back to the default (.data) section, use this pragma without parameters:
+      <BLOCKQUOTE><PRE><DIV class=code>//! Select the default data segment again (.data) for the rest of the unit
+#pragma data_seg()</DIV></PRE></BLOCKQUOTE> 
+ 
+	<h3>Merging Sections</h3> 
+	By default, we are unable to read or write to the .CRT section. However, we can read and wite to the .data section just fine.
+	What we want is the same <b>permissions</b> for <b>both</b> section names.
+	<p> 
+ 
+	We can fix this by combining the two sections together, which will insure both sections have read and write abilities:
+      <BLOCKQUOTE><PRE><DIV class=code>//! Now, move the CRT data into .data section so we can read/write to it
+#pragma comment(linker, "/merge:.CRT=.data")</DIV></PRE></BLOCKQUOTE> 
+ 
+	Okay... So lets see... All global initializer routines are stored as function pointers within the .CRT$XCU section
+	of the binary image. We can declare a section right before and after this section, and insure they are right after
+	each other, thanks to the naming convention, and the linker. Because they are right next to each other, we can effectivly declare a varable
+	to point to these sections--effectivly pointing to the first and last function pointer in the initializer array. Lets look
+	at this next...
+ 
+	<h3>Initializing globals - Setup</h3> 
+	Lets look at actual code, and break it down:
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>//! Function pointer typedef for less typing
+typedef void (__cdecl *_PVFV)(void);</DIV></PRE></BLOCKQUOTE> 
+	We first typedef a function pointer to improve readability. This function pointer is used to point to each
+	global initializer.
+      <BLOCKQUOTE><PRE><DIV class=code>/**
+*	MSVC++ creates dynamic initializers and deallocaters, which help us in calling the routines.
+*	The compilier and linker bind all dynamic initializers into a function pointer table inside a
+*	section called .CRT$XCU.
+*/
+ 
+// Standard C++ Runtime (STD CRT) __xc_a points to beginning of initializer table
+#pragma data_seg(".CRT$XCA")
+_PVFV __xc_a[] = { NULL };</DIV></PRE></BLOCKQUOTE> 
+	The above code creates the .CRT$XCA section. By declaring this with an "A", we insure this will be right before
+	the next .CRT section defined, so it is guaranteed to be right before our .CRT$XCU section.
+	<p> 
+	__xc_a is a standard MSVC++ CRT name used as a pointer to the beginning of the initializer list, stored in .CRT$XCU
+      <BLOCKQUOTE><PRE><DIV class=code>//! .CRT$XCU is located here.</DIV></PRE></BLOCKQUOTE> 
+	Our .CRT$XCU is giaranteed to be located before .CRT$XCZ and after .CRT$XCA because of the naming convention used.
+      <BLOCKQUOTE><PRE><DIV class=code>//! Standard C++ Runtime (STD CRT) __xc_z points to end of initializer table
+#pragma data_seg(".CRT$XCZ")
+_PVFV __xc_z[] = { NULL };</DIV></PRE></BLOCKQUOTE> 
+	This is the .CRT$XCZ section. Again, because of naming conventions, it is guaranteed to be right after the initialzer list
+	within .CRT$XCU. By defining a function pointer here, <b>It is guaranteed to point to the last initializer routine - 1,
+	within the initializer array within .CRT$XCU.</b> __xc_z is the standard name used by the MSVC++ CRT.
+      <BLOCKQUOTE><PRE><DIV class=code>//! Select the default data segment again (.data) for the rest of the unit
+#pragma data_seg()</DIV></PRE></BLOCKQUOTE> 
+	For all other data, we want to use .data section, so switch back to that section...
+      <BLOCKQUOTE><PRE><DIV class=code>//! Now, move the CRT data into .data section so we can read/write to it
+#pragma comment(linker, "/merge:.CRT=.data")</DIV></PRE></BLOCKQUOTE> 
+	...And merge the .CRT section with our .data section. This insures we can access the .CRT section from the .data section.
+ 
+	To initialize each routine, just loop through each function pointer and call it. <b>Warning: Beware of null function pointers.
+	Calling a null function pointer will result into an invalid jump to some random location in memory, which will result in triple fault.</b> 
+      <BLOCKQUOTE><PRE><DIV class=code>void __cdecl _initterm ( _PVFV * pfbegin, _PVFV * pfend )
+{
+    // Go through each initializer
+    while ( pfbegin < pfend )
+    {
+      // Execute the global initializer
+      if ( *pfbegin != NULL )
+            (**pfbegin) ();
+ 
+	// Go to next initializer inside the initializer table
+        ++pfbegin;
+    }
+}
+ 
+// This initializes all global initializer routines:
+_initterm(__xc_a, __xc_z);</DIV></PRE></BLOCKQUOTE> 
+ 
+	<h2>Cleaning up the envirement</h2> 
+	Yippee! We now have all global initializer routines being executed. Whats next? Cleaning up after ourselves, of course.
+	<p> 
+	The good news is that this is much easier to work with then the initializer routines. All we need to define a location
+	to store an array of global deinitializer function pointers at some location in memory:
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>//! function pointer table to global deinitializer table
+static _PVFV * pf_atexitlist = 0;
+ 
+//! Maximum entries allowed in table
+static unsigned max_atexitlist_entries = 32;
+ 
+//! Current amount of entries in table
+static unsigned cur_atexitlist_entries = 0;</DIV></PRE></BLOCKQUOTE> 
+ 
+These are our function pointers that we use to keep track of where we are at in the
+global deinitializer array.
+<p> 
+<b>We</b> define where these arrays is located. MSVC++ adds deintializer code for each global object,
+that adds a function pointer to the global deinitializer array. It does this by calling a specially defined
+routine, <b>atexit ()</b>.
+ 
+<p> 
+<b>Note: MSVC++ requires this routine. Not defining this routine will result in errors when defining a dtor of any kind.</b> 
+<p> 
+The actual routine is simple. Remember that, for each global object, MSVC++ embeds code that will call this routine. The dtor
+as an object is passed into this routine as a paramater. Because of this, all we need to do is to add it to the end of our dtor array:
+      <BLOCKQUOTE><PRE><DIV class=code>//! For every global object created, MSVC++ calls this routine with a function ptr to each dtor
+int __cdecl atexit(_PVFV fn)
+{
+	//! Insure we have enough free space
+	if (cur_atexitlist_entries>=max_atexitlist_entries)
+		return 1;
+	else {
+ 
+		// Add the exit routine
+		*(pf_atexitlist++) = fn;
+		cur_atexitlist_entries++;
+	}
+ 
+	return 0;
+}</DIV></PRE></BLOCKQUOTE> 
+ 
+So...Now that we have a way of adding dtors to the list (Remember that MSVC++ automaticlly does this
+through our function), All we need to do is initialize the original function pointer array:
+      <BLOCKQUOTE><PRE><DIV class=code>void __cdecl _atexit_init(void)
+{
+    max_atexitlist_entries = 32;
+ 
+	// Warning: Normally, the STDC will dynamically allocate this. Because we have no memory manager, just choose
+	// a base address that you will never use for now
+    pf_atexitlist = (_PVFV *)0x500000;
+}</DIV></PRE></BLOCKQUOTE> 
+Not too hard, I hope :)
+<p> 
+There are alot of possibly new concepts for our readers, however, so all of this may be better in an example demo.
+<p> 
+ 
+	<h1>The Entry Point</h1> 
+	Okay, so lets see...We have covered getting the entry address from the PE image. The entry point routine
+	is immediately executed by the 2nd stage loader. We have set up our entry point to be <b>kernel_entry</b> 
+	so lets define it:
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>void _cdecl kernel_entry () {</DIV></PRE></BLOCKQUOTE> 
+ 
+	We need to insure the registers and stack are setup before any code is executed. This is very
+	important to insure we refrence the correct descriptors in the bootloaders' GDT. We also need to setup
+	the stack, as C++ uses the stack reguarly.
+      <BLOCKQUOTE><PRE><DIV class=code>#ifdef ARCH_X86
+	_asm {
+		cli					// clear interrupts--Do not enable them yet
+		mov ax, 10h				// offset 0x10 in gdt for data selector, remember?
+		mov ds, ax
+		mov es, ax
+		mov fs, ax
+		mov gs, ax
+		mov ss, ax				// Set up base stack
+		mov esp, 0x90000</DIV></PRE></BLOCKQUOTE> 
+	Next, we store the current stack frame pointer. This will insure that any routines we call has a place to return to.
+      <BLOCKQUOTE><PRE><DIV class=code>		mov ebp, esp
+		push ebp
+	}
+#endif</DIV></PRE></BLOCKQUOTE> 
+ 
+	Now, we call our main() routine!
+	<p> 
+	After calling main(), just halt the system, to insure we don't return (As there is nowhere to return to.)
+      <BLOCKQUOTE><PRE><DIV class=code>	//! Execute global constructors
+	InitializeConstructors();
+ 
+	//! Call kernel entry point
+	main ();
+ 
+	//! Cleanup all dynamic dtors
+	Exit ();
+ 
+#ifdef ARCH_X86
+	_asm cli
+#endif
+	for (;;);
+}</DIV></PRE></BLOCKQUOTE> 
+Thats all thats needed! As long as the entry poin is set to <b>kernel_entry</b>, This routine will be placed at the
+starting base address--Which should be set to 1 MB
+ 
+	<h1>Demo</h1> 
+ 
+       <a href="Demos/Demo5_1.zip">Demo Download</a> (MSVC++)
+        <p> 
+ 
+ 
+ 
+        This demo loads and executes a 32 bit Kernel written in MSVC++ 2005. It also includes all of the source code in this
+        tutorial, as well.
+ 
+	<h1>Conclusion</h1> 
+	<p> 
+	Yey! Alot of concepts in this tutorial is farily simple, isn't it? We covered setting up
+	MSVC++ 2005 so that we can use the compilier for use in operating system Kernels. We also looked
+	at creating a basic C++ runtime envirement, ctor and dtor calling, virtual function handling, and global operators.
+	<p> 
+	In the next few tutorials, we are looking at creating envirements for different compiliers. This tutorial
+	has covered setting up MSVC++ 2005.
+	<p> 
+	This tutorial was hard to write--and I am yet to finish it. There are simply so many options that MSVC++ has,
+	and describing these options in detail will take a long time. I wanted to find a way of combining context, not
+	just a "do this do that" option setting list. I am still deciding on a format style for that. I hope I did Okay :)
+	<p> 
+ 
+
+	Until next time,
+	<p>
+	~Mike<br>
+	<i>BrokenThorn Entertainment. Currently developing DoE and the <a href="http://www.brokenthorn.com/mos/site2/">Neptune Operating System</a></i>
+
+	<br><br>
+	<i>Questions or comments? Feel free to <a href="mailto:neon6000@aol.com">Contact me</a>.</i>
+
+	<br><br>
+	Would you like to contribute and help improve the articles? If so, please <a href="mailto:neon6000@aol.com">let me know!</a>
+
+</BODY></HTML> 

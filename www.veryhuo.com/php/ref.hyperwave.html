@@ -1,0 +1,255 @@
+<HTML><HEAD><TITLE>Hyperwave Functions</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="函数参考" HREF="funcref.html"><LINK REL="PREVIOUS" TITLE="setrawcookie" HREF="function.setrawcookie.html"><LINK REL="NEXT" TITLE="hw_Array2Objrec" HREF="function.hw-array2objrec.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="reference" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.setrawcookie.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.hw-array2objrec.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="reference"><A NAME="ref.hyperwave"></A><DIV CLASS="TITLEPAGE"><H1 CLASS="title">XXXVIII. Hyperwave Functions</H1><DIV CLASS="PARTINTRO"><A NAME="AEN34144"></A><DIV CLASS="section"><H1 CLASS="section"><A NAME="hyperwave.intro"></A>介绍</H1><P>&#13; <SPAN CLASS="productname">Hyperwave</SPAN> has been developed at
+<A HREF="http://www.iicm.edu/" TARGET="_top">IICM</A> in Graz. It started with
+the name <SPAN CLASS="acronym">Hyper-G</SPAN> and changed to Hyperwave when
+it was commercialised (in 1996).
+</P><P>&#13; Hyperwave is not free software. The current version, 5.5 is
+available at <A HREF="http://www.hyperwave.com/" TARGET="_top">http://www.hyperwave.com/</A>.
+A time limited version can be ordered for free (30 days).
+</P><P>&#13; See also the <A HREF="ref.hwapi.html">Hyperwave API</A> module.
+</P><P>&#13; Hyperwave is an information system similar to a database
+(<SPAN CLASS="acronym">HIS</SPAN>, Hyperwave Information Server). Its focus
+is the storage and management of documents. A document can be any
+possible piece of data that may as well be stored in file. Each
+document is accompanied by its object record. The object record
+contains meta data for the document. The meta data is a list of
+attributes which can be extended by the user. Certain attributes
+are always set by the Hyperwave server, other may be modified by
+the user. An attribute is a name/value pair of the form name=value.
+The complete object record contains as many of those pairs as the
+user likes. The name of an attribute does not have to be unique,
+e.g. a title may appear several times within an object record.
+This makes sense if you want to specify a title in several languages.
+In such a case there is a convention, that each title value is
+preceded by the two letter language abbreviation followed by a colon,
+e.g. <TT CLASS="literal">'en:Title in English'</TT> or <TT CLASS="literal">'ge:Titel
+in deutsch'</TT>. Other attributes like a description or keywords
+are potential candidates. You may also replace the language
+abbreviation by any other string as long as it separated by colon
+from the rest of the attribute value.
+</P><P>&#13; Each object record has native a string representation with each
+name/value pair separated by a newline. The Hyperwave extension
+also knows a second representation which is an associated array with
+the attribute name being the key. Multilingual attribute values itself
+form another associated array with the key being the language
+abbreviation. Actually any multiple attribute forms an associated
+array with the string left to the colon in the attribute value
+being the key. (This is not fully implemented. Only the attributes
+Title, Description and Keyword are treated properly yet.)
+</P><P>&#13; Besides the documents, all hyper links contained in a document
+are stored as object records as well. Hyper links which
+are in a document will be removed from it and stored as individual
+objects, when the document is inserted into the database.
+The object record of the link contains information
+about where it starts and where it ends.
+In order to gain the original document you will have
+to retrieve the plain document without the links and the list
+of links and reinsert them. The functions
+<A HREF="function.hw-pipedocument.html"><B CLASS="function">hw_pipedocument()</B></A> and <A HREF="function.hw-gettext.html"><B CLASS="function">hw_gettext()</B></A>
+do this for you. The advantage of separating links
+from the document is obvious. Once a document to which a link
+is pointing to changes its name, the link can easily be modified
+accordingly. The document containing the link is not affected
+at all. You may even add a link to a document without modifying
+the document itself.
+</P><P>&#13; Saying that <A HREF="function.hw-pipedocument.html"><B CLASS="function">hw_pipedocument()</B></A> and
+<A HREF="function.hw-gettext.html"><B CLASS="function">hw_gettext()</B></A> do the link insertion automatically
+is not as simple as it sounds. Inserting links implies a certain
+hierarchy of the documents. On a web server this is given by the
+file system, but Hyperwave has its own hierarchy and names do not
+reflect the position of an object in that hierarchy. Therefore
+creation of links first of all requires a mapping from the Hyperwave
+hierarchy and namespace into a web hierarchy respective web namespace.
+The fundamental difference between Hyperwave and the web is the clear
+distinction between names and hierarchy in Hyperwave. The name does
+not contain any information about the objects position in the hierarchy.
+In the web the name also contains the information on where the object
+is located in the hierarchy. This leads to two possibles ways of mapping.
+Either the Hyperwave hierarchy and name of the Hyperwave object is
+reflected in the URL or the name only. To make things simple the second
+approach is used. Hyperwave object with name <TT CLASS="literal">my_object</TT>
+is mapped to <TT CLASS="literal">http://host/my_object</TT> disregarding where
+it resides in the Hyperwave hierarchy. An object with name
+<TT CLASS="literal">parent/my_object</TT> could be the child of
+<TT CLASS="literal">my_object</TT> in the Hyperwave hierarchy, though in a web
+namespace it appears to be just the opposite and the user might get
+confused. This can only be prevented by selecting reasonable object names.
+</P><P>&#13; Having made this decision a second problem arises. How do you
+involve PHP? The URL <TT CLASS="literal">http://host/my_object</TT> will
+not call any PHP script unless you tell your web server to rewrite it to
+e.g. <TT CLASS="literal">http://host/php_script/my_object</TT> and the script
+<TT CLASS="literal">php_script</TT> evaluates the <TT CLASS="varname">$PATH_INFO</TT>
+variable and retrieves the object with name <TT CLASS="literal">my_object</TT>
+from the Hyperwave server. Their is just one little
+drawback which can be fixed easily. Rewriting any URL would not allow
+any access to other document on the web server. A PHP script for
+searching in the Hyperwave server would be impossible. Therefore
+you will need at least a second rewriting rule to exclude certain
+URLs like all e.g. starting with <TT CLASS="literal">http://host/Hyperwave</TT>
+This is basically sharing of a namespace by the web and Hyperwave server.
+</P><P>&#13; Based on the above mechanism links are insert into documents.
+</P><P>&#13; It gets more complicated if PHP is not run as a server module or CGI
+script but as a standalone application e.g. to dump the content of
+the Hyperwave server on a CD-ROM. In such a case it makes sense to
+retain the Hyperwave hierarchy and map in onto the file system. This
+conflicts with the object names if they reflect its own hierarchy
+(e.g. by choosing names including '/'). Therefore '/' has to be
+replaced by another character, e.g. '_'.
+</P><P>&#13; The network protocol to communicate with the Hyperwave server is called
+<A HREF="http://citeseer.nj.nec.com/andrews95serving.html" TARGET="_top">HG-CSP</A> (Hyper-G Client/Server
+Protocol). It is based on messages to initiate certain actions, e.g. get
+object record. In early versions of the Hyperwave Server two native
+clients (Harmony, Amadeus) were provided for communication with the
+server. Those two disappeared when Hyperwave was commercialised. As a
+replacement a so called wavemaster was provided. The wavemaster is like a
+protocol converter from <SPAN CLASS="abbrev">HTTP</SPAN> to <SPAN CLASS="abbrev">HG-CSP</SPAN>.
+The idea is to do all the administration of the database and
+visualisation of documents by a web interface. The wavemaster implements
+a set of placeholders for certain actions to customise the interface.
+This set of placeholders is called the <SPAN CLASS="abbrev">PLACE</SPAN> Language.
+<SPAN CLASS="abbrev">PLACE</SPAN> lacks a lot of features of a real programming
+language and any extension to it only enlarges the list of placeholders.
+This has led to the use of JavaScript which IMO does not make life
+easier.
+</P><P>&#13; Adding Hyperwave support to PHP should fill in the gap of a
+missing programming language for interface customisation. It
+implements all the messages as defined by the <SPAN CLASS="abbrev">HG-CSP</SPAN>
+but also provides more powerful commands to e.g. retrieve complete
+documents.
+</P><P>&#13; Hyperwave has its own terminology to name certain pieces of
+information. This has widely been taken over and extended.
+Almost all functions operate on one of the following data types.
+<P></P><UL><LI><P>&#13; object ID: An unique integer value for each object in the
+Hyperwave server. It is also one of the attributes of the
+object record (ObjectID). Object ids are often used as an
+input parameter to specify an object.
+</P></LI><LI><P>&#13; object record: A string with attribute-value pairs of the form
+attribute=value. The pairs are separated by a carriage return
+from each other. An object record can easily be converted into
+an object array with <B CLASS="function">hw_object2array()</B>.
+Several functions return object records. The names of those
+functions end with obj.
+</P></LI><LI><P>&#13; object array: An associative array with all attributes of an
+object. The keys are the attribute names. If an attribute occurs
+more than once in an object record it will result in another
+indexed or associative array. Attributes which are language
+depended (like the title, keyword, description) will form an
+associative array with the keys set to the language
+abbreviations. All other multiple attributes will form an
+indexed array. PHP functions never return object arrays.
+</P></LI><LI><P>&#13; hw_document: This is a complete new data type which holds the
+actual document, e.g. HTML, PDF etc. It is somewhat optimized
+for HTML documents but may be used for any format.
+</P></LI></UL>
+</P><P>&#13; Several functions which return an array of object records do also
+return an associative array with statistical information about
+them. The array is the last element of the object record
+array. The statistical array contains the following entries:
+<P></P><DIV CLASS="variablelist"><DL><DT>Hidden</DT><DD><P>&#13; Number of object records with attribute PresentationHints
+set to Hidden.
+</P></DD><DT>CollectionHead</DT><DD><P>&#13; Number of object records with attribute
+PresentationHints set to CollectionHead.
+</P></DD><DT>FullCollectionHead</DT><DD><P>&#13; Number of object records with attribute
+PresentationHints set to FullCollectionHead.
+</P></DD><DT>CollectionHeadNr</DT><DD><P>&#13; Index in array of object records with
+attribute PresentationHints set to CollectionHead.
+</P></DD><DT>FullCollectionHeadNr</DT><DD><P>&#13; Index in array of object records with
+attribute PresentationHints set to FullCollectionHead.
+</P></DD><DT>Total</DT><DD><P>&#13; Total: Number of object records.
+</P></DD></DL></DIV>
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="hyperwave.requirements"></A>需求</H1><P>&#13; This extension needs a Hyperwave server downloadable
+from <A HREF="http://www.hyperwave.com/" TARGET="_top">http://www.hyperwave.com/</A>.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="hyperwave.installation"></A>安装</H1><P>&#13; To enable Hyperwave support compile PHP
+<TT CLASS="option">--with-hyperwave</TT>.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="hyperwave.apache"></A>Integration with Apache</H1><P>&#13; The Hyperwave extension is best used when PHP is compiled as an
+Apache module. In such a case the underlying Hyperwave server can
+be hidden from users almost completely if Apache uses its rewriting
+engine. The following instructions will explain this.
+</P><P>&#13; Since PHP with Hyperwave support built into Apache is intended
+to replace the native Hyperwave solution based on Wavemaster, we
+will assume that the Apache server will only serve as a Hyperwave
+web interface for these examples. This is not necessary but it simplifies
+the configuration. The concept is quite simple. First of all you
+need a PHP script which evaluates the <TT CLASS="varname">$_ENV['PATH_INFO']</TT>
+variable and treats its value as the name of a Hyperwave
+object. Let's call this script <TT CLASS="literal">'Hyperwave'</TT>. The URL
+<TT CLASS="literal">http://your.hostname/Hyperwave/name_of_object</TT>
+would than return the Hyperwave object with the name
+<TT CLASS="literal">'name_of_object'</TT>. Depending on the type of the object
+the script has to react accordingly. If it is a collection, it will probably
+return a list of children. If it is a document it will return the
+mime type and the content. A slight improvement can be achieved
+if the Apache rewriting engine is used. From the users point of
+view it would be more straight forward if the URL
+<TT CLASS="literal">http://your.hostname/name_of_object</TT> would
+return the object. The rewriting rule is quite easy:
+<DIV CLASS="informalexample"><A NAME="AEN34241"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="apache-conf">RewriteRule ^/(.*) /usr/local/apache/htdocs/HyperWave/$1 [L]</PRE></TD></TR></TABLE><P></P></DIV>
+Now every URL relates to an object in the Hyperwave server. This
+causes a simple to solve problem. There is no way to execute a
+different script, e.g. for searching, than the 'Hyperwave'
+script. This can be fixed with another rewriting rule like the
+following:
+<DIV CLASS="informalexample"><A NAME="AEN34243"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="apache-conf">RewriteRule ^/hw/(.*) /usr/local/apache/htdocs/hw/$1 [L]</PRE></TD></TR></TABLE><P></P></DIV>
+This will reserve the directory <TT CLASS="filename">/usr/local/apache/htdocs/hw</TT>
+for additional scripts and other files. Just make sure this rule is
+evaluated before the one above. There is just a little drawback:
+all Hyperwave objects whose name starts with <TT CLASS="literal">'hw/'</TT>
+will be shadowed. So, make sure you don't use such names. If you need
+more directories, e.g. for images just add more rules or place
+them all in one directory. Before you put those instructions, don't
+forget to turn on the rewriting engine with
+<DIV CLASS="informalexample"><A NAME="AEN34247"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="apache-conf">RewriteEngine on</PRE></TD></TR></TABLE><P></P></DIV>
+You will need scripts:
+<P></P><UL><LI><P>&#13; to return the object itself
+</P></LI><LI><P>&#13; to allow searching
+</P></LI><LI><P>&#13; to identify yourself
+</P></LI><LI><P>&#13; to set your profile
+</P></LI><LI><P>&#13; one for each additional function like to show
+the object attributes, to show information about users,
+to show the status of the server, etc.
+</P></LI></UL>
+</P><P>&#13; As an alternative to the Rewrite Engine, you can also consider using
+the Apache <TT CLASS="literal">ErrorDocument</TT> directive, but be aware,
+that <TT CLASS="literal">ErrorDocument</TT> redirected pages cannot receive
+POST data.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="hyperwave.configuration"></A>运行时配置</H1><P>这些函数的行为受到全局<A HREF="configuration.html#configuration.file">配置文件</A> <TT CLASS="filename">php.ini</TT> 的影响。</P><P>&#13; <DIV CLASS="table"><A NAME="AEN34269"></A><P><B>表格 1. Hyperwave configuration options</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">Name</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Default</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Changeable</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">hyperwave.allow_persistent</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">"0"</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_SYSTEM</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">hyperwave.default_port</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">"418"</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_ALL</TD></TR></TBODY></TABLE></DIV>
+For further details and definition of the PHP_INI_* constants see
+<A HREF="function.ini-set.html"><B CLASS="function">ini_set()</B></A>.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="hyperwave.resources"></A>资源类型</H1><P>该扩展模块未定义任何资源类型。</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="hyperwave.constants"></A>预定义常量</H1><P>&#13;由于这些常量是由该扩展模块定义的，因此只有在该扩展模块被编译到 PHP 中，或者在运行时被动态加载后，这些常量才有效。</P><P></P><DIV CLASS="variablelist"><DL><DT><TT CLASS="constant"><B>HW_ATTR_LANG</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>HW_ATTR_NR</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>HW_ATTR_NONE</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD></DL></DIV></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="hyperwave.todo"></A>Todo</H1><P>&#13; There are still some things to do:
+<P></P><UL><LI><P>&#13; The hw_InsertDocument has to be split into
+<A HREF="function.hw-insertobject.html"><B CLASS="function">hw_insertobject()</B></A> and
+<B CLASS="function">hw_putdocument()</B>.
+</P></LI><LI><P>&#13; The names of several functions are not fixed, yet.
+</P></LI><LI><P>&#13; Most functions require the current connection
+as its first parameter. This leads to a lot of typing, which
+is quite often not necessary if there is just one open
+connection. A default connection will improve this.
+</P></LI><LI><P>&#13; Conversion form object record into object array
+needs to handle any multiple attribute.
+</P></LI></UL>
+</P></DIV></DIV><DIV CLASS="TOC"><DL><DT><B>目录</B></DT><DT><A HREF="function.hw-array2objrec.html">hw_Array2Objrec</A>&nbsp;--&nbsp;convert attributes from object array to object record</DT><DT><A HREF="function.hw-changeobject.html">hw_changeobject</A>&nbsp;--&nbsp;
+Changes attributes of an object (obsolete)
+</DT><DT><A HREF="function.hw-children.html">hw_Children</A>&nbsp;--&nbsp;object ids of children</DT><DT><A HREF="function.hw-childrenobj.html">hw_ChildrenObj</A>&nbsp;--&nbsp;object records of children</DT><DT><A HREF="function.hw-close.html">hw_Close</A>&nbsp;--&nbsp;closes the Hyperwave connection</DT><DT><A HREF="function.hw-connect.html">hw_Connect</A>&nbsp;--&nbsp;opens a connection</DT><DT><A HREF="function.hw-connection-info.html">hw_connection_info</A>&nbsp;--&nbsp;
+Prints information about the connection to Hyperwave server
+</DT><DT><A HREF="function.hw-cp.html">hw_cp</A>&nbsp;--&nbsp;Copies objects</DT><DT><A HREF="function.hw-deleteobject.html">hw_Deleteobject</A>&nbsp;--&nbsp;deletes object</DT><DT><A HREF="function.hw-docbyanchor.html">hw_DocByAnchor</A>&nbsp;--&nbsp;object id object belonging to anchor</DT><DT><A HREF="function.hw-docbyanchorobj.html">hw_DocByAnchorObj</A>&nbsp;--&nbsp;object record object belonging to anchor</DT><DT><A HREF="function.hw-document-attributes.html">hw_Document_Attributes</A>&nbsp;--&nbsp;object record of hw_document</DT><DT><A HREF="function.hw-document-bodytag.html">hw_Document_BodyTag</A>&nbsp;--&nbsp;body tag of hw_document</DT><DT><A HREF="function.hw-document-content.html">hw_Document_Content</A>&nbsp;--&nbsp;returns content of hw_document</DT><DT><A HREF="function.hw-document-setcontent.html">hw_Document_SetContent</A>&nbsp;--&nbsp;sets/replaces content of hw_document</DT><DT><A HREF="function.hw-document-size.html">hw_Document_Size</A>&nbsp;--&nbsp;size of hw_document</DT><DT><A HREF="function.hw-dummy.html">hw_dummy</A>&nbsp;--&nbsp;
+Hyperwave dummy function
+</DT><DT><A HREF="function.hw-edittext.html">hw_EditText</A>&nbsp;--&nbsp;retrieve text document</DT><DT><A HREF="function.hw-error.html">hw_Error</A>&nbsp;--&nbsp;error number</DT><DT><A HREF="function.hw-errormsg.html">hw_ErrorMsg</A>&nbsp;--&nbsp;returns error message</DT><DT><A HREF="function.hw-free-document.html">hw_Free_Document</A>&nbsp;--&nbsp;frees hw_document</DT><DT><A HREF="function.hw-getanchors.html">hw_GetAnchors</A>&nbsp;--&nbsp;object ids of anchors of document</DT><DT><A HREF="function.hw-getanchorsobj.html">hw_GetAnchorsObj</A>&nbsp;--&nbsp;object records of anchors of document</DT><DT><A HREF="function.hw-getandlock.html">hw_GetAndLock</A>&nbsp;--&nbsp;return object record and lock object</DT><DT><A HREF="function.hw-getchildcoll.html">hw_GetChildColl</A>&nbsp;--&nbsp;object ids of child collections</DT><DT><A HREF="function.hw-getchildcollobj.html">hw_GetChildCollObj</A>&nbsp;--&nbsp;object records of child collections</DT><DT><A HREF="function.hw-getchilddoccoll.html">hw_GetChildDocColl</A>&nbsp;--&nbsp;object ids of child documents of collection</DT><DT><A HREF="function.hw-getchilddoccollobj.html">hw_GetChildDocCollObj</A>&nbsp;--&nbsp;object records of child documents of collection</DT><DT><A HREF="function.hw-getobject.html">hw_GetObject</A>&nbsp;--&nbsp;object record</DT><DT><A HREF="function.hw-getobjectbyquery.html">hw_GetObjectByQuery</A>&nbsp;--&nbsp;search object</DT><DT><A HREF="function.hw-getobjectbyquerycoll.html">hw_GetObjectByQueryColl</A>&nbsp;--&nbsp;search object in collection</DT><DT><A HREF="function.hw-getobjectbyquerycollobj.html">hw_GetObjectByQueryCollObj</A>&nbsp;--&nbsp;search object in collection</DT><DT><A HREF="function.hw-getobjectbyqueryobj.html">hw_GetObjectByQueryObj</A>&nbsp;--&nbsp;search object</DT><DT><A HREF="function.hw-getparents.html">hw_GetParents</A>&nbsp;--&nbsp;object ids of parents</DT><DT><A HREF="function.hw-getparentsobj.html">hw_GetParentsObj</A>&nbsp;--&nbsp;object records of parents</DT><DT><A HREF="function.hw-getrellink.html">hw_getrellink</A>&nbsp;--&nbsp;
+Get link from source to dest relative to rootid
+</DT><DT><A HREF="function.hw-getremote.html">hw_GetRemote</A>&nbsp;--&nbsp;Gets a remote document</DT><DT><A HREF="function.hw-getremotechildren.html">hw_getremotechildren</A>&nbsp;--&nbsp;Gets children of remote document</DT><DT><A HREF="function.hw-getsrcbydestobj.html">hw_GetSrcByDestObj</A>&nbsp;--&nbsp;Returns anchors pointing at object</DT><DT><A HREF="function.hw-gettext.html">hw_GetText</A>&nbsp;--&nbsp;retrieve text document</DT><DT><A HREF="function.hw-getusername.html">hw_getusername</A>&nbsp;--&nbsp;name of currently logged in user</DT><DT><A HREF="function.hw-identify.html">hw_Identify</A>&nbsp;--&nbsp;identifies as user</DT><DT><A HREF="function.hw-incollections.html">hw_InCollections</A>&nbsp;--&nbsp;check if object ids in collections</DT><DT><A HREF="function.hw-info.html">hw_Info</A>&nbsp;--&nbsp;info about connection</DT><DT><A HREF="function.hw-inscoll.html">hw_InsColl</A>&nbsp;--&nbsp;insert collection</DT><DT><A HREF="function.hw-insdoc.html">hw_InsDoc</A>&nbsp;--&nbsp;insert document</DT><DT><A HREF="function.hw-insertanchors.html">hw_insertanchors</A>&nbsp;--&nbsp;
+Inserts only anchors into text
+</DT><DT><A HREF="function.hw-insertdocument.html">hw_InsertDocument</A>&nbsp;--&nbsp;upload any document</DT><DT><A HREF="function.hw-insertobject.html">hw_InsertObject</A>&nbsp;--&nbsp;inserts an object record</DT><DT><A HREF="function.hw-mapid.html">hw_mapid</A>&nbsp;--&nbsp;Maps global id on virtual local id</DT><DT><A HREF="function.hw-modifyobject.html">hw_Modifyobject</A>&nbsp;--&nbsp;modifies object record</DT><DT><A HREF="function.hw-mv.html">hw_mv</A>&nbsp;--&nbsp;Moves objects</DT><DT><A HREF="function.hw-new-document.html">hw_New_Document</A>&nbsp;--&nbsp;create new document</DT><DT><A HREF="function.hw-objrec2array.html">hw_objrec2array</A>&nbsp;--&nbsp;Convert attributes from object record to object array</DT><DT><A HREF="function.hw-output-document.html">hw_Output_Document</A>&nbsp;--&nbsp;prints hw_document</DT><DT><A HREF="function.hw-pconnect.html">hw_pConnect</A>&nbsp;--&nbsp;make a persistent database connection</DT><DT><A HREF="function.hw-pipedocument.html">hw_PipeDocument</A>&nbsp;--&nbsp;retrieve any document</DT><DT><A HREF="function.hw-root.html">hw_Root</A>&nbsp;--&nbsp;root object id</DT><DT><A HREF="function.hw-setlinkroot.html">hw_setlinkroot</A>&nbsp;--&nbsp;
+Set the id to which links are calculated
+</DT><DT><A HREF="function.hw-stat.html">hw_stat</A>&nbsp;--&nbsp;
+Returns status string
+</DT><DT><A HREF="function.hw-unlock.html">hw_Unlock</A>&nbsp;--&nbsp;unlock object</DT><DT><A HREF="function.hw-who.html">hw_Who</A>&nbsp;--&nbsp;List of currently logged in users</DT></DL></DIV></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.setrawcookie.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.hw-array2objrec.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">setrawcookie</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="funcref.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">hw_Array2Objrec</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

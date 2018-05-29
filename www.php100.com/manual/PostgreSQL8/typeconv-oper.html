@@ -1,0 +1,352 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>操作符 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="类型转换" HREF="typeconv.html"><LINK REL="PREVIOUS" TITLE="类型转换" HREF="typeconv.html"><LINK REL="NEXT" TITLE="函数" HREF="typeconv-func.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="typeconv.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="typeconv.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 10. 类型转换</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="typeconv.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="typeconv-func.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="TYPECONV-OPER" >10.2. 操作符</A
+></H1
+><A NAME="AEN14595" ></A
+><P
+>	一次操作符调用的操作数类型是按照下面的过程解析的。
+	请注意这个过程受被调用操作符的优先级的间接影响。
+	参阅 <A HREF="sql-syntax.html#SQL-PRECEDENCE" >Section 4.1.6</A
+> 获取更多信息。
+  </P
+><DIV
+CLASS="PROCEDURE"
+><P
+><B
+>操作符类型解析</B
+></P
+><OL
+TYPE="1"
+><LI
+><P
+>从 <TT
+CLASS="CLASSNAME"
+>pg_operator</TT
+> 系统表中选出要考虑的操作符。
+如果使用了一个不带修饰的操作符名（常见的状况），
+那么认为该操作符是那些在当前的搜索路径中名字和参数个数正确的函数（参阅 <A HREF="ddl-schemas.html#DDL-SCHEMAS-PATH" >Section 5.7.3</A
+>）。
+如果给出一个带修饰的操作符名，那么只考虑指明的模式中的操作符。</P
+><OL
+CLASS="SUBSTEPS"
+TYPE="a"
+><LI
+><P
+>如果搜索路径中找到了多个相同参数类型的操作符，那么只考虑最早出现在路径中的。
+但是不同参数类型的操作符将以相同的基础进行考虑，而不管它们在路径中的位置如何。</P
+></LI
+></OL
+></LI
+><LI
+><P
+>检查一个操作符是否刚好接受输入参数类型。
+如果存在一个（在考虑的操作符中，可能只存在一个精确匹配的），
+则用之。</P
+><OL
+CLASS="SUBSTEPS"
+TYPE="a"
+><LI
+><P
+>如果一个双目操作符调用中的一个参数是
+ <TT
+CLASS="TYPE"
+>unknown</TT
+>，
+则在本次检查中假设其与另一个参数类型相同。
+其他涉及 <TT
+CLASS="TYPE"
+>unknown</TT
+> 的情况绝不会在这一步找到匹配。</P
+></LI
+></OL
+></LI
+><LI
+><P
+>寻找最优匹配。</P
+><OL
+CLASS="SUBSTEPS"
+TYPE="a"
+><LI
+><P
+>抛弃那些输入类型不匹配并且也不能强制转换（使用隐含转换函数）成匹配的候选操作符。
+<TT
+CLASS="TYPE"
+>unknown</TT
+> 文本在这种情况下被认为是可以转换成任何东西。如果只剩下一个候选项，用之；
+否则继续下一步。</P
+></LI
+><LI
+><P
+>遍历所有候选操作符，保留那些输入类型有最多准确匹配的。
+（在这种情况下，域被看作和他们的基本类型相同。）
+如果没有完全准确匹配的操作符，保留所有候选。
+如果只有一个，用之，否则继续下一步。</P
+></LI
+><LI
+><P
+>遍历所有候选操作符，保留那些需要类型转换时最多位置接受（输入数据类型的类型范畴的）首选类型的。
+如果没有接受首选选类型的操作符，则保留所有候选。
+如果只有一个，用之，否则继续下一步。</P
+></LI
+><LI
+><P
+>如果任何输入参数是 <TT
+CLASS="TYPE"
+>unknown</TT
+>，检查剩下的候选操作符对应参数位置的类型范畴。
+如果任何候选操作符接受<TT
+CLASS="LITERAL"
+>string</TT
+>类型，则在那些位置选<TT
+CLASS="LITERAL"
+>string</TT
+>类型
+（这个假设认为字串是合适的，因为 unknown 类型文本确实象字串）。
+否则，如果所有剩下的候选操作符接受相同的类型，选择该类型；
+否则抛出一个错误，因为在没有更多线索的条件下不能导出正确的选择。
+现在抛弃不接受选定的类型表的候选操作符；然后，
+如果任意候选操作符在某个给定的参数位置接受一个优选类型，
+则抛弃那些在该参数位置接受非优选类型的候选操作符。</P
+></LI
+><LI
+><P
+>如果只剩下一个操作符，用之。
+如果还有超过一个的候选操作符或是没有候选操作符，则产生一个错误。</P
+></LI
+></OL
+></LI
+></OL
+></DIV
+><P
+>下面是一些例子。</P
+><DIV
+CLASS="EXAMPLE"
+><A NAME="AEN14634" ></A
+><P
+><B
+>Example 10-1. 指数操作符类型解析</B
+></P
+><P
+>在分类里只有一个指数操作符，它以
+<TT
+CLASS="TYPE"
+>double precision</TT
+> 作为参数。扫描器给下面查询表达式的两个参数赋予
+<TT
+CLASS="TYPE"
+>integer</TT
+> 的初始类型：
+</P><PRE
+CLASS="SCREEN"
+>SELECT 2 ^ 3 AS "exp";
+
+ exp
+-----
+   8
+(1 row)</PRE
+><P>
+
+分析器对两个参数都做类型转换，查询等效于：
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT CAST(2 AS double precision) ^ CAST(3 AS double precision) AS "exp";</PRE
+><P></P
+></DIV
+><DIV
+CLASS="EXAMPLE"
+><A NAME="AEN14641" ></A
+><P
+><B
+>Example 10-2. 字串连接操作符类型分析</B
+></P
+><P
+>一种类字符串的语法既可以用于字符串也可以用于复杂的扩展类型。
+包含不明类型的字串使用可能的候选操作符匹配。</P
+><P
+>有一个未声明的参数的例子：
+</P><PRE
+CLASS="SCREEN"
+>SELECT text 'abc' || 'def' AS "text and unknown";
+
+ text and unknown
+------------------
+ abcdef
+(1 row)</PRE
+><P></P
+><P
+>本例中分析器寻找一个两个参数都是 <TT
+CLASS="TYPE"
+>text</TT
+>
+的操作符。因为有一个这样的操作符，它认为另一个参数的类型是
+ <TT
+CLASS="TYPE"
+>text</TT
+>。</P
+><P
+>这里是联接未声明类型：
+</P><PRE
+CLASS="SCREEN"
+>SELECT 'abc' || 'def' AS "unspecified";
+
+ unspecified
+-------------
+ abcdef
+(1 row)</PRE
+><P></P
+><P
+>本例中对类型任何初始提示，因为查询中没有声明任何类型。
+因此，分析器查找所有参数可以同时接受字符串类和位串类的候选操作符。
+因为在可用时字串类是首选，所以选择该表，于是字串的优选类型，
+<TT
+CLASS="TYPE"
+>text</TT
+>，作为解析未知类型文本的声明类型。</P
+></DIV
+><DIV
+CLASS="EXAMPLE"
+><A NAME="AEN14653" ></A
+><P
+><B
+>Example 10-3. 绝对值和取反操作符类型分析</B
+></P
+><P
+><SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 操作符表里面有几条记录用于前缀操作符 <TT
+CLASS="LITERAL"
+>@</TT
+>，
+所有这些都是为各种数值类型实现绝对值操作的。其中有一条用于类型 <TT
+CLASS="TYPE"
+>float8</TT
+>，
+它是数值表中的优选类型。因此，
+在面对非数值输入的时候，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+会使用该类型∶
+</P><PRE
+CLASS="SCREEN"
+>select @ text '-4.5' as "abs";
+ abs
+-----
+ 4.5
+(1 row)</PRE
+><P>
+在这里系统在应用选定的操作符之前执行类一次<TT
+CLASS="TYPE"
+>text</TT
+>到<TT
+CLASS="TYPE"
+>float8</TT
+>的转换。我们可以验证它是<TT
+CLASS="TYPE"
+>float8</TT
+>而不是其它什么类型：
+</P><PRE
+CLASS="SCREEN"
+>select @ text '-4.5e500' as "abs";
+
+ERROR:  Input '-4.5e500' is out of range for float8</PRE
+><P></P
+><P
+>另一方面，前缀操作符 <TT
+CLASS="LITERAL"
+>~</TT
+> （按位取反） 只为整数数据类型定义，
+而不是为<TT
+CLASS="TYPE"
+>float8</TT
+>定义的。因此，如果我们用 <TT
+CLASS="LITERAL"
+>~</TT
+> 做类似实验，就有：
+</P><PRE
+CLASS="SCREEN"
+>SELECT ~ '20' AS "negation";
+
+ERROR:  operator is not unique: ~ "unknown"
+HINT:  Could not choose a best candidate operator. You may need to add explicit
+type casts.</PRE
+><P>
+这是因为系统无法决定好几个可能的 <TT
+CLASS="LITERAL"
+>~</TT
+> 操作符中应该用哪个。我们可以用明确地类型转换来帮它：
+</P><PRE
+CLASS="SCREEN"
+>SELECT ~ CAST('20' AS int8) AS "negation";
+
+ negation
+----------
+      -21
+(1 row)</PRE
+><P></P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="typeconv.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="typeconv-func.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >类型转换</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="typeconv.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >函数</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

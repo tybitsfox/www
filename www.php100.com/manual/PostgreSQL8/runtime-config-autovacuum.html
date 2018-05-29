@@ -1,0 +1,290 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>自动清理 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="服务器配置" HREF="runtime-config.html"><LINK REL="PREVIOUS" TITLE="运行时统计" HREF="runtime-config-statistics.html"><LINK REL="NEXT" TITLE="客户端连接缺省" HREF="runtime-config-client.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="runtime-config-statistics.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="runtime-config.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 17. 服务器配置</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="runtime-config.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="runtime-config-client.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="RUNTIME-CONFIG-AUTOVACUUM" >17.9. 自动清理</A
+></H1
+><A NAME="AEN20018" ></A
+><P
+>      这些设置控制<I
+CLASS="FIRSTTERM"
+>自动清理守护进程</I
+>的缺省行为。
+      请参阅 <A HREF="maintenance.html#AUTOVACUUM" >Section 22.1.4</A
+> 获取更多信息。
+     </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A NAME="GUC-AUTOVACUUM" ><TT
+CLASS="VARNAME"
+>autovacuum</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	控制服务器是否应该启动 autovacuum 子进程。
+	缺省的时候这个是关闭的。
+	要想启动这个进程，
+        <TT
+CLASS="VARNAME"
+>stats_start_collector</TT
+> 和 <TT
+CLASS="VARNAME"
+>stats_row_level</TT
+> 也必须是打开的。
+	这个选项只能在服务器启动的时候设置，
+	或者在文件 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 里设置。
+       </P
+></DD
+><DT
+><A NAME="GUC-AUTOVACUUM-NAPTIME" ><TT
+CLASS="VARNAME"
+>autovacuum_naptime</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	声明 autovacuum 子进程的活跃期之间的延迟。
+	在每次运行的周期里，子进程都会检查一个数据库，并根据需要为该数据库的表发出
+	<TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 和 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 命令。
+	这个延迟是以秒计的，缺省为 60。
+	这个选项只能在服务器启动的时候或者是在文件 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 里设置。
+       </P
+></DD
+><DT
+><A NAME="GUC-AUTOVACUUM-VACUUM-THRESHOLD" ><TT
+CLASS="VARNAME"
+>autovacuum_vacuum_threshold</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	声明在任何表里触发 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 所需要的最小的元组的更新或者删除的数量。
+	缺省是 1000。
+	这个选项只能在服务器启动的时候或者是在文件 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 里设置。
+       </P
+></DD
+><DT
+><A NAME="GUC-AUTOVACUUM-ANALYZE-THRESHOLD" ><TT
+CLASS="VARNAME"
+>autovacuum_analyze_threshold</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	声明在任何表里触发 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 所需要的最小的元组的插入，更新或者删除的数量。
+	缺省是 500。
+	这个选项只能在服务器启动的时候或者是在文件 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 里设置。
+	这个设置可以被 <TT
+CLASS="STRUCTNAME"
+>pg_autovacuum</TT
+> 表里面的为每个表的独立条目覆盖。
+       </P
+></DD
+><DT
+><A NAME="GUC-AUTOVACUUM-VACUUM-SCALE-FACTOR" ><TT
+CLASS="VARNAME"
+>autovacuum_vacuum_scale_factor</TT
+> (<TT
+CLASS="TYPE"
+>floating point</TT
+>)</A
+></DT
+><DD
+><P
+>	声明在判断是否触发一个 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 时增加到 <TT
+CLASS="VARNAME"
+>autovacuum_vacuum_threshold</TT
+>
+	参数里面的表的尺寸之比例。缺省是 0.4。
+	这个选项只能在服务器启动的时候或者是在文件 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 里设置。
+	这个设置可以被 <TT
+CLASS="STRUCTNAME"
+>pg_autovacuum</TT
+> 表里面为每个表的独立条目覆盖。
+       </P
+></DD
+><DT
+><A NAME="GUC-AUTOVACUUM-ANALYZE-SCALE-FACTOR" ><TT
+CLASS="VARNAME"
+>autovacuum_analyze_scale_factor</TT
+> (<TT
+CLASS="TYPE"
+>floating point</TT
+>)</A
+></DT
+><DD
+><P
+>	声明在判断是否触发一个 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 时追加到 <TT
+CLASS="VARNAME"
+>autovacuum_analyze_threshold</TT
+>
+	参数上的表的尺寸之比例。缺省是 0.2。
+	这个选项只能在服务器启动的时候或者是在文件 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 里设置。
+	这个设置可以被 <TT
+CLASS="STRUCTNAME"
+>pg_autovacuum</TT
+> 表里面为每个表的独立条目覆盖。
+       </P
+></DD
+><DT
+><A NAME="GUC-AUTOVACUUM-VACUUM-COST-DELAY" ><TT
+CLASS="VARNAME"
+>autovacuum_vacuum_cost_delay</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	声明将在自动 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 操作里使用的开销延迟数值。
+	如果声明了 -1 （缺省值），那么将使用普通的 <A HREF="runtime-config-resource.html#GUC-VACUUM-COST-DELAY" >vacuum_cost_delay</A
+>
+	数值。这个设置可以在 <TT
+CLASS="STRUCTNAME"
+>pg_autovacuum</TT
+> 表里面通过给不同的表设置不同的数据行来覆盖。
+       </P
+></DD
+><DT
+><A NAME="GUC-AUTOVACUUM-VACUUM-COST-LIMIT" ><TT
+CLASS="VARNAME"
+>autovacuum_vacuum_cost_limit</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	声明将在自动的 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 操作里面使用的开销限制数值。
+	如果声明了 -1 （缺省值），那么将使用普通的 <A HREF="runtime-config-resource.html#GUC-VACUUM-COST-LIMIT" >vacuum_cost_limit</A
+> 数值。
+	这个设置可以在 <TT
+CLASS="STRUCTNAME"
+>pg_autovacuum</TT
+> 表里面通过给不同的表设置不同的数据行来覆盖。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="runtime-config-statistics.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="runtime-config-client.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >运行时统计</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="runtime-config.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >客户端连接缺省</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

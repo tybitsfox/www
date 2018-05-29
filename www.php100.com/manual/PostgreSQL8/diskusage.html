@@ -1,0 +1,244 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>观察磁盘使用情况 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="服务器管理" HREF="admin.html"><LINK REL="PREVIOUS" TITLE="查看锁" HREF="monitoring-locks.html"><LINK REL="NEXT" TITLE="磁盘满导致的失效" HREF="disk-full.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="CHAPTER" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="monitoring-locks.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="monitoring.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="wal.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="disk-full.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A NAME="DISKUSAGE" >Chapter 25. 观察磁盘使用情况</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>25.1. <A HREF="diskusage.html#DISK-USAGE" >判断磁盘的使用量</A
+></DT
+><DT
+>25.2. <A HREF="disk-full.html" >磁盘满导致的失效</A
+></DT
+></DL
+></DIV
+><P
+>	本章讨论如何观察<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>数据库系统的磁盘使用情况。
+ </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="DISK-USAGE" >25.1. 判断磁盘的使用量</A
+></H1
+><A NAME="AEN24051" ></A
+><P
+>	每个表都有一个主堆的磁盘文件，大多数数据都存储在这里。如果一个表有着可能会很长的字段，
+	则另外还有一个<SPAN
+CLASS="ACRONYM"
+>TOAST</SPAN
+>文件与这个表相关联，
+	用于存储因为数值太长而不能存储在主表里面的数据（参阅　<A HREF="storage-toast.html" >Section 50.2</A
+>）。
+	如果有这个扩展表，那么表上会有一个<SPAN
+CLASS="ACRONYM"
+>TOAST</SPAN
+>索引。
+	当然，同时还可能有索引和基表关联。
+	每个表和索引都存放在单独的磁盘文件里 &mdash; 如果文件超过一吉，甚至可能多于一个文件。
+	这些文件的命名原则在 <A HREF="storage.html#STORAGE-FILE-LAYOUT" >Section 50.1</A
+> 里描述。
+  </P
+><P
+>	你可以从三个地方监视磁盘空间：从 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 里使用
+	<TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 的信息，从  <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 里使用
+	<SPAN
+CLASS="APPLICATION"
+>contrib/dbsize</SPAN
+> 里面的工具，以及在命令行上使用
+	<SPAN
+CLASS="APPLICATION"
+>contrib/oid2name</SPAN
+> 里面的工具。如果 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 
+	和任何最近刚刚清理（或者分析过）的数据库进行联接，
+	那么我们可以用查询来查看任意表的磁盘使用：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT relfilenode, relpages FROM pg_class WHERE relname = 'customer';
+
+ relfilenode | relpages 
+-------------+----------
+       16806 |       60
+(1 row)</PRE
+><P>
+	每个页通常都是 8 K字节。（记住，<TT
+CLASS="LITERAL"
+>relpages</TT
+>只是由 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>，
+	<TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 和几个 DDL 命令，比如<TT
+CLASS="COMMAND"
+>CREATE INDEX</TT
+> 所更新。）
+	如果你想直接检查表的磁盘文件，那么 <TT
+CLASS="STRUCTFIELD"
+>relfilenode</TT
+> 应该有用。
+  </P
+><P
+>   
+	要显示
+	<SPAN
+CLASS="ACRONYM"
+>TOAST</SPAN
+> 的表使用的空间，我们可以使用一个类似下面这样的查询：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT relname, relpages
+    FROM pg_class,
+         (SELECT reltoastrelid FROM pg_class
+          WHERE relname = 'customer') ss
+    WHERE oid = ss.reltoastrelid
+       OR oid = (SELECT reltoastidxid FROM pg_class
+                 WHERE oid = ss.reltoastrelid)
+    ORDER BY relname;
+
+       relname        | relpages 
+----------------------+----------
+ pg_toast_16806       |        0
+ pg_toast_16806_index |        1</PRE
+><P>
+  </P
+><P
+>	你也可以很容易地显示索引的用量：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT c2.relname, c2.relpages
+    FROM pg_class c, pg_class c2, pg_index i
+    WHERE c.relname = 'customer'
+        AND c.oid = i.indrelid
+        AND c2.oid = i.indexrelid
+    ORDER BY c2.relname;
+
+       relname        | relpages 
+----------------------+----------
+ customer_id_indexdex |       26</PRE
+><P>
+  </P
+><P
+>	我们很容易用下面的信息找出最大的表和索引：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT relname, relpages FROM pg_class ORDER BY relpages DESC;
+
+       relname        | relpages 
+----------------------+----------
+ bigtable             |     3290
+ customer             |     3144</PRE
+><P>
+  </P
+><P
+>	<SPAN
+CLASS="APPLICATION"
+>contrib/dbsize</SPAN
+> 向我们的数据库里装载一些函数，这些函数
+	允许我们在 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 里找出一个表或者一个数据库的大小，而且不用 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>或者 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+>。
+  </P
+><P
+>	你也可以使用 <SPAN
+CLASS="APPLICATION"
+>oid2name</SPAN
+> 显示磁盘用量。参阅
+	该目录中的 <TT
+CLASS="FILENAME"
+>README.oid2name</TT
+> 获取例子。它包括一个为每个
+	数据库显示磁盘用量的脚本。
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="monitoring-locks.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="disk-full.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >查看锁</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="admin.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >磁盘满导致的失效</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

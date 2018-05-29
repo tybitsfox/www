@@ -1,0 +1,495 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>BKI命令 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="BKI 后端接口" HREF="bki.html"><LINK REL="PREVIOUS" TITLE="BKI 后端接口" HREF="bki.html"><LINK REL="NEXT" TITLE="系统初始化的 BKI 文件的结构" HREF="bki-structure.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="bki.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="bki.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 51. <SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+> 后端接口</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="bki.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="bki-structure.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="BKI-COMMANDS" >51.2. <SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+>命令</A
+></H1
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>create</TT
+>
+     [<SPAN
+CLASS="OPTIONAL"
+>bootstrap</SPAN
+>]
+     [<SPAN
+CLASS="OPTIONAL"
+>shared_relation</SPAN
+>]
+     [<SPAN
+CLASS="OPTIONAL"
+>without_oids</SPAN
+>]
+     <TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+>
+     <TT
+CLASS="REPLACEABLE"
+><I
+>tableoid</I
+></TT
+>
+     (<TT
+CLASS="REPLACEABLE"
+><I
+>name1</I
+></TT
+> =
+     <TT
+CLASS="REPLACEABLE"
+><I
+>type1</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>,
+     <TT
+CLASS="REPLACEABLE"
+><I
+>name2</I
+></TT
+> = <TT
+CLASS="REPLACEABLE"
+><I
+>type2</I
+></TT
+>, ...</SPAN
+>])</DT
+><DD
+><P
+>      创建一个叫做 <TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+>，OID 为
+      <TT
+CLASS="REPLACEABLE"
+><I
+>tableoid</I
+></TT
+> 的表，表字段在圆括弧中给出。
+     </P
+><P
+>      <TT
+CLASS="FILENAME"
+>bootstrap.c</TT
+> 直接支持下列字段类型：
+      <TT
+CLASS="TYPE"
+>bool</TT
+>，<TT
+CLASS="TYPE"
+>bytea</TT
+>，<TT
+CLASS="TYPE"
+>char</TT
+> （1 字节），
+      <TT
+CLASS="TYPE"
+>name</TT
+>，<TT
+CLASS="TYPE"
+>int2</TT
+>，<TT
+CLASS="TYPE"
+>int4</TT
+>，
+      <TT
+CLASS="TYPE"
+>regproc</TT
+>，<TT
+CLASS="TYPE"
+>regclass</TT
+>，
+      <TT
+CLASS="TYPE"
+>regtype</TT
+>，<TT
+CLASS="TYPE"
+>text</TT
+>，<TT
+CLASS="TYPE"
+>oid</TT
+>，
+      <TT
+CLASS="TYPE"
+>tid</TT
+>，<TT
+CLASS="TYPE"
+>xid</TT
+>，
+      <TT
+CLASS="TYPE"
+>cid</TT
+>，<TT
+CLASS="TYPE"
+>int2vector</TT
+>，<TT
+CLASS="TYPE"
+>oidvector</TT
+>，
+      <TT
+CLASS="TYPE"
+>_int4</TT
+> （数组），<TT
+CLASS="TYPE"
+>_text</TT
+> （数组），
+      <TT
+CLASS="TYPE"
+>_aclitem</TT
+>（数组）。尽管我们可以创建包含其它类型字段的表，
+      但是我们只有在创建完 <TT
+CLASS="STRUCTNAME"
+>pg_type</TT
+> 并且填充了合适的记录之后才行。
+      （这实际上就意味着在系统初始化表中，只能使用这些字段类型，而非系统初始化表可以使用任意内置类型。）
+     </P
+><P
+>      如果声明了 <TT
+CLASS="LITERAL"
+>bootstrap</TT
+>，那么改表将只在磁盘上创建；
+      不会向 <TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+>，<TT
+CLASS="STRUCTNAME"
+>pg_attribute</TT
+> 等系统表里面输入任何东西。
+      因此这样的表将无法被普通的 SQL 操作访问，直到那些记录用硬办法（用 <TT
+CLASS="LITERAL"
+>insert</TT
+> 命令）填入。
+      这个选项用于创建 <TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+> 等自身。
+      
+     </P
+><P
+>      如果声明了 <TT
+CLASS="LITERAL"
+>shared_relation</TT
+>，那么表就作为共享表创建。
+      除非声明了 <TT
+CLASS="LITERAL"
+>without_oids</TT
+>，否则将会有 OID。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>open</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+></DT
+><DD
+><P
+>	打开一个名为
+	<TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+>
+	的表，准备插入数据。任何当前已经打开的表都会被关闭。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>close</TT
+> [<SPAN
+CLASS="OPTIONAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+></SPAN
+>]</DT
+><DD
+><P
+>	关闭打开的表。给出的表明是用于交叉检查，但并不是必须的。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>insert</TT
+> [<SPAN
+CLASS="OPTIONAL"
+>OID = <TT
+CLASS="REPLACEABLE"
+><I
+>oid_value</I
+></TT
+></SPAN
+>] (<TT
+CLASS="REPLACEABLE"
+><I
+>value1</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>value2</I
+></TT
+> ...)</DT
+><DD
+><P
+>	用
+	<TT
+CLASS="REPLACEABLE"
+><I
+>value1</I
+></TT
+>，
+	<TT
+CLASS="REPLACEABLE"
+><I
+>value2</I
+></TT
+>，
+	等作为字段值以及
+	<TT
+CLASS="REPLACEABLE"
+><I
+>oid_value</I
+></TT
+>
+	作为其 OID（对象标识）向打开的表插入一条新记录，如果
+	<TT
+CLASS="REPLACEABLE"
+><I
+>oid_value</I
+></TT
+>
+	为零（0），否则省略了改子句，而表则拥有 OID，并赋予下一个可用的 OID 数值。
+     </P
+><P
+>      NULL 可以用特殊的关键字
+      <TT
+CLASS="LITERAL"
+>_null_</TT
+>声明。包含空白的值必须用双引号栝起。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>declare</TT
+> [<SPAN
+CLASS="OPTIONAL"
+><TT
+CLASS="LITERAL"
+>unique</TT
+></SPAN
+>]
+     <TT
+CLASS="LITERAL"
+>index</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>indexname</I
+></TT
+>
+     <TT
+CLASS="REPLACEABLE"
+><I
+>indexoid</I
+></TT
+>
+     <TT
+CLASS="LITERAL"
+>on</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+>
+     <TT
+CLASS="LITERAL"
+>using</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>amname</I
+></TT
+>
+     <TT
+CLASS="LITERAL"
+>(</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>opclass1</I
+></TT
+>
+     <TT
+CLASS="REPLACEABLE"
+><I
+>name1</I
+></TT
+>
+     [<SPAN
+CLASS="OPTIONAL"
+>, ...</SPAN
+>] <TT
+CLASS="LITERAL"
+>)</TT
+></DT
+><DD
+><P
+>        在一个叫 <TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+>
+        的表上用 <TT
+CLASS="REPLACEABLE"
+><I
+>amname</I
+></TT
+>
+        访问方法创建一个 OID 是 <TT
+CLASS="REPLACEABLE"
+><I
+>indexoid</I
+></TT
+> 的叫做
+        <TT
+CLASS="REPLACEABLE"
+><I
+>indexname</I
+></TT
+> 的索引。
+        索引的字段叫
+      <TT
+CLASS="REPLACEABLE"
+><I
+>name1</I
+></TT
+>，<TT
+CLASS="REPLACEABLE"
+><I
+>name2</I
+></TT
+> 等，而使用的操作符表分别是
+      <TT
+CLASS="REPLACEABLE"
+><I
+>opclass1</I
+></TT
+>，<TT
+CLASS="REPLACEABLE"
+><I
+>opclass2</I
+></TT
+> 等。
+      将会创建索引文件和恰当的系统表记录，但是索引内容不会被此命令初始化。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>build indices</TT
+></DT
+><DD
+><P
+>        填充前面声明的索引。
+     </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="bki.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="bki-structure.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+> 后端接口</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="bki.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >系统初始化的 <SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+> 文件的结构</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

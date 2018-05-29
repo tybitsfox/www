@@ -1,0 +1,107 @@
+<HTML><HEAD><TITLE>Arrays</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Creating Variables" HREF="zend.variables.html"><LINK REL="PREVIOUS" TITLE="Booleans" HREF="zend.variables.boolean.html"><LINK REL="NEXT" TITLE="Objects" HREF="zend.variables.object.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="section" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="zend.variables.boolean.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 33. Creating Variables</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="zend.variables.object.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="section"><H1 CLASS="section"><A NAME="zend.variables.array"></A>Arrays</H1><P>&#13; Arrays are stored using Zend's internal hash tables, which can be
+accessed using the <B CLASS="function">zend_hash_*()</B> API. For every
+array that you want to create, you need a new hash table handle,
+which will be stored in the <TT CLASS="envar">ht</TT> member of the
+<TT CLASS="envar">zval.value</TT> container.
+</P><P>&#13; There's a whole API solely for the creation of arrays, which is extremely
+handy. To start a new array, you call
+<B CLASS="function">array_init()</B>.
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">zval *new_array;
+
+MAKE_STD_ZVAL(new_array);
+
+array_init(new_array);</PRE></TD></TR></TABLE>
+<B CLASS="function">array_init()</B> always returns <TT CLASS="literal">SUCCESS</TT>.
+</P><P>&#13; To add new elements to the array, you can use numerous functions,
+depending on what you want to do.
+<A HREF="zend.variables.array.html#tab.api-assoc-arrays">表格 33-1</A>,
+<A HREF="zend.variables.array.html#tab.api-indexed-arrays">表格 33-2</A> and
+<A HREF="zend.variables.array.html#tab.api-indexed-array-2">表格 33-3</A>
+describe these functions. All functions return
+<TT CLASS="literal">FAILURE</TT> on failure and
+<TT CLASS="literal">SUCCESS</TT> on success.
+</P><DIV CLASS="table"><A NAME="tab.api-assoc-arrays"></A><P><B>表格 33-1. Zend's API for Associative Arrays</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Function</TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Description</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; <B CLASS="function">add_assoc_long(zval *array, char *key, long n);()</B>
+</TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds an element of type <TT CLASS="literal">long</TT>.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; <B CLASS="function">add_assoc_unset(zval *array, char *key);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds an unset element.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; <B CLASS="function">add_assoc_bool(zval *array, char *key, int b);()</B>
+</TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds a Boolean element.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; <B CLASS="function">add_assoc_resource(zval *array, char *key, int r);()</B>
+</TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds a resource to the array.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; <B CLASS="function">add_assoc_double(zval *array, char *key, double d);()</B>
+</TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds a floating-point value.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; <B CLASS="function">add_assoc_string(zval *array, char *key, char *str, int duplicate);()</B>
+</TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Adds a string to the array. The
+flag <TT CLASS="envar">duplicate</TT> specifies whether the string contents have to be
+copied to Zend internal memory.
+</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; <B CLASS="function">&#13; add_assoc_stringl(zval *array, char *key, char *str, uint length, int duplicate);
+()</B>
+</TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Adds a string with the desired length <TT CLASS="envar">length</TT>
+to the array. Otherwise, behaves like
+<B CLASS="function">add_assoc_string()</B>.
+</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_assoc_zval(zval *array, char *key, zval *value);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds a zval to the array. Useful for adding other arrays, objects, streams, etc...</TD></TR></TBODY></TABLE></DIV><DIV CLASS="table"><A NAME="tab.api-indexed-arrays"></A><P><B>表格 33-2. Zend's API for Indexed Arrays, Part 1</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Function</TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Description</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_index_long(zval *array, uint idx, long
+n);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds an element of type <TT CLASS="literal">long</TT>.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_index_unset(zval *array, uint
+idx);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds an unset element.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_index_bool(zval *array, uint idx, int
+b);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds a Boolean element.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_index_resource(zval *array, uint idx, int
+r);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds a resource to the array.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_index_double(zval *array, uint idx, double
+d);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds a floating-point value.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_index_string(zval *array, uint idx, char
+*str, int duplicate);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds a string to the array. The
+flag <TT CLASS="envar">duplicate</TT> specifies whether the string contents have to be
+copied to Zend internal memory.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_index_stringl(zval *array, uint idx, char
+*str, uint length, int duplicate);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds a string with the desired
+length <TT CLASS="envar">length</TT> to the array. This function is faster and binary-safe. Otherwise, behaves like <B CLASS="function">add_index_string()()</B>.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_index_zval(zval *array, uint idx, zval *value);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds a zval to the array. Useful for adding other arrays, objects, streams, etc...</TD></TR></TBODY></TABLE></DIV><DIV CLASS="table"><A NAME="tab.api-indexed-array-2"></A><P><B>表格 33-3. Zend's API for Indexed Arrays, Part 2</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Function</TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Description</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_next_index_long(zval *array, long
+n);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds an element of type <TT CLASS="literal">long</TT>.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_next_index_unset(zval
+*array);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds an unset element.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_next_index_bool(zval *array, int
+b);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds a Boolean element.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_next_index_resource(zval *array, int
+r);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds a resource to the array.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_next_index_double(zval *array, double
+d);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds a floating-point value.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_next_index_string(zval *array, char *str,
+int duplicate);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds a string to the array. The
+flag <TT CLASS="envar">duplicate</TT> specifies whether the string contents have to be
+copied to Zend internal memory.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_next_index_stringl(zval *array, char *str,
+uint length, int duplicate);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds a string with the desired
+length <TT CLASS="envar">length</TT> to the array. This function is faster and binary-safe. Otherwise, behaves like <B CLASS="function">add_index_string()()</B>.</TD></TR><TR><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">add_next_index_zval(zval *array, zval *value);()</B></TD><TD WIDTH="50%" ALIGN="LEFT" VALIGN="MIDDLE">Adds a zval to the array. Useful for adding other arrays, objects, streams, etc...</TD></TR></TBODY></TABLE></DIV><P>&#13; All these functions provide a handy abstraction to Zend's internal hash
+API. Of course, you can also use the hash functions directly - for example, if
+you already have a <TT CLASS="envar">zval</TT> container allocated that you want to
+insert into an array. This is done using <B CLASS="function">zend_hash_update()()</B>
+for associative arrays (see <A HREF="zend.variables.array.html#example.array-add-assoc">例子 33-3</A>) and
+<B CLASS="function">zend_hash_index_update()</B> for indexed arrays
+(see <A HREF="zend.variables.array.html#example.array-add-indexed">例子 33-4</A>):
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="example.array-add-assoc"></A><P><B>例子 33-3. Adding an element to an associative array.</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">zval *new_array, *new_element;
+char *key = "element_key";
+      
+MAKE_STD_ZVAL(new_array);
+MAKE_STD_ZVAL(new_element);
+
+array_init(new_array);
+
+ZVAL_LONG(new_element, 10);
+
+if(zend_hash_update(new_array-&#62;value.ht, key, strlen(key) + 1, (void *)&#38;new_element, sizeof(zval *), NULL) == FAILURE)
+{
+    // do error handling here
+}</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="example.array-add-indexed"></A><P><B>例子 33-4. Adding an element to an indexed array.</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">zval *new_array, *new_element;
+int key = 2;
+
+MAKE_STD_ZVAL(new_array);
+MAKE_STD_ZVAL(new_element);
+
+array_init(new_array);
+
+ZVAL_LONG(new_element, 10);
+
+if(zend_hash_index_update(new_array-&#62;value.ht, key, (void *)&#38;new_element, sizeof(zval *), NULL) == FAILURE)
+{
+    // do error handling here
+}</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; To emulate the functionality of
+<B CLASS="function">add_next_index_*()</B>, you can use this:
+</P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">zend_hash_next_index_insert(ht, zval **new_element, sizeof(zval *), NULL)</PRE></TD></TR></TABLE><P>&#13; <SPAN CLASS="emphasis"><I CLASS="emphasis">Note:</I></SPAN> To return arrays from a function, use <B CLASS="function">array_init()</B> and
+all following actions on the predefined variable <TT CLASS="envar">return_value</TT>
+(given as argument to your exported function; see the earlier discussion of the call interface). You do not have to use
+<TT CLASS="literal">MAKE_STD_ZVAL</TT> on this.
+</P><P>&#13; <SPAN CLASS="emphasis"><I CLASS="emphasis">Tip:</I></SPAN> To avoid having to
+write <TT CLASS="literal">new_array-&#62;value.ht</TT> every time, you can
+use <TT CLASS="literal">HASH_OF(new_array)</TT>, which is also recommended for
+compatibility and style reasons.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="zend.variables.boolean.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="zend.variables.object.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Booleans</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="zend.variables.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Objects</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

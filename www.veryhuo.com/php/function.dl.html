@@ -1,0 +1,60 @@
+<HTML><HEAD><TITLE>dl</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="PHP Options&Information" HREF="ref.info.html"><LINK REL="PREVIOUS" TITLE="assert" HREF="function.assert.html"><LINK REL="NEXT" TITLE="extension_loaded" HREF="function.extension-loaded.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.assert.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.extension-loaded.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.dl"></A>dl</H1><DIV CLASS="refnamediv"><A NAME="AEN87751"></A><P> (PHP 3, PHP 4 )</P>dl&nbsp;--&nbsp;Loads a PHP extension at runtime</DIV><DIV CLASS="refsect1"><A NAME="AEN87754"></A><H2>Description</H2>int <B CLASS="methodname">dl</B> ( string library)<BR></BR><P>&#13; Loads the PHP extension given by the parameter
+<TT CLASS="parameter"><I>library</I></TT>. The <TT CLASS="parameter"><I>library</I></TT>
+parameter is <SPAN CLASS="emphasis"><I CLASS="emphasis">only</I></SPAN> the filename of the extension to
+load which also depends on your platform. For example, the <A HREF="ref.sockets.html">sockets</A> extension (if compiled as a shared
+module, not the default!) would be called <TT CLASS="filename">sockets.so</TT>
+on Unix platforms whereas it is called
+<TT CLASS="filename">php_sockets.dll</TT> on the Windows platform.
+</P><P>&#13; 如果成功则返回 <TT CLASS="constant"><B>TRUE</B></TT>，失败则返回 <TT CLASS="constant"><B>FALSE</B></TT>。 If the functionality of loading modules is not available
+(see Note) or has been disabled (either by turning it off
+<TT CLASS="literal">enable_dl</TT> or by enabling <A HREF="features.safe-mode.html#ini.safe-mode">安全模式</A>
+in <TT CLASS="filename">php.ini</TT>) an <TT CLASS="constant"><B>E_ERROR</B></TT> is emitted
+and execution is stopped. If <B CLASS="function">dl()</B> fails because the
+specified library couldn't be loaded, in addition to <TT CLASS="constant"><B>FALSE</B></TT> an
+<TT CLASS="constant"><B>E_WARNING</B></TT> message is emitted.
+</P><P>&#13; Use <A HREF="function.extension-loaded.html"><B CLASS="function">extension_loaded()</B></A> to test whether a given
+extension is already available or not. This works on both built-in
+extensions and dynamically loaded ones (either through <TT CLASS="filename">php.ini</TT>
+or <B CLASS="function">dl()</B>).
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN87783"></A><P><B>例子 1. <B CLASS="function">dl()</B> examples</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#FF8000">// Example loading an extension based on OS<br /></font><font color="#007700">if (!</font><font color="#0000BB">extension_loaded</font><font color="#007700">(</font><font color="#DD0000">'sqlite'</font><font color="#007700">)) {<br />&nbsp;&nbsp;&nbsp;&nbsp;if (</font><font color="#0000BB">strtoupper</font><font color="#007700">(</font><font color="#0000BB">substr</font><font color="#007700">(</font><font color="#0000BB">PHP_OS</font><font color="#007700">, </font><font color="#0000BB">0</font><font color="#007700">, </font><font color="#0000BB">3</font><font color="#007700">) == </font><font color="#DD0000">'WIN'</font><font color="#007700">)) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">dl</font><font color="#007700">(</font><font color="#DD0000">'php_sqlite.dll'</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;} else {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">dl</font><font color="#007700">(</font><font color="#DD0000">'sqlite.so'</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />}<br /><br /></font><font color="#FF8000">// Or, the PHP_SHLIB_SUFFIX constant is available as of PHP 4.3.0<br /></font><font color="#007700">if (!</font><font color="#0000BB">extension_loaded</font><font color="#007700">(</font><font color="#DD0000">'sqlite'</font><font color="#007700">)) {<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$prefix </font><font color="#007700">= (</font><font color="#0000BB">PHP_SHLIB_SUFFIX </font><font color="#007700">== </font><font color="#DD0000">'dll'</font><font color="#007700">) ? </font><font color="#DD0000">'php_' </font><font color="#007700">: </font><font color="#DD0000">''</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">dl</font><font color="#007700">(</font><font color="#0000BB">$prefix </font><font color="#007700">. </font><font color="#DD0000">'sqlite.' </font><font color="#007700">. </font><font color="#0000BB">PHP_SHLIB_SUFFIX</font><font color="#007700">);<br />}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE><P>&#13; The directory where the extension is loaded from depends on your
+platform:
+</P><P>&#13; Windows - If not explicitly set in the <TT CLASS="filename">php.ini</TT>, the extension is
+loaded from <TT CLASS="filename">c:\php4\extensions\</TT> by default.
+</P><P>&#13; Unix - If not explicitly set in the <TT CLASS="filename">php.ini</TT>, the default extension
+directory depends on
+<P></P><UL><LI><P>&#13; whether PHP has been built with <TT CLASS="literal">--enable-debug</TT> or
+not
+</P></LI><LI><P>&#13; whether PHP has been built with (experimental) ZTS (Zend Thread Safety)
+support or not
+</P></LI><LI><P>&#13; the current internal <TT CLASS="literal">ZEND_MODULE_API_NO</TT> (Zend
+internal module API number, which is basically the date on which a
+major module API change happened, e.g. <TT CLASS="literal">20010901</TT>)
+</P></LI></UL>
+Taking into account the above, the directory then defaults to
+<TT CLASS="literal">&#60;install-dir&#62;/lib/php/extensions/ &#60;debug-or-not&#62;-&#60;zts-or-not&#62;-ZEND_MODULE_API_NO</TT>,
+e.g.
+<TT CLASS="filename">/usr/local/php/lib/php/extensions/debug-non-zts-20010901</TT>
+or
+<TT CLASS="filename">/usr/local/php/lib/php/extensions/no-debug-zts-20010901</TT>.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+<B CLASS="function">dl()</B> is <SPAN CLASS="emphasis"><I CLASS="emphasis">not</I></SPAN> supported in
+multithreaded Web servers. Use the <TT CLASS="literal">extensions</TT>
+statement in your <TT CLASS="filename">php.ini</TT> when operating under such
+an environment. However, the <TT CLASS="literal">CGI</TT> and
+<TT CLASS="literal">CLI</TT> build are <SPAN CLASS="strong"><B CLASS="emphasis">not</B></SPAN>
+affected !
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+<B CLASS="function">dl()</B> is case sensitive on Unix platforms.
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>该函数在<A HREF="features.safe-mode.html">安全模式</A>中已被屏蔽。</P></BLOCKQUOTE></DIV><P>&#13; See also
+<A HREF="configuration.directives.html#ini.extension">Extension Loading Directives</A>
+and <A HREF="function.extension-loaded.html"><B CLASS="function">extension_loaded()</B></A>.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.assert.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.extension-loaded.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">assert</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.info.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">extension_loaded</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

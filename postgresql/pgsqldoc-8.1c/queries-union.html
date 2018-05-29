@@ -1,0 +1,363 @@
+<HTML
+><HEAD
+><TITLE
+>组合查询</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="查询"
+HREF="queries.html"><LINK
+REL="PREVIOUS"
+TITLE="选择列表"
+HREF="queries-select-lists.html"><LINK
+REL="NEXT"
+TITLE="行排序"
+HREF="queries-order.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="queries-select-lists.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="queries.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 7. 查询</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="queries.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="queries-order.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="QUERIES-UNION"
+>7.4. 组合查询</A
+></H1
+><A
+NAME="AEN3428"
+></A
+><A
+NAME="AEN3430"
+></A
+><A
+NAME="AEN3432"
+></A
+><A
+NAME="AEN3434"
+></A
+><A
+NAME="AEN3436"
+></A
+><A
+NAME="AEN3438"
+></A
+><A
+NAME="AEN3440"
+></A
+><P
+>	两个查询的结果可以用集合操作并，交，差进行组合。语法是
+</P><PRE
+CLASS="SYNOPSIS"
+><TT
+CLASS="REPLACEABLE"
+><I
+>query1</I
+></TT
+> UNION [<SPAN
+CLASS="OPTIONAL"
+>ALL</SPAN
+>] <TT
+CLASS="REPLACEABLE"
+><I
+>query2</I
+></TT
+>
+<TT
+CLASS="REPLACEABLE"
+><I
+>query1</I
+></TT
+> INTERSECT [<SPAN
+CLASS="OPTIONAL"
+>ALL</SPAN
+>] <TT
+CLASS="REPLACEABLE"
+><I
+>query2</I
+></TT
+>
+<TT
+CLASS="REPLACEABLE"
+><I
+>query1</I
+></TT
+> EXCEPT [<SPAN
+CLASS="OPTIONAL"
+>ALL</SPAN
+>] <TT
+CLASS="REPLACEABLE"
+><I
+>query2</I
+></TT
+></PRE
+><P>
+	<TT
+CLASS="REPLACEABLE"
+><I
+>query1</I
+></TT
+> 和
+	<TT
+CLASS="REPLACEABLE"
+><I
+>query2</I
+></TT
+> 都是可以使用我们到此为止讨论的所有查询特性的查询。集合操作也可以嵌套和级连，比如
+</P><PRE
+CLASS="SYNOPSIS"
+><TT
+CLASS="REPLACEABLE"
+><I
+>query1</I
+></TT
+> UNION <TT
+CLASS="REPLACEABLE"
+><I
+>query2</I
+></TT
+> UNION <TT
+CLASS="REPLACEABLE"
+><I
+>query3</I
+></TT
+></PRE
+><P>
+	实际上说的是
+</P><PRE
+CLASS="SYNOPSIS"
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>query1</I
+></TT
+> UNION <TT
+CLASS="REPLACEABLE"
+><I
+>query2</I
+></TT
+>) UNION <TT
+CLASS="REPLACEABLE"
+><I
+>query3</I
+></TT
+></PRE
+><P>
+  </P
+><P
+>	<TT
+CLASS="LITERAL"
+>UNION</TT
+> 有效地把
+	<TT
+CLASS="REPLACEABLE"
+><I
+>query2</I
+></TT
+> 的结果附加到
+	<TT
+CLASS="REPLACEABLE"
+><I
+>query1</I
+></TT
+> 的结果上（不过我们不能保证这就是这些行实际返回的顺序）并且删除结果中所有重复的行，
+	就象<TT
+CLASS="LITERAL"
+>DISTINCT</TT
+>做的那样，除非你声明了<TT
+CLASS="LITERAL"
+>UNION ALL</TT
+>。
+  </P
+><P
+>	<TT
+CLASS="LITERAL"
+>INTERSECT</TT
+> 返回那些同时存在于
+	<TT
+CLASS="REPLACEABLE"
+><I
+>query1</I
+></TT
+> 的结果中和
+	<TT
+CLASS="REPLACEABLE"
+><I
+>query2</I
+></TT
+>的结果中的行，除非声明了<TT
+CLASS="LITERAL"
+>INTERSECT ALL</TT
+>，
+	否则所有重复行都被删除。
+  </P
+><P
+>	<TT
+CLASS="LITERAL"
+>EXCEPT</TT
+> 返回所有在
+	<TT
+CLASS="REPLACEABLE"
+><I
+>query1</I
+></TT
+> 的结果中但是不在
+	<TT
+CLASS="REPLACEABLE"
+><I
+>query2</I
+></TT
+> 的结果中的行。
+	（有时侯这叫做两个查询的<I
+CLASS="FIRSTTERM"
+>差</I
+>。）
+	除非声明了 <TT
+CLASS="LITERAL"
+> EXCEPT ALL</TT
+>，否则所有重复行都被删除。
+  </P
+><P
+>	为了计算两个查询的并，交，差，这两个查询必须是<SPAN
+CLASS="QUOTE"
+>"并集兼容的"</SPAN
+>，也就意味着它们都返回同样数量的列，
+	并且对应的列有兼容的数据类型，象 <A
+HREF="typeconv-union-case.html"
+>Section 10.5</A
+> 里描述的那样。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="queries-select-lists.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="queries-order.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>选择列表</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="queries.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>行排序</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

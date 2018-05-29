@@ -1,0 +1,54 @@
+<HTML><HEAD><TITLE>sesam_fetch_array</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="SESAM Database Functions" HREF="ref.sesam.html"><LINK REL="PREVIOUS" TITLE="sesam_execimm" HREF="function.sesam-execimm.html"><LINK REL="NEXT" TITLE="sesam_fetch_result" HREF="function.sesam-fetch-result.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.sesam-execimm.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.sesam-fetch-result.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.sesam-fetch-array"></A>sesam_fetch_array</H1><DIV CLASS="refnamediv"><A NAME="AEN97840"></A><P> (PHP 3 CVS only)</P>sesam_fetch_array&nbsp;--&nbsp;Fetch one row as an associative array</DIV><DIV CLASS="refsect1"><A NAME="AEN97843"></A><H2>Description</H2>array <B CLASS="methodname">sesam_fetch_array</B> ( string result_id [, int whence [, int offset]])<BR></BR><P>&#13; Returns an array that corresponds to the fetched row, or
+<TT CLASS="constant"><B>FALSE</B></TT> if there are no more rows.
+</P><P>&#13; <B CLASS="function">sesam_fetch_array()</B> is an alternative version
+of <A HREF="function.sesam-fetch-row.html"><B CLASS="function">sesam_fetch_row()</B></A>. Instead of storing the
+data in the numeric indices of the result array, it stores the
+data in associative indices, using the field names as keys.
+</P><P>&#13; <TT CLASS="parameter"><I>result_id</I></TT> is a valid result id returned by
+<A HREF="function.sesam-query.html"><B CLASS="function">sesam_query()</B></A> (select type queries only!).
+</P><P>&#13; For the valid values of the optional
+<TT CLASS="parameter"><I>whence</I></TT>and
+<TT CLASS="parameter"><I>offset</I></TT> parameters,
+see the <A HREF="function.sesam-fetch-row.html"><B CLASS="function">sesam_fetch_row()</B></A> function for
+details.
+</P><P>&#13; <B CLASS="function">sesam_fetch_array()</B> fetches one row of data
+from the result associated with the specified result identifier.
+The row is returned as an associative array. Each result column
+is stored with an associative index equal to its column
+(aka. field) name. The column names are converted to lower case.
+</P><P>&#13; Columns without a field name (e.g., results of arithmetic
+operations) and empty fields are not stored in the array. Also,
+if two or more columns of the result have the same column names,
+the later column will take precedence. In this situation, either
+call <A HREF="function.sesam-fetch-row.html"><B CLASS="function">sesam_fetch_row()</B></A> or make an alias for
+the column.
+<DIV CLASS="informalexample"><A NAME="AEN97873"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="sesam">SELECT TBL1.COL AS FOO, TBL2.COL AS BAR FROM TBL1, TBL2</PRE></TD></TR></TABLE><P></P></DIV>
+</P><P>&#13; A special handling allows fetching "multiple field" columns
+(which would otherwise all have the same column names). For each
+column of a "multiple field", the index name is constructed by
+appending the string "(n)" where n is the sub-index of the
+multiple field column, ranging from 1 to its declared repetition
+factor. The indices are NOT zero based, in order to match the
+nomenclature used in the respective query syntax. For a column
+declared as:
+<DIV CLASS="informalexample"><A NAME="AEN97876"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="sesam">CREATE TABLE ... ( ... MULTI(3) INT )</PRE></TD></TR></TABLE><P></P></DIV>
+the associative indices used for the individual "multiple field"
+columns would be <TT CLASS="literal">"multi(1)"</TT>,
+<TT CLASS="literal">"multi(2)"</TT>, and <TT CLASS="literal">"multi(3)"</TT>
+respectively.
+</P><P>&#13; Subsequent calls to <B CLASS="function">sesam_fetch_array()</B> would
+return the next (or prior, or n'th next/prior, depending on the
+scroll attributes) row in the result set, or
+<TT CLASS="constant"><B>FALSE</B></TT> if there are no more rows.
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN97884"></A><P><B>例子 1. SESAM fetch array</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$result </font><font color="#007700">= </font><font color="#0000BB">sesam_query</font><font color="#007700">(</font><font color="#DD0000">"SELECT * FROM phone\n" </font><font color="#007700">.<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#DD0000">"&nbsp;&nbsp;WHERE LASTNAME='" </font><font color="#007700">. </font><font color="#0000BB">strtoupper</font><font color="#007700">(</font><font color="#0000BB">$name</font><font color="#007700">) . </font><font color="#DD0000">"'\n"</font><font color="#007700">.<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#DD0000">"&nbsp;&nbsp;ORDER BY FIRSTNAME"</font><font color="#007700">, </font><font color="#0000BB">1</font><font color="#007700">);<br />if (!</font><font color="#0000BB">$result</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">/* ... error ... */<br /></font><font color="#007700">}<br /></font><font color="#FF8000">// print the table:<br /></font><font color="#007700">echo </font><font color="#DD0000">"&lt;table border=\"1\"&gt;\n"</font><font color="#007700">;<br />while ((</font><font color="#0000BB">$row </font><font color="#007700">= </font><font color="#0000BB">sesam_fetch_array</font><font color="#007700">(</font><font color="#0000BB">$result</font><font color="#007700">)) &amp;&amp; </font><font color="#0000BB">count</font><font color="#007700">(</font><font color="#0000BB">$row</font><font color="#007700">) &gt; </font><font color="#0000BB">0</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"&lt;tr&gt;\n"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"&lt;td&gt;" </font><font color="#007700">. </font><font color="#0000BB">htmlspecialchars</font><font color="#007700">(</font><font color="#0000BB">$row</font><font color="#007700">[</font><font color="#DD0000">"firstname"</font><font color="#007700">]) . </font><font color="#DD0000">"&lt;/td&gt;\n"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"&lt;td&gt;" </font><font color="#007700">. </font><font color="#0000BB">htmlspecialchars</font><font color="#007700">(</font><font color="#0000BB">$row</font><font color="#007700">[</font><font color="#DD0000">"lastname"</font><font color="#007700">]) . </font><font color="#DD0000">"&lt;/td&gt;\n"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"&lt;td&gt;" </font><font color="#007700">. </font><font color="#0000BB">htmlspecialchars</font><font color="#007700">(</font><font color="#0000BB">$row</font><font color="#007700">[</font><font color="#DD0000">"phoneno"</font><font color="#007700">]) . </font><font color="#DD0000">"&lt;/td&gt;\n"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"&lt;/tr&gt;\n"</font><font color="#007700">;<br />}<br />echo </font><font color="#DD0000">"&lt;/table&gt;\n"</font><font color="#007700">;<br /></font><font color="#0000BB">sesam_free_result</font><font color="#007700">(</font><font color="#0000BB">$result</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE><P>&#13; See also: <A HREF="function.sesam-fetch-row.html"><B CLASS="function">sesam_fetch_row()</B></A> which returns an
+indexed array.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.sesam-execimm.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.sesam-fetch-result.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">sesam_execimm</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.sesam.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">sesam_fetch_result</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

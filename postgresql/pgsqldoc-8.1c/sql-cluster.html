@@ -1,0 +1,499 @@
+<HTML
+><HEAD
+><TITLE
+>CLUSTER</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="SQL 命令"
+HREF="sql-commands.html"><LINK
+REL="PREVIOUS"
+TITLE="CLOSE"
+HREF="sql-close.html"><LINK
+REL="NEXT"
+TITLE="COMMENT"
+HREF="sql-comment.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="REFENTRY"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sql-close.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sql-close.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sql-comment.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sql-comment.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SQL-CLUSTER"
+>CLUSTER</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN40351"
+></A
+><H2
+>Name</H2
+>CLUSTER&nbsp;--&nbsp;根据一个索引对某个表集簇</DIV
+><A
+NAME="AEN40354"
+></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN40356"
+></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>CLUSTER <TT
+CLASS="REPLACEABLE"
+><I
+>indexname</I
+></TT
+> ON <TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+>
+CLUSTER <TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+>
+CLUSTER
+  </PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN40361"
+></A
+><H2
+>描述</H2
+><P
+>   <TT
+CLASS="COMMAND"
+>CLUSTER</TT
+> 指示<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+   基于索引 <TT
+CLASS="REPLACEABLE"
+><I
+>indexname</I
+></TT
+>
+   的度量对表 <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+>
+   进行存储建簇。索引必须已经在表 <TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+>.
+   上定义。
+  </P
+><P
+>	当对一个表建簇后，该表的物理存储将基于索引信息进行。
+	建簇是一次性操作：也就是说，当表随后被更新后，改变的内容不会建簇。
+	也就是说，系统不会试图按照索引顺序对更新过的记录重新建簇。
+	如果需要，可以通过周期性地手工执行该命令的方法重建簇。
+  </P
+><P
+>	在对一个表建簇之后，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	会记忆在哪个索引上建立的簇。
+	<TT
+CLASS="COMMAND"
+>CLUSTER <TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+></TT
+>
+	的形式就在表以前建簇的同一个索引上建簇。
+  </P
+><P
+>   没有任何参数的 <TT
+CLASS="COMMAND"
+>CLUSTER</TT
+> 将导致当前数据库里所有调用它的用户所有的表都被建簇。
+   （绝不会对不包括进来的表建簇。）这种形式的 <TT
+CLASS="COMMAND"
+>CLUSTER</TT
+> 不能在一个事务或者函数里面调用。
+  </P
+><P
+>	在对一个表进行建簇的时候，则在其上请求一个 <TT
+CLASS="LITERAL"
+>ACCESS EXCLUSIVE</TT
+> 锁。
+	这样就避免了在 <TT
+CLASS="COMMAND"
+>CLUSTER</TT
+> 完成之前执行任何其他的数据库操作（包括读写）。
+	参阅 <A
+HREF="explicit-locking.html"
+>Section 12.3</A
+> 获取有关数据库锁定的更多信息。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN40381"
+></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>indexname</I
+></TT
+></DT
+><DD
+><P
+>	一个索引名称。
+      </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+></DT
+><DD
+><P
+>	准备建簇的表的名称（可能有模式修饰）。
+      </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN40394"
+></A
+><H2
+>注意</H2
+><P
+>	如果你只是随机的访问表中的行，
+	那么在堆表中的数据的实际存储顺序是无关紧要的。
+	但是，如果你对某些数据的访问多于其他数据，
+	而且有一个索引将这些数据分组，那你就将从使用 <TT
+CLASS="COMMAND"
+>CLUSTER</TT
+> 中获益。
+	如果你从一个表中请求一定索引范围的值，
+	或者是一个索引过的值对应多行，
+	<TT
+CLASS="COMMAND"
+>CLUSTER</TT
+> 也会有助于应用，
+	因为如果索引标识出第一匹配行所在的堆存储页，所有其他行也可能已经在同一堆存储页里了，
+	这样便节省了磁盘访问的时间，加速了查询。
+   </P
+><P
+>	在这个建簇的操作过程中，系统先创建一个按照索引顺序建立的表的临时拷贝。
+	同时也建立表上的每个索引的临时拷贝。因此，你需要磁盘上有足够的剩余空间，
+	至少是表大小和索引大小的和。
+   </P
+><P
+>	因为 <TT
+CLASS="COMMAND"
+>CLUSTER</TT
+> 记忆建簇信息，我们可以在第一次的时候手工对表进行建簇，
+	然后设置一个类似 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 的时间，
+	这样我们就可以周期地自动对表进行建簇了。
+   </P
+><P
+>	因为规划器记录着有关表的排序的统计，所以我们建议在新近建簇的表上运行 <A
+HREF="sql-analyze.html"
+><I
+>ANALYZE</I
+></A
+>。
+	否则，规划器可能会选择很差劲的查询规划。
+   </P
+><P
+>	还有一种建簇的方法。 <TT
+CLASS="COMMAND"
+>CLUSTER</TT
+> 命令将原表按你声明的索引重新排列。
+	这个动作在操作大表时可能会很慢，
+	因为每一行都从堆存储页里按索引顺序取出，如果存储页表没有排序，
+	整个表是随机存放在各个页面的，因而移动的每一行都要进行一次磁盘页面操作。
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 有一个缓冲，
+	但一个大表的主体是不可能都放到缓冲去的。
+	另外一种对表建簇的方法是
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE <TT
+CLASS="REPLACEABLE"
+><I
+>newtable</I
+></TT
+> AS
+    SELECT <TT
+CLASS="REPLACEABLE"
+><I
+>columnlist</I
+></TT
+> FROM <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> ORDER BY <TT
+CLASS="REPLACEABLE"
+><I
+>columnlist</I
+></TT
+>;</PRE
+><P>
+
+	这个用法使用<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	排序的代码 <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> 来创建一个需要的顺序，在对未排序的数据操作时通常速度比索引扫描快得多。
+	然后你可以删除旧表，用
+	<TT
+CLASS="COMMAND"
+>ALTER TABLE ... RENAME</TT
+>将
+	<TT
+CLASS="REPLACEABLE"
+><I
+>newtable</I
+></TT
+> 改成旧表名，
+	并且重建该表所有索引。但是，这个方法不保留 OID，约束，外键关系，
+	赋予的权限，以及表的其它附属的属性 &mdash; 所有这些属性都必须手工重建。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN40417"
+></A
+><H2
+>例子</H2
+><P
+>	以雇员的 <TT
+CLASS="LITERAL"
+>emp_ind</TT
+> 属性对<TT
+CLASS="LITERAL"
+>employees</TT
+>表建簇。
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CLUSTER emp_ind ON emp;
+  </PRE
+><P>
+  </P
+><P
+>	使用以前用过的同一个索引对<TT
+CLASS="LITERAL"
+>employees</TT
+>表进行建簇：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CLUSTER emp;</PRE
+><P>
+  </P
+><P
+>	对以前建过簇的所有表进行建簇：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CLUSTER;</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN40428"
+></A
+><H2
+>兼容性</H2
+><P
+>    在 SQL92 规范里没有 <TT
+CLASS="COMMAND"
+>CLUSTER</TT
+> 语句。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN40432"
+></A
+><H2
+>又见</H2
+><A
+HREF="app-clusterdb.html"
+><I
+><I
+>clusterdb</I
+></I
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sql-close.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sql-comment.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>CLOSE</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="sql-commands.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>COMMENT</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

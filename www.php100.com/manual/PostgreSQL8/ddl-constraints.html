@@ -1,0 +1,689 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>约束 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="数据定义" HREF="ddl.html"><LINK REL="PREVIOUS" TITLE="缺省值" HREF="ddl-default.html"><LINK REL="NEXT" TITLE="系统字段" HREF="ddl-system-columns.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="ddl-default.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="ddl.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 5. 数据定义</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="ddl.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="ddl-system-columns.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="DDL-CONSTRAINTS" >5.3. 约束</A
+></H1
+><A NAME="AEN1962" ></A
+><P
+>	数据类型是约束我们可以在表里存储什么类型的数据的一种方法。
+	不过，对于许多应用，它们提供的约束实在是太粗糙。比如，
+	一个包含产品价格的字段可能应该只接受正数。但是没有哪种标准数据类型只接受正数。
+	另外一个问题是你可能需要根据其他字段或者行的数据来约束字段数据。比如，在一个包含产品信息的表中，
+	每个产品编号都应该只有一行。
+  </P
+><P
+>	对于这些问题，SQL允许你在字段和表上定义约束。
+	约束给予你所需要对数据施加的一切控制。如果一个用户企图在一个字段里存储会违反约束的数据，那么就会抛出一个错误。
+	这种情况同时也适用于数值来自缺省值的情况。
+  </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN1966" >5.3.1. 检查约束</A
+></H2
+><A NAME="AEN1968" ></A
+><A NAME="AEN1970" ></A
+><P
+>	检查约束是最常见的约束类型。它允许你声明在某个字段里的数值必须满足一个布尔表达式。比如，要强制一个正数的产品价格，
+	你可以用：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer,
+    name text,
+    price numeric <B
+CLASS="EMPHASIS"
+>CHECK (price &gt; 0)</B
+>
+);</PRE
+><P>
+   </P
+><P
+>	如你所见，约束定义在数据类型后面，就好像缺省值定义一样。
+	缺省值和约束可以用任意的顺序排列。一个检查约束由一个关键字
+	<TT
+CLASS="LITERAL"
+>CHECK</TT
+> 后面跟着一个放在圆括弧里的表达式组成。
+	检查约束表达式应该包含受约束的字段，否则这个约束就没什么意义了。
+   </P
+><A NAME="AEN1978" ></A
+><P
+>	你还可以给这个约束一个独立的名字。这样就可以令错误信息更清晰，
+	并且在你要修改它的时候你可以查询这个约束。语法是：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer,
+    name text,
+    price numeric <B
+CLASS="EMPHASIS"
+>CONSTRAINT positive_price</B
+> CHECK (price &gt; 0)
+);</PRE
+><P>
+	因此，要声明一个命名约束，使用关键字<TT
+CLASS="LITERAL"
+>CONSTRAINT</TT
+>，
+	它后面跟着一个标识符，然后再跟着约束定义。（如果你不用这个方法声明约束，
+	那么系统为你选择一个名字。）
+   </P
+><P
+>	一个检查约束也可以引用若干个字段。假设你存储一个正常价格和一个折扣价，并且你想保证折扣价比正常价低。
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer,
+    name text,
+    price numeric CHECK (price &gt; 0),
+    discounted_price numeric CHECK (discounted_price &gt; 0),
+    CHECK (price &gt; discounted_price)
+);</PRE
+><P>
+   </P
+><P
+>	头两个约束看上去应该很面熟。第三个使用了一个新的语法。
+	它没有附着在某个字段上，它在逗号分隔的字段列表中是以一个独立行的形式出现的。
+	字段定义和这些约束定义可以以混合的顺序列出。
+   </P
+><P
+>	我们说头两个约束是字段约束，而第三个是表约束，因为它和任何一个字段定义的分开写。
+	字段约束也可以写成表约束，而反过来很可能不行，因为系统假设字段约束只引用它附着的字段。
+	（<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 并不强制这条规则，但是如果你希望自己的表定义可以和其它数据库系统兼容，
+	那么你最好还是遵循这条规则。）上面的例子也可以这么写
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer,
+    name text,
+    price numeric,
+    CHECK (price &gt; 0),
+    discounted_price numeric,
+    CHECK (discounted_price &gt; 0),
+    CHECK (price &gt; discounted_price)
+);</PRE
+><P>
+	或者是
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer,
+    name text,
+    price numeric CHECK (price &gt; 0),
+    discounted_price numeric,
+    CHECK (discounted_price &gt; 0 AND price &gt; discounted_price)
+);</PRE
+><P>
+	这只是风格的不同。
+   </P
+><P
+>    和字段约束一样，我们也可以给表约束赋予名称，方法也相同：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer,
+    name text,
+    price numeric,
+    CHECK (price &gt; 0),
+    discounted_price numeric,
+    CHECK (discounted_price &gt; 0),
+    <B
+CLASS="EMPHASIS"
+>CONSTRAINT valid_discount</B
+> CHECK (price &gt; discounted_price)
+);</PRE
+><P>
+   </P
+><A NAME="AEN1995" ></A
+><P
+>	我们还要知道一个检查约束在表达式计算出真或者空值的时候是满足条件的。
+	因为大多数表达式在任意操作数是空的时候都会得出空值，
+	所以这些约束不能在受约数字段上禁止空值。要确保一个字段不包含空值，我们可以使用下一节介绍的非空约束。
+   </P
+><P
+>    检查约束还可以用于提高表分区的性能。细节参阅 <A HREF="ddl-partitioning.html" >Section 5.9</A
+>。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN2001" >5.3.2. 非空约束</A
+></H2
+><A NAME="AEN2003" ></A
+><A NAME="AEN2005" ></A
+><P
+>	非空约束只是简单地声明一个字段必须不能是空值。下面是一个语法例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer <B
+CLASS="EMPHASIS"
+>NOT NULL</B
+>,
+    name text <B
+CLASS="EMPHASIS"
+>NOT NULL</B
+>,
+    price numeric
+);</PRE
+><P>
+   </P
+><P
+>	一个非空约束总是写成一个字段约束。
+	非空约束在功能上等效于创建一个检查约束 <TT
+CLASS="LITERAL"
+>CHECK (<TT
+CLASS="REPLACEABLE"
+><I
+>column_name</I
+></TT
+> IS NOT NULL)</TT
+>，
+	但在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里，创建一个明确的
+	非空约束效率更高。缺点是你不能给这么创建的非空约束一个明确的名字。
+   </P
+><P
+>	当然，一个字段可以有多个约束。只要在一个接着一个写就可以了：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer NOT NULL,
+    name text NOT NULL,
+    price numeric NOT NULL CHECK (price &gt; 0)
+);</PRE
+><P>
+	它的顺序无所谓。顺序并不影响约束检查的顺序。
+   </P
+><P
+>	<TT
+CLASS="LITERAL"
+>NOT NULL</TT
+> 约束有个相反的约束：<TT
+CLASS="LITERAL"
+>NULL</TT
+>
+	约束。这个约束并不意味着该字段必须是空，因为这样的字段也没啥用。
+	它只是定义了该字段可以为空的这个缺省行为。在 SQL 标准里没有定义 <TT
+CLASS="LITERAL"
+>NULL</TT
+> 约束，
+	因此不应该在可移植的应用中使用它。
+	（我们在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里面增加这个约束只是为了和其它数据库系统兼容。）
+	不过，有些用户喜欢它，因为这个约束可以让他们很容易在脚本文件里切换约束。比如，你可以从下面这样开始
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer NULL,
+    name text NULL,
+    price numeric NULL
+);</PRE
+><P>
+	然后在需要的时候插入 <TT
+CLASS="LITERAL"
+>NOT</TT
+> 关键字。
+   </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>	在大多数数据库设计里，主要的字段都应该标记为非空。
+    </P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN2028" >5.3.3. 唯一约束</A
+></H2
+><A NAME="AEN2030" ></A
+><A NAME="AEN2032" ></A
+><P
+>	唯一约束保证在一个字段或者一组字段里的数据与表中其它行的数据相比是唯一的。它的语法是
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer <B
+CLASS="EMPHASIS"
+>UNIQUE</B
+>,
+    name text,
+    price numeric
+);</PRE
+><P>
+	上面是写成字段约束，下面这个
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer,
+    name text,
+    price numeric,
+    <B
+CLASS="EMPHASIS"
+>UNIQUE (product_no)</B
+>
+);</PRE
+><P>
+	是写成表约束。
+   </P
+><P
+>	如果一个唯一约束引用一组字段，那么这些字段用逗号分隔列出：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE example (
+    a integer,
+    b integer,
+    c integer,
+    <B
+CLASS="EMPHASIS"
+>UNIQUE (a, c)</B
+>
+);</PRE
+><P>
+    这样就声明了指定字段的数值的组合，在整个表的范围内是唯一的，
+    不过这些字段中的某个的数值可以不必是（并且通常也的确可能不是）唯一的。
+   </P
+><P
+>	你也可以给唯一约束赋予自己定义的名字，方法如常：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer <B
+CLASS="EMPHASIS"
+>CONSTRAINT must_be_different</B
+> UNIQUE,
+    name text,
+    price numeric
+);</PRE
+><P>
+   </P
+><A NAME="AEN2046" ></A
+><P
+>	通常，如果在表中有两行或更多行，而这些行中包含在唯一约束里面的那几个字段都相等，那么就算违反了唯一约束。
+	但是在这种比较中，空值是认为不相等的。这就意味着，在多字段唯一约束的情况下，
+	如果在至少一个字段上存在空值，那么我们还是可以存储同样的这种数据行。
+	这种行为遵循 SQL 标准，但是我们听说其它 SQL 数据库可能不遵循这个标准。因此如果你要开发可移植的程序，
+	那么最好仔细些。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN2050" >5.3.4. 主键</A
+></H2
+><A NAME="AEN2052" ></A
+><A NAME="AEN2054" ></A
+><P
+>	从技术上来讲，主键约束只是唯一约束和非空约束的组合。
+	所以，下面两个表定义接受同样的数据：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer UNIQUE NOT NULL,
+    name text,
+    price numeric
+);</PRE
+><P>
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer <B
+CLASS="EMPHASIS"
+>PRIMARY KEY</B
+>,
+    name text,
+    price numeric
+);</PRE
+><P>
+   </P
+><P
+>	主键也可以约束多于一个字段；其语法类似唯一约束：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE example (
+    a integer,
+    b integer,
+    c integer,
+    <B
+CLASS="EMPHASIS"
+>PRIMARY KEY (a, c)</B
+>
+);</PRE
+><P>
+   </P
+><P
+>	主键表示一个字段或者是若干个字段的组合可以用于表中的数据行的唯一标识。
+	（这是定义一个主键的直接结果。请注意一个唯一约束实际上并不能提供一个唯一表示，因为它不排除空值。）
+	这个功能对文档目的和客户应用都很有用。比如，一个可以修改行数值的 GUI 应用可能需要知道一个表的主键才能唯一地标识一个行。
+   </P
+><P
+>	一个表最多可以有一个主键（但是它可以有多个唯一和非空约束）。
+	关系型数据库理论告诉我们，每个表都必须有一个主键。<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	并不强制这个规则，但我们最好还是遵循它。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="DDL-CONSTRAINTS-FK" >5.3.5. 外键</A
+></H2
+><A NAME="AEN2069" ></A
+><A NAME="AEN2071" ></A
+><A NAME="AEN2074" ></A
+><P
+>	外键约束声明一个字段（或者一组字段）的数值必须匹配另外一个表中某些行出现的数值。
+	我们把这个行为称做两个相关表之间的<I
+CLASS="FIRSTTERM"
+>参考完整性</I
+>。
+   </P
+><P
+>	假设你有个产品表，我们可能使用了好几次：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer PRIMARY KEY,
+    name text,
+    price numeric
+);</PRE
+><P>
+	让我们假设你有一个存储这些产品的订单的表。
+	我们想保证订单表只包含实际存在的产品。因此我们在订单表中定义一个外键约束引用产品表：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE orders (
+    order_id integer PRIMARY KEY,
+    product_no integer <B
+CLASS="EMPHASIS"
+>REFERENCES products (product_no)</B
+>,
+    quantity integer
+);</PRE
+><P>
+	现在，我们不可能创建任何其 <TT
+CLASS="STRUCTFIELD"
+>product_no</TT
+> 没有在产品表中出现的订单。
+   </P
+><P
+>	在这种情况下我们把订单表叫做<I
+CLASS="FIRSTTERM"
+>引用</I
+>表，
+	而产品表是<I
+CLASS="FIRSTTERM"
+>被引用</I
+>表。类似地也有引用字段和被引用字段。
+   </P
+><P
+>	你也可以把上面地命令简写成
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE orders (
+    order_id integer PRIMARY KEY,
+    product_no integer <B
+CLASS="EMPHASIS"
+>REFERENCES products</B
+>,
+    quantity integer
+);</PRE
+><P>
+	因为如果缺少字段列表的话，被引用表的主键就会被当作被引用字段使用。
+   </P
+><P
+>	一个外键也可以约束和引用一组字段。同样，也需要写成表约束的形式。
+	下面是一个捏造出来的语法例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE t1 (
+  a integer PRIMARY KEY,
+  b integer,
+  c integer,
+  <B
+CLASS="EMPHASIS"
+>FOREIGN KEY (b, c) REFERENCES other_table (c1, c2)</B
+>
+);</PRE
+><P>
+	当然，被约束的字段的数目和类型需要和被引用字段的数目和类型一致。
+   </P
+><P
+>    和平常一样，你也可以给外键约束赋予你自己的名字。
+   </P
+><P
+>	一个表可以包含多于一个外键约束。这个特性用于实现表之间多对多的
+	关系，比如你有关于产品和订单的表，但现在你想允许一个订单可以包含
+	多种产品（上面那个结构是不允许这么做的）。你可以使用这样的结构：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer PRIMARY KEY,
+    name text,
+    price numeric
+);
+
+CREATE TABLE orders (
+    order_id integer PRIMARY KEY,
+    shipping_address text,
+    ...
+);
+
+CREATE TABLE order_items (
+    product_no integer REFERENCES products,
+    order_id integer REFERENCES orders,
+    quantity integer,
+    PRIMARY KEY (product_no, order_id)
+);</PRE
+><P>
+	注意最后的表的主键和外键是重叠的。
+   </P
+><A NAME="AEN2095" ></A
+><A NAME="AEN2098" ></A
+><P
+>	我们知道外键不允许创建和任何产品都无关的订单。
+	但是如果一个订单创建之后，而其引用的产品被删除了会怎么办？
+	SQL 也允许你处理这个问题。简单说，我们有几种选择：
+    <P
+></P
+></P><UL
+COMPACT="COMPACT"
+><LI
+><P
+>不允许删除一个被引用的产品</P
+></LI
+><LI
+><P
+>同时也删除订单</P
+></LI
+><LI
+><P
+>其它的？</P
+></LI
+></UL
+><P>
+   </P
+><P
+>	为了说明这个问题，让我们对上面的多对多的关系例子制定下面的
+	策略：如果有人想删除一种仍然被一个订单引用的产品（通过
+	<TT
+CLASS="LITERAL"
+>order_items</TT
+>），那么我们不允许她这么做。
+	如果有人删除了一个订单，那么订单项也被删除。
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE products (
+    product_no integer PRIMARY KEY,
+    name text,
+    price numeric
+);
+
+CREATE TABLE orders (
+    order_id integer PRIMARY KEY,
+    shipping_address text,
+    ...
+);
+
+CREATE TABLE order_items (
+    product_no integer REFERENCES products <B
+CLASS="EMPHASIS"
+>ON DELETE RESTRICT</B
+>,
+    order_id integer REFERENCES orders <B
+CLASS="EMPHASIS"
+>ON DELETE CASCADE</B
+>,
+    quantity integer,
+    PRIMARY KEY (product_no, order_id)
+);</PRE
+><P>
+   </P
+><P
+>	限制和级联删除是两种最常见的选项。<TT
+CLASS="LITERAL"
+>RESTRICT</TT
+> 禁止删除被引用的行。
+	<TT
+CLASS="LITERAL"
+>NO ACTION</TT
+> 的意思是如果在检查约束的时候，如果还存在任何引用行，则抛出错误；
+	如果你不声明任何东西，那么它就是缺省的行为。
+	（这两个选择的实际区别是，<TT
+CLASS="LITERAL"
+>NO ACTION</TT
+> 允许约束检查推迟到事务的晚些时候，而 <TT
+CLASS="LITERAL"
+>RESTRICT</TT
+> 不行。）
+	<TT
+CLASS="LITERAL"
+>CASCADE</TT
+> 声明在删除一个被引用的行的时候，引用它的行也会被自动删除掉。
+	在外键字段上的动作还有两个选项：
+	<TT
+CLASS="LITERAL"
+>SET NULL</TT
+> 和 <TT
+CLASS="LITERAL"
+>SET DEFAULT</TT
+>。
+	这样会导致在被引用行删除的时候，引用它们的字段分别设置为空或者缺省值。
+	请注意这些选项并不能让你逃脱被观察和约束的境地。
+	比如，如果一个动作声明 <TT
+CLASS="LITERAL"
+>SET DEFAULT</TT
+>，但是缺省值并不能满足外键，那么动作就会失败。
+   </P
+><P
+>	类似 <TT
+CLASS="LITERAL"
+>ON DELETE</TT
+>，还有 <TT
+CLASS="LITERAL"
+>ON UPDATE</TT
+>
+	选项，它是在被引用字段修改（更新）的时候调用的。可用的动作是一样的。
+   </P
+><P
+>	有关更新和删除数据的更多信息可以在 <A HREF="dml.html" >Chapter 6</A
+> 里找到。
+   </P
+><P
+>	最后，我们应该说明的是，一个外键必须要么引用一个主键，要么引用一个唯一约束。
+	如果外键引用了一个唯一约束，那么在如何匹配空值这个问题上还有一些其它的可能性。
+	这些东西都在 <A HREF="sql-createtable.html" ><I
+>CREATE TABLE</I
+></A
+> 里的
+	<TT
+CLASS="LITERAL"
+>CREATE TABLE</TT
+> 中解释。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="ddl-default.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="ddl-system-columns.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >缺省值</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="ddl.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >系统字段</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

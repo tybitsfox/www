@@ -1,0 +1,1291 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>libpq - C 库 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="客户端接口" HREF="client-interfaces.html"><LINK REL="PREVIOUS" TITLE="客户端接口" HREF="client-interfaces.html"><LINK REL="NEXT" TITLE="连接状态函数" HREF="libpq-status.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="CHAPTER" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="client-interfaces.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="client-interfaces.html#AEN24398" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="largeobjects.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="libpq-status.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A NAME="LIBPQ" >Chapter 28. <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> - C 库</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>28.1. <A HREF="libpq.html#LIBPQ-CONNECT" >数据库联接函数</A
+></DT
+><DT
+>28.2. <A HREF="libpq-status.html" >连接状态函数</A
+></DT
+><DT
+>28.3. <A HREF="libpq-exec.html" >命令执行函数</A
+></DT
+><DD
+><DL
+><DT
+>28.3.1. <A HREF="libpq-exec.html#LIBPQ-EXEC-MAIN" >主函数</A
+></DT
+><DT
+>28.3.2. <A HREF="libpq-exec.html#LIBPQ-EXEC-SELECT-INFO" >检索查询结果信息</A
+></DT
+><DT
+>28.3.3. <A HREF="libpq-exec.html#LIBPQ-EXEC-NONSELECT" >检索其它命令的结果信息</A
+></DT
+><DT
+>28.3.4. <A HREF="libpq-exec.html#LIBPQ-EXEC-ESCAPE-STRING" >逃逸包含在 SQL 命令中的字串</A
+></DT
+><DT
+>28.3.5. <A HREF="libpq-exec.html#LIBPQ-EXEC-ESCAPE-BYTEA" >逃逸包含在 SQL 命令中的二进制字串</A
+></DT
+></DL
+></DD
+><DT
+>28.4. <A HREF="libpq-async.html" >异步命令处理</A
+></DT
+><DT
+>28.5. <A HREF="libpq-cancel.html" >取消正在处理的查询</A
+></DT
+><DT
+>28.6. <A HREF="libpq-fastpath.html" >捷径接口</A
+></DT
+><DT
+>28.7. <A HREF="libpq-notify.html" >异步通知</A
+></DT
+><DT
+>28.8. <A HREF="libpq-copy.html" >与<TT
+CLASS="COMMAND"
+>COPY</TT
+>命令相关的函数</A
+></DT
+><DD
+><DL
+><DT
+>28.8.1. <A HREF="libpq-copy.html#LIBPQ-COPY-SEND" >用于发送 <TT
+CLASS="COMMAND"
+>COPY</TT
+> 数据的函数</A
+></DT
+><DT
+>28.8.2. <A HREF="libpq-copy.html#LIBPQ-COPY-RECEIVE" >用于接收 <TT
+CLASS="COMMAND"
+>COPY</TT
+> 数据的函数</A
+></DT
+><DT
+>28.8.3. <A HREF="libpq-copy.html#LIBPQ-COPY-DEPRECATED" >用于 <TT
+CLASS="COMMAND"
+>COPY</TT
+> 的废弃的函数</A
+></DT
+></DL
+></DD
+><DT
+>28.9. <A HREF="libpq-trace.html" >控制函数</A
+></DT
+><DT
+>28.10. <A HREF="libpq-notice-processing.html" >注意信息处理</A
+></DT
+><DT
+>28.11. <A HREF="libpq-envars.html" >环境变量</A
+></DT
+><DT
+>28.12. <A HREF="libpq-pgpass.html" >口令文件</A
+></DT
+><DT
+>28.13. <A HREF="libpq-ssl.html" >SSL 支持</A
+></DT
+><DT
+>28.14. <A HREF="libpq-threading.html" >在多线程程序里的行为</A
+></DT
+><DT
+>28.15. <A HREF="libpq-build.html" >制作 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 程序</A
+></DT
+><DT
+>28.16. <A HREF="libpq-example.html" >例子程序</A
+></DT
+></DL
+></DIV
+><A NAME="AEN24407" ></A
+><A NAME="AEN24409" ></A
+><P
+>   <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 是<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>的 <SPAN
+CLASS="ACRONYM"
+>C</SPAN
+> 应用程序接口。
+   <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 是一套允许客户程序向 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+   服务器服务进程发送查询并且获得查询返回的库函数。
+  </P
+><P
+>   <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 同时也是其他几个 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 应用接口下面的引擎，
+   包括 C++，Perl，Python，Tcl 和 <SPAN
+CLASS="APPLICATION"
+>ECPG</SPAN
+>。
+   所以如果你使用这些软件包，<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>某些方面的特性会对你非常重要。
+   特别是 <A HREF="libpq-envars.html" >Section 28.11</A
+>，
+   <A HREF="libpq-pgpass.html" >Section 28.12</A
+> 和
+   <A HREF="libpq-ssl.html" >Section 28.13</A
+> 描述了任何使用 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 的应用的用户可见的行为。
+  </P
+><P
+>	本章末尾有三个小程序显示如何利用 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 书写程序。
+	（<A HREF="libpq-example.html" >Section 28.16</A
+>）在源代码发布的 <TT
+CLASS="FILENAME"
+>src/test/examples</TT
+> 目录里面有几个完整的 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 应用的例子。
+  </P
+><P
+>   使用 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 的前端程序必须包括头文件 <TT
+CLASS="FILENAME"
+>libpq-fe.h</TT
+><A NAME="AEN24434" ></A
+>
+   并且必须与 <TT
+CLASS="FILENAME"
+>libpq</TT
+> 库链接。
+  </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="LIBPQ-CONNECT" >28.1. 数据库联接函数</A
+></H1
+><P
+>	下面的函数处理与 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器服务器联接的事情。
+	一个应用程序一次可以与多个服务器建立联接。（这么做的原因之一是访问多于一个数据库。）
+	每个连接都是用一个从函数<TT
+CLASS="FUNCTION"
+>PQconnectdb()</TT
+>或 <TT
+CLASS="FUNCTION"
+>PQsetdbLogin()</TT
+>
+	获得的 <TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+><A NAME="AEN24444" ></A
+> 对象表示。
+	注意，这些函数总是返回一个非空的对象指针，除非存储器少得连个<TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+>对象都分配不出来。
+	在把查询发送给联接对象之前，可以调用<TT
+CLASS="FUNCTION"
+>PQstatus</TT
+>函数来检查一下联接是否成功。
+
+   <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="FUNCTION"
+>PQconnectdb</TT
+><A NAME="AEN24452" ></A
+></DT
+><DD
+><P
+>	与服务器数据库服务器建立一个新的联接。
+</P><PRE
+CLASS="SYNOPSIS"
+>PGconn *PQconnectdb(const char *conninfo);</PRE
+><P>
+      </P
+><P
+>	这个函数用从一个字符串 <TT
+CLASS="LITERAL"
+>conninfo</TT
+>来的参数与数据库打开一个新的联接。
+	与下面的<TT
+CLASS="FUNCTION"
+>PQsetdbLogin()</TT
+>不同的是，
+	我们可以不必更换函数签名（名字）就可以扩展参数集，
+	所以我们建议应用程序中使用这个函数（或者是它的类似的非阻塞的变种
+	<TT
+CLASS="FUNCTION"
+>PQconnectStart</TT
+> 和 <TT
+CLASS="FUNCTION"
+>PQconnectPoll</TT
+>）。
+   </P
+><P
+>	传入的参数可以为空，表明使用所有缺省的参数，
+	或者可以包含一个或更多个用空白间隔的参数设置。
+	每个参数以 <TT
+CLASS="LITERAL"
+>关键字 = 数值</TT
+>的形式设置。
+	等号周围的空白是可选的。
+	要写一个空值或者一个包含空白的值，你可以用一对单引号包围它们，例如，
+	<TT
+CLASS="LITERAL"
+>keyword = 'a value'</TT
+> 。数值内部的单引号和反斜杠必须用一个反斜杠逃逸，
+	比如， <TT
+CLASS="LITERAL"
+>\'</TT
+>或<TT
+CLASS="LITERAL"
+>\\</TT
+>。
+   </P
+><P
+>	目前可识别的参数键字是：
+
+   <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>host</TT
+></DT
+><DD
+><P
+>	要联接的主机名<A NAME="AEN24474" ></A
+>。
+	如果主机名以斜杠开头，则它声明使用 Unix 域套接字通讯而不是 TCP/IP 通讯；
+	该值就是套接字文件所存储的目录。
+	如果没有声明 <TT
+CLASS="LITERAL"
+>host</TT
+>，那么缺省时是与位于
+	<TT
+CLASS="FILENAME"
+>/tmp</TT
+> 目录（或者制作 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的时候声明的套接字目录）
+	里面的 Unix-域套接字联接。
+	<A NAME="AEN24479" ></A
+>
+	在没有 Unix 域套接字的机器上，缺省是与 <TT
+CLASS="LITERAL"
+>localhost</TT
+> 连接。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>hostaddr</TT
+></DT
+><DD
+><P
+>	与之联接的主机的 IP 地址。这个应该是标准的IPv4 地址格式，
+	比如，<TT
+CLASS="LITERAL"
+>172.28.40.9</TT
+>。如果你的机器支持 IPv6，
+	那么你也可以使用 IPv6 的地址。如果声明了一个非空的字符串，那么使用 TCP/IP 通讯机制。
+     </P
+><P
+>	使用<TT
+CLASS="LITERAL"
+>hostaddr</TT
+>取代<TT
+CLASS="LITERAL"
+>host</TT
+>可以让应用避免一次主机名查找，
+	这一点对于那些有时间约束的应用来说可能是非常重要的。
+	不过，Kerberos 认证系统要求主机（host）名。因此，应用下面的规则：
+	如果声明了不带<TT
+CLASS="LITERAL"
+>hostaddr</TT
+>的<TT
+CLASS="LITERAL"
+>host</TT
+>那么就强制进行主机名查找。
+	如果声明中没有<TT
+CLASS="LITERAL"
+>host</TT
+>，<TT
+CLASS="LITERAL"
+>hostaddr</TT
+> 的值给出远端的地址；
+	如果使用了 Kerberos，将导致一次反向名字查询。如果同时声明了 host 和<TT
+CLASS="LITERAL"
+>hostaddr</TT
+>，
+	除非使用了  Kerberos，否则将使用<TT
+CLASS="LITERAL"
+>hostaddr</TT
+>的值作为远端地址；
+	host 的值将被忽略，如果使用了 Kerberos，host 的值用于 Kerberos 认证。
+	（要注意如果传递给<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>的主机名（host）
+	不是地址<TT
+CLASS="LITERAL"
+>hostaddr</TT
+>处的机器名，那么认证很有可能失败。）
+	同样，在 <TT
+CLASS="FILENAME"
+>~/.pgpass</TT
+>（参阅 <A HREF="libpq-pgpass.html" >Section 28.12</A
+>）
+	中是使用 <TT
+CLASS="LITERAL"
+>host</TT
+> 而不是 <TT
+CLASS="LITERAL"
+>hostaddr</TT
+> 来标识连接。
+     </P
+><P
+>	如果主机名（host）和主机地址都没有，
+	那么<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>将使用一个本地的 Unix 域套接字进行通讯；
+	或者是在没有 Unix 域套接字的机器上，它将尝试与 <TT
+CLASS="LITERAL"
+>localhost</TT
+> 连接。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>port</TT
+></DT
+><DD
+><P
+>	 主机服务器的端口号，或者在 Unix 域套接字联接时的套接字扩展文件名。<A NAME="AEN24511" ></A
+>
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>dbname</TT
+></DT
+><DD
+><P
+>	数据库名。缺省和用户名相同。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>user</TT
+></DT
+><DD
+><P
+>	要联接的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 用户名。
+	缺省是与运行该应用的用户操作系统名同名的用户。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>password</TT
+></DT
+><DD
+><P
+>	如果服务器要求口令认证，所用的口令。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>connect_timeout</TT
+></DT
+><DD
+><P
+>	连接的最大等待时间，以秒计（用十进制整数字串书写）。
+	零或者不声明表示无穷。我们不建议把连接超时的值设置得小于 2 秒。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>options</TT
+></DT
+><DD
+><P
+>	发送给服务器的命令行选项。
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>tty</TT
+></DT
+><DD
+><P
+>	忽略（以前，这个选项声明服务器日志的输出方向）。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>sslmode</TT
+></DT
+><DD
+><P
+>       这个选项决定是否需要和服务器协商一个 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接，
+       以及以什么样的优先级与服务器进行 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接。
+       有四种模式可供选择：<TT
+CLASS="LITERAL"
+>disable</TT
+> 将只进行一个没有加密的非 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接；
+       <TT
+CLASS="LITERAL"
+>allow</TT
+> 将和服务器进行协商，首先尝试一个非 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接，
+       如果失败，尝试一个 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接；<TT
+CLASS="LITERAL"
+>prefer</TT
+> （缺省） 将进行协商，
+       首先尝试 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接，如果失败，尝试一个正常的非 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接；
+       <TT
+CLASS="LITERAL"
+>require</TT
+> 将只进行 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接。
+      </P
+><P
+>       如果 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 编译时没有打开 SSL 支持，那么使用 <TT
+CLASS="LITERAL"
+>require</TT
+> 将导致一个错误，
+       而 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 将接受 <TT
+CLASS="LITERAL"
+>allow</TT
+> 和 <TT
+CLASS="LITERAL"
+>prefer</TT
+>，但是它实际上不会企图进行
+       <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接。
+       <A NAME="AEN24568" ></A
+>
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>requiressl</TT
+></DT
+><DD
+><P
+>       这个选项因为有了 <TT
+CLASS="LITERAL"
+>sslmode</TT
+> 设置之后已经废弃了。
+      </P
+><P
+>	如果设为 1 ，则要求与服务器进行<SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+>联接（等效于 <TT
+CLASS="LITERAL"
+>sslmode</TT
+> <TT
+CLASS="LITERAL"
+>require</TT
+>）。
+	如果服务器不支持<SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+>，那么<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>将马上拒绝联接。
+	设置为 0 （缺省）与服务器进行协商连接类型（等效于 <TT
+CLASS="LITERAL"
+>sslmode</TT
+> <TT
+CLASS="LITERAL"
+>prefer</TT
+>）。
+	这个选项只有在编译 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 时打开了 SSL 支持才有效。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>krbsrvname</TT
+></DT
+><DD
+><P
+>       在用 Kerberos 5 认证使用的 Kerberos 服务名。这个名字必须和服务器给 Kerberos 认证配置的服务名相同，
+       才能认证成功。（又见 <A HREF="auth-methods.html#KERBEROS-AUTH" >Section 20.2.3</A
+>。）
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>service</TT
+></DT
+><DD
+><P
+>	用于额外参数的服务名。它在<TT
+CLASS="FILENAME"
+>pg_service.conf</TT
+>里面声明一个服务名，
+	这个配置文件保存额外的连接参数。这样就允许应用应用只声明一个服务名，
+	而连接参数就可以在一个地方维护了。参阅安装目录中的 <TT
+CLASS="FILENAME"
+>share/pg_service.conf.sample</TT
+> 
+	获取如何设置这个文件的信息。
+     </P
+></DD
+></DL
+></DIV
+><P>
+
+	如果有任何没有声明的参数，那么将检查对应的环境变量（参阅<A HREF="libpq-envars.html" >Section 28.11</A
+> 小节）。
+	如果环境变量也没有设置，那么使用编译时的指明的内置缺省。
+   </P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQsetdbLogin</TT
+><A NAME="AEN24603" ></A
+></DT
+><DD
+><P
+>	与服务器数据库服务器建立一个新的联接。
+</P><PRE
+CLASS="SYNOPSIS"
+>PGconn *PQsetdbLogin(const char *pghost,
+		     const char *pgport,
+		     const char *pgoptions,
+		     const char *pgtty,
+		     const char *dbName,
+		     const char *login,
+		     const char *pwd);</PRE
+><P>
+   </P
+><P
+>	这个函数是 <TT
+CLASS="FUNCTION"
+>PQconnectdb</TT
+> 前身，
+	它有固定个数的参数。它有相同的功能，只是在调用中那些它缺少的参数总是用缺省值。
+	如果么给任意的固定参数设置缺省值，那么写一个 <TT
+CLASS="SYMBOL"
+>NULL</TT
+> 或者一个空字串给它们。
+   </P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQsetdb</TT
+><A NAME="AEN24614" ></A
+></DT
+><DD
+><P
+>   与服务器数据库服务器建立一个新的联接。
+</P><PRE
+CLASS="SYNOPSIS"
+>PGconn *PQsetdb(char *pghost,
+		char *pgport,
+		char *pgoptions,
+		char *pgtty,
+		char *dbName);</PRE
+><P>
+   </P
+><P
+>	这是一个调用 <TT
+CLASS="FUNCTION"
+>PQsetdbLogin()</TT
+> 的宏，只是<TT
+CLASS="PARAMETER"
+>login</TT
+>和<TT
+CLASS="PARAMETER"
+>pwd</TT
+>参数用空（null ）代替。
+	提供这个函数是为了与非常老版本的程序兼容。
+   </P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQconnectStart</TT
+><A NAME="AEN24626" ></A
+><BR><TT
+CLASS="FUNCTION"
+>PQconnectPoll</TT
+><A NAME="AEN24630" ></A
+></DT
+><DD
+><P
+>	<A NAME="AEN24634" ></A
+>
+	与数据库服务器建立一次非阻塞的联接。
+</P><PRE
+CLASS="SYNOPSIS"
+>PGconn *PQconnectStart(const char *conninfo);</PRE
+><P>
+</P><PRE
+CLASS="SYNOPSIS"
+>PostgreSQLPollingStatusType PQconnectPoll(PGconn *conn);</PRE
+><P>
+  </P
+><P
+>	这两个函数用于打开一个与数据库服务器之间的非阻塞的联接：
+	你的应用的执行线索在执行它的时候不会因远端的 I/O 而阻塞。
+	这个方法的要点是等待 I/O 结束可以发生在应用的主循环里，
+	而不是在 <TT
+CLASS="FUNCTION"
+>PQconnectdb</TT
+> 里，这样应用可以把这件事与其它操作并发起来一起执行。
+  </P
+><P
+>	数据库联接是用从 <TT
+CLASS="LITERAL"
+>conninfo</TT
+> 字符串里取得的参数传递给 <TT
+CLASS="FUNCTION"
+>PQconnectStart</TT
+> 进行的。
+	这个字符串的格式与上面<TT
+CLASS="FUNCTION"
+>PQconnectdb</TT
+>里描述的一样。
+  </P
+><P
+>	<TT
+CLASS="FUNCTION"
+>PQconnectStart</TT
+> 和<TT
+CLASS="FUNCTION"
+>PQconnectPoll</TT
+> 都不会阻塞（进程），不过有一些条件：
+   <P
+></P
+></P><UL
+><LI
+><P
+>	必须正确提供<TT
+CLASS="LITERAL"
+>hostaddr</TT
+>和<TT
+CLASS="LITERAL"
+>host</TT
+>
+	参数以确保不会发生正向或者反向的名字查找。
+	参阅上面<TT
+CLASS="FUNCTION"
+>PQconnectdb</TT
+>里的这些参数的文档获取细节。
+     </P
+></LI
+><LI
+><P
+>	如果你调用了<TT
+CLASS="FUNCTION"
+>PQtrace</TT
+>，
+	确保你跟踪进入的流对象不会阻塞。
+     </P
+></LI
+><LI
+><P
+>	你必须在调用<TT
+CLASS="FUNCTION"
+>PQconnectPoll</TT
+>之前确保 socket 
+	处于正确的状态，象下面描述的那样。
+     </P
+></LI
+></UL
+><P>
+  </P
+><P
+>	要开始一次非阻塞连接请求，调用 <TT
+CLASS="LITERAL"
+>conn=PQconnectStart("<TT
+CLASS="REPLACEABLE"
+><I
+>connection_info_string</I
+></TT
+>")</TT
+>。
+	如果<TT
+CLASS="VARNAME"
+>conn</TT
+>是空，表明<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>无法分配一个新的<TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+>结构。
+	否则，返回一个有效的<TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+>指针（尽管还不一定代表一个与数据库有效联接）。
+	<TT
+CLASS="FUNCTION"
+>PQconnectStart</TT
+> 一返回，调用<TT
+CLASS="LITERAL"
+>status=PQstatus(conn)</TT
+>。
+	如果<TT
+CLASS="VARNAME"
+>status</TT
+>等于<TT
+CLASS="SYMBOL"
+>CONNECTION_BAD</TT
+>，<TT
+CLASS="FUNCTION"
+>PQconnectStart</TT
+> 失败。
+  </P
+><P
+>	如果<TT
+CLASS="FUNCTION"
+>PQconnectStart</TT
+>成功了，下一个阶段是轮询	<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>，
+	这样它就可以继续连接序列动作。使用 <TT
+CLASS="FUNCTION"
+>PQsocket(conn)</TT
+> 获取数据库链接下层的套接字描述符。
+	象这样循环：如果<TT
+CLASS="FUNCTION"
+>PQconnectPoll(conn)</TT
+>的最后一个返回是<TT
+CLASS="SYMBOL"
+>PGRES_POLLING_READING</TT
+>，
+	那么就等到套接字准备好被读取了的时候（就像系统函数 <TT
+CLASS="FUNCTION"
+>select()</TT
+>，<TT
+CLASS="FUNCTION"
+>poll()</TT
+>，或者类似的系统调用声明的那样）。
+	然后再次调用 <TT
+CLASS="FUNCTION"
+>PQconnectPoll(conn)</TT
+>。
+	同样，如果 <TT
+CLASS="FUNCTION"
+>PQconnectPoll(conn)</TT
+> 最后返回 <TT
+CLASS="SYMBOL"
+>PGRES_POLLING_WRITING</TT
+>，
+	那么就等到套接字准备好可以写了，然后再次调用 <TT
+CLASS="FUNCTION"
+>PQconnectPoll(conn)</TT
+>。
+	如果你还没调用 <TT
+CLASS="FUNCTION"
+>PQconnectPoll</TT
+>，比如，刚刚调用完 <TT
+CLASS="FUNCTION"
+>PQconnectStart</TT
+>，
+	那么按照它刚返回 <TT
+CLASS="SYMBOL"
+>PGRES_POLLING_WRITING</TT
+> 的原则行动。
+	继续这个循环直到 <TT
+CLASS="FUNCTION"
+>PQconnectPoll(conn)</TT
+> 返回 <TT
+CLASS="SYMBOL"
+>PGRES_POLLING_FAILED</TT
+>，
+	表明连接失败，或者 <TT
+CLASS="SYMBOL"
+>PGRES_POLLING_OK</TT
+>，表明连接成功建立。
+  </P
+><P
+>	在联接的任意时刻，我们都可以通过调用<TT
+CLASS="FUNCTION"
+>PQstatus</TT
+>
+	来检查联接的状态。
+	如果这是<TT
+CLASS="SYMBOL"
+>CONNECTION_BAD</TT
+>，
+	那么联接过程失败；如果是<TT
+CLASS="SYMBOL"
+>CONNECTION_OK</TT
+>，
+	那么联接已经做好。
+	这两种状态同样也可以从上面的<TT
+CLASS="FUNCTION"
+>PQconnectPoll</TT
+>
+	的返回值里检测到。
+	其他状态可能（也只能）在一次异步联接过程中发生。
+	这些标识联接过程的当前状态，因而可能对给用户提供反馈有帮助。这些状态可能包括：
+
+    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="SYMBOL"
+>CONNECTION_STARTED</TT
+></DT
+><DD
+><P
+>	等待进行联接。
+      </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>CONNECTION_MADE</TT
+></DT
+><DD
+><P
+>	联接成功；等待发送。
+      </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>CONNECTION_AWAITING_RESPONSE</TT
+></DT
+><DD
+><P
+>	等待来自服务器的响应。
+      </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>CONNECTION_AUTH_OK</TT
+></DT
+><DD
+><P
+>	已收到认证；等待联接启动继续进行。
+      </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>CONNECTION_SSL_STARTUP</TT
+></DT
+><DD
+><P
+>	协商 SSL 加密。
+       </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>CONNECTION_SETENV</TT
+></DT
+><DD
+><P
+>	协商环境驱动的参数设置。
+      </P
+></DD
+></DL
+></DIV
+><P>
+
+	注意，尽管这些常量将保持下去（为了维持兼容性），
+	应用决不应该依赖于这些常量以某种特定顺序出现，
+	或者是根本不应依赖于这些常量，
+	或者是不应该依赖于这些状态总是某个文档声明的值。
+	一个应用可能象象下面这样：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>switch(PQstatus(conn))
+{
+    case CONNECTION_STARTED:
+	feedback = "正在连接...";
+	break;
+
+    case CONNECTION_MADE:
+	feedback = "与服务器连接已建立...";
+	break;
+.
+.
+.
+    default:
+	feedback = "正在连接...";
+}</PRE
+><P>
+  </P
+><P
+>   在使用 <TT
+CLASS="FUNCTION"
+>PQconnectPoll</TT
+> 的时候，连接参数 <TT
+CLASS="LITERAL"
+>connect_timeout</TT
+>
+   将被忽略；判断是否超时是应用的责任。否则，后面跟着一个 <TT
+CLASS="FUNCTION"
+>PQconnectPoll</TT
+> 循环的 <TT
+CLASS="FUNCTION"
+>PQconnectStart</TT
+>
+   等效于 <TT
+CLASS="FUNCTION"
+>PQconnectdb</TT
+>。
+  </P
+><P
+>	要注意如果<TT
+CLASS="FUNCTION"
+>PQconnectStart</TT
+>返回一个非空的指针，
+	你必须在使用完它（指针）之后调用<TT
+CLASS="FUNCTION"
+>PQfinish</TT
+>，
+	以处理那些结构和所有相关的存储块。
+	甚至调用<TT
+CLASS="FUNCTION"
+>PQconnectStart</TT
+>或者
+	<TT
+CLASS="FUNCTION"
+>PQconnectPoll</TT
+>失败时也要这样处理。
+  </P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQconndefaults</TT
+><A NAME="AEN24740" ></A
+></DT
+><DD
+><P
+>   返回缺省的联接选项。
+</P><PRE
+CLASS="SYNOPSIS"
+>PQconninfoOption *PQconndefaults(void);
+
+typedef struct PQconninfoOption
+{
+    char   *keyword;   /* 选项的键字 */
+    char   *envvar;    /* 退守的环境变量名 */
+    char   *compiled;  /* 退守的编译时缺省值 */
+    char   *val;       /* 选项的当前值，或者 NULL */
+    char   *label;     /* 连接对话里字段的标识 */
+    char   *dispchar;  /* 在连接对话里为此字段显示的字符。
+			  数值有：
+			  ""	原样现实输入的数值
+			  "*"   口令字段 － 隐藏数值
+			  "D"   调试选项 － 缺省的时候不显示 */
+    int     dispsize;  /* 对话中字段的以字符计的大小 */
+}PQconninfoOption;</PRE
+><P>
+   </P
+><P
+>	返回一个连接选项数组。
+	可以用于获取所有可能的<TT
+CLASS="FUNCTION"
+>PQconnectdb</TT
+>选项和它们的当前缺省值。
+	返回值指向一个<TT
+CLASS="STRUCTNAME"
+>PQconninfoOption</TT
+> 结构的数组，
+	该数组以一个有 NULL <TT
+CLASS="STRUCTFIELD"
+>keyword</TT
+> 指针的条目结束。
+	如果无法分配内存，则返回空指针。
+	注意缺省值（<TT
+CLASS="STRUCTFIELD"
+>val</TT
+> 域）将依赖于环境变量和其他环境。
+	调用者必须把连接选项当作只读对待。
+   </P
+><P
+>	在处理完选项数组后，把数组交给<TT
+CLASS="FUNCTION"
+>PQconninfoFree()</TT
+>释放。
+	如果没有这么做，每次调用<TT
+CLASS="FUNCTION"
+>PQconndefaults()</TT
+>都会有一小部分内存泄漏。
+   </P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQfinish</TT
+><A NAME="AEN24756" ></A
+></DT
+><DD
+><P
+>	关闭与服务器的连接。同时释放被<TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+>
+	对象使用的存储器。
+</P><PRE
+CLASS="SYNOPSIS"
+>void PQfinish(PGconn *conn);</PRE
+><P>
+   </P
+><P
+>	注意，即使与服务器的连接尝试失败（可由<TT
+CLASS="FUNCTION"
+>PQstatus</TT
+>判断），
+	应用也要调用<TT
+CLASS="FUNCTION"
+>PQfinish</TT
+>释放被<TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+>对象使用的存储器。
+	不应该在调用<TT
+CLASS="FUNCTION"
+>PQfinish</TT
+>后再使用<TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+> 指针。
+   </P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQreset</TT
+><A NAME="AEN24771" ></A
+></DT
+><DD
+><P
+>	重置与服务器的通讯端口。
+</P><PRE
+CLASS="SYNOPSIS"
+>void PQreset(PGconn *conn);</PRE
+><P>
+   </P
+><P
+>	此函数将关闭与服务器的连接并且试图与同一个服务器重建新的连接，
+	使用所有前面使用过的参数。这在失去工作连接后进行故障恢复时很有用。
+   </P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQresetStart</TT
+><A NAME="AEN24780" ></A
+><BR><TT
+CLASS="FUNCTION"
+>PQresetPoll</TT
+><A NAME="AEN24784" ></A
+></DT
+><DD
+><P
+>	以非阻塞模式重置与服务器的通讯端口。
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQresetStart(PGconn *conn);</PRE
+><P>
+</P><PRE
+CLASS="SYNOPSIS"
+>PostgreSQLPollingStatusType PQresetPoll(PGconn *conn);</PRE
+><P>
+   </P
+><P
+>	此函数将关闭与服务器的连接并且试图与同一个服务器重建新的连接，
+	使用所有前面使用过的参数。这在失去工作连接后进行故障恢复时很有用。
+	它们和上面的<TT
+CLASS="FUNCTION"
+>PQreset</TT
+>的区别是它们工作在非阻塞模式。
+	这些函数的使用有与上面<TT
+CLASS="FUNCTION"
+>PQconnectStart</TT
+>和
+	<TT
+CLASS="FUNCTION"
+>PQconnectPoll</TT
+>一样的限制。
+   </P
+><P
+>	要发起一次连接重置，调用<TT
+CLASS="FUNCTION"
+>PQresetStart</TT
+>。如果它返回 0，那么重置失败。
+	如果返回 1，用与使用<TT
+CLASS="FUNCTION"
+>PQconnectPoll</TT
+> 建立连接的同样的方法使用<TT
+CLASS="FUNCTION"
+>PQresetPoll</TT
+>重置连接。
+   </P
+></DD
+></DL
+></DIV
+><P></P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="client-interfaces.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="libpq-status.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >客户端接口</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="client-interfaces.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >连接状态函数</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

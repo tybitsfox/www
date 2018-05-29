@@ -1,0 +1,38 @@
+<html><head><title>我怎样去除僵死进程？</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="进程控制" href="./c46.htm"><link rel="PREVIOUS" title="父子进程如何通信？" href="./x172.htm"><link rel="NEXT" title="我怎样使我的程序作为守护程序运行？" href="./x194.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x172.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 1. 进程控制</td><td align="right" valign="bottom" width="10%"><a href="./x194.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN178">1.6. 我怎样去除僵死进程？</a></h1><div class="SECT2"><h2 class="SECT2"><a name="AEN180">1.6.1. 何为僵死进程？</a></h2><p>当一个程序创建的子进程比父进程提前结束，内核仍然保存一些它的信息以便父
+进程会需要它 - 比如，父进程可能需要检查子进程的退出状态。为了得到这些信
+息，父进程调用‘wait()’；当这个调用发生，内核可以丢弃这些信息。
+      </p><p>在子进程终止后到父进程调用‘wait()’前的时间里，子进程被称为‘僵死进程’
+(‘zombie’)。(如果你用‘ps’，这个子进程会有一个‘Z’出现在它的状态区
+里指出这点。)即使它没有在执行，它仍然占据进程表里一个位置。(它不消耗其
+它资源，但是有些工具程序会显示错误的数字，比如中央处理器的使用；这是
+因为为节约空间进程表的某些部份与会计数据(accounting info)是共用(overlaid)的。)
+      </p><p>这并不好，因为进程表对于进程数有固定的上限，系统会用光它们。即使系统没
+有用光 ，每一个用户可以同时执行的进程数有限制，它总是小于系统的限制。
+顺便说一下，这也正是你需要总是 检查‘fork()’是否失败的一个原因。
+      </p><p>如果父进程未调用wait函数而终止，子进程将被‘init’进程收管，它将控制子进
+程退出后必须的清除工作。(‘init’是一个特殊的系统程序，进程号为1 - 它实际
+上是系统启动后运行的第一个程序)，
+      </p></div><div class="SECT2"><h2 class="SECT2"><a name="AEN186">1.6.2. 我怎样避免它们的出现？</a></h2><p>你需要却认父进程为每个子进程的终止调用‘wait()’(或者‘waitpid()’，
+‘wait3()’，等等)； 或者，在某些系统上，你可以指令系统你对子进程的退出状
+态没有兴趣。(译者注：在SysV系统上，可以调用signal函数，设置SIGCLD信号为
+SIG_IGN，系统将不产生僵死进程， 详细说明参见&lt;&lt;高级编程&gt;&gt;10.7节)
+      </p><p>另一种方法是*两次*‘fork()’，而且使紧跟的子进程直接退出，这样造成孙子进
+程变成孤儿进程(orphaned)，从而init进程将负责清除它。欲获得做这个的程序，参
+看范例章节的函数‘fork2()’。
+      </p><p>为了忽略子进程状态，你需要做下面的步骤(查询你的系统手册页以知道这是否正
+常工作)：
+      </p><pre class="PROGRAMLISTING">         struct sigaction sa;
+         sa.sa_handler = SIG_IGN;
+     #ifdef SA_NOCLDWAIT
+         sa.sa_flags = SA_NOCLDWAIT;
+     #else
+         sa.sa_flags = 0;
+     #endif
+         sigemptyset(&amp;sa.sa_mask);
+         sigaction(SIGCHLD, &amp;sa, NULL);
+      </pre><p>如果这是成功的，那么‘wait()’函数集将不再正常工作；如果它们中任何一个被
+调用，它们将等待直到*所有*子进程已经退出，然后返回失败，并且
+‘errno==ECHILD’。
+      </p><p>另一个技巧是捕获SIGCHLD信号，然后使信号处理程序调用‘waitpid()’或
+‘wait3()’。参见范例章节的完整程序。
+      </p></div></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x172.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x194.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">父子进程如何通信？</td><td align="center" valign="top" width="34%"><a href="./c46.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">我怎样使我的程序作为守护程序运行？</td></tr></tbody></table></div></body></html>

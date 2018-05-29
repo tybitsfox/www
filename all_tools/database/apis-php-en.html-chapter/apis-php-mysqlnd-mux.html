@@ -1,0 +1,642 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Chapter 10 Mysqlnd connection multiplexing plugin</title>
+<link rel="stylesheet" href="mvl.css" type="text/css" />
+<meta name="generator" content="DocBook XSL Stylesheets + chunker.py v1.9.2" />
+<link rel="start" href="index.html" title="{book-title}" />
+<link rel="up" href="" title="" />
+<link rel="prev" href="apis-php-mysqlnd-uh.html" title="Chapter 9 Mysqlnd user handler plugin" />
+<link rel="next" href="apis-php-mysqlnd-memcache.html" title="Chapter 11 Mysqlnd Memcache plugin" />
+<script language="javascript" type="text/javascript">
+  function addOnload(theFunc)
+  {
+    var previous = window.onload;
+    if (typeof window.onload != 'function')
+    {
+      window.onload = theFunc;
+    }
+    else
+    {
+      window.onload = function()
+      {
+        previous();
+        theFunc();
+      }
+    }
+  }
+
+  addOnload(function()
+  {
+    var base = new Date(1463505695*1000);
+    var now = new Date();
+    var diff = ((now-base)/1000)/(24*3600);
+
+    if (diff > 90) {
+      var nodes = document.getElementsByClassName('titlepage');
+      nodes[0].innerHTML = '<p style="border: 5px #ff0000 solid; padding: 5px; margin 5px">' +
+        'This copy of the manual is more than 90 days old. We encourage you to download a ' +
+        'new version from <a href="http://dev.mysql.com">dev.mysql.com/doc</a>.</p>' + nodes[0].innerHTML;
+    }
+  });
+</script>
+<noscript></noscript>
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<div class="navheader">
+<table width="100%" summary="Navigation header">
+<tr>
+<th colspan="3" align="center">Chapter 10 Mysqlnd connection multiplexing plugin</th>
+</tr>
+<tr>
+<td width="20%" align="left"><a accesskey="p" href="apis-php-mysqlnd-uh.html">Prev</a> </td>
+<th width="60%" align="center"></th>
+<td width="20%" align="right"> <a accesskey="n" href="apis-php-mysqlnd-memcache.html">Next</a></td>
+</tr>
+</table>
+<hr>
+</div>
+<div class="chapter">
+<div class="titlepage">
+<div>
+<div>
+<h1 class="title"><a name="apis-php-mysqlnd-mux"></a>Chapter 10 Mysqlnd connection multiplexing plugin</h1>
+
+</div>
+
+</div>
+
+</div>
+<div class="toc">
+<p><b>Table of Contents</b></p><dl class="toc"><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.key-features">10.1 Key Features</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.limitations">10.2 Limitations</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.name">10.3 About the name mysqlnd_mux</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.concepts">10.4 Concepts</a></span></dt><dd><dl><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.architecture">10.4.1 Architecture</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.connection_pool">10.4.2 Connection pool</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.sharing_connections">10.4.3 Sharing connections</a></span></dt></dl></dd><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.setup">10.5 Installing/Configuring</a></span></dt><dd><dl><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.requirements">10.5.1 Requirements</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.installation">10.5.2 Installation</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.configuration">10.5.3 Runtime Configuration</a></span></dt></dl></dd><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.constants">10.6 Predefined Constants</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.changes">10.7 Change History</a></span></dt><dd><dl><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.changes-one-o">10.7.1 PECL/mysqlnd_mux 1.0 series</a></span></dt></dl></dd></dl>
+</div>
+<p>
+    <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+    Documentation Group.</a>
+  </p><p>
+    The mysqlnd multiplexing plugin (<code class="literal">mysqlnd_mux</code>)
+    multiplexes MySQL connections established by all PHP MySQL
+    extensions that use the MySQL native driver
+    (<a class="link" href="apis-php-mysqlnd.html" title="Chapter 6 MySQL Native Driver">mysqlnd</a>) for PHP.
+  </p><p>
+    The MySQL native driver for PHP features an internal C API for
+    plugins, such as the connection multiplexing plugin, which can
+    extend the functionality of mysqlnd. See the
+    <a class="link" href="apis-php-mysqlnd.html" title="Chapter 6 MySQL Native Driver">mysqlnd</a> for additional
+    details about its benefits over the MySQL Client Library
+    libmysqlclient.
+  </p><p>
+    Mysqlnd plugins like <code class="literal">mysqlnd_mux</code> operate, for the
+    most part, transparently from a user perspective. The connection
+    multiplexing plugin supports all PHP applications, and all MySQL PHP
+    extensions. It does not change existing APIs. Therefore, it can
+    easily be used with existing PHP applications.
+</p>
+<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+
+<div class="admon-title">
+Note
+</div>
+<p>
+      This is a proof-of-concept. All features are at an early stage.
+      Not all kinds of queries are handled by the plugin yet. Thus, it
+      cannot be used in a drop-in fashion at the moment.
+    </p><p>
+      Please, do not use this version in production environments.
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd-mux.key-features"></a>10.1 Key Features</h2>
+
+</div>
+
+</div>
+
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      The key features of mysqlnd_mux are as follows:
+    </p><p>
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+            Transparent and therefore easy to use:
+          </p><p>
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>
+                  Supports all of the PHP MySQL extensions.
+                </p></li><li class="listitem"><p>
+                  Little to no application changes are required,
+                  dependent on the required usage scenario.
+</p></li></ul>
+</div>
+<p>
+          </p></li><li class="listitem"><p>
+            Reduces server load and connection establishment latency:
+          </p><p>
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>
+                  Opens less connections to the MySQL server.
+                </p></li><li class="listitem"><p>
+                  Less connections to MySQL mean less work for the MySQL
+                  server. In a client-server environment scaling the
+                  server is often more difficult than scaling the
+                  client. Multiplexing helps with horizontal scale-out
+                  (scale-by-client).
+                </p></li><li class="listitem"><p>
+                  Pooling saves connection time.
+                </p></li><li class="listitem"><p>
+                  Multiplexed connection: multiple user handles share
+                  the same network connection. Once opened, a network
+                  connection is cached and shared among multiple user
+                  handles. There is a 1:n relationship between internal
+                  network connection and user connection handles.
+                </p></li><li class="listitem"><p>
+                  Persistent connection: a network connection is kept
+                  open at the end of the web request, if the PHP
+                  deployment model allows. Thus, subsequently web
+                  requests can reuse a previously opened connection.
+                  Like other resources, network connections are bound to
+                  the scope of a process. Thus, they can be reused for
+                  all web requests served by a process.
+</p></li></ul>
+</div>
+<p>
+</p></li></ul>
+</div>
+<p>
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd-mux.limitations"></a>10.2 Limitations</h2>
+
+</div>
+
+</div>
+
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      The proof-of-concept does not support unbuffered queries, prepared
+      statements, and asynchronous queries.
+    </p><p>
+      The connection pool is using a combination of the transport method
+      and hostname as keys. As a consequence, two connections to the
+      same host using the same transport method (TCP/IP, Unix socket,
+      Windows named pipe) will be linked to the same pooled connection
+      even if username and password differ. Be aware of the possible
+      security implications.
+    </p><p>
+      The proof-of-concept is transaction agnostic. It does not know
+      about SQL transactions.
+</p>
+<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+
+<div class="admon-title">
+Note
+</div>
+<p>
+        Applications must be aware of the consequences of connection
+        sharing connections.
+</p>
+</div>
+
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd-mux.name"></a>10.3 About the name mysqlnd_mux</h2>
+
+</div>
+
+</div>
+
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      The shortcut <code class="literal">mysqlnd_mux</code> stands for
+      <code class="literal">mysqlnd connection multiplexing plugin</code>.
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd-mux.concepts"></a>10.4 Concepts</h2>
+
+</div>
+
+</div>
+
+</div>
+<div class="toc">
+<dl class="toc"><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.architecture">10.4.1 Architecture</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.connection_pool">10.4.2 Connection pool</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.sharing_connections">10.4.3 Sharing connections</a></span></dt></dl>
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      This explains the architecture and related concepts for this
+      plugin. Reading and understanding these concepts is required to
+      successfully use this plugin.
+</p>
+<div class="section">
+
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd-mux.architecture"></a>10.4.1 Architecture</h3>
+</div>
+</div>
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+        The mysqlnd connection multiplexing plugin is implemented as a
+        PHP extension. It is written in C and operates under the hood of
+        PHP. During the startup of the PHP interpreter, in the module
+        initialization phase of the PHP engine, it gets registered as a
+        <a class="link" href="apis-php-mysqlnd.html" title="Chapter 6 MySQL Native Driver">mysqlnd</a> plugin to
+        replace specific mysqlnd C methods.
+      </p><p>
+        The mysqlnd library uses PHP streams to communicate with the
+        MySQL server. PHP streams are accessed by the mysqlnd library
+        through its net module. The mysqlnd connection multiplexing
+        plugin proxies methods of the mysqlnd library net module to
+        control opening and closing of network streams.
+      </p><p>
+        Upon opening a user connection to MySQL using the appropriate
+        connection functions of either
+        <a class="link" href="apis-php-mysqli.html" title="Chapter 3 MySQL Improved Extension">mysqli</a>,
+        <a class="link" href="apis-php-pdo-mysql.html" title="Chapter 4 MySQL Functions (PDO_MYSQL)">PDO_MYSQL</a> or
+        <a class="link" href="apis-php-mysql.html" title="Chapter 5 Original MySQL API">ext/mysql</a>, the plugin will
+        search its connection pool for an open network connection. If
+        the pool contains a network connection to the host specified by
+        the connect function using the transport method requested
+        (TCP/IP, Unix domain socket, Windows named pipe), the pooled
+        connection is linked to the user handle. Otherwise, a new
+        network connection is opened, put into the poolm and associated
+        with the user connection handle. This way, multiple user handles
+        can be linked to the same network connection.
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd-mux.connection_pool"></a>10.4.2 Connection pool</h3>
+
+</div>
+
+</div>
+
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+        The plugins connection pool is created when PHP initializes its
+        modules (<code class="literal">MINIT</code>) and free'd when PHP
+        shuts down the modules (<code class="literal">MSHUTDOWN</code>). This is
+        the same as for persistent MySQL connections.
+      </p><p>
+        Depending on the deployment model, the pool is used for the
+        duration of one or multiple web requests. Network connections
+        are bound to the lifespan of an operating system level process.
+        If the PHP process serves multiple web requests as it is the
+        case for Fast-CGI or threaded web server deployments, then the
+        pooled connections can be reused over multiple connections.
+        Because multiplexing means sharing connections, it can even
+        happen with a threaded deployment that two threads or two
+        distinct web requests are linked to one pooled network
+        connections.
+      </p><p>
+        A pooled connection is explicitly closed once the last reference
+        to it is released. An implicit close happens when PHP shuts down
+        its modules.
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd-mux.sharing_connections"></a>10.4.3 Sharing connections</h3>
+
+</div>
+
+</div>
+
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+        The PHP mysqlnd connection multiplexing plugin changes the
+        relationship between a users connection handle and the
+        underlying MySQL connection. Without the plugin, every MySQL
+        connection belongs to exactly one user connection at a time. The
+        multiplexing plugin changes. A MySQL connection is shared among
+        multiple user handles. There no one-to-one relation if using the
+        plugin.
+      </p><p>
+        Sharing pooled connections has an impact on the connection
+        state. State changing operations from multiple user handles
+        pointing to one MySQL connection are not isolated from each
+        other. If, for example, a session variable is set through one
+        user connection handle, the session variable becomes visible to
+        all other user handles that reference the same underlying MySQL
+        connection.
+      </p><p>
+        This is similar in concept to connection state related phenomens
+        described for the PHP mysqlnd replication and load balancing
+        plugin. Please, check the
+        <a class="link" href="apis-php-mysqlnd-ms.html" title="Chapter 7 Mysqlnd replication and load balancing plugin">PECL/mysqlnd_ms
+        documentation</a> for more details on the state of a
+        connection.
+      </p><p>
+        The proof-of-concept takes no measures to isolate multiplexed
+        connections from each other.
+</p>
+</div>
+
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd-mux.setup"></a>10.5 Installing/Configuring</h2>
+
+</div>
+
+</div>
+
+</div>
+<div class="toc">
+<dl class="toc"><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.requirements">10.5.1 Requirements</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.installation">10.5.2 Installation</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.configuration">10.5.3 Runtime Configuration</a></span></dt></dl>
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+</p>
+<div class="section">
+
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd-mux.requirements"></a>10.5.1 Requirements</h3>
+</div>
+</div>
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+        <code class="literal">PHP 5.5.0</code> or newer. Some advanced
+        functionality requires <code class="literal">PHP 5.5.0</code> or newer.
+      </p><p>
+        The <code class="literal">mysqlnd_mux</code> replication and load
+        balancing plugin supports all PHP applications and all available
+        PHP MySQL extensions
+        (<a class="link" href="apis-php-mysqli.html#apis-php-ref.mysqli" title="3.15 Aliases and deprecated Mysqli Functions">mysqli</a>,
+        <a class="link" href="apis-php-mysql.html#apis-php-ref.mysql" title="5.5 MySQL Functions">mysql</a>,
+        <a class="link" href="apis-php-pdo-mysql.html" title="Chapter 4 MySQL Functions (PDO_MYSQL)">PDO_MYSQL</a>). The PHP
+        MySQL extension must be configured to use
+        <a class="link" href="apis-php-mysqlnd.html" title="Chapter 6 MySQL Native Driver">mysqlnd</a> in order to be
+        able to use the <code class="literal">mysqlnd_mux</code> plugin for
+        <a class="link" href="apis-php-mysqlnd.html" title="Chapter 6 MySQL Native Driver">mysqlnd</a>.
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd-mux.installation"></a>10.5.2 Installation</h3>
+
+</div>
+
+</div>
+
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+        Information for installing this PECL extension may be found in
+        the manual chapter titled
+        <a class="ulink" href="http://www.php.net/install.pecl" target="_top">Installation of
+        PECL extensions</a>. Additional information such as new
+        releases, downloads, source files, maintainer information, and a
+        CHANGELOG, can be located here:
+        <a class="ulink" href="http://pecl.php.net/package/mysqlnd_mux" target="_top">http://pecl.php.net/package/mysqlnd_mux</a>
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd-mux.configuration"></a>10.5.3 Runtime Configuration</h3>
+
+</div>
+
+</div>
+
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+The behaviour of these functions is affected by settings in <code class="filename">php.ini</code>.
+</p><p>
+</p>
+<div class="table">
+<a name="idm139660439333312"></a><p class="title"><b>Table 10.1 Mysqlnd_mux Configure Options</b></p>
+<div class="table-contents">
+<table class="table" summary="Mysqlnd_mux Configure Options" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th scope="col">Name</th><th scope="col">Default</th><th scope="col">Changeable</th><th scope="col">Changelog</th></tr></thead><tbody><tr><td scope="row"><a class="link" href="apis-php-mysqlnd-mux.html#apis-php-ini.mysqlnd-mux.enable">mysqlnd_mux.enable</a></td><td>0</td><td>PHP_INI_SYSTEM</td><td> </td></tr></tbody></table>
+</div>
+
+</div>
+<p><br class="table-break">
+      </p><p>
+        Here's a short explanation of the configuration directives.
+      </p><p>
+</p>
+<div class="variablelist">
+<dl class="variablelist"><dt><a name="apis-php-ini.mysqlnd-mux.enable"></a><span class="term">
+              <em class="parameter"><code>mysqlnd_mux.enable</code></em>
+              <span class="type">integer</span>
+            </span></dt><dd><p>
+                Enables or disables the plugin. If disabled, the
+                extension will not plug into
+                <a class="link" href="apis-php-mysqlnd.html" title="Chapter 6 MySQL Native Driver">mysqlnd</a> to proxy
+                internal <a class="link" href="apis-php-mysqlnd.html" title="Chapter 6 MySQL Native Driver">mysqlnd</a>
+                C API calls.
+</p></dd></dl>
+</div>
+<p>
+</p>
+</div>
+
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd-mux.constants"></a>10.6 Predefined Constants</h2>
+
+</div>
+
+</div>
+
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+The constants below are defined by this extension, and
+will only be available when the extension has either
+been compiled into PHP or dynamically loaded at runtime.
+</p><p>
+      <span class="emphasis"><em>Other</em></span>
+    </p><p>
+      The plugins version number can be obtained using
+      <code class="constant">MYSQLND_MUX_VERSION</code> or
+      <code class="constant">MYSQLND_MUX_VERSION_ID</code>.
+      <code class="constant">MYSQLND_MUX_VERSION</code> is the string
+      representation of the numerical version number
+      <code class="constant">MYSQLND_MUX_VERSION_ID</code>, which is an integer
+      such as 10000. Developers can calculate the version number as
+      follows.
+    </p><p>
+</p>
+<div class="informaltable">
+<table class="informaltable" summary="Unknown PHP API feature." border="1"><colgroup><col><col></colgroup><thead><tr><th scope="col">Version (part)</th><th scope="col">Example</th></tr></thead><tbody><tr><td scope="row">Major*10000</td><td>1*10000 = 10000</td></tr><tr><td scope="row">Minor*100</td><td>0*100 = 0</td></tr><tr><td scope="row">Patch</td><td>0 = 0</td></tr><tr><td scope="row">MYSQLND_MUX_VERSION_ID</td><td>10000</td></tr></tbody></table>
+</div>
+<p>
+    </p><p>
+</p>
+<div class="variablelist">
+<dl class="variablelist"><dt><a name="apis-php-constant.mysqlnd-mux-version"></a><span class="term">
+            <code class="constant">MYSQLND_MUX_VERSION</code>
+            (<span class="type">string</span>)
+          </span></dt><dd>
+      Plugin version string, for example, <span class="quote">“<span class="quote">1.0.0-prototype</span>”</span>.
+     </dd><dt><a name="apis-php-constant.mysqlnd-mux-version-id"></a><span class="term">
+            <code class="constant">MYSQLND_MUX_VERSION_ID</code>
+            (<span class="type">integer</span>)
+          </span></dt><dd>
+      Plugin version number, for example, 10000.
+</dd></dl>
+</div>
+<p>
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd-mux.changes"></a>10.7 Change History</h2>
+
+</div>
+
+</div>
+
+</div>
+<div class="toc">
+<dl class="toc"><dt><span class="section"><a href="apis-php-mysqlnd-mux.html#apis-php-mysqlnd-mux.changes-one-o">10.7.1 PECL/mysqlnd_mux 1.0 series</a></span></dt></dl>
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      This change history is a high level summary of selected changes
+      that may impact applications and/or break backwards compatibility.
+    </p><p>
+      See also the <code class="filename">CHANGES</code> file in the source
+      distribution for a complete list of changes.
+</p>
+<div class="section">
+
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd-mux.changes-one-o"></a>10.7.1 PECL/mysqlnd_mux 1.0 series</h3>
+</div>
+</div>
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+        1.0.0-pre-alpha
+
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+      Release date: no package released, initial check-in 09/2012
+     </li><li class="listitem">
+      Motto/theme: Proof of concept
+</li></ul>
+</div>
+<p>
+      </p><p>
+        Initial check-in. Essentially a demo of the
+        <a class="link" href="apis-php-mysqlnd.html" title="Chapter 6 MySQL Native Driver">mysqlnd</a> plugin API.
+</p>
+<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+
+<div class="admon-title">
+Note
+</div>
+<p>
+          This is the current development series. All features are at an
+          early stage. Changes may happen at any time without prior
+          notice. Please, do not use this version in production
+          environments.
+        </p><p>
+          The documentation may not reflect all changes yet.
+</p>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="copyright-footer">
+
+</div>
+<div class="navfooter">
+<hr>
+<table width="100%" summary="Navigation footer">
+<tr>
+<td width="40%" align="left"><a accesskey="p" href="apis-php-mysqlnd-uh.html">Prev</a></td>
+<td width="20%" align="center"><a accesskey="u" href="">Up</a></td>
+<td width="40%" align="right"> <a accesskey="n" href="apis-php-mysqlnd-memcache.html">Next</a></td>
+</tr>
+<tr>
+<td width="40%" align="left" valign="top">Chapter 9 Mysqlnd user handler plugin</td>
+<td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
+<td width="40%" align="right" valign="top">Chapter 11 Mysqlnd Memcache plugin</td>
+</tr>
+</table>
+</div>
+</body>
+</html>

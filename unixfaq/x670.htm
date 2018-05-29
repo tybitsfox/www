@@ -1,0 +1,83 @@
+<html><head><title>读取进程表 - SUNOS 4 版</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="范例程序" href="./c665.htm"><link rel="PREVIOUS" title="范例程序" href="./c665.htm"><link rel="NEXT" title="读取进程表 - SYSV 版" href="./x673.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./c665.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 7. 范例程序</td><td align="right" valign="bottom" width="10%"><a href="./x673.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN670">读取进程表 - SUNOS 4 版</a></h1><pre class="PROGRAMLISTING">     #define _KMEMUSER
+     #include &lt;sys/proc.h&gt;
+     #include &lt;kvm.h&gt;
+     #include &lt;fcntl.h&gt;
+    
+     char regexpstr[256];
+     #define INIT            register char *sp=regexpstr;
+     #define GETC()          (*sp++)
+     #define PEEKC()         (*sp)
+     #define UNGETC(c)       (--sp)
+     #define RETURN(pointer) return(pointer);
+     #define ERROR(val)
+     #include &lt;regexp.h&gt;
+   
+     pid_t
+     getpidbyname(char *name,pid_t skipit)
+     {
+         kvm_t *kd;
+         char **arg;
+         int error;
+         char *p_name=NULL;
+         char expbuf[256];
+         char **freeme;
+         int curpid;
+         struct user * cur_user;
+         struct user myuser;
+         struct proc * cur_proc;
+    
+    
+         if((kd=kvm_open(NULL,NULL,NULL,O_RDONLY,NULL))==NULL){
+             return(-1);
+         }
+         sprintf(regexpstr,"^.*/%s$",name);
+         compile(NULL,expbuf,expbuf+256,'\0');
+    
+         while(cur_proc=kvm_nextproc(kd)){
+             curpid = cur_proc-&gt;p_pid;
+             if((cur_user=kvm_getu(kd,cur_proc))!=NULL){
+                 error=kvm_getcmd(kd,cur_proc,cur_user,&amp;arg,NULL);
+                 if(error==-1){
+                     if(cur_user-&gt;u_comm[0]!='\0'){
+                         p_name=cur_user-&gt;u_comm;
+                     }
+                 }
+                 else{
+                     p_name=arg[0];
+                 }
+             }
+             if(p_name){
+                 if(!strcmp(p_name,name)){
+                     if(error!=-1){
+                         free(arg);
+                     }
+                     if(skipit!=-1 &amp;&amp; ourretval==skipit){
+                         ourretval=-1;
+                     }
+                     else{
+                         close(fd);
+                         break;
+                     }
+                     break;
+                 }
+                 else{
+                     if(step(p_name,expbuf)){
+                         if(error!=-1){
+                             free(arg);
+                         }
+                         break;
+                     }
+                 }
+             }
+             if(error!=-1){
+                 free(arg);
+             }
+             p_name=NULL;
+         }
+         kvm_close(kd);
+         if(p_name!=NULL){
+             return(curpid);
+         }
+         return (-1);
+     }
+    </pre></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./c665.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x673.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">范例程序</td><td align="center" valign="top" width="34%"><a href="./c665.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">读取进程表 - SYSV 版</td></tr></tbody></table></div></body></html>

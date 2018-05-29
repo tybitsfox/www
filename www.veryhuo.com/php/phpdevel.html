@@ -1,0 +1,251 @@
+<HTML><HEAD><TITLE>扩展 PHP 3</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="附录" HREF="appendixes.html"><LINK REL="PREVIOUS" TITLE="调试器协议" HREF="debugger-protocol.html"><LINK REL="NEXT" TITLE="Calling User Functions" HREF="calling-user-functions.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="appendix" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="debugger-protocol.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="calling-user-functions.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="appendix"><H1><A NAME="phpdevel">附录 F. 扩展 PHP 3</A></H1><DIV CLASS="TOC"><DL><DT><B>目录</B></DT><DT><A HREF="phpdevel.html#phpdevel-addfunc">为 PHP 新增函数</A></DT><DT><A HREF="calling-user-functions.html">Calling User Functions</A></DT><DT><A HREF="phpdevel-errors.html">Reporting Errors</A></DT></DL></DIV><P>
+该章节中的内容可能已经比较过时了，它讲解了如何扩展 PHP3。如果您对 PHP 4 感兴趣，请阅读“<A HREF="zend.html">Zend API</A>”的有关章节。同时，您还可以阅读 PHP 源文档中的一些文档，例如
+<TT CLASS="filename">README.SELF-CONTAINED-EXTENSIONS</TT> 和
+<TT CLASS="filename">README.EXT_SKEL</TT>。
+</P><DIV CLASS="sect1"><H1 CLASS="sect1"><A NAME="phpdevel-addfunc"></A>为 PHP 新增函数</H1><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="phpdevel-addfunc-prototype"></A>函数原型</H2><P>&#13; 所有的函数有着如下形式：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="c">void php3_foo(INTERNAL_FUNCTION_PARAMETERS) {
+     
+}</PRE></TD></TR></TABLE>
+即使您的函数没有任何参数，这也是它被调用的方式。
+</P></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="phpdevel-addfunc-args"></A>函数参数</H2><P>&#13; 参数总是属于 pval 类型。该类型包含了各个参数的实际类型。因此，如果您的函数有两个参数，您应该在您的函数顶部做如下工作：
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN127202"></A><P><B>例子 F-1. 取得函数参数</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="c">pval *arg1, *arg2;
+if (ARG_COUNT(ht) != 2 || getParameters(ht,2,&#38;arg1,&#38;arg2)==FAILURE) {
+   WRONG_PARAM_COUNT;
+}</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+注意：参数既可以被值（value）传递又可以被引用（reference）传递。两种情况您都需要将
+&#38;(pval *) 传递给 getParameters 函数。如果您想检查第 n
+个参数是否通过引用传递给您，您可以使用 ParameterPassedByReference(ht,n)
+函数。它的返回值为 0 或者 1。
+</P><P>&#13; 当您改变了任何已传递的参数，无论它们是以值或者引用的方式传递，您都可以对它使用
+pval_destructor 函数来销毁它。或者如果它是一个您想添加的数组，您可以使用类似于
+internal_functions.h 中定义函数的方法来将返回值 return_value 作为数组来操作。
+</P><P>&#13; 此外当你将一个参数改为 IS_STRING 时要确保先给 estrdup()
+出来的字符串赋值以及给出字符串长度，然后才将它的类型改为 IS_STRING。如果要修改一个已经是
+IS_STRING 或 IS_ARRAY 的参数应该先对其运行 pval_destructor。
+</P></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="phpdevel-addfunc-varargs"></A>可变函数参数</H2><P>&#13; 函数可以接受不同数目的参数。如果你的函数可以接受 2 或 3 个参数，这样用：
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN127211"></A><P><B>例子 F-2. 可变函数参数</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="c">pval *arg1, *arg2, *arg3;
+int arg_count = ARG_COUNT(ht);
+
+if (arg_count &#60; 2 || arg_count &#62; 3 ||
+    getParameters(ht,arg_count,&#38;arg1,&#38;arg2,&#38;arg3)==FAILURE) {
+    WRONG_PARAM_COUNT;
+}</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="phpdevel-addfunc-using-args"></A>使用函数参数</H2><P>&#13; 每个参数的类型存放在 pval 的类型字段中。可以是以下任何一种：
+<DIV CLASS="table"><A NAME="AEN127217"></A><P><B>表格 F-1. PHP 内部类型</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">IS_STRING</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">字符串</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">IS_DOUBLE</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">双精度浮点型</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">IS_LONG</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">长整型</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">IS_ARRAY</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">数组</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">IS_EMPTY</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">None</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">IS_USER_FUNCTION</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">??</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">IS_INTERNAL_FUNCTION</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">??（如果其中某些不能被传递给一个函数，则删除）</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">IS_CLASS</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">??</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">IS_OBJECT</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">??</TD></TR></TBODY></TABLE></DIV></P><P>&#13; 如果得到了一种类型的参数但是却想按照另一种类型来使用，或者想强制参数为某种类型，可以使用以下的转换函数：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="c">convert_to_long(arg1);
+convert_to_double(arg1);
+convert_to_string(arg1); 
+convert_to_boolean_long(arg1); /* If the string is "" or "0" it becomes 0, 1 otherwise */
+convert_string_to_number(arg1);  /* Converts string to either LONG or DOUBLE depending on string */</PRE></TD></TR></TABLE></P><P>&#13; 这些函数都是即时转换的，并不返回任何值。
+</P><P>&#13; 实际上的参数被存放在一个联合中，成员为：
+<P></P><UL><LI><P>IS_STRING: arg1-&#62;value.str.val</P></LI><LI><P>IS_LONG: arg1-&#62;value.lval</P></LI><LI><P>IS_DOUBLE: arg1-&#62;value.dval</P></LI></UL></P></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="phpdevel-addfunc-memmgmt"></A>函数中的内存管理</H2><P>&#13; 函数所使用的任何内存都应该通过 emalloc() 或者 estrdup()
+来申请。它们是内存处理抽象函数，看上去就像普通的 malloc() 和
+strdup() 函数一样。内存应该用 efree() 来释放。
+</P><P>&#13; 程序中有两种内存：作为变量被返回到解释器中的内存，以及内部函数所需要的临时存储空间。当把一个字符串赋给一个返回解释器的变量时需要确保首先通过
+emalloc() 或者 estrdup() 分配了内存。该内存决不该由你来释放，除非你在同一个函数中后来又覆盖了原来的赋值（这并不是一种好的编程实践）。
+</P><P>&#13; 任何在你的函数/库中所需要的临时/永久内存都要通过这三个函数来进行：emalloc()，estrdup()
+和 efree()。它们的行为完全和它们相对应的函数相同。任何通过 emalloc()
+或 estrdup() 都要用 efree()
+在某个环节释放，除非它们本来就需要存在到程序结束。否则就会出现内存泄漏。“它们的行为完全和它们相对应的函数相同”的意思是：如果你用 efree() 释放了不是由 emalloc() 或 estrdup() 分配的内存时可能会导致段错误。所以要留意释放所有不需要的内存。
+</P><P>&#13; 如果编译时指定了 "-DDEBUG"，PHP 将在脚本运行结束后显示出所有通过 emalloc() 和 estrdup()
+分配但是没有用 efree() 释放的内存列表。
+</P></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="phpdevel-addfunc-symtab"></A>在符号表中设定变量</H2><P>&#13; 有一些宏可以使在符号表中设定变量更容易：
+<P></P><UL><LI><P>SET_VAR_STRING(name,value)</P></LI><LI><P>SET_VAR_DOUBLE(name,value)</P></LI><LI><P>SET_VAR_LONG(name,value)</P></LI></UL>
+</P><DIV CLASS="warning"><P></P><TABLE CLASS="warning" BORDER="1" WIDTH="100%"><TR><TD ALIGN="CENTER"><B>警告</B></TD></TR><TR><TD ALIGN="LEFT"><P>&#13; 要注意 SET_VAR_STRING。值的部分必须是人工分配出来的，因为内存管理代码会在以后尝试释放该指针。不要将静态分配的内存传递给 SET_VAR_STRING。
+</P></TD></TR></TABLE></DIV><P>&#13; PHP 中的符号表是以散列表来实现的。任何时候 &#38;symbol_table
+都是一个指向 'main' 符号表的指针，active_symbol_table points
+指向当前活动的符号表（二者在开始时等同，而在函数内不同）。
+</P><P>&#13; 以下例子使用了 'active_symbol_table'。如果你指明要工作于
+'main' 符号表，应该用 &#38;symbol_table 来替代。此外，同样的函数也能像下面说明的作用于数组。
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN127280"></A><P><B>例子 F-3. 检查 $foo 是否存在于符号表</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="c">if (hash_exists(active_symbol_table,"foo",sizeof("foo"))) { exists... }
+else { doesn't exist }</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN127283"></A><P><B>例子 F-4. 在符号表中找到一个变量的字长</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="c">hash_find(active_symbol_table,"foo",sizeof("foo"),&#38;pvalue);
+check(pvalue.type);</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+PHP 中的数组使用了和符号表同一个散列表来实现。这意味着以上两个函数也可以用来检查数组中的变量。
+</P><P>&#13; 如果要在符号表中定义一个新数组，应该这样做。
+</P><P>&#13; 首先，要用 hash_exists() 或 hash_find() 检查它是否存在并且正确中止。
+</P><P>&#13; 接着，初始化数组：
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN127290"></A><P><B>例子 F-5. 初始化新数组</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="c">pval arr;
+  
+if (array_init(&#38;arr) == FAILURE) { failed... };
+hash_update(active_symbol_table,"foo",sizeof("foo"),&#38;arr,sizeof(pval),NULL);</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+这段代码在活动符号表中定义了一个名为 $foo 的新数组。这是个空数组。
+</P><P>&#13; 这里展示了怎样向其中加入新的条目：</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN127295"></A><P><B>例子 F-6. 向数组中加入新的条目</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="c">pval entry;
+  
+entry.type = IS_LONG;
+entry.value.lval = 5;
+  
+/* defines $foo["bar"] = 5 */
+hash_update(arr.value.ht,"bar",sizeof("bar"),&#38;entry,sizeof(pval),NULL); 
+
+/* defines $foo[7] = 5 */
+hash_index_update(arr.value.ht,7,&#38;entry,sizeof(pval),NULL); 
+
+/* defines the next free place in $foo[],
+ * $foo[8], to be 5 (works like php2)
+ */
+hash_next_index_insert(arr.value.ht,&#38;entry,sizeof(pval),NULL);</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+如果要修改一个插入到散列表中的值，必须先将其提取出来。要避免额外开销你可以给
+hash add 函数提供一个 pval ** 参数，它将被表中相应单元的
+pval * 地址所更新。如果其值为 <TT CLASS="constant"><B>NULL</B></TT>（如同以上所有的例子），该参数被忽略。
+</P><P>&#13; hash_next_index_insert() 或多或少使用了如同 PHP 2.0 中
+"$foo[] = bar;" 的逻辑。</P><P>&#13; 如果要建立一个从函数返回的数组，可以就像以上那样初始化数组：
+</P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="c">if (array_init(return_value) == FAILURE) { failed...; }</PRE></TD></TR></TABLE><P>&#13; 接着用有用的函数加入值：</P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="c">add_next_index_long(return_value,long_value);
+add_next_index_double(return_value,double_value);
+add_next_index_string(return_value,estrdup(string_value));</PRE></TD></TR></TABLE><P>&#13; 当然了，如果如果在数组初始化后添加不正确，你应该先查看一下数组：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="c">pval *arr;
+  
+if (hash_find(active_symbol_table,"foo",sizeof("foo"),(void **)&#38;arr)==FAILURE) { can't find... }
+else { use arr-&#62;value.ht... }</PRE></TD></TR></TABLE></P><P>&#13; 注意 hash_find 接受一个指向 pval 指针的指针，并不是 pval 指针。
+</P><P>&#13; 以上任何 hash 函数返回 SUCCESS 或 FAILURE（除了
+hash_exists()，它返回一个布尔真值）。
+</P></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="phpdevel-addfunc-retsimple"></A>Returning simple values</H2><P>&#13; A number of macros are available to make returning values from a
+function easier.</P><P>&#13; The RETURN_* macros all set the return value and return from the
+function:
+<P></P><UL><LI><P>RETURN</P></LI><LI><P>RETURN_FALSE</P></LI><LI><P>RETURN_TRUE</P></LI><LI><P>RETURN_LONG(l)</P></LI><LI><P>RETURN_STRING(s,dup) If dup is <TT CLASS="constant"><B>TRUE</B></TT>, duplicates the string</P></LI><LI><P>RETURN_STRINGL(s,l,dup) Return string (s) specifying length (l).</P></LI><LI><P>RETURN_DOUBLE(d)</P></LI></UL></P><P>&#13; The RETVAL_* macros set the return value, but do not return.
+<P></P><UL><LI><P>RETVAL_FALSE</P></LI><LI><P>RETVAL_TRUE</P></LI><LI><P>RETVAL_LONG(l)</P></LI><LI><P>RETVAL_STRING(s,dup) If dup is <TT CLASS="constant"><B>TRUE</B></TT>, duplicates the string</P></LI><LI><P>RETVAL_STRINGL(s,l,dup) Return string (s) specifying length (l).</P></LI><LI><P>RETVAL_DOUBLE(d)</P></LI></UL></P><P>&#13; The string macros above will all estrdup() the passed 's'
+argument, so you can safely free the argument after calling the
+macro, or alternatively use statically allocated memory.</P><P>&#13; If your function returns boolean success/error responses, always
+use RETURN_TRUE and RETURN_FALSE respectively.</P></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="phpdevel-addfunc-retcomplex"></A>Returning complex values</H2><P>&#13; Your function can also return a complex data type such as an
+object or an array.</P><P>&#13; Returning an object:
+<P></P><OL TYPE="1"><LI><P>Call object_init(return_value).</P></LI><LI><P>Fill it up with values. The functions available
+for this purpose are listed below.</P></LI><LI><P> Possibly, register functions for this object.
+In order to obtain values from the object, the function would
+have to fetch "this" from the active_symbol_table. Its type
+should be IS_OBJECT, and it's basically a regular hash table
+(i.e., you can use regular hash functions on .value.ht). The
+actual registration of the function can be done using:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="c">add_method( return_value, function_name, function_ptr );</PRE></TD></TR></TABLE>
+</P></LI></OL></P><P>&#13; The functions used to populate an object are:
+<P></P><UL><LI><P>add_property_long( return_value,
+property_name, l ) - Add a property named 'property_name', of
+type long, equal to 'l'</P></LI><LI><P>add_property_double( return_value,
+property_name, d ) - Same, only adds a double</P></LI><LI><P>add_property_string( return_value,
+property_name, str ) - Same, only adds a string</P></LI><LI><P>add_property_stringl( return_value,
+property_name, str, l ) - Same, only adds a string of length 'l'</P></LI></UL></P><P>&#13; Returning an array:
+<P></P><OL TYPE="1"><LI><P>Call array_init(return_value).</P></LI><LI><P>Fill it up with values. The functions available
+for this purpose are listed below.</P></LI></OL></P><P>&#13; The functions used to populate an array are:
+<P></P><UL><LI><P>add_assoc_long(return_value,key,l) - add
+associative entry with key 'key' and long value 'l'</P></LI><LI><P>add_assoc_double(return_value,key,d)</P></LI><LI><P>add_assoc_string(return_value,key,str,duplicate)</P></LI><LI><P>add_assoc_stringl(return_value,key,str,length,duplicate)
+specify the string length</P></LI><LI><P>add_index_long(return_value,index,l) - add
+entry in index 'index' with long value 'l'</P></LI><LI><P>add_index_double(return_value,index,d)</P></LI><LI><P>add_index_string(return_value,index,str)</P></LI><LI><P>add_index_stringl(return_value,index,str,length)
+- specify the string length</P></LI><LI><P>add_next_index_long(return_value,l) - add an
+array entry in the next free offset with long value 'l'</P></LI><LI><P>add_next_index_double(return_value,d)</P></LI><LI><P>add_next_index_string(return_value,str)</P></LI><LI><P>add_next_index_stringl(return_value,str,length)
+- specify the string length</P></LI></UL></P></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="phpdevel-addfunc-reslist"></A>Using the resource list</H2><P>&#13; PHP has a standard way of dealing with various types of
+resources. This replaces all of the local linked lists in PHP 2.0.</P><P>&#13; Available functions:
+<P></P><UL><LI><P>php3_list_insert(ptr, type) - returns the 'id'
+of the newly inserted resource</P></LI><LI><P>php3_list_delete(id) - delete the resource
+with the specified id</P></LI><LI><P>php3_list_find(id,*type)
+- returns the pointer of the resource with the specified id,
+updates 'type' to the resource's type</P></LI></UL>
+Typically, these functions are used for SQL drivers but they can
+be used for anything else; for instance, maintaining file
+descriptors.</P><P>&#13; Typical list code would look like this:</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN127412"></A><P><B>例子 F-7. Adding a new resource</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="c">RESOURCE *resource;
+
+/* ...allocate memory for resource and acquire resource... */
+/* add a new resource to the list */
+return_value-&#62;value.lval = php3_list_insert((void *) resource, LE_RESOURCE_TYPE);
+return_value-&#62;type = IS_LONG;</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN127415"></A><P><B>例子 F-8. Using an existing resource</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="c">pval *resource_id;
+RESOURCE *resource;
+int type;
+
+convert_to_long(resource_id);
+resource = php3_list_find(resource_id-&#62;value.lval, &#38;type);
+if (type != LE_RESOURCE_TYPE) {
+	php3_error(E_WARNING,"resource index %d has the wrong type",resource_id-&#62;value.lval);
+	RETURN_FALSE;
+}
+/* ...use resource... */</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN127418"></A><P><B>例子 F-9. Deleting an existing resource</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="c">pval *resource_id;
+RESOURCE *resource;
+int type;
+
+convert_to_long(resource_id);
+php3_list_delete(resource_id-&#62;value.lval);</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+The resource types should be registered in php3_list.h, in enum
+list_entry_type. In addition, one should add shutdown code for
+any new resource type defined, in list.c's list_entry_destructor()
+(even if you don't have anything to do on shutdown, you must add
+an empty case).</P></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="phpdevel-addfunc-prestable"></A>Using the persistent resource table</H2><P>&#13; PHP has a standard way of storing persistent resources (i.e.,
+resources that are kept in between hits). The first module to use
+this feature was the MySQL module, and mSQL followed it, so one
+can get the general impression of how a persistent resource should
+be used by reading mysql.c. The functions you should look at are:
+<P></P><TABLE BORDER="0"><TBODY><TR><TD>php3_mysql_do_connect</TD></TR><TR><TD>php3_mysql_connect()</TD></TR><TR><TD>php3_mysql_pconnect()</TD></TR></TBODY></TABLE><P></P></P><P>&#13; The general idea of persistence modules is this:
+<P></P><OL TYPE="1"><LI><P>Code all of your module to work with the
+regular resource list mentioned in section (9).</P></LI><LI><P>Code extra connect functions that check if the
+resource already exists in the persistent resource list. If it
+does, register it as in the regular resource list as a pointer to
+the persistent resource list (because of 1., the rest of the code
+should work immediately). If it doesn't, then create it, add it
+to the persistent resource list AND add a pointer to it from the
+regular resource list, so all of the code would work since it's
+in the regular resource list, but on the next connect, the
+resource would be found in the persistent resource list and be
+used without having to recreate it. You should register these
+resources with a different type (e.g. LE_MYSQL_LINK for
+non-persistent link and LE_MYSQL_PLINK for a persistent link).</P></LI></OL></P><P>&#13; If you read mysql.c, you'll notice that except for the more
+complex connect function, nothing in the rest of the module has to
+be changed.</P><P>&#13; The very same interface exists for the regular resource list and
+the persistent resource list, only 'list' is replaced with
+'plist':</P><P></P><UL><LI><P>php3_plist_insert(ptr, type) - returns the 'id'
+of the newly inserted resource</P></LI><LI><P>php3_plist_delete(id) - delete the resource
+with the specified id</P></LI><LI><P>php3_plist_find(id,*type)
+- returns the pointer of the resource with the specified id,
+updates 'type' to the resource's type</P></LI></UL><P>&#13; However, it's more than likely that these functions would prove to
+be useless for you when trying to implement a persistent module.
+Typically, one would want to use the fact that the persistent
+resource list is really a hash table. For instance, in the
+MySQL/mSQL modules, when there's a pconnect() call (persistent
+connect), the function builds a string out of the host/user/passwd
+that were passed to the function, and hashes the SQL link with
+this string as a key. The next time someone calls a pconnect()
+with the same host/user/passwd, the same key would be generated,
+and the function would find the SQL link in the persistent list.</P><P>&#13; Until further documented, you should look at mysql.c or msql.c to
+see how one should use the plist's hash table abilities.</P><P>&#13; One important thing to note: resources going into the persistent
+resource list must *NOT* be allocated with PHP's memory manager,
+i.e., they should NOT be created with emalloc(), estrdup(), etc.
+Rather, one should use the regular malloc(), strdup(), etc. The
+reason for this is simple - at the end of the request (end of the
+hit), every memory chunk that was allocated using PHP's memory
+manager is deleted. Since the persistent list isn't supposed to
+be erased at the end of a request, one mustn't use PHP's memory
+manager for allocating resources that go to it.</P><P>&#13; When you register a resource that's going to be in the persistent
+list, you should add destructors to it both in the non-persistent
+list and in the persistent list. The destructor in the
+non-persistent list destructor shouldn't do anything. The one in
+the persistent list destructor should properly free any resources
+obtained by that type (e.g. memory, SQL links, etc). Just like
+with the non-persistent resources, you *MUST* add destructors for
+every resource, even it requires no destruction and the
+destructor would be empty. Remember, since emalloc() and friends
+aren't to be used in conjunction with the persistent list, you
+mustn't use efree() here either.</P></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="phpdevel-addfunc-addcfg"></A>Adding runtime configuration directives</H2><P>&#13; Many of the features of PHP can be configured at runtime. These
+configuration directives can appear in either the designated
+php3.ini file, or in the case of the Apache module version in the
+Apache .conf files. The advantage of having them in the Apache
+.conf files is that they can be configured on a per-directory
+basis. This means that one directory may have a certain
+safemodeexecdir for example, while another directory may have
+another. This configuration granularity is especially handy when
+a server supports multiple virtual hosts.</P><P>&#13; The steps required to add a new directive:
+<P></P><OL TYPE="1"><LI><P>Add directive to php3_ini_structure struct in mod_php3.h.</P></LI><LI><P>In main.c, edit the php3_module_startup
+function and add the appropriate cfg_get_string() or
+cfg_get_long() call.</P></LI><LI><P>Add the directive, restrictions and a comment
+to the php3_commands structure in mod_php3.c. Note the
+restrictions part. RSRC_CONF are directives that can only be
+present in the actual Apache .conf files. Any OR_OPTIONS
+directives can be present anywhere, include normal <TT CLASS="filename">.htaccess</TT>
+files.</P></LI><LI><P>In either php3take1handler() or
+php3flaghandler() add the appropriate entry for your directive.</P></LI><LI><P>In the configuration section of the
+_php3_info() function in functions/info.c you need to add your
+new directive.</P></LI><LI><P>And last, you of course have to use your new
+directive somewhere. It will be addressable as
+php3_ini.directive.</P></LI></OL></P></DIV></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="debugger-protocol.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="calling-user-functions.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">调试器协议</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="appendixes.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Calling User Functions</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

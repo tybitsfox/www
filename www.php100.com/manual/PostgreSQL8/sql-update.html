@@ -1,0 +1,463 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>UPDATE PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="UNLISTEN" HREF="sql-unlisten.html"><LINK REL="NEXT" TITLE="VACUUM" HREF="sql-vacuum.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-unlisten.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-unlisten.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-vacuum.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-vacuum.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-UPDATE" >UPDATE</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN49016" ></A
+><H2
+>Name</H2
+>UPDATE&nbsp;--&nbsp;更新一个表中的行</DIV
+><A NAME="AEN49019" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN49021" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>UPDATE [ ONLY ] <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> SET <TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> = { <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> | DEFAULT } [, ...]
+    [ FROM <TT
+CLASS="REPLACEABLE"
+><I
+>fromlist</I
+></TT
+> ]
+    [ WHERE <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+> ]</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN49028" ></A
+><H2
+>描述</H2
+><P
+>        <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> 改变满足条件的所有行的声明了的列/字段的值。
+        只有要更改的列/字段需要在 <TT
+CLASS="LITERAL"
+>SET</TT
+> 子句中出现，没有明确修改的字段保持它们原来的数值。
+  </P
+><P
+>        缺省时，<TT
+CLASS="COMMAND"
+>UPDATE</TT
+> 将更新所声明的表和所有子表的记录。
+        如果你希望只更新所声明的表，你应该使用 <TT
+CLASS="LITERAL"
+>ONLY</TT
+> 子句。
+  </P
+><P
+>   使用存在于同个数据库里其它表的信息来更新一个表，有两种方法可以用：
+   使用子查询，或者在 <TT
+CLASS="LITERAL"
+>FROM</TT
+> 子句里声明另外一个表。
+   哪个方法更好取决于具体的环境。
+  </P
+><P
+>        要更改表，你必须对它有<TT
+CLASS="LITERAL"
+>UPDATE</TT
+> 权限，
+        同样对 <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> 或者
+	<TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+>  条件里提到的任何表也要有<TT
+CLASS="LITERAL"
+>SELECT</TT
+>权限。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN49043" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+></DT
+><DD
+><P
+>	现存表的名称（可以有模式修饰）。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+></DT
+><DD
+><P
+>        表 <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> 中字段名。
+	必要时，字段名可以用子域名或者数组下标修饰。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+></DT
+><DD
+><P
+>        赋予列/字段的一个有效的值或表达式。表达式可以使用表中这个或其它字段的旧数值。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>DEFAULT</TT
+></DT
+><DD
+><P
+>      把字段设置为它的缺省值（如果没有缺省表达式赋予它，那么就是 NULL）。
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>fromlist</I
+></TT
+></DT
+><DD
+><P
+>       一个表表达式的列表，允许来自其它表中的字段出现在 <TT
+CLASS="LITERAL"
+>WHERE</TT
+> 条件里。
+       这个类似于可以在一个 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 语句的 <A HREF="sql-select.html#SQL-FROM" ><I
+><I
+>FROM</I
+> 子句</I
+></A
+>
+       里声明表列表。请注意目标表绝对不能出现在 <TT
+CLASS="REPLACEABLE"
+><I
+>fromlist</I
+></TT
+> 里，
+       除非你是在使用一个自连接（这个时候，它必须以 <TT
+CLASS="REPLACEABLE"
+><I
+>fromlist</I
+></TT
+> 的一个别名的形式出现）。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+></DT
+><DD
+><P
+>       一个表达式，返回 <TT
+CLASS="TYPE"
+>boolean</TT
+> 类型。只有这个表达式返回
+       <TT
+CLASS="LITERAL"
+>true</TT
+> 的行被更新。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN49084" ></A
+><H2
+>输出</H2
+><P
+>   成功完成后，<TT
+CLASS="COMMAND"
+>UPDATE</TT
+> 命令返回形如
+</P><PRE
+CLASS="SCREEN"
+>UPDATE <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+></PRE
+><P>
+   的命令标签。<TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+> 是更新的行数。
+   如果 <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+> 是 0，
+   那么没有符合 <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+> 的行（这个不认为是错误）。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN49093" ></A
+><H2
+>注意</H2
+><P
+>   在出现 <TT
+CLASS="LITERAL"
+>FROM</TT
+> 子句的时候，实际上发生的事情是目标表和 <TT
+CLASS="REPLACEABLE"
+><I
+>fromlist</I
+></TT
+>
+   里提到的表连接在一起，并且每个连接输出行都代表一个目标表的更新操作。
+   再使用 <TT
+CLASS="LITERAL"
+>FROM</TT
+> 的时候，你应该保证连接为每个需要修改的行最多生成一个输出行。
+   换句话说，一个目标行不应该和超过一行来自其它表的数据行连接。
+   如果它连接了多于一个行，那么连接行里面将会只有一行用于更新目标行，
+   但是使用哪行是一个很难预期的事情。
+  </P
+><P
+>   因为这个不确定性，只再子查询里面引用其它表是安全的，
+   尽管通常更难读并且比使用连接也更慢些。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN49100" ></A
+><H2
+>例子</H2
+><P
+>        把表 <TT
+CLASS="STRUCTNAME"
+>films</TT
+> 里的字段 <TT
+CLASS="STRUCTFIELD"
+>kind</TT
+> 里的词
+	<TT
+CLASS="LITERAL"
+>Drama</TT
+> 用<TT
+CLASS="LITERAL"
+>Dramatic</TT
+> 代替：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>UPDATE films SET kind = 'Dramatic' WHERE kind = 'Drama';</PRE
+><P>
+  </P
+><P
+>   调整表 <TT
+CLASS="STRUCTNAME"
+>weather</TT
+> 中的一行的温度记录并且把降水设置为缺省值：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>UPDATE weather SET temp_lo = temp_lo+1, temp_hi = temp_lo+15, prcp = DEFAULT
+  WHERE city = 'San Francisco' AND date = '2003-07-03';</PRE
+><P>
+  </P
+><P
+>   增加负责 Acme 公司客户的销售的销售计数，使用 <TT
+CLASS="LITERAL"
+>FROM</TT
+> 子句语法：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>UPDATE employees SET sales_count = sales_count + 1 FROM accounts
+  WHERE accounts.name = 'Acme Corporation'
+  AND employees.id = accounts.sales_person;</PRE
+><P>
+
+   执行同样的操作，使用 <TT
+CLASS="LITERAL"
+>WHERE</TT
+> 子句里的子查询：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>UPDATE employees SET sales_count = sales_count + 1 WHERE id =
+  (SELECT sales_person FROM accounts WHERE name = 'Acme Corporation');</PRE
+><P>
+
+   试图带着库存量插入一个新的库存项。如果该项存在，则更新现有项的库存数。
+   要做这件事情而又不使整个事务失效，使用保留点（savepoints）。
+</P><PRE
+CLASS="PROGRAMLISTING"
+>BEGIN;
+-- 其它操作
+SAVEPOINT sp1;
+INSERT INTO wines VALUES('Chateau Lafite 2003', '24');
+-- 假设上面的因为一个唯一键字违反而失效，
+-- 因此现在我们发出这些命令：
+ROLLBACK TO sp1;
+UPDATE wines SET stock = stock + 24 WHERE winename = 'Chateau Lafite 2003';
+-- 继续其它操作，最后
+COMMIT;</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN49117" ></A
+><H2
+>兼容性</H2
+><P
+>   这条命令遵循 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 标准。
+   只是 <TT
+CLASS="LITERAL"
+>FROM</TT
+> 子句是 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 扩展。
+  </P
+><P
+>   有些其它数据库系统提供一个 <TT
+CLASS="LITERAL"
+>FROM</TT
+> 选项，
+   在这个选项下，认为目标表会再次在 <TT
+CLASS="LITERAL"
+>FROM</TT
+> 里列出。
+   这不是 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 解析 <TT
+CLASS="LITERAL"
+>FROM</TT
+> 的方式。
+   移植使用这类扩展的应用的时候要注意。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-unlisten.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-vacuum.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >UNLISTEN</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >VACUUM</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

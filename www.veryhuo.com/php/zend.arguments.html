@@ -1,0 +1,54 @@
+<HTML><HEAD><TITLE>Accepting Arguments</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Zend API" HREF="zend.html"><LINK REL="PREVIOUS" TITLE="Summary" HREF="zend.structure.summary.html"><LINK REL="NEXT" TITLE="Retrieving Arguments" HREF="zend.arguments.retrieval.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="chapter" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="zend.structure.summary.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="zend.arguments.retrieval.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="chapter"><H1><A NAME="zend.arguments">章 32. Accepting Arguments</A></H1><DIV CLASS="TOC"><DL><DT><B>目录</B></DT><DT><A HREF="zend.arguments.html#zend.arguments.count">Determining the Number of Arguments</A></DT><DT><A HREF="zend.arguments.retrieval.html">Retrieving Arguments</A></DT><DT><A HREF="zend.arguments.deprecated-retrieval.html">Old way of retrieving arguments (deprecated)</A></DT><DT><A HREF="zend.arguments.variable.html">Dealing with a Variable Number of Arguments/Optional Parameters</A></DT><DT><A HREF="zend.arguments.access.html">Accessing Arguments</A></DT><DT><A HREF="zend.arguments.by-reference.html">Dealing with Arguments Passed by Reference</A></DT><DT><A HREF="zend.arguments.write-safety.html">Assuring Write Safety for Other Parameters</A></DT></DL></DIV><P>&#13; One of the most important issues for language extensions is
+accepting and dealing with data passed via arguments. Most
+extensions are built to deal with specific input data (or require
+parameters to perform their specific actions), and function
+arguments are the only real way to exchange data between the PHP
+level and the C level. Of course, there's also the possibility of
+exchanging data using predefined global values (which is also
+discussed later), but this should be avoided by all means, as it's
+extremely bad practice.
+</P><P>&#13; PHP doesn't make use of any formal function declarations; this is
+why call syntax is always completely dynamic and never checked for
+errors. Checking for correct call syntax is left to the user code.
+For example, it's possible to call a function using only one
+argument at one time and four arguments the next time - both
+invocations are syntactically absolutely correct.
+</P><DIV CLASS="section"><H1 CLASS="section"><A NAME="zend.arguments.count"></A>Determining the Number of Arguments</H1><P>&#13; Since PHP doesn't have formal function definitions with support
+for call syntax checking, and since PHP features variable
+arguments, sometimes you need to find out with how many arguments
+your function has been called. You can use the
+<TT CLASS="literal">ZEND_NUM_ARGS</TT> macro in this case. In previous
+versions of PHP, this macro retrieved the number of arguments with
+which the function has been called based on the function's hash
+table entry, <TT CLASS="envar">ht</TT>, which is passed in the
+<TT CLASS="literal">INTERNAL_FUNCTION_PARAMETERS</TT> list. As
+<TT CLASS="envar">ht</TT> itself now contains the number of arguments that
+have been passed to the function, <TT CLASS="literal">ZEND_NUM_ARGS</TT>
+has been stripped down to a dummy macro (see its definition in
+<TT CLASS="filename">zend_API.h</TT>). But it's still good practice to
+use it, to remain compatible with future changes in the call
+interface. <SPAN CLASS="emphasis"><I CLASS="emphasis">Note:</I></SPAN> The old PHP equivalent of
+this macro is <TT CLASS="literal">ARG_COUNT</TT>.
+</P><P>&#13; The following code checks for the correct number of arguments:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">if(ZEND_NUM_ARGS() != 2) WRONG_PARAM_COUNT;</PRE></TD></TR></TABLE>
+If the function is not called with two
+arguments, it exits with an error message. The code snippet above
+makes use of the tool macro <TT CLASS="literal">WRONG_PARAM_COUNT</TT>,
+which can be used to generate a standard error message (see <A HREF="zend.arguments.html#fig.wrong-param-count">图形 32-1</A>).
+</P><DIV CLASS="figure"><A NAME="fig.wrong-param-count"></A><P><B>图形 32-1. <TT CLASS="literal">WRONG_PARAM_COUNT</TT> in action.</B></P><P><IMG SRC="figures/Extending_Zend_3_wrong_parameter_count.png"></P></DIV><P>&#13; This macro prints a default error message and then returns to the caller.
+Its definition can also be found in <TT CLASS="filename">zend_API.h</TT> and looks
+like this:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">ZEND_API void wrong_param_count(void);
+
+#define WRONG_PARAM_COUNT { wrong_param_count(); return; }</PRE></TD></TR></TABLE>
+As you can see, it calls an internal function
+named <B CLASS="function">wrong_param_count()</B> that's responsible for printing
+the warning. For details on generating customized error
+messages, see the later section "Printing Information."
+</P></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="zend.structure.summary.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="zend.arguments.retrieval.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Summary</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="zend.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Retrieving Arguments</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

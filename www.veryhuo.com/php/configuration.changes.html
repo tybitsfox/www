@@ -1,0 +1,83 @@
+<HTML><HEAD><TITLE>怎样改变配置选项</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="运行时配置" HREF="configuration.html"><LINK REL="PREVIOUS" TITLE="运行时配置" HREF="configuration.html"><LINK REL="NEXT" TITLE="各种配置指令" HREF="configuration.directives.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="sect1" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="configuration.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 4. 运行时配置</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="configuration.directives.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="sect1"><H1 CLASS="sect1"><A NAME="configuration.changes"></A>怎样改变配置选项</H1><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="configuration.changes.apache"></A>以 Apache 模块方式运行 <TT CLASS="literal">PHP</TT></H2><P>&#13; 当以 Apache 的模块方式运行 PHP 时，也可以通过 Apache
+的配置文件（例如 <TT CLASS="filename">httpd.conf</TT>）和
+<TT CLASS="filename">.htaccess</TT>
+文件中的指令来修改 PHP 的配置选项（需要“AllowOverride Options”或“AllowOverride All”权限）。
+</P><P>&#13; 在 PHP 4.0 中，有几个 Apache 指令可以允许在 Apache
+的配置文件中修改 PHP 的配置。要得到哪些指令分别属于
+<TT CLASS="constant"><B>PHP_INI_ALL</B></TT>，<TT CLASS="constant"><B>PHP_INI_PERDIR</B></TT> 或
+<TT CLASS="constant"><B>PHP_INI_SYSTEM</B></TT>
+的列表，请看 <A HREF="function.ini-set.html"><B CLASS="function">ini_set()</B></A> 文档中的表格。
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+在 PHP 3.0 中，也有和
+<TT CLASS="filename">php3.ini</TT> 中选项相对应的
+Apache 指令，只不过加上前缀“php3_”。
+</P></BLOCKQUOTE></DIV><P>&#13; <P></P><DIV CLASS="variablelist"><DL><DT><SPAN CLASS="systemitem">php_value</SPAN>
+<TT CLASS="parameter"><I>name</I></TT>
+<TT CLASS="parameter"><I>value</I></TT></DT><DD><P>&#13; 设定指定指令的值。仅能用于
+<TT CLASS="constant"><B>PHP_INI_ALL</B></TT> 和 <TT CLASS="constant"><B>PHP_INI_PERDIR</B></TT>
+类型的指令。要清除上一个设定的值，将值设为 <TT CLASS="literal">none</TT>。
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+不要用 <TT CLASS="literal">php_value</TT> 来设定布尔值。应该用
+<TT CLASS="literal">php_flag</TT>（见下面）来替代。
+</P></BLOCKQUOTE></DIV></DD><DT><SPAN CLASS="systemitem">php_flag</SPAN>
+<TT CLASS="parameter"><I>name</I></TT>
+<TT CLASS="parameter"><I>on|off</I></TT></DT><DD><P>&#13; 用于设定布尔值类型的配置指令。仅能用于
+<TT CLASS="constant"><B>PHP_INI_ALL</B></TT> 和 <TT CLASS="constant"><B>PHP_INI_PERDIR</B></TT>
+类型的指令。
+</P></DD><DT><SPAN CLASS="systemitem">php_admin_value</SPAN>
+<TT CLASS="parameter"><I>name</I></TT>
+<TT CLASS="parameter"><I>value</I></TT></DT><DD><P>&#13; 设定指定指令的值。不能在 <TT CLASS="filename">.htaccess</TT> 文件中使用。任何在
+<SPAN CLASS="systemitem">php_admin_value</SPAN>
+中设定的值不能被 <TT CLASS="filename">.htaccess</TT> 或者 virtualhost
+中的指令覆盖。要清除上一个设定的值，将值设为 <TT CLASS="literal">none</TT>。
+</P></DD><DT><SPAN CLASS="systemitem">php_admin_flag</SPAN>
+<TT CLASS="parameter"><I>name</I></TT>
+<TT CLASS="parameter"><I>on|off</I></TT></DT><DD><P>&#13; 用于设定布尔值类型的配置指令。不能在 <TT CLASS="filename">.htaccess</TT> 文件中使用。任何在
+<SPAN CLASS="systemitem">php_admin_flag</SPAN>
+中设定的值不能被 <TT CLASS="filename">.htaccess</TT> 或者 virtualhost 中的指令覆盖。
+</P></DD></DL></DIV>
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN2547"></A><P><B>例子 4-2. Apache 配置例子</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="ini">&#60;IfModule mod_php4.c&#62;
+  php_value include_path ".:/usr/local/lib/php"
+  php_admin_flag safe_mode on
+&#60;/IfModule&#62;
+&#60;IfModule mod_php3.c&#62;
+  php3_include_path ".:/usr/local/lib/php"
+  php3_safe_mode on
+&#60;/IfModule&#62;</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><DIV CLASS="caution"><P></P><TABLE CLASS="caution" BORDER="1" WIDTH="100%"><TR><TD ALIGN="CENTER"><B>注意</B></TD></TR><TR><TD ALIGN="LEFT"><P>&#13; PHP 常量不存在于 PHP 之外。例如，在 <TT CLASS="filename">httpd.conf</TT>
+中可以使用 PHP 常量如
+<TT CLASS="constant"><B>E_ALL</B></TT> 或者 <TT CLASS="constant"><B>E_NOTICE</B></TT>
+来设定
+<A HREF="ref.errorfunc.html#ini.error-reporting">error_reporting</A>
+指令的值，但它们其实没有意义并被认为是
+<SPAN CLASS="emphasis"><I CLASS="emphasis">0</I></SPAN>。应该使用相应的位掩码。这些常量可以在
+<TT CLASS="filename">php.ini</TT> 中使用。
+</P></TD></TR></TABLE></DIV></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="configuration.changes.windows"></A>通过修改 Windows 注册表来改变 <TT CLASS="literal">PHP</TT> 配置</H2><P>&#13; 在 Windows 下运行 PHP 时，可以通过 Windows
+注册表来修改每个目录的配置选项。配置的值存放于注册表的
+<TT CLASS="literal">HKLM\SOFTWARE\PHP\Per Directory Values</TT>
+下面根据每个路径起名的子键中。例如对于路径
+<TT CLASS="literal">c:\inetpub\wwwroot</TT> 的配置值存放于
+<TT CLASS="literal">HKLM\SOFTWARE\PHP\Per Directory
+Values\c\inetpub\wwwroot</TT>。对于目录的设置将会在任何在此目录及其子目录下运行的脚本激活。对应键名应该和
+<A HREF="configuration.html">PHP 配置选项</A>相同并且具有字符串值。值中的
+PHP 常量不会被解析。
+</P></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="configuration.changes.other"></A>其它 <TT CLASS="literal">PHP</TT> 接口</H2><P>&#13; 不论 <TT CLASS="literal">PHP</TT>
+的接口是什么都可以在脚本执行过程中通过
+<A HREF="function.ini-set.html"><B CLASS="function">ini_set()</B></A>
+来修改一些值。下表提供了指令可以在哪一级被设定/修改的概览。
+</P><P>&#13; <DIV CLASS="table"><A NAME="AEN2573"></A><P><B>表格 4-1. PHP_INI_* 常量的定义</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">常量</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">值</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">含义</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_USER</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">1</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">该项目可以在用户脚本中设定</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_PERDIR</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">2</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; 该项目可以在 <TT CLASS="filename">php.ini</TT>，<TT CLASS="filename">.htaccess</TT> 或者
+<TT CLASS="filename">httpd.conf</TT> 中设定
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_SYSTEM</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">4</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; 该项目可以在 <TT CLASS="filename">php.ini</TT> 或 <TT CLASS="filename">httpd.conf</TT> 中设定
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_ALL</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">7</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">该项目可以在任何地方设定</TD></TR></TBODY></TABLE></DIV>
+</P><P>&#13; 可以在
+<A HREF="function.phpinfo.html"><B CLASS="function">phpinfo()</B></A>
+的输出中查看配置选项的值。也可以用
+<A HREF="function.ini-get.html"><B CLASS="function">ini_get()</B></A> 或 <A HREF="function.get-cfg-var.html"><B CLASS="function">get_cfg_var()</B></A>
+来单个访问配置指令的值。
+</P></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="configuration.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="configuration.directives.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">运行时配置</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="configuration.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">各种配置指令</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

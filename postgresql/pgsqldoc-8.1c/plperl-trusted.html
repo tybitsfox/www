@@ -1,0 +1,227 @@
+<HTML
+><HEAD
+><TITLE
+>可信的和不可信的 PL/Perl</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="PL/Perl - Perl 过程语言"
+HREF="plperl.html"><LINK
+REL="PREVIOUS"
+TITLE="PL/Perl 里的全局变量"
+HREF="plperl-global.html"><LINK
+REL="NEXT"
+TITLE="PL/Perl 触发器"
+HREF="plperl-triggers.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plperl-global.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plperl.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 38. PL/Perl - Perl 过程语言</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plperl.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plperl-triggers.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="PLPERL-TRUSTED"
+>38.5. 可信的和不可信的 PL/Perl</A
+></H1
+><P
+>	通常，PL/Perl 是作为一种叫 <TT
+CLASS="LITERAL"
+>plperl</TT
+> 的 <SPAN
+CLASS="QUOTE"
+>"可信的"</SPAN
+>编程语言安装的。
+	在这种设置中，为了保持安全，某些 Perl 操作被关闭掉了。通常，
+	受限制的操作都是那些和环境相互交互的动作。这包括文件句柄操作，
+	<TT
+CLASS="LITERAL"
+>require</TT
+>，和 <TT
+CLASS="LITERAL"
+>use</TT
+>（对于外部模块）。
+	我们没有办法访问数据库服务器进程内部或者获取具有服务器进程权限的 OS 级别的访问，就像 C 函数那样。
+	因此，任何非特权的数据库用户都可以允许使用这种语言。
+  </P
+><P
+>	这里是一个无法运转的函数的例子，因为出于安全原因，
+	文件系统的操作是不允许的：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION badfunc() RETURNS integer AS $$
+    my $tmpfile = "/tmp/badfile";
+    open my $fh, '&gt;', $tmpfile
+        or elog(ERROR, qq{Could not open the file "$tmpfile": $!});
+    print $fh "Testing writing to a file\n";
+    close $fh or elog(ERROR, qq{Could not close the file "$tmpfile": $!});
+$$ LANGUAGE plperl;</PRE
+><P>
+	创建这个函数将会失败，因为它使用的非法调用将会被验证器捕获。
+  </P
+><P
+>	有时候我们想写不受限制的 Perl 函数。比如，我们可能需要一个能发送邮件的 Perl 函数。
+	为了处理这种情况，PL/Perl 也可以安装为<SPAN
+CLASS="QUOTE"
+>"不可信"</SPAN
+>的语言（通常叫做 <SPAN
+CLASS="APPLICATION"
+>PL/PerlU</SPAN
+>）。
+	在这种情况下，我们可以使用完整的 Perl 语言。如果用 <TT
+CLASS="COMMAND"
+>createlang</TT
+>
+	安装该语言，那么用 <TT
+CLASS="LITERAL"
+>plperlu</TT
+> 这个名字可以选取不可信的 PL/Perl 变种。
+  </P
+><P
+>	<SPAN
+CLASS="APPLICATION"
+>PL/PerlU</SPAN
+> 函数的作者必须注意不能把该函数用于做任何不想做的事情，
+	因为它可以干任何以数据库管理员身份登录的用户能干的事情。
+	请注意数据库系统只允许数据库超级用户创建不可信语言写的函数。
+  </P
+><P
+>	如果上面的函数由超级用户用 <TT
+CLASS="LITERAL"
+>plperlu</TT
+> 创建，那么执行就会成功。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plperl-global.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plperl-triggers.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>PL/Perl 里的全局变量</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="plperl.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>PL/Perl 触发器</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

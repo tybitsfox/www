@@ -1,0 +1,255 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>PREPARE TRANSACTION PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="PREPARE" HREF="sql-prepare.html"><LINK REL="NEXT" TITLE="REINDEX" HREF="sql-reindex.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-prepare.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-prepare.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-reindex.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-reindex.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-PREPARE-TRANSACTION" >PREPARE TRANSACTION</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN47030" ></A
+><H2
+>Name</H2
+>PREPARE TRANSACTION&nbsp;--&nbsp;为当前事务做两阶段提交的准备</DIV
+><A NAME="AEN47033" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN47035" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>PREPARE TRANSACTION <TT
+CLASS="REPLACEABLE"
+><I
+>transaction_id</I
+></TT
+></PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47038" ></A
+><H2
+>描述</H2
+><P
+>   <TT
+CLASS="COMMAND"
+>PREPARE TRANSACTION</TT
+> 为当前事务的两阶段提交做准备。
+   在命令之后，事务就不再和当前会话关联了；它的状态完全保存在磁盘上，
+   它提交成功有非常高的可能性，即使是在请求提交之前数据库发生了崩溃也如此。
+  </P
+><P
+>   一旦准备好了，一个事务就可以在稍后用 <TT
+CLASS="COMMAND"
+>COMMIT PREPARED</TT
+> 或者
+   <TT
+CLASS="COMMAND"
+>ROLLBACK PREPARED</TT
+> 命令分别进行提交或者回滚。
+   这些命令可以从任何会话中发出，而不光是执行最初的事务的那个会话。
+  </P
+><P
+>   从发出命令的会话的角度来看，<TT
+CLASS="COMMAND"
+>PREPARE TRANSACTION</TT
+> 与 <TT
+CLASS="COMMAND"
+>ROLLBACK</TT
+>
+   命令不无想象：在执行它之后，就不再有活跃的当前事务了，并且准备好的事务的效果无法见到。
+   （在事务提交的时候其效果会再次可见。）  
+  </P
+><P
+>   如果因为任何原因 <TT
+CLASS="COMMAND"
+>PREPARE TRANSACTION</TT
+> 命令失败，
+   那么它就会变成一个<TT
+CLASS="COMMAND"
+>ROLLBACK</TT
+>：当前事务被取消。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47051" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>transaction_id</I
+></TT
+></DT
+><DD
+><P
+>      一个任意的标识符，用于后面在 <TT
+CLASS="COMMAND"
+>COMMIT PREPARED</TT
+> 或者 <TT
+CLASS="COMMAND"
+>ROLLBACK PREPARED</TT
+>
+      的时候标识这个事务的。这个标识符必须以字串文本的方式写，并且必须小于 200 字节长。
+      它不能和任何当前准备好的事务已经使用的标识符同名。
+     </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47061" ></A
+><H2
+>注意</H2
+><P
+>   这条命令必须在一个事务块里面使用。用 <TT
+CLASS="COMMAND"
+>BEGIN</TT
+> 开始一个事务。
+  </P
+><P
+>   目前，不允许对那些执行了涉及临时表或者是创建了带 <TT
+CLASS="LITERAL"
+>WITH HOLD</TT
+> 游标的事务进行 <TT
+CLASS="COMMAND"
+>PREPARE</TT
+>。
+   这些特性和当前会话绑定得实在是太紧密了，因此在一个准备好的事务里没什么可用的。
+  </P
+><P
+>   如果事务用 <TT
+CLASS="COMMAND"
+>SET</TT
+> 修改了运行时参数，这些效果在 <TT
+CLASS="COMMAND"
+>PREPARE TRANSACTION</TT
+>
+   之后保留，并且不会被任何以后的 <TT
+CLASS="COMMAND"
+>COMMIT PREPARED</TT
+> 或
+   <TT
+CLASS="COMMAND"
+>ROLLBACK PREPARED</TT
+> 所影响。因此，在这方面，<TT
+CLASS="COMMAND"
+>PREPARE TRANSACTION</TT
+>
+   表现得更像 <TT
+CLASS="COMMAND"
+>COMMIT</TT
+> 而不是 <TT
+CLASS="COMMAND"
+>ROLLBACK</TT
+>。
+  </P
+><P
+>   所有目前可用的准备好事务都在系统视图 <TT
+CLASS="STRUCTNAME"
+>pg_prepared_xacts</TT
+> 里面列出。
+  </P
+><P
+>   从性能的角度来看，把一个事务长时间停在准备好的状态是不明智的：它会影响 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>
+   回收存储的能力。还要记住，事务会继续持有它们保持得锁。
+   这个特性的用法是准备好的事务通常会在外部的事务管理器核实了其他数据库也准备好提交之后，提交或者回滚事务。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="SQL-PREPARE-TRANSACTION-EXAMPLES" ></A
+><H2
+>例子</H2
+><P
+>   把当前事务为两阶段提交做准备，使用 <TT
+CLASS="LITERAL"
+>foobar</TT
+> 做为事务标识符：
+   
+</P><PRE
+CLASS="PROGRAMLISTING"
+>PREPARE TRANSACTION 'foobar';</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47085" ></A
+><H2
+>又见</H2
+><A HREF="sql-commit-prepared.html" ><I
+>COMMIT PREPARED</I
+></A
+>, <A HREF="sql-rollback-prepared.html" ><I
+>ROLLBACK PREPARED</I
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-prepare.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-reindex.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >PREPARE</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >REINDEX</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

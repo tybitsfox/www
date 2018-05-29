@@ -1,0 +1,253 @@
+<HTML><HEAD><TITLE>dns_get_record</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Network Functions" HREF="ref.network.html"><LINK REL="PREVIOUS" TITLE="dns_get_mx" HREF="function.dns-get-mx.html"><LINK REL="NEXT" TITLE="fsockopen" HREF="function.fsockopen.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.dns-get-mx.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.fsockopen.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.dns-get-record"></A>dns_get_record</H1><DIV CLASS="refnamediv"><A NAME="AEN72353"></A><P> (PHP 5 CVS only)</P>dns_get_record&nbsp;--&nbsp;
+Fetch DNS Resource Records associated with a hostname
+</DIV><DIV CLASS="refsect1"><A NAME="AEN72356"></A><H2>Description</H2>array <B CLASS="methodname">dns_get_record</B> ( string hostname [, int type [, array &#38;authns, array &#38;addtl]])<BR></BR><P>&#13; <DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+This function is not implemented on Windows platforms. Try the
+<A HREF="http://pear.php.net/" TARGET="_top">PEAR</A> class
+<A HREF="http://pear.php.net/package/Net_DNS" TARGET="_top">Net_DNS</A>.
+</P></BLOCKQUOTE></DIV>
+</P><P>&#13; This function returns an array of associative arrays. Each associative array contains
+<SPAN CLASS="emphasis"><I CLASS="emphasis">at minimum</I></SPAN> the following keys:
+<DIV CLASS="table"><A NAME="AEN72380"></A><P><B>表格 1. Basic DNS attributes</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">Attribute</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Meaning</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">host</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; The record in the DNS namespace to which the rest of the associated data refers.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">class</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <B CLASS="function">dns_get_record()</B> only returns Internet class records and as
+such this parameter will always return <TT CLASS="literal">IN</TT>.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">type</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; String containing the record type. Additional attributes will also be contained
+in the resulting array dependant on the value of type. See table below.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">ttl</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; Time To Live remaining for this record. This will <SPAN CLASS="emphasis"><I CLASS="emphasis">not</I></SPAN> equal
+the record's original ttl, but will rather equal the original ttl minus whatever
+length of time has passed since the authoritative name server was queried.
+</TD></TR></TBODY></TABLE></DIV>
+</P><P>&#13; <TT CLASS="parameter"><I>hostname</I></TT> should be a valid DNS hostname such
+as "www.example.com". Reverse lookups can be generated using in-addr.arpa
+notation, but <A HREF="function.gethostbyaddr.html"><B CLASS="function">gethostbyaddr()</B></A> is more suitable for
+the majority of reverse lookups.
+</P><P>&#13; By default, <B CLASS="function">dns_get_record()</B> will search for any resource
+records associated with <TT CLASS="parameter"><I>hostname</I></TT>. To limit the
+query, specify the optional <TT CLASS="parameter"><I>type</I></TT> parameter.
+<TT CLASS="parameter"><I>type</I></TT> may be any one of the following:
+<TT CLASS="constant"><B>DNS_A</B></TT>, <TT CLASS="constant"><B>DNS_CNAME</B></TT>,
+<TT CLASS="constant"><B>DNS_HINFO</B></TT>, <TT CLASS="constant"><B>DNS_MX</B></TT>,
+<TT CLASS="constant"><B>DNS_NS</B></TT>, <TT CLASS="constant"><B>DNS_PTR</B></TT>,
+<TT CLASS="constant"><B>DNS_SOA</B></TT>, <TT CLASS="constant"><B>DNS_TXT</B></TT>,
+<TT CLASS="constant"><B>DNS_AAAA</B></TT>, <TT CLASS="constant"><B>DNS_SRV</B></TT>,
+<TT CLASS="constant"><B>DNS_NAPTR</B></TT>,
+<TT CLASS="constant"><B>DNS_ALL</B></TT> or <TT CLASS="constant"><B>DNS_ANY</B></TT>.
+The default is <SPAN CLASS="emphasis"><I CLASS="emphasis">DNS_ANY</I></SPAN>.
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Because of eccentricities in the performance of libresolv
+between platforms, <TT CLASS="constant"><B>DNS_ANY</B></TT> will not
+always return every record, the slower <TT CLASS="constant"><B>DNS_ALL</B></TT>
+will collect all records more reliably.
+</P></BLOCKQUOTE></DIV>
+</P><P>&#13; The optional third and fourth arguments to this function,
+<TT CLASS="parameter"><I>authns</I></TT> and <TT CLASS="parameter"><I>addtl</I></TT>
+are passed by reference and, if given, will be populated with
+Resource Records for the <SPAN CLASS="emphasis"><I CLASS="emphasis">Authoritative Name Servers</I></SPAN>,
+and any <SPAN CLASS="emphasis"><I CLASS="emphasis">Additional Records</I></SPAN> respectively.
+See the example below.
+</P><P>&#13; <DIV CLASS="table"><A NAME="AEN72435"></A><P><B>表格 2. Other keys in associative arrays dependant on 'type'</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">Type</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Extra Columns</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">A</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">ip</TT>: An IPv4 addresses in dotted decimal notation.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">MX</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">pri</TT>: Priority of mail exchanger.
+Lower numbers indicate greater priority.
+<TT CLASS="literal">target</TT>: FQDN of the mail exchanger.
+See also <A HREF="function.dns-get-mx.html"><B CLASS="function">dns_get_mx()</B></A>.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">CNAME</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">target</TT>: FQDN of location in DNS namespace to which
+the record is aliased.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">NS</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">target</TT>: FQDN of the name server which is authoritative
+for this hostname.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">PTR</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">target</TT>: Location within the DNS namespace to which
+this record points.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">TXT</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">txt</TT>: Arbitrary string data associated with this record.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">HINFO</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">cpu</TT>: IANA number designating the CPU of the machine
+referenced by this record.
+<TT CLASS="literal">os</TT>: IANA number designating the Operating System on
+the machine referenced by this record.
+See IANA's <A HREF="http://www.iana.org/assignments/operating-system-names" TARGET="_top">Operating System
+Names</A> for the meaning of these values.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">SOA</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">mname</TT>: FQDN of the machine from which the resource
+records originated.
+<TT CLASS="literal">rname</TT>: Email address of the administrative contain
+for this domain.
+<TT CLASS="literal">serial</TT>: Serial # of this revision of the requested
+domain.
+<TT CLASS="literal">refresh</TT>: Refresh interval (seconds) secondary name
+servers should use when updating remote copies of this domain.
+<TT CLASS="literal">retry</TT>: Length of time (seconds) to wait after a
+failed refresh before making a second attempt.
+<TT CLASS="literal">expire</TT>: Maximum length of time (seconds) a secondary
+DNS server should retain remote copies of the zone data without a
+successful refresh before discarding.
+<TT CLASS="literal">minimum-ttl</TT>: Minimum length of time (seconds) a
+client can continue to use a DNS resolution before it should request
+a new resolution from the server. Can be overridden by individual
+resource records.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">AAAA</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">ipv6</TT>: IPv6 address
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">SRV</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">pri</TT>: (Priority) lowest priorities should be used first.
+<TT CLASS="literal">weight</TT>: Ranking to weight which of commonly prioritized
+<TT CLASS="parameter"><I>targets</I></TT> should be chosen at random.
+<TT CLASS="literal">target</TT> and <TT CLASS="literal">port</TT>: hostname and port
+where the requested service can be found.
+For additional information see: <A HREF="http://www.faqs.org/rfcs/rfc2782" TARGET="_top">RFC 2782</A>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">NAPTR</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">order</TT> and <TT CLASS="literal">pref</TT>: Equivalent to
+<TT CLASS="parameter"><I>pri</I></TT> and <TT CLASS="parameter"><I>weight</I></TT> above.
+<TT CLASS="literal">flags</TT>, <TT CLASS="literal">services</TT>, <TT CLASS="literal">regex</TT>,
+and <TT CLASS="literal">replacement</TT>: Parameters as defined by
+<A HREF="http://www.faqs.org/rfcs/rfc2915" TARGET="_top">RFC 2915</A>.
+</TD></TR></TBODY></TABLE></DIV>
+</P><P>&#13; <DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Per DNS standards, email addresses are given in user.host format (for
+example: hostmaster.example.com as opposed to hostmaster@example.com),
+be sure to check this value and modify if necessary before using it
+with a functions such as <A HREF="function.mail.html"><B CLASS="function">mail()</B></A>.
+</P></BLOCKQUOTE></DIV>
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN72525"></A><P><B>例子 1. Using <B CLASS="function">dns_get_record()</B></B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$result </font><font color="#007700">= </font><font color="#0000BB">dns_get_record</font><font color="#007700">(</font><font color="#DD0000">"php.net"</font><font color="#007700">);<br /></font><font color="#0000BB">print_r</font><font color="#007700">(</font><font color="#0000BB">$result</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P>&#13; Produces output similar to the following:
+</P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">Array
+(
+    [0] =&#62; Array
+        (
+            [host] =&#62; php.net
+            [type] =&#62; MX
+            [pri] =&#62; 5
+            [target] =&#62; pair2.php.net
+            [class] =&#62; IN
+            [ttl] =&#62; 6765
+        )
+
+    [1] =&#62; Array
+        (
+            [host] =&#62; php.net
+            [type] =&#62; A
+            [ip] =&#62; 64.246.30.37
+            [class] =&#62; IN
+            [ttl] =&#62; 8125
+        )
+
+)</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE><P>&#13; Since it's very common to want the IP address of a mail server
+once the MX record has been resolved, <B CLASS="function">dns_get_record()</B>
+also returns an array in <TT CLASS="parameter"><I>addtl</I></TT> which
+contains associate records. <TT CLASS="parameter"><I>authns</I></TT>
+is returned as well containing a list of authoritative name
+servers.
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN72535"></A><P><B>例子 2. Using <B CLASS="function">dns_get_record()</B> and DNS_ANY</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#FF8000">/* Request "ANY" record for php.net, <br />&nbsp;&nbsp;&nbsp;and create $authns and $addtl arrays<br />&nbsp;&nbsp;&nbsp;containing list of name servers and<br />&nbsp;&nbsp;&nbsp;any additional records which go with<br />&nbsp;&nbsp;&nbsp;them */<br /></font><font color="#0000BB">$result </font><font color="#007700">= </font><font color="#0000BB">dns_get_record</font><font color="#007700">(</font><font color="#DD0000">"php.net"</font><font color="#007700">, </font><font color="#0000BB">DNS_ANY</font><font color="#007700">, </font><font color="#0000BB">$authns</font><font color="#007700">, </font><font color="#0000BB">$addtl</font><font color="#007700">);<br />echo </font><font color="#DD0000">"Result = "</font><font color="#007700">;<br /></font><font color="#0000BB">print_r</font><font color="#007700">(</font><font color="#0000BB">$result</font><font color="#007700">);<br />echo </font><font color="#DD0000">"Auth NS = "</font><font color="#007700">;<br /></font><font color="#0000BB">print_r</font><font color="#007700">(</font><font color="#0000BB">$authns</font><font color="#007700">);<br />echo </font><font color="#DD0000">"Additional = "</font><font color="#007700">;<br /></font><font color="#0000BB">print_r</font><font color="#007700">(</font><font color="#0000BB">$addtl</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P>&#13; Produces output similar to the following:
+</P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">Result = Array
+(
+    [0] =&#62; Array
+        (
+            [host] =&#62; php.net
+            [type] =&#62; MX
+            [pri] =&#62; 5
+            [target] =&#62; pair2.php.net
+            [class] =&#62; IN
+            [ttl] =&#62; 6765
+        )
+
+    [1] =&#62; Array
+        (
+            [host] =&#62; php.net
+            [type] =&#62; A
+            [ip] =&#62; 64.246.30.37
+            [class] =&#62; IN
+            [ttl] =&#62; 8125
+        )
+
+)
+Auth NS = Array
+(
+    [0] =&#62; Array
+        (
+            [host] =&#62; php.net
+            [type] =&#62; NS
+            [target] =&#62; remote1.easydns.com
+            [class] =&#62; IN
+            [ttl] =&#62; 10722
+        )
+
+    [1] =&#62; Array
+        (
+            [host] =&#62; php.net
+            [type] =&#62; NS
+            [target] =&#62; remote2.easydns.com
+            [class] =&#62; IN
+            [ttl] =&#62; 10722
+        )
+
+    [2] =&#62; Array
+        (
+            [host] =&#62; php.net
+            [type] =&#62; NS
+            [target] =&#62; ns1.easydns.com
+            [class] =&#62; IN
+            [ttl] =&#62; 10722
+        )
+
+    [3] =&#62; Array
+        (
+            [host] =&#62; php.net
+            [type] =&#62; NS
+            [target] =&#62; ns2.easydns.com
+            [class] =&#62; IN
+            [ttl] =&#62; 10722
+        )
+
+)
+Additional = Array
+(
+    [0] =&#62; Array
+        (
+            [host] =&#62; pair2.php.net
+            [type] =&#62; A
+            [ip] =&#62; 216.92.131.5
+            [class] =&#62; IN
+            [ttl] =&#62; 6766
+        )
+
+    [1] =&#62; Array
+        (
+            [host] =&#62; remote1.easydns.com
+            [type] =&#62; A
+            [ip] =&#62; 64.39.29.212
+            [class] =&#62; IN
+            [ttl] =&#62; 100384
+        )
+
+    [2] =&#62; Array
+        (
+            [host] =&#62; remote2.easydns.com
+            [type] =&#62; A
+            [ip] =&#62; 212.100.224.80
+            [class] =&#62; IN
+            [ttl] =&#62; 81241
+        )
+
+    [3] =&#62; Array
+        (
+            [host] =&#62; ns1.easydns.com
+            [type] =&#62; A
+            [ip] =&#62; 216.220.40.243
+            [class] =&#62; IN
+            [ttl] =&#62; 81241
+        )
+
+    [4] =&#62; Array
+        (
+            [host] =&#62; ns2.easydns.com
+            [type] =&#62; A
+            [ip] =&#62; 216.220.40.244
+            [class] =&#62; IN
+            [ttl] =&#62; 81241
+        )
+
+)</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE><P>&#13; See also
+<A HREF="function.dns-get-mx.html"><B CLASS="function">dns_get_mx()</B></A>, and
+<A HREF="function.dns-check-record.html"><B CLASS="function">dns_check_record()</B></A>
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.dns-get-mx.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.fsockopen.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">dns_get_mx</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.network.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">fsockopen</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

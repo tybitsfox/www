@@ -1,0 +1,1346 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>COPY PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="COMMIT PREPARED" HREF="sql-commit-prepared.html"><LINK REL="NEXT" TITLE="CREATE AGGREGATE" HREF="sql-createaggregate.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-commit-prepared.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-commit-prepared.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-createaggregate.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-createaggregate.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-COPY" >COPY</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN40716" ></A
+><H2
+>Name</H2
+>COPY&nbsp;--&nbsp;        在表和文件之间拷贝数据
+  </DIV
+><A NAME="AEN40719" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN40721" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>COPY <TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+> [ ( <TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> [, ...] ) ]
+    FROM { '<TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>' | STDIN }
+    [ [ WITH ]
+          [ BINARY ]
+          [ OIDS ]
+          [ DELIMITER [ AS ] '<TT
+CLASS="REPLACEABLE"
+><I
+>delimiter</I
+></TT
+>' ]
+          [ NULL [ AS ] '<TT
+CLASS="REPLACEABLE"
+><I
+>null string</I
+></TT
+>' ]
+          [ CSV [ HEADER ]
+                [ QUOTE [ AS ] '<TT
+CLASS="REPLACEABLE"
+><I
+>quote</I
+></TT
+>' ]
+                [ ESCAPE [ AS ] '<TT
+CLASS="REPLACEABLE"
+><I
+>escape</I
+></TT
+>' ]
+                [ FORCE NOT NULL <TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> [, ...] ]
+
+COPY <TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+> [ ( <TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> [, ...] ) ]
+    TO { '<TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>' | STDOUT }
+    [ [ WITH ]
+          [ BINARY ]
+          [ OIDS ]
+          [ DELIMITER [ AS ] '<TT
+CLASS="REPLACEABLE"
+><I
+>delimiter</I
+></TT
+>' ]
+          [ NULL [ AS ] '<TT
+CLASS="REPLACEABLE"
+><I
+>null string</I
+></TT
+>' ]
+          [ CSV [ QUOTE [ AS ] '<TT
+CLASS="REPLACEABLE"
+><I
+>quote</I
+></TT
+>' ]
+                [ ESCAPE [ AS ] '<TT
+CLASS="REPLACEABLE"
+><I
+>escape</I
+></TT
+>' ]
+                [ FORCE QUOTE <TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> [, ...] ]
+  </PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN40739" ></A
+><H2
+>描述</H2
+><P
+>   <TT
+CLASS="COMMAND"
+>COPY</TT
+> 在
+   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>表和标准文件系统文件之间交换数据。
+   <TT
+CLASS="COMMAND"
+>COPY TO</TT
+> 把一个表的所有内容都拷贝<I
+CLASS="EMPHASIS"
+>到</I
+>一个文件，
+   而 <TT
+CLASS="COMMAND"
+>COPY FROM</TT
+> <I
+CLASS="EMPHASIS"
+>从</I
+>一个文件里拷贝数据到一个表里（把数据附加到表中已经存在的内容里）。
+  </P
+><P
+>	如果声明了一个字段列表，<TT
+CLASS="COMMAND"
+>COPY</TT
+> 将只在文件和表之间拷贝声明的字段的数据。
+	如果表中有任何不在字段列表里的字段，那么 <TT
+CLASS="COMMAND"
+>COPY FROM</TT
+> 将为那些字段插入缺省值。
+  </P
+><P
+>  带文件名的
+   <TT
+CLASS="COMMAND"
+>COPY</TT
+> 指示
+   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器直接从文件中读写数据。
+   如果声明了文件名，那么该文件必须为服务器可见，而且文件名必须从服务器的角度声明。如果声明的是
+   <TT
+CLASS="FILENAME"
+>STDIN</TT
+> 或 <TT
+CLASS="FILENAME"
+>STDOUT</TT
+>，数据通过连接在客户前端和服务器之间流动。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN40756" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+></DT
+><DD
+><P
+>        现存表的名字（可以有模式修饰）。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+></DT
+><DD
+><P
+>	可选的待拷贝字段列表。如果没有声明字段列表，那么将使用所有字段。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+></DT
+><DD
+><P
+>        输入或输出文件的绝对路径名。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>STDIN</TT
+></DT
+><DD
+><P
+>        声明输入是来自客户端应用。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>STDOUT</TT
+></DT
+><DD
+><P
+>        声明输入前往客户端应用。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>BINARY</TT
+></DT
+><DD
+><P
+>        使用二进制格式存储和读取，而不是以文本的方式。
+	在二进制模式下，不能声明
+	<TT
+CLASS="OPTION"
+>DELIMITERS</TT
+>，<TT
+CLASS="OPTION"
+>NULL</TT
+> 或者 <TT
+CLASS="OPTION"
+>CSV</TT
+> 选项。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>OIDS</TT
+></DT
+><DD
+><P
+>	声明为每行拷贝内部对象标识（OID）。
+	（如果给那些没有 OID 的表声明了 <TT
+CLASS="LITERAL"
+>OIDS</TT
+> 选项，则抛出一个错误。）
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>delimiter</I
+></TT
+></DT
+><DD
+><P
+>	用于在文件中每行中分隔各个字段的单个字符。
+	在文本模式下，缺省是水平制表符（tab），在 <TT
+CLASS="LITERAL"
+>CSV</TT
+> 模式下是一个逗号。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>null string</I
+></TT
+></DT
+><DD
+><P
+>        这是一个代表 NULL 值的字串。在文本模式下缺省是 <TT
+CLASS="LITERAL"
+>\N</TT
+> （反斜杠-N），
+	在 <TT
+CLASS="LITERAL"
+>CSV</TT
+> 模式下是一个没有引号的空值。
+        如果你不想区分空值和空字串，那么即使在文本模式下可能你也会用一个空字串。
+       </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>        在使用 <TT
+CLASS="COMMAND"
+>COPY FROM</TT
+> 的时候，任何匹配这个字串的字串将被存储为 NULL 值，
+        所以你应该确保你用的字串和<TT
+CLASS="COMMAND"
+>COPY TO</TT
+>相同。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>CSV</TT
+></DT
+><DD
+><P
+>      打开逗号分隔变量（<TT
+CLASS="LITERAL"
+>CSV</TT
+>）模式。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>HEADER</TT
+></DT
+><DD
+><P
+>      声明文件包含一个头标识行，包含文件中每个字段的名字。
+      输出时，的一行包含表的字段名，输入时，第一行被忽略。
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>quote</I
+></TT
+></DT
+><DD
+><P
+>      声明 <TT
+CLASS="LITERAL"
+>CSV</TT
+> 模式里的引号字符。缺省是双引号。
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>escape</I
+></TT
+></DT
+><DD
+><P
+>      声明在 <TT
+CLASS="LITERAL"
+>CSV</TT
+> 模式下应该出现在数据里 <TT
+CLASS="LITERAL"
+>QUOTE</TT
+> 字符值前面的字符。
+      缺省是 <TT
+CLASS="LITERAL"
+>QUOTE</TT
+> 值（通常是双引号）。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>FORCE QUOTE</TT
+></DT
+><DD
+><P
+>      在 <TT
+CLASS="LITERAL"
+>CSV</TT
+> <TT
+CLASS="COMMAND"
+>COPY TO</TT
+> 模式下，强制在每个声明的字段周围对所有非 <TT
+CLASS="LITERAL"
+>NULL</TT
+> 值都使用引号包围。
+      <TT
+CLASS="LITERAL"
+>NULL</TT
+> 从不会被引号包围。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>FORCE NOT NULL</TT
+></DT
+><DD
+><P
+>      在 <TT
+CLASS="LITERAL"
+>CSV</TT
+> <TT
+CLASS="COMMAND"
+>COPY FROM</TT
+> 模式下，把声明的每个字段都当作它们有引号包围来处理，
+      因此就没有 <TT
+CLASS="LITERAL"
+>NULL</TT
+> 值。对于在 <TT
+CLASS="LITERAL"
+>CSV</TT
+> 模式下的缺省空字串（<TT
+CLASS="LITERAL"
+>''</TT
+>），
+      这样导致一个缺失的数值当作一个零长字串输入。
+     </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN40860" ></A
+><H2
+>注意</H2
+><P
+>    <TT
+CLASS="COMMAND"
+>COPY</TT
+> 只能用于表，不能用于视图。
+   </P
+><P
+>   <TT
+CLASS="LITERAL"
+>BINARY</TT
+> 关键字将强制使用二进制对象而不是文本存储/读取所有数据。
+   这样做在一定程度上比传统的拷贝命令快，但二进制拷贝文件在不同机器体系间的移植性不是很好。
+   </P
+><P
+>	你对任何要<TT
+CLASS="COMMAND"
+>COPY TO</TT
+>
+	出来的数据必须有选取数据的权限，对任何要
+	<TT
+CLASS="COMMAND"
+>COPY FROM</TT
+> 入数据的表必须有插入权限。
+   </P
+><P
+>	<TT
+CLASS="COMMAND"
+>COPY</TT
+> 命令里面的文件必须是由服务器直接读或写的文件，而不是由客户端应用读写。
+	因此，它们必须位于数据库服务器上或者可以为数据库服务器所访问，而不是由客户端做这些事情。
+	它们必须是<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>用户（服务器运行的用户 ID）可以访问到并且可读或者可写，而不是客户端。
+	<TT
+CLASS="COMMAND"
+>COPY</TT
+> 到一个命名文件是只允许数据库超级用户进行的，因为它允许读写任意服务器有权限访问的文件。
+   </P
+><P
+>    不要混淆 <TT
+CLASS="COMMAND"
+>COPY</TT
+> 和 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 指令 <TT
+CLASS="COMMAND"
+>\copy</TT
+>。
+    <TT
+CLASS="COMMAND"
+>\copy</TT
+> 调用 <TT
+CLASS="COMMAND"
+>COPY FROM STDIN</TT
+> 或者 <TT
+CLASS="COMMAND"
+>COPY TO STDOUT</TT
+>，
+    然后把数据抓取/存储到一个 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 客户端可以访问的文件中。
+    因此，使用 <TT
+CLASS="COMMAND"
+>\copy</TT
+> 的时候，文件访问权限是由客户端而不是服务器端决定的。
+   </P
+><P
+>        我们建议在 <TT
+CLASS="COMMAND"
+>COPY</TT
+> 里的文件名字总是使用绝对路径。
+	在 <TT
+CLASS="COMMAND"
+>COPY TO</TT
+> 的时候是由服务器强制进行的，
+	但是对于 <TT
+CLASS="COMMAND"
+>COPY FROM</TT
+>，你的确有从一个声明为相对路径的文件里读取的选择。
+	该路径将解释为相对于服务器的工作目录（在数据目录里的什么地方），而不是客户端的工作目录。
+   </P
+><P
+>    <TT
+CLASS="COMMAND"
+>COPY FROM</TT
+> 会激活所有触发器和检查约束。不过，不会激活规则。
+   </P
+><P
+>    <TT
+CLASS="COMMAND"
+>COPY</TT
+> 输入和输出是被 <TT
+CLASS="VARNAME"
+>DateStyle </TT
+> 影响的。
+    为了和其它 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 安装移植，（它们可能用的不是缺省  <TT
+CLASS="VARNAME"
+>DateStyle</TT
+> 设置），
+    我们应该在使用 <TT
+CLASS="COMMAND"
+>COPY</TT
+> 前把 <TT
+CLASS="VARNAME"
+>DateStyle</TT
+> 设置为 <TT
+CLASS="LITERAL"
+>ISO</TT
+>。
+   </P
+><P
+>    <TT
+CLASS="COMMAND"
+>COPY</TT
+> 在第一个错误处停下来。这些在 <TT
+CLASS="COMMAND"
+>COPY TO</TT
+>中不应该导致问题，
+    但在 <TT
+CLASS="COMMAND"
+>COPY FROM</TT
+> 时目的表会已经接收到早先的行，
+    这些行将不可见或不可访问，但是仍然会占据磁盘空间。
+    如果你碰巧是拷贝很大一块数据文件的话，
+    积累起来，这些东西可能会占据相当大的一部分磁盘空间。你可以调用 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 来恢复那些磁盘空间。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN40901" ></A
+><H2
+>文件格式</H2
+><DIV
+CLASS="REFSECT2"
+><A NAME="AEN40903" ></A
+><H3
+>文本格式</H3
+><P
+>	当不带 <TT
+CLASS="LITERAL"
+>BINARY</TT
+> 或者 <TT
+CLASS="LITERAL"
+>CSV</TT
+> 选项使用 <TT
+CLASS="COMMAND"
+>COPY</TT
+> 时，
+	读写的文件是一个文本文件，每行代表表中一个行。
+	行中的列（字段）用分隔符分开。
+	字段值本身是由与每个字段类型相关的输出函数生成的字符串，
+	或者是输入函数可接受的字串。
+	数据中使用特定的空值字串表示那些为 NULL 的字段。
+	如果输入文件的任意行包含比预期多或者少的字段，那么
+	<TT
+CLASS="COMMAND"
+>COPY FROM</TT
+> 将抛出一个错误。
+	如果声明了 <TT
+CLASS="LITERAL"
+>OIDS</TT
+>，那么 OID 将作为第一个字段读写，
+	放在所有用户字段前面。
+   </P
+><P
+>	数据的结束可以用一个只包含反斜杠和句点（<TT
+CLASS="LITERAL"
+>\.</TT
+>）的行表示。
+	如果从文件中读取数据，那么数据结束的标记是不必要的，
+	因为文件结束起的作用就很好了；但是在 3.0 之前的客户端协议里，如果在客户端应用之间拷贝数据，
+	那么必须要有结束标记。
+   </P
+><P
+>	反斜杠字符（<TT
+CLASS="LITERAL"
+>\</TT
+>）可以用在 <TT
+CLASS="COMMAND"
+>COPY</TT
+>
+	里给那些会有歧义的字符进行逃逸（否则那些字符会被当做行或者字段分隔符处理）。
+	特别是下面的字符如果是字段值的一部分时，<I
+CLASS="EMPHASIS"
+>必须</I
+>前缀一个反斜杠：反斜杠本身，换行符，回车，以及当前分隔符。
+   </P
+><P
+>    声明的空字串被 <TT
+CLASS="COMMAND"
+>COPY TO</TT
+> 不加任何反斜杠发送；与之相对，<TT
+CLASS="COMMAND"
+>COPY FROM</TT
+>
+    在删除反斜杠之前拿它的输入与空字串比较。因此，像 <TT
+CLASS="LITERAL"
+>\N</TT
+> 这样的空字串不会和实际数据值
+    <TT
+CLASS="LITERAL"
+>\N</TT
+> 之间混淆（因为后者会表现成 <TT
+CLASS="LITERAL"
+>\\N</TT
+>）。
+   </P
+><P
+>	<TT
+CLASS="COMMAND"
+>COPY FROM</TT
+> 识别下列特殊反斜杠序列：
+
+   <DIV
+CLASS="INFORMALTABLE"
+><A NAME="AEN40925" ></A
+><P
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR ><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>序列</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>代表物</TH
+></TR
+></THEAD
+><TBODY
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="LITERAL"
+>\b</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >反斜杠 (ASCII 8)</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="LITERAL"
+>\f</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >进纸 (ASCII 12)</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="LITERAL"
+>\n</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >换行符 (ASCII 10)</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="LITERAL"
+>\r</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >回车 (ASCII 13)</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="LITERAL"
+>\t</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >Tab (ASCII 9)</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="LITERAL"
+>\v</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >垂直制表符 (ASCII 11)</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="LITERAL"
+>\</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>digits</I
+></TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >反斜杠后面跟着一到三个八进制数，表示ASCII值为该数的字符
+	</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="LITERAL"
+>\x</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>digits</I
+></TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >反斜杠 <TT
+CLASS="LITERAL"
+>x</TT
+> 后面跟着一个或两个十六进制位声明指定数值编码的字符
+       </TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+>
+
+	目前，<TT
+CLASS="COMMAND"
+>COPY TO</TT
+> 将绝不会发出一个八进制或者十六进制反斜杠序列，
+	但是它的确使用了上面列出的其它字符用于控制字符。
+   </P
+><P
+>	绝对不要把反斜杠放在一个数据字符<TT
+CLASS="LITERAL"
+>N</TT
+>或者句点（<TT
+CLASS="LITERAL"
+>.</TT
+>）前面。
+	这样的组合将分别被误认为是空字串或者数据结束标记。
+	另外一个没有在上面的表中列出的反斜杠字符就是它自己。
+   </P
+><P
+>	我们强烈建议生成 <TT
+CLASS="COMMAND"
+>COPY</TT
+> 数据的应用把换行符和回车分别转换成
+	<TT
+CLASS="LITERAL"
+>\n</TT
+> 和 <TT
+CLASS="LITERAL"
+>\r</TT
+> 序列。
+	目前我们可以用一个反斜杠和一个回车表示一个数据回车，以及用一个反斜杠和一个换行符表示一个数据换行符。
+	不过，这样的表示在将来的版本中缺省时可能不会被接受。
+	并且，如果在不同机器之间传递 <TT
+CLASS="COMMAND"
+>COPY</TT
+> 文件，也是非常容易出错的
+	（比如在 Unix 和 Windows 之间）。
+   </P
+><P
+>	<TT
+CLASS="COMMAND"
+>COPY TO</TT
+> 将再每行的结尾是用一个 Unix 风格的换行符(<SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+>\n</TT
+>"</SPAN
+>)，
+	或者是在 Microsoft Windows 上运行的服务器上用（"\r\n"）标记一行终止，但只是用于<TT
+CLASS="COMMAND"
+>COPY</TT
+>到服务器文件里；
+	为了在不同平台之间一致，<TT
+CLASS="COMMAND"
+>COPY TO STDOUT</TT
+> 总是发送 <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+>\n</TT
+>"</SPAN
+>，不管服务器平台是什么。
+	<TT
+CLASS="COMMAND"
+>COPY FROM</TT
+> 可以处理那些以回车符，或者换行符，或者回车换行符作为行结束的数据。
+	为了减少在数据中出现的未逃逸的新行或者回车导致的错误，如果输入的行结尾不像上面这些符号，
+	<TT
+CLASS="COMMAND"
+>COPY FROM</TT
+> 会发出警告。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A NAME="AEN40986" ></A
+><H3
+>CSV 格式</H3
+><P
+>    这个格式用于输入和输出逗号分隔数值（<TT
+CLASS="LITERAL"
+>CSV</TT
+>）文件格式，
+    许多其它程序都用这个文件格式，比如电子报表。这个模式下生成并识别逗号分隔的 CSV 逃逸机制，
+    而不是使用 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 标准文本模式的逃逸。
+   </P
+><P
+>    每条记录的值都是用 <TT
+CLASS="LITERAL"
+>DELIMITER</TT
+> 字符分隔的。
+    如果数值本身包含分隔字符，<TT
+CLASS="LITERAL"
+>QUOTE</TT
+> 字符，<TT
+CLASS="LITERAL"
+>NULL</TT
+> 字串，
+    一个回车，或者进行字符，那么整个数值用 <TT
+CLASS="LITERAL"
+>QUOTE</TT
+> 字符前缀和后缀（包围），
+    并且数值里任何 <TT
+CLASS="LITERAL"
+>QUOTE</TT
+> 字符或者 <TT
+CLASS="LITERAL"
+>ESCAPE</TT
+> 字符都前导逃逸字符。
+    你也可以使用 <TT
+CLASS="LITERAL"
+>FORCE QUOTE</TT
+> 在输出非 <TT
+CLASS="LITERAL"
+>NULL</TT
+> 的指定字段值时强制引号包围。
+   </P
+><P
+>    <TT
+CLASS="LITERAL"
+>CSV</TT
+> 格式没有标准的办法区分一个 <TT
+CLASS="LITERAL"
+>NULL</TT
+> 值和一个空字串。
+    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的 COPY 通过引号包围来处理这些。
+    一个当作 <TT
+CLASS="LITERAL"
+>NULL</TT
+> 输出的 <TT
+CLASS="LITERAL"
+>NULL</TT
+> 值是没有引号包围的，
+    而匹配 <TT
+CLASS="LITERAL"
+>NULL</TT
+> 字串的数据值是用引号包围的。
+    因此，使用缺省设置时，一个 <TT
+CLASS="LITERAL"
+>NULL</TT
+> 是写做一个无引号包围的空字串，
+    而一个空字串写做双引号包围（<TT
+CLASS="LITERAL"
+>""</TT
+>）。读取数值也遵循类似的规则。
+    你可以使用 <TT
+CLASS="LITERAL"
+>FORCE NOT NULL</TT
+> 来避免为特定字段进行 <TT
+CLASS="LITERAL"
+>NULL</TT
+> 比较。
+   </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	 在 <TT
+CLASS="LITERAL"
+>CSV</TT
+> 模式下，所有字符都是有效的。一个被空白包围的引号包围数值，
+	 或者任何非 <TT
+CLASS="LITERAL"
+>DELIMITER</TT
+> 的字符都将会被包含在字符里。
+	 如果你从某些会给 <TT
+CLASS="LITERAL"
+>CSV</TT
+> 行填充空白的系统里输入数据到定长字段，那么可能会导致错误。
+	 如果出现这种情况，你可能需要先处理一下 <TT
+CLASS="LITERAL"
+>CSV</TT
+> 文件，删除后面的空白，
+	 然后再向 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里输入数据。
+    </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>     CSV 模式可以识别和生成带有引号包围的回车和换行的 CVS 文件。
+     因此这些文件并不像文本模式的文件那样严格地每个数据行一行。
+    </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>     许多程序生成奇怪的并且有时候不正确的 CVS 文件，
+     所以这个文件格式更像一种惯用格式，而不是一种标准。
+     因此你可能碰到一些不能使用这个机制输入的文件，而 <TT
+CLASS="COMMAND"
+>COPY</TT
+> 也可能生成一些其它程序不能处理的文件。
+    </P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A NAME="AEN41026" ></A
+><H3
+>二进制格式</H3
+><P
+>	在<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 7.4 中的 <TT
+CLASS="COMMAND"
+>COPY BINARY</TT
+>
+	的文件格式做了变化。新格式由一个文件头，零或多条元组，
+	以及文件尾组成。文件头和数据现在是网络字节序。
+   </P
+><DIV
+CLASS="REFSECT3"
+><A NAME="AEN41031" ></A
+><H4
+>文件头</H4
+><P
+>        文件头由 15 个字节的固定域组成，后面跟着一个变长的头扩展区。
+        固定域是：
+
+    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>签名</DT
+><DD
+><P
+>       11-字节的序列 "PGBCOPY\n\377\r\n\0" &mdash; 请注意字节零是签名是要求的一部分。
+       （使用这个签名是为了让我们能够很容易看出文件是否已经被一个非 8 位安全的转换器给糟蹋了。
+       这个签名会被行结尾转换过滤器，删除字节零，删除高位，或者奇偶的改变而改变。）
+       </P
+></DD
+><DT
+>标志域</DT
+><DD
+><P
+>       32 位整数掩码表示该文件格式的重要方面。
+       位是从 0（LSB）到 31 （MSB）编码的 &mdash; 请注意这个域是以网络字节序存储的（高位在前），
+       后继的整数都是如此。位 16 - 31 是保留用做关键文件格式信息的；
+       如果读者发现一个不认识的位出现在这个范围内，那么它应该退出。
+       位 0-15 都保留为标志向后兼容的格式使用；读者可以忽略这个范围内的不认识的位。目前只定义了一个标志位，而其它的必须是零：
+        <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>Bit 16</DT
+><DD
+><P
+>                如果为 1，那么在数据中包括了 OID；如果为 0，则没有
+           </P
+></DD
+></DL
+></DIV
+><P>
+       </P
+></DD
+><DT
+>头扩展范围长度</DT
+><DD
+><P
+>       32 位整数，以字节计的头剩余长度，不包括自身。目前，它是零，
+       后面紧跟第一条元组。对该格式的更多的修改都将允许额外的数据出现在头中。
+       读者应该忽略任何它不知道该如何处理的头扩展数据。
+       </P
+></DD
+></DL
+></DIV
+><P>
+    </P
+><P
+>    头扩展数据是一个用来保留一个自定义的数据序列块用的。这个标志域无意告诉读者扩展区的内容是什么。头扩展的具体设计内容留给以后的版本用。
+    </P
+><P
+>        这样设计就允许向下兼容头附加（增加头扩展块，或者设置低位序标志位）以及非向下兼容修改（设置高位标志位以标识这样的修改，
+	并且根据需要向扩展区域增加支持数据）。
+    </P
+></DIV
+><DIV
+CLASS="REFSECT3"
+><A NAME="AEN41054" ></A
+><H4
+>元组</H4
+><P
+>每条元组都以一个 16 位整数计数开头，该计数是元组中字段的数目。
+（目前，在一个表里的每条元组都有相同的计数，但可能不会永远这样。）
+然后后面不断出现元组中的各个字段，字段先是一个 32 位的长度字，后面跟着那么长的字段数据。
+（长度字并不包括自己，并且可以为零。）一个特例是：-1 表示一个 NULL 字段值。
+在 NULL 情况下，后面不会跟着数值字节。
+    </P
+><P
+>在数据域之间没有对奇填充或者任何其它额外的数据。
+    </P
+><P
+>目前，一个 <TT
+CLASS="COMMAND"
+>COPY BINARY</TT
+> 文件里的所有数据值都假设是二进制格式的（格式代码为一）。
+预计将来的扩展可能增加一个头域，允许为每个字段声明格式代码。
+    </P
+><P
+>为了判断实际元组数据的正确的二进制格式，你应该阅读 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 源代码，
+特别是该字段数据类型的 <TT
+CLASS="FUNCTION"
+>*send</TT
+> 和 <TT
+CLASS="FUNCTION"
+>*recv</TT
+> 函数（典型的函数可以在源代码的
+<TT
+CLASS="FILENAME"
+>src/backend/utils/adt/</TT
+> 目录找到）。
+    </P
+><P
+>如果在文件中包括了 OID，那么该 OID 域立即跟在字段计数字后面。
+它是一个普通的字段，只不过它没有包括在字段计数。但它包括长度字 ---
+这样就允许我们不用花太多的劲就可以处理 4 字节和 8 字节的 OID，并且如果某个家伙允许 OID 是可选的话，那么还可以把 OID 显示成空。
+    </P
+></DIV
+><DIV
+CLASS="REFSECT3"
+><A NAME="AEN41066" ></A
+><H4
+>文件尾</H4
+><P
+>        文件尾包括保存着 -1 的一个 16 位整数字。这样就很容易与一条元组的域计数字相区分。
+    </P
+><P
+>        如果一个域计数字既不是 -1 也不是预期的字段的数目，那么读者应该报错。
+        这样就提供了对丢失与数据的同步的额外的检查。
+    </P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN41070" ></A
+><H2
+>例子</H2
+><P
+>        下面的例子把一个表拷贝到客户端，
+        使用竖直条（<TT
+CLASS="LITERAL"
+>|</TT
+>）作为域分隔符：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>COPY country TO STDOUT WITH DELIMITER '|';</PRE
+><P>
+  </P
+><P
+>        从一个 Unix 文件中拷贝数据到一个<TT
+CLASS="LITERAL"
+>country</TT
+>表中：
+  </P><PRE
+CLASS="PROGRAMLISTING"
+>COPY country FROM '/usr1/proj/bray/sql/country_data';
+  </PRE
+><P>
+  </P
+><P
+>   使用一个会被自动删除的临时表，把 'A' 开头的国家名拷贝到一个文件里：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>BEGIN;
+CREATE TEMP TABLE a_list_countries AS
+    SELECT * FROM country WHERE country_name LIKE 'A%';
+COPY a_list_countries TO '/usr1/proj/bray/sql/a_list_countries.copy';
+ROLLBACK;</PRE
+><P>
+  </P
+><P
+>        下面是一个可以从 <TT
+CLASS="LITERAL"
+>STDIN</TT
+> 中拷贝数据到表中的例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>AF      AFGHANISTAN
+AL      ALBANIA
+DZ      ALGERIA
+ZM      ZAMBIA
+ZW      ZIMBABWE</PRE
+><P>
+        请注意在这里每行里的空白实际上是一个水平制表符 tab。
+  </P
+><P
+>        下面的是同样的数据，在一台 Linux/i586 机器上以二进制形式输出。
+        这些数据是用 Unix 工具 <TT
+CLASS="COMMAND"
+>od -c</TT
+> 过滤之后输出的。
+        该表有三个字段；第一个是 <TT
+CLASS="TYPE"
+>char(2)</TT
+>，
+        第二个是 <TT
+CLASS="TYPE"
+>text</TT
+>，
+        第三个是<TT
+CLASS="TYPE"
+>integer</TT
+>。所有的行在第三个域都是一个 null 值。
+</P><PRE
+CLASS="PROGRAMLISTING"
+>0000000   P   G   C   O   P   Y  \n 377  \r  \n  \0  \0  \0  \0  \0  \0
+0000020  \0  \0  \0  \0 003  \0  \0  \0 002   A   F  \0  \0  \0 013   A
+0000040   F   G   H   A   N   I   S   T   A   N 377 377 377 377  \0 003
+0000060  \0  \0  \0 002   A   L  \0  \0  \0 007   A   L   B   A   N   I
+0000100   A 377 377 377 377  \0 003  \0  \0  \0 002   D   Z  \0  \0  \0
+0000120 007   A   L   G   E   R   I   A 377 377 377 377  \0 003  \0  \0
+0000140  \0 002   Z   M  \0  \0  \0 006   Z   A   M   B   I   A 377 377
+0000160 377 377  \0 003  \0  \0  \0 002   Z   W  \0  \0  \0  \b   Z   I
+0000200   M   B   A   B   W   E 377 377 377 377 377 377</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN41089" ></A
+><H2
+>兼容性</H2
+><P
+>        在 SQL 标准里没有 <TT
+CLASS="COMMAND"
+>COPY</TT
+> 语句。
+   </P
+><P
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 7.3 以前使用下面的语法，现在仍然支持：
+</P><PRE
+CLASS="SYNOPSIS"
+>COPY [ BINARY ] <TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+> [ WITH OIDS ]
+    FROM { '<TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>' | STDIN }
+    [ [USING] DELIMITERS '<TT
+CLASS="REPLACEABLE"
+><I
+>delimiter</I
+></TT
+>' ]
+    [ WITH NULL AS '<TT
+CLASS="REPLACEABLE"
+><I
+>null string</I
+></TT
+>' ]
+
+COPY [ BINARY ] <TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+> [ WITH OIDS ]
+    TO { '<TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>' | STDOUT }
+    [ [USING] DELIMITERS '<TT
+CLASS="REPLACEABLE"
+><I
+>delimiter</I
+></TT
+>' ]
+    [ WITH NULL AS '<TT
+CLASS="REPLACEABLE"
+><I
+>null string</I
+></TT
+>' ]</PRE
+><P>
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-commit-prepared.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-createaggregate.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >COMMIT PREPARED</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >CREATE AGGREGATE</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

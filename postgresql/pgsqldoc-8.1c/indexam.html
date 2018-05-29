@@ -1,0 +1,431 @@
+<HTML
+><HEAD
+><TITLE
+>索引访问方法接口定义</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="内部"
+HREF="internals.html"><LINK
+REL="PREVIOUS"
+TITLE="进一步阅读"
+HREF="geqo-biblio.html"><LINK
+REL="NEXT"
+TITLE="索引访问方法函数"
+HREF="index-functions.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="geqo-biblio.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="geqo.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="gist.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="index-functions.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="INDEXAM"
+>Chapter 48. 索引访问方法接口定义</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>48.1. <A
+HREF="indexam.html#INDEX-CATALOG"
+>索引的系统表记录</A
+></DT
+><DT
+>48.2. <A
+HREF="index-functions.html"
+>索引访问方法函数</A
+></DT
+><DT
+>48.3. <A
+HREF="index-scanning.html"
+>索引扫描</A
+></DT
+><DT
+>48.4. <A
+HREF="index-locking.html"
+>索引锁的考量</A
+></DT
+><DT
+>48.5. <A
+HREF="index-unique-checks.html"
+>索引唯一性检查</A
+></DT
+><DT
+>48.6. <A
+HREF="index-cost-estimation.html"
+>索引开销估计函数</A
+></DT
+></DL
+></DIV
+><P
+>   本章定义 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 核心系统和 <I
+CLASS="FIRSTTERM"
+>索引访问方法</I
+>之间的接口，
+   后者管理独立的索引类型。除了在这里声明的东西之外，核心系统对索引一无所知，
+   因此我们可以通过书写累加上来的代码，开发一种完全新的索引类型。
+  </P
+><P
+>   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里的所有索引技术上都叫做<I
+CLASS="FIRSTTERM"
+>从属索引</I
+>；
+   也就是说，索引在物理上是与它描述的表文件想分离的。每个索引是以其自己的物理<I
+CLASS="FIRSTTERM"
+>关系</I
+>的方式存储的，
+   因此它们也在 <TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+> 表里面有记录描述。
+   一个索引的内容是完全在其索引访问方法的控制之下的。实际上，所有索引访问方法都把索引分裂成标准大小的页面，
+   这样他们就可以使用普通的存储管理器和缓冲区管理器来访问索引的内容了。
+   （所有现有的索引访问方法更是使用 <A
+HREF="storage-page-layout.html"
+>Section 50.3</A
+> 里面描述的标准的页面布局，
+   并且索引元组头都使用同样的格式；但是这些东西都不是强制访问方法执行的。（意思说必要的话你可以不用这些标准格式。））
+  </P
+><P
+>   索引实际上是一些数据的键值与<I
+CLASS="FIRSTTERM"
+>元组标识符</I
+>（或者说 <SPAN
+CLASS="ACRONYM"
+>TIDs</SPAN
+>）之间的映射，
+   这些元组标识符是索引的父表中的行版本（元组）的标识。
+   一个 TID 由一个块号和一个改块内的项编号组成（参阅 <A
+HREF="storage-page-layout.html"
+>Section 50.3</A
+>）。
+   这些就是从该表中抓取某个特定行版本的足够的信息。
+   索引并不直接知道在 MVCC 下，同一个逻辑行可能有多个现存的版本；
+   对于索引而言，每个元组都是一个独立的对象，都需要自己的索引条目。
+   因此，对一行的更新总是为该行创建全新的索引条目，
+   即使键值没有改变也如此。已经废弃的元组的索引条目是在废弃元组自己被回收的时候回收（通过清理）。
+  </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="INDEX-CATALOG"
+>48.1. 索引的系统表记录</A
+></H1
+><P
+>   每个索引访问方法都在系统表 <TT
+CLASS="STRUCTNAME"
+>pg_am</TT
+> 里面用一行来描述（参阅 <A
+HREF="catalog-pg-am.html"
+>Section 42.3</A
+>）。
+   一个 <TT
+CLASS="STRUCTNAME"
+>pg_am</TT
+> 行的主要内容是引用 <A
+HREF="catalog-pg-proc.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_proc</TT
+></A
+>
+   里面的记录，用来标识索引访问方法提供的索引访问函数。
+   这些函数的接口（API）在本章后面描述。另外，<TT
+CLASS="STRUCTNAME"
+>pg_am</TT
+> 的数据行生命了几个索引访问方法的固定属性，
+   比如，它是否支持多字段索引。
+   目前还没有创建、删除 <TT
+CLASS="STRUCTNAME"
+>pg_am</TT
+> 记录的特殊支持；
+   任何想写这么一个新的访问方法的人都需要能够自己向这个表里面插入合适的新行。
+  </P
+><P
+>   要想有真正用处，一个索引访问方法还必须有一个或多个<I
+CLASS="FIRSTTERM"
+>操作符表</I
+>，
+   定义在 <A
+HREF="catalog-pg-opclass.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_opclass</TT
+></A
+>，
+   <A
+HREF="catalog-pg-amop.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_amop</TT
+></A
+>，和
+   <A
+HREF="catalog-pg-amproc.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_amproc</TT
+></A
+> 里面。
+   这些记录允许规划器判断哪些查询的条件可以适用于用这个索引访问方法创建的索引。
+   操作符表在 <A
+HREF="xindex.html"
+>Section 32.14</A
+> 里面定义，是读取本章的前提之一。
+  </P
+><P
+>   一个独立的索引是由一行 <A
+HREF="catalog-pg-class.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+></A
+>
+   记录以物理关系的方式描述的，加上一个
+   <A
+HREF="catalog-pg-index.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_index</TT
+></A
+>
+   行，表示该索引的逻辑内容 &mdash; 也就是说，它所拥有的索引字段集，以及被相关的操作符表捕获的这些字段的语义。
+   索引字段（键值）可以是下层表的字段，也可以是该表的数据哈工上的表达式。
+   索引访问方法通常不关心索引的键值来自何妨（它总是操作预处理完毕的键值），
+   但是它会对 <TT
+CLASS="STRUCTNAME"
+>pg_index</TT
+> 里面的操作符表信息很感兴趣。
+   所有这些表记录都可以当作 <TT
+CLASS="STRUCTNAME"
+>Relation</TT
+> 数据结构的一部分访问，
+   这个数据结构会在对该索引的所有操作上都传递到对应的函数中。
+  </P
+><P
+>   <TT
+CLASS="STRUCTNAME"
+>pg_am</TT
+> 中的有些标志字段的含义并不那么直观。
+   <TT
+CLASS="STRUCTFIELD"
+>amcanunique</TT
+> 的需求在 <A
+HREF="index-unique-checks.html"
+>Section 48.5</A
+> 里讨论，
+   那些 <TT
+CLASS="STRUCTFIELD"
+>amconcurrent</TT
+> 相关的在 <A
+HREF="index-locking.html"
+>Section 48.4</A
+> 里。
+   <TT
+CLASS="STRUCTFIELD"
+>amcanmulticol</TT
+> 标志断言该索引访问方法支持多字段索引，
+   <TT
+CLASS="STRUCTFIELD"
+>amoptionalkey</TT
+> 断言它允许对那种在第一个索引字段上没有给出可索引限制子句的扫描。
+   如果 <TT
+CLASS="STRUCTFIELD"
+>amcanmulticol</TT
+> 为假，<TT
+CLASS="STRUCTFIELD"
+>amoptionalkey</TT
+>
+   实际上说的是该访问方法是否允许不带限制子句的全索引扫描。
+   那些支持多字段索引的访问访法<I
+CLASS="EMPHASIS"
+>必须</I
+>支持那些在省略了除第一个字段以外的其他字段的约束的扫描；
+   不过，系统允许这些访问访法要求在第一个字段上出现一些限制，这一点是通过把 <TT
+CLASS="STRUCTFIELD"
+>amoptionalkey</TT
+> 
+   设置为假来实现的。
+   <TT
+CLASS="STRUCTFIELD"
+>amindexnulls</TT
+> 断言该索引记录是为 NULL 键值创建的。
+   因为大多数可以索引的操作符都是严格的，因此不能对 NULL 输入返回 TRUE，
+   所以，第一眼看见会觉得不为空值存储索引记录的想法很吸引人：
+   因为他们不可能被一个索引扫描返回。不过，这个想法在一个给出的索引字段上没有限制子句的索引扫描的情况下就不行了；
+   这样的扫描应该包括空值行。实际上，这意味着设置了<TT
+CLASS="STRUCTFIELD"
+>amorderstrategy</TT
+>为真的索引必须索引空值，
+   因为规划器可能会决定在根本没有扫描键字的时候使用这样的索引。这样的索引必须可以在完全没有扫描键字的情况下运行。
+   另外一个限制是一个支持多字段索引的索引访问方法<I
+CLASS="EMPHASIS"
+>必须</I
+>支持第一个字段后面的字段的空值的索引，
+   因为规划器会认为这个索引可以用于那些没有限制这些字段的查询。比如，假设我们有个索引在 (a,b) 上，
+   而一个查询的条件是 <TT
+CLASS="LITERAL"
+>WHERE a = 4</TT
+>。
+   系统会认为这个索引可以用于扫描 <TT
+CLASS="LITERAL"
+>a = 4</TT
+> 的数据行，
+   如果索引忽略了 <TT
+CLASS="LITERAL"
+>b</TT
+> 为空的数据行，那么就是错误的。
+   不过，如果第一个索引字段值是空，那么忽略它是 OK 的。（GiST 目前就这么干。）因此，
+   只是在索引访问方法索引了所有行，包括任意空值的组合，之后，<TT
+CLASS="STRUCTFIELD"
+>amindexnulls</TT
+> 才可以设置为真值。
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="geqo-biblio.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="index-functions.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>进一步阅读</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="internals.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>索引访问方法函数</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

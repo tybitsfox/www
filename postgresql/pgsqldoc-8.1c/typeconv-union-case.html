@@ -1,0 +1,360 @@
+<HTML
+><HEAD
+><TITLE
+>UNION，CASE 和相关构造</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="类型转换"
+HREF="typeconv.html"><LINK
+REL="PREVIOUS"
+TITLE="值存储"
+HREF="typeconv-query.html"><LINK
+REL="NEXT"
+TITLE="索引"
+HREF="indexes.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="typeconv-query.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="typeconv.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 10. 类型转换</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="typeconv.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="indexes.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="TYPECONV-UNION-CASE"
+>10.5. <TT
+CLASS="LITERAL"
+>UNION</TT
+>，<TT
+CLASS="LITERAL"
+>CASE</TT
+> 和相关构造</A
+></H1
+><A
+NAME="AEN14787"
+></A
+><A
+NAME="AEN14790"
+></A
+><A
+NAME="AEN14793"
+></A
+><A
+NAME="AEN14796"
+></A
+><A
+NAME="AEN14799"
+></A
+><P
+>SQL 的 <TT
+CLASS="LITERAL"
+>UNION</TT
+> 构造必须把那些可能不太相似的类型匹配起来成为一个结果集。
+解析算法分别应用于联合查询的每个输出字段。
+<TT
+CLASS="LITERAL"
+>INTERSET</TT
+> 和<TT
+CLASS="LITERAL"
+>EXCEPT</TT
+>构造对不相似的类型使用和
+<TT
+CLASS="LITERAL"
+>UNION</TT
+>相同的算法进行解析。
+<TT
+CLASS="LITERAL"
+>CASE</TT
+>，<TT
+CLASS="LITERAL"
+>ARRAY</TT
+>，<TT
+CLASS="FUNCTION"
+>GREATEST</TT
+> 和 <TT
+CLASS="FUNCTION"
+>LEAST</TT
+>
+构造也使用同样的算法匹配它的部件表达式并且选择一个结果数据类型。</P
+><DIV
+CLASS="PROCEDURE"
+><P
+><B
+><TT
+CLASS="LITERAL"
+>UNION</TT
+>，<TT
+CLASS="LITERAL"
+>CASE</TT
+> 和相关构造的类型解析</B
+></P
+><OL
+TYPE="1"
+><LI
+><P
+>如果所有输入都是类型 <TT
+CLASS="TYPE"
+>unknown</TT
+>，解析成类型<TT
+CLASS="TYPE"
+>text</TT
+>（字串类型的首选类型）。
+否则，在选择结果类型的时候忽略 <TT
+CLASS="TYPE"
+>unknown</TT
+> 输入。</P
+></LI
+><LI
+><P
+>如果非 unknown 输入不是全部属于一个类型范畴，失败。</P
+></LI
+><LI
+><P
+>选取第一个属于该范畴中首选类型的非未知输入类型，
+或者是第一个允许所有非未知输入隐含转换成它的类型。</P
+></LI
+><LI
+><P
+>把所有输入转换成所选类型。</P
+></LI
+></OL
+></DIV
+><P
+>下面是一些例子。</P
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN14827"
+></A
+><P
+><B
+>Example 10-7. Union 中的待定类型解析</B
+></P
+><P
+></P><PRE
+CLASS="SCREEN"
+>SELECT text 'a' AS "Text" UNION SELECT 'b';
+
+ Text
+------
+ a
+ b
+(2 rows)</PRE
+><P>
+这里，未知类型文本<TT
+CLASS="LITERAL"
+>'b'</TT
+>将被解析成类型<TT
+CLASS="TYPE"
+>text</TT
+>。</P
+></DIV
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN14833"
+></A
+><P
+><B
+>Example 10-8. 简单 Union 中的类型解析</B
+></P
+><P
+></P><PRE
+CLASS="SCREEN"
+>SELECT 1.2 AS "numeric" UNION SELECT 1;
+
+ numeric
+---------
+       1
+     1.2
+(2 rows)</PRE
+><P>
+文本 <TT
+CLASS="LITERAL"
+>1.2</TT
+> 类型为 <TT
+CLASS="TYPE"
+>numeric</TT
+>，
+而且整数<TT
+CLASS="LITERAL"
+>1</TT
+>可以隐含地转换为<TT
+CLASS="TYPE"
+>numeric</TT
+>，
+因此使用这个类型。</P
+></DIV
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN14841"
+></A
+><P
+><B
+>Example 10-9. 转置 Union 中的类型解析</B
+></P
+><P
+></P><PRE
+CLASS="SCREEN"
+>SELECT 1 AS "real" UNION SELECT CAST('2.2' AS REAL);
+
+ real
+------
+    1
+  2.2
+(2 rows)</PRE
+><P></P
+><P
+>这里，因为类型 <TT
+CLASS="TYPE"
+>real</TT
+> 不能被隐含转换成 <TT
+CLASS="TYPE"
+>integer</TT
+>，
+但是 <TT
+CLASS="TYPE"
+>integer</TT
+> 可以隐含转换成 <TT
+CLASS="TYPE"
+>real</TT
+>，那么联合的结果类型分析成 <TT
+CLASS="TYPE"
+>real</TT
+>。</P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="typeconv-query.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="indexes.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>值存储</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="typeconv.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>索引</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

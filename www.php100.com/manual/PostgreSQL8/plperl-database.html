@@ -1,0 +1,366 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>从 PL/Perl 里访问数据库 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="PL/Perl - Perl 过程语言" HREF="plperl.html"><LINK REL="PREVIOUS" TITLE="PL/Perl - Perl 过程语言" HREF="plperl.html"><LINK REL="NEXT" TITLE="PL/Perl 里的数据值" HREF="plperl-data.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="plperl.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="plperl.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 38. PL/Perl - Perl 过程语言</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="plperl.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="plperl-data.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="PLPERL-DATABASE" >38.2. 从 PL/Perl 里访问数据库</A
+></H1
+><P
+>	从你的 Perl 函数里访问数据库本身可以通过下面描述的
+	<TT
+CLASS="FUNCTION"
+>spi_exec_query</TT
+> 或者一个试验模块
+	<A HREF="../../../www.cpan.org/modules/by-module/DBD/APILOS/index.html" TARGET="_top" ><TT
+CLASS="LITERAL"
+>DBD::PgSPI</TT
+></A
+>
+	（也可以在 <A HREF="../../../www.cpan.org/SITES.html" TARGET="_top" ><SPAN
+CLASS="ACRONYM"
+>CPAN 镜像站</SPAN
+></A
+> 获取）。
+	这个模块让用户可以使用一个<SPAN
+CLASS="ACRONYM"
+>DBI</SPAN
+>兼容的叫 <TT
+CLASS="VARNAME"
+>$pg_dbh</TT
+> 的数据库句柄，
+	用户可以用它以普通的 <SPAN
+CLASS="ACRONYM"
+>DBI</SPAN
+><A NAME="AEN36283" ></A
+> 语法执行查询。
+  </P
+><P
+>	PL/Perl 本身目前只提供四个额外的 Perl 命令：
+
+   <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>spi_exec_query</TT
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+> [, <TT
+CLASS="REPLACEABLE"
+><I
+>max-rows</I
+></TT
+>])</TT
+><BR><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>spi_exec_query</TT
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+>)</TT
+><BR><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>spi_query</TT
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+>)</TT
+><BR><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>spi_fetchrow</TT
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+>)</TT
+></DT
+><DD
+><P
+>	<TT
+CLASS="LITERAL"
+>spi_exec_query</TT
+> 执行一个 SQL 命令然后把整个结果集当作一个指向散列引用的引用返回。
+	<I
+CLASS="EMPHASIS"
+>只有在你知道结果集相对比较小的时候才能用这个命令。</I
+>
+	下面是一个带有额外的最大行数的查询（<TT
+CLASS="COMMAND"
+>SELECT</TT
+> 命令）的例子。
+	
+</P><PRE
+CLASS="PROGRAMLISTING"
+>$rv = spi_exec_query('SELECT * FROM my_table', 5);</PRE
+><P>
+
+它从 <TT
+CLASS="LITERAL"
+>my_table</TT
+> 里返回最多 5 行。
+如果 <TT
+CLASS="LITERAL"
+>my_table</TT
+> 有一个字段是 <TT
+CLASS="LITERAL"
+>my_column</TT
+>，
+那么可以用下面的方法从结果的第 <TT
+CLASS="LITERAL"
+>$i</TT
+> 行获取其值：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>$foo = $rv-&gt;{rows}[$i]-&gt;{my_column};</PRE
+><P>
+从一个 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 查询返回的总行数可以这样访问：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>$nrows = $rv-&gt;{processed}</PRE
+><P>
+       </P
+><P
+>这里是一个使用其他命令的例子。
+</P><PRE
+CLASS="PROGRAMLISTING"
+>$query = "INSERT INTO my_table VALUES (1, 'test')";
+$rv = spi_exec_query($query);</PRE
+><P>
+你可以用下面方法访问状态（<TT
+CLASS="LITERAL"
+>SPI_OK_INSERT</TT
+> 等）。
+</P><PRE
+CLASS="PROGRAMLISTING"
+>$res = $rv-&gt;{status};</PRE
+><P>
+获取影响的行数，这样：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>$nrows = $rv-&gt;{processed};</PRE
+><P>
+       </P
+><P
+>       下面是一个完整的例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE test (
+    i int,
+    v varchar
+);
+
+INSERT INTO test (i, v) VALUES (1, 'first line');
+INSERT INTO test (i, v) VALUES (2, 'second line');
+INSERT INTO test (i, v) VALUES (3, 'third line');
+INSERT INTO test (i, v) VALUES (4, 'immortal');
+
+CREATE FUNCTION test_munge() RETURNS SETOF test AS $$
+    my $res = [];
+    my $rv = spi_exec_query('select i, v from test;');
+    my $status = $rv-&gt;{status};
+    my $nrows = $rv-&gt;{processed};
+    foreach my $rn (0 .. $nrows - 1) {
+        my $row = $rv-&gt;{rows}[$rn];
+        $row-&gt;{i} += 200 if defined($row-&gt;{i});
+        $row-&gt;{v} =~ tr/A-Za-z/a-zA-Z/ if (defined($row-&gt;{v}));
+        push @$res, $row;
+    }
+    return $res;
+$$ LANGUAGE plperl;
+
+SELECT * FROM test_munge();</PRE
+><P>
+      </P
+><P
+>    <TT
+CLASS="LITERAL"
+>spi_query</TT
+> 和 <TT
+CLASS="LITERAL"
+>spi_fetchrow</TT
+>
+    一起用于处理那些行集可能比较大，或者是在你收到行的时候就返回的场合。
+    <TT
+CLASS="LITERAL"
+>spi_fetchrow</TT
+> <I
+CLASS="EMPHASIS"
+>只</I
+>和 <TT
+CLASS="LITERAL"
+>spi_query</TT
+>
+    一起使用。下面的例子演示了如何使用：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TYPE foo_type AS (the_num INTEGER, the_text TEXT);
+
+CREATE OR REPLACE FUNCTION lotsa_md5 (INTEGER) RETURNS SETOF foo_type AS $$
+    use Digest::MD5 qw(md5_hex);
+    my $file = '/usr/share/dict/words';
+    my $t = localtime;
+    elog(NOTICE, "opening file $file at $t" );
+    open my $fh, '&lt;', $file # 哦，这是访问文件！
+        or elog(ERROR, "Can't open $file for reading: $!");
+    my @words = &lt;$fh&gt;;
+    close $fh;
+    $t = localtime;
+    elog(NOTICE, "closed file $file at $t");
+    chomp(@words);
+    my $row;
+    my $sth = spi_query("SELECT * FROM generate_series(1,$_[0]) AS b(a)");
+    while (defined ($row = spi_fetchrow($sth))) {
+        return_next({
+            the_num =&gt; $row-&gt;{a},
+            the_text =&gt; md5_hex($words[rand @words])
+        });
+    }
+    return;
+$$ LANGUAGE plperlu;
+
+SELECT * from lotsa_md5(500);</PRE
+><P>
+    </P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>elog</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>level</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>msg</I
+></TT
+></DT
+><DD
+><P
+>	发出一条日志或者错误信息。可能的级别时 <TT
+CLASS="LITERAL"
+>DEBUG</TT
+>，<TT
+CLASS="LITERAL"
+>LOG</TT
+>，
+	<TT
+CLASS="LITERAL"
+>INFO</TT
+>，<TT
+CLASS="LITERAL"
+>NOTICE</TT
+>，<TT
+CLASS="LITERAL"
+>WARNING</TT
+>，和 <TT
+CLASS="LITERAL"
+>ERROR</TT
+>。
+	<TT
+CLASS="LITERAL"
+>ERROR</TT
+> 抛出一个错误条件：如果这个错误没有被周围的 Perl 代码捕获，
+	那么错误将传播到调用的查询里，导致当前事务或者子事务退出。
+	这实际上相当于 Perl 的 <TT
+CLASS="LITERAL"
+>die</TT
+> 命令。
+	其他级别只是生成不同优先级的消息。
+	特定优先级的消息是否报告给客户端，写到服务器日志里，或者两个都做，
+	是由配置参数 <A HREF="runtime-config-logging.html#GUC-LOG-MIN-MESSAGES" >log_min_messages</A
+> 和 <A HREF="runtime-config-logging.html#GUC-CLIENT-MIN-MESSAGES" >client_min_messages</A
+>
+	控制的。参阅 <A HREF="runtime-config.html" >Chapter 17</A
+> 获取更多信息。
+      </P
+></DD
+></DL
+></DIV
+><P>
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="plperl.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="plperl-data.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >PL/Perl - Perl 过程语言</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="plperl.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >PL/Perl 里的数据值</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

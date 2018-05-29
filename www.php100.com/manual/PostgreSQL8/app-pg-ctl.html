@@ -1,0 +1,998 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>pg_ctl PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="PostgreSQL 服务器应用" HREF="reference-server.html"><LINK REL="PREVIOUS" TITLE="pg_controldata" HREF="app-pgcontroldata.html"><LINK REL="NEXT" TITLE="pg_resetxlog" HREF="app-pgresetxlog.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="app-pgcontroldata.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="app-pgcontroldata.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="app-pgresetxlog.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="app-pgresetxlog.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="APP-PG-CTL" ><SPAN
+CLASS="APPLICATION"
+>pg_ctl</SPAN
+></A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN53736" ></A
+><H2
+>Name</H2
+>pg_ctl&nbsp;--&nbsp;启动，停止和重起 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+></DIV
+><A NAME="AEN53740" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN53742" ></A
+><H2
+>Synopsis</H2
+><P
+><TT
+CLASS="COMMAND"
+>pg_ctl</TT
+>  start  [-w] [-s] [-D <TT
+CLASS="REPLACEABLE"
+><I
+>datadir</I
+></TT
+>] [-l <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>] [-o <TT
+CLASS="REPLACEABLE"
+><I
+>options</I
+></TT
+>] [-p <TT
+CLASS="REPLACEABLE"
+><I
+>path</I
+></TT
+>]<BR><TT
+CLASS="COMMAND"
+>pg_ctl</TT
+>  stop  [-W] [-s] [-D <TT
+CLASS="REPLACEABLE"
+><I
+>datadir</I
+></TT
+>] [-m
+       s[mart] | f[ast] | i[mmediate] 
+   ]<BR><TT
+CLASS="COMMAND"
+>pg_ctl</TT
+>  restart  [-w] [-s] [-D <TT
+CLASS="REPLACEABLE"
+><I
+>datadir</I
+></TT
+>] [-m
+       s[mart] | f[ast] | i[mmediate] 
+   ] [-o <TT
+CLASS="REPLACEABLE"
+><I
+>options</I
+></TT
+>]<BR><TT
+CLASS="COMMAND"
+>pg_ctl</TT
+>  reload  [-s] [-D <TT
+CLASS="REPLACEABLE"
+><I
+>datadir</I
+></TT
+>]<BR><TT
+CLASS="COMMAND"
+>pg_ctl</TT
+>  status  [-D <TT
+CLASS="REPLACEABLE"
+><I
+>datadir</I
+></TT
+>]<BR><TT
+CLASS="COMMAND"
+>pg_ctl</TT
+>  kill  [<TT
+CLASS="REPLACEABLE"
+><I
+>signal_name</I
+></TT
+>] [<TT
+CLASS="REPLACEABLE"
+><I
+>process_id</I
+></TT
+>]<BR><TT
+CLASS="COMMAND"
+>pg_ctl</TT
+>  register  [-N <TT
+CLASS="REPLACEABLE"
+><I
+>servicename</I
+></TT
+>] [-U <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+>] [-P <TT
+CLASS="REPLACEABLE"
+><I
+>password</I
+></TT
+>] [-D <TT
+CLASS="REPLACEABLE"
+><I
+>datadir</I
+></TT
+>] [-w] [-o <TT
+CLASS="REPLACEABLE"
+><I
+>options</I
+></TT
+>]<BR><TT
+CLASS="COMMAND"
+>pg_ctl</TT
+>  unregister  [-N <TT
+CLASS="REPLACEABLE"
+><I
+>servicename</I
+></TT
+>]</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="APP-PG-CTL-DESCRIPTION" ></A
+><H2
+>描述</H2
+><P
+>	<SPAN
+CLASS="APPLICATION"
+>pg_ctl</SPAN
+> 是一个用于启动，停止，
+	或者重起
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 后端服务器（<A HREF="app-postmaster.html" ><SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+></A
+>），
+	或者显示一个运行着的服务器的状态的工具，
+	尽管我们可以手动启动服务器，但是
+	<SPAN
+CLASS="APPLICATION"
+>pg_ctl</SPAN
+> 封装了重新定向日志输出，
+	与终端和进程组合理分离，以及另外提供了一个选项用于有控制的关闭。
+  </P
+><P
+>	在 <TT
+CLASS="OPTION"
+>start</TT
+> 模式里会启动一个新的服务器。
+	服务器是在后台启动的，标准输入被附着到了 <TT
+CLASS="FILENAME"
+>/dev/null</TT
+>
+	上。如果使用了 <TT
+CLASS="OPTION"
+>-l</TT
+>，那么标准输出和标准错误被定向到一个日志文件，
+	要么就是重新定向到 <SPAN
+CLASS="APPLICATION"
+>pg_ctl</SPAN
+> 的标准输出（而不是标准错误）。
+	如果没有选定日志文件，<SPAN
+CLASS="APPLICATION"
+>pg_ctl</SPAN
+> 的标准输出应该重新定向到一个文件或者用管道输出类似 <SPAN
+CLASS="APPLICATION"
+>rotatelogs</SPAN
+>
+	这样的日志旋转程序，否则，<TT
+CLASS="COMMAND"
+>postmaster</TT
+> 将把它的输出写到控制终端（在后台）并且将不会脱离 shell 的进程组。
+  </P
+><P
+>	在 <TT
+CLASS="OPTION"
+>stop</TT
+> 模式下，那个正在特定数据目录运行的服务器被关闭。
+	你可以用 <TT
+CLASS="OPTION"
+>-m</TT
+> 选项选择三种不同的关闭模式：<SPAN
+CLASS="QUOTE"
+>"Smart"</SPAN
+> 模式等待所有客户端中断联接。
+	这个是缺省。<SPAN
+CLASS="QUOTE"
+>"Fast"</SPAN
+> 模式并不等待客户端中断联接。
+	所有活跃事务都被回卷并且客户端都强制断开。
+	<SPAN
+CLASS="QUOTE"
+>"Immediate"</SPAN
+> 模式将在没有干净关闭的情况下退出。这么做将导致在重新启动的时候的恢复。
+  </P
+><P
+>	<TT
+CLASS="OPTION"
+>restart</TT
+> 实际上是先执行一个停止，然后紧跟一个启动。它允许变换<TT
+CLASS="COMMAND"
+>postmaster</TT
+>命令行的选项。
+  </P
+><P
+>	<TT
+CLASS="OPTION"
+>reload</TT
+> 模式简单地给<TT
+CLASS="COMMAND"
+>postmaster</TT
+>发送一个
+	<SPAN
+CLASS="SYSTEMITEM"
+>SIGHUP</SPAN
+> 信号，导致它重新读取她的配置文件
+	（<TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>，<TT
+CLASS="FILENAME"
+>pg_hba.conf</TT
+> 等等）
+	这样就允许修改配置文件选项而不用完全重启系统来使之生效。
+  </P
+><P
+>	<TT
+CLASS="OPTION"
+>status</TT
+> 模式监查一个服务器是否在指定的数据目录运行，
+	如果是，那么显示其 <SPAN
+CLASS="ACRONYM"
+>PID</SPAN
+> 和调用它的命令行选项。
+  </P
+><P
+>    <TT
+CLASS="OPTION"
+>kill</TT
+> 模式允许你给一个指定的进程发送信号。
+    这个功能对 <SPAN
+CLASS="PRODUCTNAME"
+>Microsoft Windows</SPAN
+> 特别有用，因为那里没有 <SPAN
+CLASS="APPLICATION"
+>kill</SPAN
+> 命令。
+    使用 <TT
+CLASS="LITERAL"
+>--help</TT
+> 查看支持的信号的名字的列表。
+  </P
+><P
+>   <TT
+CLASS="OPTION"
+>register</TT
+> 模式允许你在 <SPAN
+CLASS="PRODUCTNAME"
+>Microsoft Windows</SPAN
+> 上注册一个系统服务。
+  </P
+><P
+>   <TT
+CLASS="OPTION"
+>unregister</TT
+> 模式允许你在 <SPAN
+CLASS="PRODUCTNAME"
+>Microsoft Windows</SPAN
+> 上删除这个系统服务，
+   这个系统服务是前面用 <TT
+CLASS="OPTION"
+>register</TT
+> 命令注册的。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="APP-PG-CTL-OPTIONS" ></A
+><H2
+>选项</H2
+><P
+>    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="OPTION"
+>-D <TT
+CLASS="REPLACEABLE"
+><I
+>datadir</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	声明该数据库文件的文件系统位置。
+	如果忽略这个选项，使用环境变量 <TT
+CLASS="ENVAR"
+>PGDATA</TT
+>。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-l <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	把服务器日志输出附加在
+	<TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+> 文件上。
+	如果该文件不存在，那么创建它。<SPAN
+CLASS="SYSTEMITEM"
+>umask</SPAN
+>设置为 077，
+	因此缺省时是不允许从其它用户向日志文件访问的。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-m <TT
+CLASS="REPLACEABLE"
+><I
+>mode</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	声明关闭模式。<TT
+CLASS="REPLACEABLE"
+><I
+>mode</I
+></TT
+>
+	可以是<TT
+CLASS="LITERAL"
+>smart</TT
+>, <TT
+CLASS="LITERAL"
+>fast</TT
+>, 或者
+	<TT
+CLASS="LITERAL"
+>immediate</TT
+>，或者是这三个之一的第一个字母。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-o <TT
+CLASS="REPLACEABLE"
+><I
+>options</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	声明要直接传递给<TT
+CLASS="COMMAND"
+>postmaster</TT
+>
+	的选项。
+       </P
+><P
+>	参数通常都用单或者双引号包围以保证它们作为一个整体传递。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-p <TT
+CLASS="REPLACEABLE"
+><I
+>path</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	声明 <TT
+CLASS="FILENAME"
+>postmaster</TT
+> 可执行文件的位置。
+	缺省时 <TT
+CLASS="FILENAME"
+>postmaster</TT
+> 是从和<TT
+CLASS="COMMAND"
+>pg_ctl</TT
+>相同的目录取出，如果不是，
+	那么就是写死的安装目录。除非你想干点什么特别的事情，并且得到类似没有找到 <TT
+CLASS="FILENAME"
+>postmaster</TT
+>这样的错误，
+	否则没有必要使用这个选项。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-s</TT
+></DT
+><DD
+><P
+>	只打印错误，而不打印提示性信息。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-w</TT
+></DT
+><DD
+><P
+>	等待启动或者关闭的完成。在 60 秒后超时。
+	这个参数是关闭时的缺省值。
+	成功的关闭是以删除 <SPAN
+CLASS="ACRONYM"
+>PID</SPAN
+> 文件为标志的。对于启动而言，
+	一次成功的 <TT
+CLASS="COMMAND"
+>psql -l</TT
+> 就标志着成功。
+	<TT
+CLASS="COMMAND"
+>pg_ctl</TT
+> 将视图使用对 psql 合适的端口，如果存在环境变量 PGPORT，那么用它。
+	否则，它将查找看看在 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 文件里面是否设置了一个端口。
+	如果都没有，它将使用 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 编译时的缺省端口（缺省是 5432）。
+	在等待的时候，<TT
+CLASS="COMMAND"
+>pg_ctl</TT
+> 将根据启动或者关闭的成功状况返回一个准确的退出代码。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-W</TT
+></DT
+><DD
+><P
+>	不等待启动或者停止的完成。这是启动和重起的缺省。
+       </P
+></DD
+></DL
+></DIV
+><P>
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="APP-PG-CTL-SVCOPTIONS" ></A
+><H2
+>Windows 选项</H2
+><P
+>   <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="OPTION"
+>-N <TT
+CLASS="REPLACEABLE"
+><I
+>servicename</I
+></TT
+></TT
+></DT
+><DD
+><P
+>       要注册的系统服务的名字。这个名字将用于服务名和显示名。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-P <TT
+CLASS="REPLACEABLE"
+><I
+>password</I
+></TT
+></TT
+></DT
+><DD
+><P
+>       用户启动服务的口令。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-U <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+></TT
+></DT
+><DD
+><P
+>       用于启动服务的用户的用户名。对于域用户，使用 <TT
+CLASS="LITERAL"
+>DOMAIN\username</TT
+> 格式。
+      </P
+></DD
+></DL
+></DIV
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN53955" ></A
+><H2
+>环境</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="ENVAR"
+>PGDATA</TT
+></DT
+><DD
+><P
+>	缺省数据目录位置
+     </P
+></DD
+><DT
+><TT
+CLASS="ENVAR"
+>PGPORT</TT
+></DT
+><DD
+><P
+>	<A HREF="app-psql.html" ><SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+></A
+> 的缺省端口（由 -w 选项使用）。
+     </P
+></DD
+></DL
+></DIV
+><P
+>	其它的环境变量，参阅 <A HREF="app-postmaster.html" ><SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+></A
+>。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN53971" ></A
+><H2
+>文件</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="FILENAME"
+>postmaster.pid</TT
+></DT
+><DD
+><P
+>	这个文件存在于数据目录中是为了帮助 <SPAN
+CLASS="APPLICATION"
+>pg_ctl</SPAN
+>
+	判断服务器当前是否在运行。
+     </P
+></DD
+><DT
+><TT
+CLASS="FILENAME"
+>postmaster.opts.default</TT
+></DT
+><DD
+><P
+>	如果这个文件存在于数据目录，<SPAN
+CLASS="APPLICATION"
+>pg_ctl</SPAN
+>（在
+	<TT
+CLASS="OPTION"
+>start</TT
+> 模式下）将把文件地内容当作传递给
+	<TT
+CLASS="COMMAND"
+>postmaster</TT
+> 命令的选项传递过去，除非被 <TT
+CLASS="OPTION"
+>-o</TT
+> 选项覆盖。
+     </P
+></DD
+><DT
+><TT
+CLASS="FILENAME"
+>postmaster.opts</TT
+></DT
+><DD
+><P
+>	如果这个文件存在于数据目录，<SPAN
+CLASS="APPLICATION"
+>pg_ctl</SPAN
+>（在<TT
+CLASS="OPTION"
+>start</TT
+> 模式下）
+	将把文件地内容当作传递给<TT
+CLASS="COMMAND"
+>postmaster</TT
+> 命令的选项传递过去，
+	除非被 <TT
+CLASS="OPTION"
+>-o</TT
+> 选项覆盖。这个文件的内容也会在 <TT
+CLASS="OPTION"
+>status</TT
+>
+	模式里显示出来。
+     </P
+></DD
+><DT
+><TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+></DT
+><DD
+><P
+>	这个文件在数据目录中，会分析它以查找和 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 
+	一起用的合适的端口（在 <TT
+CLASS="OPTION"
+>start</TT
+> 模式里给出 <TT
+CLASS="OPTION"
+>-w</TT
+>
+	的时候。）
+     </P
+></DD
+></DL
+></DIV
+><P
+>	如果在数据目录里存在 <TT
+CLASS="FILENAME"
+>postmaster.opts.default</TT
+>
+	文件，那么该文件将作为选项传递给 <SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+>，
+	除非被 <TT
+CLASS="OPTION"
+>-o</TT
+> 选项覆盖。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN54011" ></A
+><H2
+>注意</H2
+><P
+>	等待完全启动还不是一个定义得很完整的操作，
+	如果访问控制设置为本地客户端在没有手工交互的情况下不能访问的话还可能会失效。（比如，口令认证）。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="R1-APP-PGCTL-2" ></A
+><H2
+>例子</H2
+><DIV
+CLASS="REFSECT2"
+><A NAME="R2-APP-PGCTL-3" ></A
+><H3
+>启动服务器</H3
+><P
+>    启动服务器：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>pg_ctl start</B
+></TT
+></PRE
+><P>
+   </P
+><P
+>	启动服务器的一个例子，
+	等到服务器 启动了才退出：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>pg_ctl -w start</B
+></TT
+></PRE
+><P>
+   </P
+><P
+>	用于一个
+	<SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+> 使用端口 5433，而且不带
+	<TT
+CLASS="FUNCTION"
+>fsync</TT
+> 运行，使用：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>pg_ctl -o "-F -p 5433" start</B
+></TT
+></PRE
+><P>
+   </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A NAME="R2-APP-PGCTL-4" ></A
+><H3
+>停止服务器</H3
+><P
+></P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>pg_ctl stop</B
+></TT
+></PRE
+><P>
+	停止服务器，使用 <TT
+CLASS="OPTION"
+>-m</TT
+> 开关允许我们控制<I
+CLASS="EMPHASIS"
+>如何</I
+>把后端停下来。
+	<TT
+CLASS="OPTION"
+>-w</TT
+>等待服务器停止。<TT
+CLASS="OPTION"
+>-m</TT
+> 声明后端的停止模式。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A NAME="R2-APP-PGCTL-5" ></A
+><H3
+>重起服务器</H3
+><P
+>	这个命令几乎等于先停止 <SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+>
+	然后再启动她，只不过<TT
+CLASS="COMMAND"
+>pg_ctl</TT
+>保存并重新使用上一次运行
+	postmaster 的命令行参数。重起服务器的最简单的方法是：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>pg_ctl restart</B
+></TT
+></PRE
+><P>
+   </P
+><P
+>	重起服务器，等待其停止和重起：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>pg_ctl -w restart</B
+></TT
+></PRE
+><P>
+   </P
+><P
+>	使用 5433 重起并且重起后关闭 <TT
+CLASS="FUNCTION"
+>fsync</TT
+>：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>pg_ctl -o "-F -p 5433" restart</B
+></TT
+></PRE
+><P>
+   </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A NAME="R2-APP-PGCTL-6" ></A
+><H3
+>显示服务器状态</H3
+><P
+>	下面是来自 <SPAN
+CLASS="APPLICATION"
+>pg_ctl</SPAN
+> 的状态输出的例子：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>pg_ctl status</B
+></TT
+>
+<TT
+CLASS="COMPUTEROUTPUT"
+>pg_ctl: postmaster is running (pid: 13718)
+Command line was:
+/usr/local/pgsql/bin/postmaster '-D' '/usr/local/pgsql/data' '-p' '5433' '-B' '128'</TT
+></PRE
+><P>
+	这是在重起模式里使用的命令行。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN54067" ></A
+><H2
+>又见</H2
+><P
+>   <A HREF="app-postmaster.html" ><SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+></A
+>
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="app-pgcontroldata.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="app-pgresetxlog.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><SPAN
+CLASS="APPLICATION"
+>pg_controldata</SPAN
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="reference-server.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><SPAN
+CLASS="APPLICATION"
+>pg_resetxlog</SPAN
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

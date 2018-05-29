@@ -1,0 +1,826 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>认证方法 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="用户认证" HREF="client-authentication.html"><LINK REL="PREVIOUS" TITLE="用户认证" HREF="client-authentication.html"><LINK REL="NEXT" TITLE="认证问题" HREF="client-authentication-problems.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="client-authentication.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="client-authentication.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 20. 用户认证</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="client-authentication.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="client-authentication-problems.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="AUTH-METHODS" >20.2. 认证方法</A
+></H1
+><P
+>	下面的小节更详细地描述认证方法。
+  </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AUTH-TRUST" >20.2.1. 信任认证</A
+></H2
+><P
+>	如果声明了 <TT
+CLASS="LITERAL"
+>trust</TT
+> （信任）认证模式，
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 
+	就假设任何可以联接到服务器的人都可以以任何他声明的数据库用户名（包括超级用户）连接。
+	当然，在 <TT
+CLASS="LITERAL"
+>database</TT
+> 和 <TT
+CLASS="LITERAL"
+>user</TT
+> 字段里面的限制仍然适用。
+	这个方法应该用于那些在联接到服务器已经有足够操作系统层次保护的环境里。
+   </P
+><P
+>	<TT
+CLASS="LITERAL"
+>trust</TT
+> 认证对于单用户工作站的本地联接是非常合适和方便的。
+	通常它本身并<I
+CLASS="EMPHASIS"
+>不</I
+>适用于多用户环境的机器。
+	不过，即使在多用户的机器上，你也可以使用 <TT
+CLASS="LITERAL"
+>trust</TT
+>，
+	只要你利用文件系统权限限制了对服务器的 Unix 域套接字文件的访问。
+	要做这些限制，你可以设置
+	参数 <TT
+CLASS="VARNAME"
+>unix_socket_permissions</TT
+> （以及可能还有
+	<TT
+CLASS="VARNAME"
+>unix_socket_group</TT
+>），就象
+	<A HREF="runtime-config-connection.html" >Section 17.3</A
+> 里描述的那样。
+	或者你可以设置 <TT
+CLASS="VARNAME"
+>unix_socket_directory</TT
+>，把Unix 域套接字文件放在一个经过恰当限制的目录里。
+   </P
+><P
+>	设置文件系统权限只能帮助 Unix 套接字联接。它不会限制本地 TCP/IP 联接；
+	因此，如果你想利用文件系统权限来控制本地安全，那么删除 <TT
+CLASS="FILENAME"
+>pg_hba.conf</TT
+>
+	里的 <TT
+CLASS="LITERAL"
+>host ... 127.0.0.1 ...</TT
+> 行，或者把它改为一个非 <TT
+CLASS="LITERAL"
+>trust</TT
+> 的认证方法。
+   </P
+><P
+>	<TT
+CLASS="LITERAL"
+>trust</TT
+> 认证模式只适合 TCP/IP 连接，只有在你信任那些在 <TT
+CLASS="FILENAME"
+>pg_hba.conf</TT
+>
+	里声明为 <TT
+CLASS="LITERAL"
+>trust</TT
+>，允许联接到服务器的行上的所有机器上面的所有用户的时候才是合适的。
+	很少有理由使用 <TT
+CLASS="LITERAL"
+>trust</TT
+>
+	作为任何除来自<SPAN
+CLASS="SYSTEMITEM"
+>localhost</SPAN
+>（127.0.0.1）以外的 TCP/IP 联接的认证方式。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AUTH-PASSWORD" >20.2.2. 口令认证</A
+></H2
+><A NAME="AEN21738" ></A
+><A NAME="AEN21740" ></A
+><A NAME="AEN21742" ></A
+><P
+>	以口令为基础的认证方法包括 <TT
+CLASS="LITERAL"
+>md5</TT
+>，<TT
+CLASS="LITERAL"
+>crypt</TT
+>，
+	和 <TT
+CLASS="LITERAL"
+>password</TT
+>。这些方法操作上非常类似，只不过口令通过联接传送的方法不同：
+	分别是，MD5散列，crypt 加密，明文。
+	一个限制是，<TT
+CLASS="LITERAL"
+>crypt</TT
+> 不能使用加密了存储在 <TT
+CLASS="STRUCTNAME"
+>pg_authid</TT
+> 里的口令。
+   </P
+><P
+>	如果你担心口令被窃听(<SPAN
+CLASS="QUOTE"
+>"sniffing"</SPAN
+>)，
+	那么 <TT
+CLASS="LITERAL"
+>md5</TT
+> 比较合适，只有在你必需支持 7.2 以前的老的客户端的时候，
+	才需要选 <TT
+CLASS="LITERAL"
+>crypt</TT
+>。如果我们在开放的互联网上使用，
+	应该尽可能避免使用 <TT
+CLASS="LITERAL"
+>password</TT
+>（除非你在联接上使用了
+	<SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+>， SSH，或者其他通讯安全的联接封装。）
+   </P
+><P
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 数据库口令与任何操作系统用户口令无关。
+	各个数据库用户的口令是存储在<TT
+CLASS="LITERAL"
+>pg_authid</TT
+>系统表里面的。
+	口令可以用 SQL 语言命令 <A HREF="sql-createuser.html" ><I
+>CREATE USER</I
+></A
+>
+	和 <A HREF="sql-alteruser.html" ><I
+>ALTER USER</I
+></A
+> 等管理，也就是说，
+	<TT
+CLASS="USERINPUT"
+><B
+>CREATE USER foo WITH PASSWORD
+	'secret';</B
+></TT
+>。缺省时，如果没有明确地设置口令，存储的口令是空并且该用户的口令认证总会失败。
+   </P
+><P
+>	要限制允许访问某数据库的用户集，
+	可以在 <TT
+CLASS="FILENAME"
+>pg_hba.conf</TT
+> 中的 <TT
+CLASS="REPLACEABLE"
+><I
+>user</I
+></TT
+>
+	字段列出这些用户，就像前面的小节解释的那样。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="KERBEROS-AUTH" >20.2.3. Kerberos 认证</A
+></H2
+><A NAME="AEN21767" ></A
+><P
+>    <SPAN
+CLASS="PRODUCTNAME"
+>Kerberos</SPAN
+> 
+        是一种适用于在公共网络上进行分布计算的工业标准的安全认证系统。
+        对 <SPAN
+CLASS="PRODUCTNAME"
+>Kerberos</SPAN
+> 系统的叙述远远的超出了本文档的范围；
+        总的说来它是相当复杂（同样也相当强大）的系统。
+	<A HREF="../../../www.nrl.navy.mil/CCS/people/kenh/kerberos-faq.html" TARGET="_top" >Kerberos
+    <SPAN
+CLASS="ACRONYM"
+>FAQ</SPAN
+></A
+> 或 
+    <A HREF="../../../web.mit.edu/kerberos/www/index.html" TARGET="_top" >MIT 雅典娜计划</A
+> 是个开始学习的好地方。
+    现存在好几种<SPAN
+CLASS="PRODUCTNAME"
+>Kerberos</SPAN
+>发布的源代码。
+   </P
+><P
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL </SPAN
+> 支持 Kerberos 5，
+	Kerberos 支持必须在制作的时候打开。参阅 <A HREF="installation.html" >Chapter 14</A
+> 获取更多信息。
+   </P
+><P
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 运行时象一个普通的 Kerberos 服务。
+	服务主的名字是 <TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>servicename</I
+></TT
+>/<TT
+CLASS="REPLACEABLE"
+><I
+>hostname</I
+></TT
+>@<TT
+CLASS="REPLACEABLE"
+><I
+>realm</I
+></TT
+></TT
+>。
+   </P
+><P
+>	<TT
+CLASS="REPLACEABLE"
+><I
+>servicename</I
+></TT
+> 可以用 <A HREF="runtime-config-connection.html#GUC-KRB-SRVNAME" >krb_srvname</A
+> 配置参数在服务器端设置，
+	或者在客户端使用 <TT
+CLASS="LITERAL"
+>krbsrvname</TT
+> 连接参数设置。
+	（又见 <A HREF="libpq.html#LIBPQ-CONNECT" >Section 28.1</A
+>。）
+	制作的时候，可以把安装时的缺省 <TT
+CLASS="LITERAL"
+>postgres</TT
+> 修改掉，方法是使用
+	<TT
+CLASS="LITERAL"
+>./configure --with-krb-srvnam=whatever</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>hostname</I
+></TT
+>。
+	在大多数情况下，我们不需要修改这个参数。但是，如果需要在同一台主机上同时安装多套 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>，
+	那么这个就是必须的了。
+	有些 Kerberos 实现还可能要求其它的服务名，比如，Microsoft Active Directory 就要求服务名必须是大写的
+	（<TT
+CLASS="LITERAL"
+>POSTGRES</TT
+>）。
+   </P
+><P
+>	客户主自给必须用它们自己的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 用户名作为第一个部件，
+	比如 <TT
+CLASS="LITERAL"
+>pgusername/otherstuff@realm</TT
+>。
+	目前 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 没有检查客户的域；
+	因此如果你打开了跨域的认证，那么在任意域里任何可以和你通讯的主都会被接受。
+   </P
+><P
+>	确认你的服务器的密钥表文件是可以被 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器帐户读取（最好就是只读的）（又见
+	<A HREF="runtime.html#POSTGRES-USER" >Section 16.1</A
+>）。
+	密钥文件（ keytab）的位置是用配置参数 <A HREF="runtime-config-connection.html#GUC-KRB-SERVER-KEYFILE" >krb_server_keyfile</A
+> 声明的。
+	缺省是 <TT
+CLASS="FILENAME"
+>/usr/local/pgsql/etc/krb5.keytab</TT
+>
+	（或者任何在制作的时候声明为 <TT
+CLASS="VARNAME"
+>sysconfdir</TT
+> 的目录。）
+   </P
+><P
+>	密钥表文件（keytab）是在 Kerberos 软件里生成的，参阅 Kerberos 文档获取细节。
+	下面的例子是可以用于 MIT 兼容的 Kerberos 5 实现：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>kadmin% </TT
+><TT
+CLASS="USERINPUT"
+><B
+>ank -randkey postgres/server.my.domain.org</B
+></TT
+>
+<TT
+CLASS="PROMPT"
+>kadmin% </TT
+><TT
+CLASS="USERINPUT"
+><B
+>ktadd -k krb5.keytab postgres/server.my.domain.org</B
+></TT
+></PRE
+><P>
+    阅读 <SPAN
+CLASS="PRODUCTNAME"
+>Kerberos</SPAN
+> 的文档获取详细信息。
+   </P
+><P
+>	在和数据库联接的时候，请确保自己对每个主都拥有一张匹配所请求的数据库用户名的门票。
+	比如，对于数据库用户 <TT
+CLASS="LITERAL"
+>fred</TT
+>，主 <TT
+CLASS="LITERAL"
+>fred@EXAMPLE.COM</TT
+> 和 
+	<TT
+CLASS="LITERAL"
+>fred/users.example.com@EXAMPLE.COM</TT
+> 都可以用于与数据库服务器认证。
+   </P
+><P
+>        如果你在你的<SPAN
+CLASS="PRODUCTNAME"
+>Apache</SPAN
+>
+	apache web 服务器上使用了<A HREF="../../../modauthkerb.sf.net/index.html" TARGET="_top" ><SPAN
+CLASS="APPLICATION"
+>mod_auth_kerb</SPAN
+></A
+>和
+	<SPAN
+CLASS="APPLICATION"
+>mod_perl</SPAN
+>，
+        你可以用一个<SPAN
+CLASS="APPLICATION"
+>mod_perl</SPAN
+>脚本进行
+	<TT
+CLASS="LITERAL"
+>AuthType KerberosV5SaveCredentials</TT
+>。
+        这样就有了一个通过 web 的安全数据库访问，不需要额外的口令。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AUTH-IDENT" >20.2.4. 基于 Ident 的认证</A
+></H2
+><A NAME="AEN21825" ></A
+><P
+>	身份（ident）认证方法的运做模式是通过获取客户端的操作系统用户名，
+	然后使用一个列出许可的系统用户和对应的数据库用户对应关系的映射文件，
+	判断对应许可的数据库用户名之方法来认证。
+	判断客户端的用户名是非常关键的安全点，根据连接类型的不同，它的实现方法也略有不同。
+   </P
+><DIV
+CLASS="SECT3"
+><H3
+CLASS="SECT3"
+><A NAME="AEN21828" >20.2.4.1. 透过 TCP/IP 的身份认证</A
+></H3
+><P
+>        <SPAN
+CLASS="QUOTE"
+>"Identification Protocol（标识协议）"</SPAN
+>在
+        <I
+CLASS="CITETITLE"
+>RFC 1413</I
+> 里面描述。实际上每个类Unix的操作系统都带着一个缺省时侦听113端口的身份服务器。
+        身份服务器的基本功能是回答类似这样的问题：
+        <SPAN
+CLASS="QUOTE"
+>"是什么用户从你的端口<TT
+CLASS="REPLACEABLE"
+><I
+>X</I
+></TT
+>初始化出来联接到我的端口<TT
+CLASS="REPLACEABLE"
+><I
+>Y</I
+></TT
+>上来了？"</SPAN
+>。
+        因为在建立起物理联接后，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 既知道 <TT
+CLASS="REPLACEABLE"
+><I
+>X</I
+></TT
+> 也知道 <TT
+CLASS="REPLACEABLE"
+><I
+>Y</I
+></TT
+>，
+	因此它可以询问运行尝试联接的客户端的主机，并且理论上可以用这个方法判断发起联接的操作系统用户。
+   </P
+><P
+>        这样做的缺点是它取决于客户端的完整性：如果客户端不可信或者被攻击者攻破，
+	而且它们可以在113端口上运行任何程序并且返回他们选择的任何用户的话，就无法认证了。
+        因此这个认证方法只适用于封闭的网络，
+	这样的网络里的每台客户机都处于严密的控制下并且数据库和操作系统管理员可以比较方便地联系上。
+	换句话说，你必须信任运行身份(ident)服务的机器。下面是警告：
+    <A NAME="AEN21840" ></A
+><TABLE
+BORDER="0"
+WIDTH="100%"
+CELLSPACING="0"
+CELLPADDING="0"
+CLASS="BLOCKQUOTE"
+><TR ><TD WIDTH="10%" VALIGN="TOP" >&nbsp;</TD
+><TD WIDTH="80%" VALIGN="TOP" ><P
+>        身份标识协议并不适用于认证或者访问控制协议。
+     </P
+></TD
+><TD WIDTH="10%" VALIGN="TOP" >&nbsp;</TD
+></TR
+><TR ><TD COLSPAN="2" ALIGN="RIGHT" VALIGN="TOP" >--<SPAN
+CLASS="ATTRIBUTION"
+>RFC 1413</SPAN
+></TD
+><TD WIDTH="10%" >&nbsp;</TD
+></TR
+></TABLE
+>
+   </P
+><P
+>    有些身份服务器有一个非标准的选项，导致返回的用户名是加密的，
+    使用的是只有原机器的管理员知道的一个密钥。在与 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 配合使用身份认证的时候，
+    你<I
+CLASS="EMPHASIS"
+>一定不能</I
+>使用这个选项，因为 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+    没有任何方法对返回的字串进行解密以获取实际的用户名。
+   </P
+></DIV
+><DIV
+CLASS="SECT3"
+><H3
+CLASS="SECT3"
+><A NAME="AEN21847" >20.2.4.2. 透过本地套接字的身份认证</A
+></H3
+><P
+>	在支持用于 Unix 域套接字的<TT
+CLASS="SYMBOL"
+>SO_PEERCRED</TT
+>请求的系统上，
+	（目前是 <SPAN
+CLASS="SYSTEMITEM"
+>Linux</SPAN
+>，
+	<SPAN
+CLASS="SYSTEMITEM"
+>FreeBSD</SPAN
+>， <SPAN
+CLASS="SYSTEMITEM"
+>NetBSD</SPAN
+>，
+	<SPAN
+CLASS="SYSTEMITEM"
+>OpenBSD</SPAN
+>和 <SPAN
+CLASS="SYSTEMITEM"
+>BSD/OS</SPAN
+>），
+	身份认证也可以用于局部联接。这个时候，使用身份认证不会增加安全风险；
+	实际上这也是在这种系统上使用本地联接时的优选方法。
+   </P
+><P
+>	在没有 <TT
+CLASS="SYMBOL"
+>SO_PEERCRED</TT
+> 请求的系统上，身份认证只能通过TCP/IP连接获取。
+	如果需要绕开这个限制，我们可以声明
+	<SPAN
+CLASS="SYSTEMITEM"
+>localhost</SPAN
+> 地址
+	<SPAN
+CLASS="SYSTEMITEM"
+>127.0.0.1</SPAN
+>，然后让连接指向这个地址。
+	这个方法适用于你相信本机身份认证服务器的场合。
+    </P
+></DIV
+><DIV
+CLASS="SECT3"
+><H3
+CLASS="SECT3"
+><A NAME="AUTH-IDENT-MAPS" >20.2.4.3. Ident 映射</A
+></H3
+><P
+>	当使用以身份为基础的认证时，在判断了初始化联接的操作系统用户的名字后，
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 判断他是否可以以他所请求的数据库用户的身份联接。
+	这个判断是由跟在<TT
+CLASS="FILENAME"
+>pg_hba.conf</TT
+> 文件里的 <TT
+CLASS="LITERAL"
+>ident</TT
+> 关键字后面的身份映射控制的。
+	有一个预定义的身份映射是<TT
+CLASS="LITERAL"
+>sameuser</TT
+>，表示任何操作系统用户都可以以同名数据库用户进行联接
+	（如果后者存在的话）。其他映射必须手工创建。
+   </P
+><P
+>	非 <TT
+CLASS="LITERAL"
+>sameuser</TT
+> 的身份映射定义在身份映射文件里，
+	其名字缺省是 <TT
+CLASS="FILENAME"
+>pg_ident.conf</TT
+><A NAME="AEN21870" ></A
+>，
+	并且缺省存放在集群的数据目录里。
+	（不过，我们可以把映射文件放在其它地方，参阅 <A HREF="runtime-config-file-locations.html#GUC-IDENT-FILE" >ident_file</A
+> 配置参数。）
+	身份映射文件包含下面通用的格式：
+</P><PRE
+CLASS="SYNOPSIS"
+><TT
+CLASS="REPLACEABLE"
+><I
+>map-name</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>ident-username</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>database-username</I
+></TT
+></PRE
+><P>
+        注释和空白和 <TT
+CLASS="FILENAME"
+>pg_hba.conf</TT
+> 文件里的一样处理。<TT
+CLASS="REPLACEABLE"
+><I
+>map-name</I
+></TT
+> 是将用于在<TT
+CLASS="FILENAME"
+>pg_hba.conf</TT
+>里引用这个映射的任意名称。
+        另外两个域声明某个操作系统用户被允许以哪个数据库用户的身份进行联接。
+	同一个<TT
+CLASS="REPLACEABLE"
+><I
+>map-name</I
+></TT
+> 可以重复用于在一个映射里声明更多的用户映射。
+	对一个操作系统用户可以映射为多少个数据库用户没有限制，反之亦然。
+   </P
+><P
+>	在系统启动和主服务器（ <SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+> ）收到一个
+	<SPAN
+CLASS="SYSTEMITEM"
+>SIGHUP</SPAN
+><A NAME="AEN21884" ></A
+> 信号的时候会读取
+	<TT
+CLASS="FILENAME"
+>pg_ident.conf</TT
+> 文件。如果你在一台活跃的系统上编辑该文件，
+	那么你需要给 <SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+> 发信号（用 <TT
+CLASS="LITERAL"
+>pg_ctl reload</TT
+> 或者  <TT
+CLASS="LITERAL"
+>kill -HUP</TT
+>
+	令其重新读取该文件。）
+   </P
+><P
+>	<A HREF="auth-methods.html#EXAMPLE-PG-IDENT.CONF" >Example 20-2</A
+>里是一个可以和在 <A HREF="client-authentication.html#EXAMPLE-PG-HBA.CONF" >Example 20-1</A
+> 里面演示的<TT
+CLASS="FILENAME"
+>pg_hba.conf</TT
+>文件配合使用的
+         <TT
+CLASS="FILENAME"
+>pg_ident.conf</TT
+> 文件。
+        在这个例子的设置里，任何登录到 192.168 网络里的机器的用户，如果用户名不是
+	<TT
+CLASS="LITERAL"
+>bryanh</TT
+>，<TT
+CLASS="LITERAL"
+>ann</TT
+>，或 <TT
+CLASS="LITERAL"
+>robert</TT
+>就不能获准访问。
+        Unix 用户<TT
+CLASS="LITERAL"
+>robert</TT
+>只有在试图以<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>用户
+	<TT
+CLASS="LITERAL"
+>bob</TT
+>身份联接时才允许访问，而不能是 <TT
+CLASS="LITERAL"
+>robert</TT
+> 或其他什么身份。
+         <TT
+CLASS="LITERAL"
+>ann</TT
+> 将只允许以<TT
+CLASS="LITERAL"
+>ann</TT
+>的身份联接。
+        用户<TT
+CLASS="LITERAL"
+>bryanh</TT
+>允许以他自己的
+	<TT
+CLASS="LITERAL"
+>bryanh</TT
+> 身份或者做为 <TT
+CLASS="LITERAL"
+>guest1</TT
+> 进行联接。
+   </P
+><DIV
+CLASS="EXAMPLE"
+><A NAME="EXAMPLE-PG-IDENT.CONF" ></A
+><P
+><B
+>Example 20-2. 一个 <TT
+CLASS="FILENAME"
+>pg_ident.conf</TT
+> 文件例子</B
+></P
+><PRE
+CLASS="PROGRAMLISTING"
+># MAPNAME     IDENT-USERNAME    PG-USERNAME
+
+omicron       bryanh            bryanh
+omicron       ann               ann
+# bob 在这台机器上的用户名是 robert
+omicron       robert            bob
+# bryanh 也可以以 guest1 身份连接
+omicron       bryanh            guest1</PRE
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AUTH-PAM" >20.2.5. PAM 认证</A
+></H2
+><P
+>	这个认证方法操作起来类似 <TT
+CLASS="LITERAL"
+>password</TT
+>，
+	只不过它使用 PAM（Pluggable Authentication Modules）作为认证机制。
+	缺省的 PAM 服务名是 <TT
+CLASS="LITERAL"
+>postgresql</TT
+>。
+	你可以在文件 <TT
+CLASS="FILENAME"
+>pg_hba.conf</TT
+> 的 <TT
+CLASS="LITERAL"
+>pam</TT
+> 关键字后面提供自己的可选服务名。
+	PAM 只用于验证用户名/口令对。因此，在使用 PAM 进行认证之前，用户必须已经存在于数据库里。
+	有关 PAM 的更多信息，请阅读 <A HREF="../../../www.kernel.org/pub/linux/libs/pam/index.html" TARGET="_top" >	<SPAN
+CLASS="PRODUCTNAME"
+>Linux-PAM</SPAN
+>页面</A
+>和<A HREF="../../../www.sun.com/software/solaris/pam/index.html" TARGET="_top" >	<SPAN
+CLASS="SYSTEMITEM"
+>Solaris</SPAN
+> PAM 页面</A
+>。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="client-authentication.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="client-authentication-problems.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >用户认证</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="client-authentication.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >认证问题</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

@@ -1,0 +1,195 @@
+<html><head><title>守护程序工具函数</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="范例程序" href="./c665.htm"><link rel="PREVIOUS" title="使用popen函数和ps命令读取进程表" href="./x679.htm"><link rel="NEXT" title="调制解调器控制范例程序" href="./x687.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x679.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 7. 范例程序</td><td align="right" valign="bottom" width="10%"><a href="./x687.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN682">守护程序工具函数</a></h1><pre class="PROGRAMLISTING">     #include &lt;unistd.h&gt;
+     #include &lt;stdlib.h&gt;
+     #include &lt;fcntl.h&gt;
+     #include &lt;signal.h&gt;
+     #include &lt;sys/types.h&gt;
+     #include &lt;sys/wait.h&gt;
+     #include &lt;errno.h&gt;
+    
+     /* closeall() -- 关闭所有&gt;=给定值的文件描述符 */
+    
+     void closeall(int fd)
+     {
+         int fdlimit = sysconf(_SC_OPEN_MAX);
+    
+         while (fd &lt; fdlimit)
+           close(fd++);
+     }
+    
+     /* daemon() - 将进程从用户端脱离并消失进入后台，若失败返回-1，
+      * 但是在那种情况下你只能退出，因为我们可能已经生成了子进程。
+      * 这是基于BSD的版本,所以调用方需负责类似umask等等其它的工作。
+      */
+    
+     /* 相信在所有Posix系统上都能工作 */
+    
+     int daemon(int nochdir, int noclose)
+     {
+         switch (fork())
+         {
+             case 0:  break;
+             case -1: return -1;
+             default: _exit(0);          /* 原进程退出 */
+         }
+    
+         if (setsid() &lt; 0)               /* 不应该失败 */
+           return -1;
+    
+         /* 如果你希望将来获得一个控制tty,则排除(dyke)以下的switch语句 */
+         /* -- 正常情况不建议用于守护程序 */
+    
+         switch (fork())
+         {
+             case 0:  break;
+             case -1: return -1;
+             default: _exit(0);
+         }
+    
+         if (!nochdir)
+           chdir("/");
+    
+         if (!noclose)
+         {
+             closeall(0);
+             open("/dev/null",O_RDWR);
+             dup(0); dup(0);
+         }
+    
+         return 0;
+     }
+    
+     /* fork2() -- 类似fork函数，但子进程立刻变成孤儿进程
+      *            (当它退出时不产生僵死进程)
+      * 返回1给父进程，不是任何有意义的进程号.
+      * 父进程不能使用wait函数等待子进程结束 (它们是无关的).
+      */
+    
+     /* 这个版本假设你没有捕获和忽略SIGCHLD信号. */
+     /* 如果你有设定，则不管怎样应使用fork函数 */
+    
+     int fork2()
+     {
+         pid_t pid;
+         int rc;
+         int status;
+    
+         if (!(pid = fork()))
+         {
+             switch (fork())
+             {
+               case 0:  return 0;
+               case -1: _exit(errno);    /* 假设错误码都小于256 */
+               default: _exit(0);
+             }
+         }
+    
+         if (pid &lt; 0 || waitpid(pid,&amp;status,0) &lt; 0)
+           return -1;
+    
+         if (WIFEXITED(status))
+           if (WEXITSTATUS(status) == 0)
+             return 1;
+           else
+             errno = WEXITSTATUS(status);
+         else
+           errno = EINTR;  /* 唉，类似这个 :-) */
+    
+         return -1;
+     }
+    </pre><p>一个使用以上函数的范例程序:</p><pre class="PROGRAMLISTING">     #include &lt;sys/types.h&gt;
+     #include &lt;sys/socket.h&gt;
+     #include &lt;netinet/in.h&gt;
+     #include &lt;stdio.h&gt;
+     #include &lt;stdlib.h&gt;
+     #include &lt;syslog.h&gt;
+     #include &lt;errno.h&gt;
+    
+     int daemon(int,int);
+     int fork2(void);
+     void closeall(int);
+    
+     #define TCP_PORT 8888
+    
+     void errexit(const char *str)
+     {
+         syslog(LOG_INFO, "%s failed: %d (%m)", str, errno);
+         exit(1);
+     }
+    
+     void errreport(const char *str)
+     {
+         syslog(LOG_INFO, "%s failed: %d (%m)", str, errno);
+     }
+    
+     /* 实际的子进程在此. */
+    
+     void run_child(int sock)
+     {
+         FILE *in = fdopen(sock,"r");
+         FILE *out = fdopen(sock,"w");
+         int ch;
+    
+         setvbuf(in, NULL, _IOFBF, 1024);
+         setvbuf(out, NULL, _IOLBF, 1024);
+    
+         while ((ch = fgetc(in)) != EOF)
+           fputc(toupper(ch), out);
+    
+         fclose(out);
+     }
+    
+     /* 这是守护程序的主要工作 -- 侦听连接并生成子进程 */
+    
+     void process()
+     {
+         struct sockaddr_in addr;
+         int addrlen = sizeof(addr);
+         int sock = socket(AF_INET, SOCK_STREAM, 0);
+         int flag = 1;
+         int rc = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
+                             &amp;flag, sizeof(flag));
+    
+         if (rc &lt; 0)
+           errexit("setsockopt");
+    
+         addr.sin_family = AF_INET;
+         addr.sin_port = htons(TCP_PORT);
+         addr.sin_addr.s_addr = INADDR_ANY;
+    
+         rc = bind(sock, (struct sockaddr *) &amp;addr, addrlen);
+         if (rc &lt; 0)
+           errexit("bind");
+    
+         rc = listen(sock, 5);
+         if (rc &lt; 0)
+           errexit("listen");
+    
+         for (;;)
+         {
+             rc = accept(sock, (struct sockaddr *) &amp;addr, &amp;addrlen);
+    
+             if (rc &gt;= 0)
+               switch (fork2())
+               {
+                 case 0:  close(sock); run_child(rc); _exit(0);
+                 case -1: errreport("fork2"); close(rc); break;
+                 default: close(rc);
+               }
+         }
+     }
+    
+     int main()
+     {
+         if (daemon(0,0) &lt; 0)
+         {
+             perror("daemon");
+             exit(2);
+         }
+    
+         openlog("test", LOG_PID, LOG_DAEMON);
+    
+         process();
+    
+         return 0;
+     }
+    </pre></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x679.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x687.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">使用popen函数和ps命令读取进程表</td><td align="center" valign="top" width="34%"><a href="./c665.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">调制解调器控制范例程序</td></tr></tbody></table></div></body></html>

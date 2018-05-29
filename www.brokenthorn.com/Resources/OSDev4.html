@@ -1,0 +1,596 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0056)http://www.gamedev.net/reference/articles/article290.asp -->
+<HTML><HEAD><TITLE>Operating Systems Development Series</TITLE>
+<META http-equiv=Content-Type content="text/html; charset=windows-1252"><LINK 
+href="Files/reference.css" 
+type=text/css rel=stylesheet>
+<META content="MSHTML 6.00.6000.16441" name=GENERATOR></HEAD>
+<BODY text=#000000 vLink=#666699 aLink=#000000 link=#666699 bgColor=#ffffff 
+leftMargin=0 
+background=Files/watermark.gif 
+topMargin=0 marginheight="0" marginwidth="0">
+
+
+<table border=0 cellpadding=0 cellspacing=0 width="100%"> 
+<tr> 
+     <td width="60%"> 
+	<a href="http://www.brokenthorn.com"><img src="site/5.png" border=0></a> 
+     </td> 
+     <td width="40%"> 
+ 
+        <div id="ad_main"> 
+ 
+        </div> 
+ 
+     </td> 
+  </tr> 
+</table> 
+
+<TABLE cellSpacing=0 cellPadding=3 width="100%" border=0>
+  <TBODY>
+  <TR>
+    <TD class=tblhdr>Operating Systems Development Series</TD>
+</TR>
+  <TR>
+    <TD align=middle colSpan=2></TD></TR></TBODY></TABLE>
+<TABLE cellSpacing=0 cellPadding=5 width="100%" border=0>
+  <TBODY>
+  <TR>
+    <TD>
+
+
+<!-- Title -->
+
+      <CENTER><SPAN class=title>Operating Systems Development - Bootloaders 2</SPAN> 
+
+<BR><SPAN class=author>by Mike, 2009</SPAN></CENTER>
+
+
+      <P>This series is intended to demonstrate and teach operating system development from
+	the ground up.</p>
+
+      <H1>Introduction</H1>
+
+	Welcome!
+	<p>
+	We have went over alot in the previus tutorial. We took a look at what exactally
+	happens when you press the power button, and how the BIOS boots. We also looked
+	at the BIOS Interrupt (INT) 0x19, which searches for a boot signiture (0xAA55),
+	and, if found, loads and executes our bootloader at 0x7C00.
+	<p>
+	We also developed a simple bootloader, and got some experience with the entire
+	build process.
+	<p>
+	In this tutorial, we will expand on our bootloader. We will cover:
+	<ul>
+	<li>BIOS Paramater Block and the MBR</li>
+	<li>Processor Modes</li>
+	<li>Interrups - Printing text and more</li>
+	<li>Segment:Offset Addressing Mode</li>
+	</ul>
+	<p>
+	<b>Note: From here on out, our bootloader has full control of the entire system. What this means,
+	is simply that everything relys on us writing the code. Everything now is up to us! In short:
+	There will be alot more code comming up.</b>
+	<p>
+	<b>From here on out, things are going to get more complex. To insure the structure of this series
+	stays solid, I will have a downloadable demo with each and upcomming tutorials. This will aid in
+	understanding the concepts. Dont worry--I will still be explaining everything in detail here.</b><p>
+	<i>Ready?</i>
+
+
+
+	<h1>Processor Modes</h1>
+	Well, well...Where have we heard this term before? Lets see... In every single tutorial!
+	<p>
+	And yet, we have not really talked much about it. Understanding the different processor
+	modes will be very important to us. Why is this?
+	<p>
+	In the previous 2 tutorials, we talked about how and why the x86 family boots up in
+	a 16 bit envirement. We want to develope a 32 bit operating system (OS), so we will
+	need to switch the processor from its 16 bit mode into a 32 bit mode.
+	<p>
+	There are more then two modes. Lets go over each one, shall we?
+
+		<h2>Real Mode</h2>
+		As you know, the x86 processor boots into a 16 bit envirement. What is this mode?
+		(Hint: Its not Real Mode) ... Okay, it is :)
+		<p>
+		What is so real abut real mode, anyway? Real Mode...
+		<ul>
+			<li>Uses the native <b>segment:offset memory model</b>.</li>
+			<li>Is limited to 1 MB of memory.</li>
+			<li>Is limited to 16 bit offsets only.</li>
+			<li>No <b>Virtual Memory</b> or <b>Memory Protection</b>.</li>
+		</ul>
+		Some of these are faily easy. Others require some explanation though.
+		One thing to note is that, all of the above indirectly or directly
+		relates to memory.
+		<p>
+		Lets take a closer look, shall we?
+		<h3>Segment:Offset Memory Mode - History</h3>
+		Lets go Back In Time(tm) again, and look at Tutorial 2. The concept of Memory
+		and use of Operating Systems dated back since the 1950s. These computers were
+		not personal computers, but instead large mainframe computers.
+		<p>
+		Remember that, back then, all computers had very large and bulky hardware devices.
+		Through time (Looking back at Tutorial 2), you can see not only advances in Operating
+		Systems, but computers as well.
+		<p>
+		As computer poplurity gained, so did its demand. When computers were 8 bit, many wanted
+		16. When the 16 bit era came, Microsoft was already thinking 32 bit. As soon as the
+		32 bit area came, 64 bit was already mainstream. Okay, the last one isnt true :)
+		but, 128 bit is on its way.
+		<p>
+		The primary problem is the computer industry moves to fast.
+		<p>
+		When Intel was designing the 8086 Processor, the processor used 16 bit registers, and could
+		only access up to 64 KB of memory. The problem, however, was that alot of software required
+		more memory then this.
+		<p>
+		The 8086 was being designed the same time the 8088 was. The 8088, however, was going to
+		be Intels "next generation" processor, except it was taking longer then expected. To challenge
+		the other companies, Intel quicky wanted to develope and release a processor, the 8086, to
+		hold off until the 8088 was released.
+		<p>
+		The problem here is that, software demanded more memory then 64 KB, and Intels processor,
+		the 8086, was to challenge their competitors who is already building 16 bit processors,
+		until the 8088 was released. Intel needed a stragety.
+		<p>
+		The designers of the 8086 proposed a solution. This solution will allow the 8086 to stay
+		16 bit, while being able to access up to 1 MB of memory. They aggreed, and Intel approved.
+		<p>
+		The segment:offset memory scheme was born.
+		<p>
+		To understad the segment:offset scheme, lets break it down and look at segments and offsets first.
+
+		<h3>Segments</h3>
+		A Segment is simply a part of a whole. In our case, A segment is a section of memory.
+		Yep--Thats basically all it is.
+		<p>
+		Imagine dividing memory into sections. These sections represent segments.
+		<p>
+		The x86 Family of processors uses 4 primary registes that store the beginning location
+		of a segment. Its like a <b>base address</b>--It provides the start of a segment.
+		<p>
+		Normally, a segment may be 64 KB in size, and are freely movable.
+		<p>
+		Remember that segments simply epresent a section in memory. In this case, if the
+		segment base address is 0, then this represents the segment between byte 0 and 64 KB.
+		<p>
+		The registers are <b>CS, DS, ES,</b> and <b>SS</b>. These registers store the base address for the segments.
+		We will take a closer look at them after we look at addressing with this mode.
+
+		<h3>Offsets</h3>
+		An offset is a number that is added to a base number. For example, if the base number is 3:
+		<p><b>
+		Offset = base number (3) + the offset number</b><br>
+		Offset 2 is 3+2 = 5<br>
+		Offset 4 is 3+4 = 7
+		<p>
+		Okay, so how does this relate to us? Well, in segment:offset addressing, we add the Base Address
+		(Remember that a segment represents a base address) with the offset address!
+		<p>
+		Pretty simple, huh? Now, lets put it all together.
+
+
+
+		<h3>Segment:Offset Addressing</h3>
+		In Segment:Offset Addressing, we simply add the offset address with the segment address.
+		However, in the previous section, I mentioned that each segment address in Real Mode is
+		<b>16 bits</b> in size. This means we also have to multiply our segment+offset by 16.
+		So, heres our current formula:
+      <BLOCKQUOTE><PRE>Absolute (Exact) Memory Address = (Segment Address * 16(decimal)) + Offset</PRE></BLOCKQUOTE>
+	Thats all there is to it :)
+
+
+
+		<h3>Segment:Offset Conventions</h3>
+		Segment and offset addresses are useually seperated by a colen (:).
+		They are useually of the form <b>Segment : Offset</b>. For example:
+
+      <BLOCKQUOTE><PRE>07C0:0000    < 07C0 is the segment, and 0 is the offset</PRE></BLOCKQUOTE>
+		We can convert the above to the absolute address 0x7C00 by using our formula:
+      <BLOCKQUOTE><PRE>                 base address = base address * segment size (16) + offset
+			07C0:0000 = 07C0 * 16 (decimal) + 0
+                                  = 07C00 + 0 = 0x7C00</PRE></BLOCKQUOTE>
+
+
+		<h3>Segment:Offset Problems</h3>
+
+		Segment:Offset is quite unique. By changing the segment and offset values, you can find
+		different segment:offset pairs will yeld the same absolute address. Why? Because they
+		both <b>refer to the same memory location!</b>
+		<p>
+		For example, all of the below addresses refer to our bootloader at 0x7C00:
+      <BLOCKQUOTE><PRE>  0007:7B90   0008:7B80   0009:7B70   000A:7B60   000B:7B50   000C:7B40   
+
+  0047:7790   0048:7780   0049:7770   004A:7760   004B:7750   004C:7740   
+
+  0077:7490   0078:7480   0079:7470   007A:7460   007B:7450   007C:7440   
+
+  01FF:5C10   0200:5C00   0201:5BF0   0202:5BE0   0203:5BD0   0204:5BC0   
+
+  07BB:0050   07BC:0040   07BD:0030   07BE:0020   07BF:0010   07C0:0000</PRE></BLOCKQUOTE>
+	These are only a few. Technically, there is exactally <b>4,096</b> different combinations of segment:offset
+	that can refer to the same byte in memory -- This is for each byte in memory!
+	<p>
+	What if we have two segment addresses that are <b>within</b> 64 KB? Remember that the size of a segment
+	(and offset) are 16 bits. And the segment addresses refer only to the <b>base</b> of a segment.
+	This is what an <b>Overlapped Segment</b> is:
+	<p><center>
+	<img src="images/seg.gif" /></center><p>
+	Imagine layers ontop of layers that lay over other segments. This could cause problems.
+	<p>
+	This means, in Real Mode, you can access every byte in memory, over 4,000 different ways, being
+	able to overlap segments that could potentally currupt that area of memory without you knowing.
+	This is what is ment by Real Mode not having any <b>Memory Protection</b>.
+	<p>
+	The registers the x86 use for segment refrencing are as followes:
+	<ul>
+		<li>CS (Code Segment) - Stores base segment address for code</li>
+		<li>DS (Data Segment) - Stores base segment address for data</li>
+		<li>ES (Extra Segment) - Stores base segment address for anything</li>
+		<li>SS (Stack Segment) - Stores base segment address for the stack</li>
+	</ul>
+	<p>
+	Wow, Real Mode has alot of problems. What will protect little old us from it?
+
+		<h2>Protected Mode</h2>
+		Protected Mode (PMode) is a term you heard alot, and will here alot more. PMode allows
+		Memory Protection through the use of a <b>Descriptor Tables</b> that describe your
+		memory layout.
+		<p>
+		PMode is a 32 bit processor modes, so it also allows you to use 32 bit registers, and access
+		up to <b>4 GB of RAM</b>. A huge improvment over Real Mode.
+		<p>
+		We will be using PMode. And yes, before you ask, Windows is a PMode OS. :)
+		<p>
+		PMode is a bit tricky to set up and to fully understand how it works.
+		We will discuss more about PMode later.
+
+		<h2>Unreal Mode</h2>
+		It is possible to switch from processor modes whenever you want. The term "Unreal Mode"
+		is a pun that represents Real Mode with the address space (4 GB limit) of PMode.
+		<p>
+		To enable Unreal Mode, simply switch the processor from Real Mode into PMode, and back again
+		after loading a new <b>Descriptor</b>.
+		<p>
+		<b>Descriptor Tables</b> can be quite confusing. I will talk about them in detail
+		when we talk more about Protected Mode (PMode).
+
+		<h2>Virtual 8086 Mode</h2>
+		Virtual 8086 Mode (v86 Mode) is a Mode that reresents Protected Mode with a 16 bit Real Mode
+		emulated envirement.
+		<p>
+		This might seem kind of strange, dont you think? v86 can be usefull, however. <b>All BIOS
+		interrupts are *only* avilable in real mode!</b> v86 Mode provides a way of executing BIOS
+		interrupts from within PMode. More on this later.
+		</p>
+
+	<h1>Switching processor modes</h1>
+
+	We wont cover the code to switch processor modes just yet. Instead, I want to take a step back
+	and explain some important concepts.
+	<p>
+	<b>The only two built in actual modes are Real Mode and Potected Mode.</b> In other words,
+	the other modes, Unreal Mode and v86 Mode, are built from these two modes.
+	<p>
+	Remember that Unreal Mode is in Real Mode, but uses the Protected Mode (PMode) Addressing system.
+	And, Virtual 8086 Mode is in PMode, but uses Real Mode to execute 16 bit code.
+	<p>
+	As you can see, both v86 and Unreal mode are simply based off of Real Mode and Protected Modes.
+	Because of this, it might be hard to understand how these modes work without an understanding
+	of PMode.
+	<p>
+	We will take a closer look at PMode, Unreal Mode, and v86 Mode soon, so dont worry :)
+	<p>There is some important things to remember about PMode however:
+	<ul>
+		<li>Absolutley no interrupts will be avilable. You will need to write them yourself. The use of any interrupt--hardware or software will cause a Triple Fault</li>
+		<li>Once you switch into pmode, the <b>*slightest*</b> mistake will cause a Triple Fault. Be carefull.</li>
+		<li>PMode requires the use of <b>Descriptor Tables</b>, such as the <b>GDT, LDT, and IDT</b>s.
+		<li>PMode gives you access to 4 GB of Memory, With Memory Protection</li>
+		<li>Segment:Offset Addressing is used along with Linear Addressing</li>
+		<li>Access and use of 32 bit registers</li>
+	</ul>
+	We will cover PMode in alot more detail later.
+
+	<h1>Expanding the bootloader</h1>
+
+	Wow, we went over alot so far, didnt we? We went over basic theory of Protected Mode, Unreal Mode,
+	and v86 Mode. We covered Real Mode in depth though. Why? Because, remember that the computer boots
+	in a 16 bit envirement for backward compatibility with DOS. <b>This 16 bit envirement is Real Mode</b>.
+	<p>
+	So, yes-When our bootloader is executed, we are in Real Mode. Wait! This means we can use BIOS Interrupts, right?
+	Yep :) Ths includes VGA Video interrupts, and any other interrupt mapped directly from hardware :)
+
+		<h2>Usefull Routines and BIOS Interrupts</h2>
+
+			<h3>OEM Parameter Block</h3>
+			The OEM Parameter Block stores the Windows MBR and Boot Record information.
+			Its primary purpose is to describe the filesystem on the disk.
+			We will not describe this table until we look at filesystems. However,
+			we can go no further without it.
+			<p>
+			This will also fix the "Not formatted" message from Windows.
+			<p>
+			For now, think of this table as a simple neccessity. I will explain it in
+			detail later when we talk about File Systems, and loading Files off disk.
+			<p>
+			Here is the bootloader with the table:
+
+      <BLOCKQUOTE><PRE><DIV class=code>;*********************************************
+;	Boot1.asm
+;		- A Simple Bootloader
+;
+;	Operating Systems Development Tutorial
+;*********************************************
+
+bits	16							; We are still in 16 bit Real Mode
+
+org		0x7c00						; We are loaded by BIOS at 0x7C00
+
+start:          jmp loader					; jump over OEM block
+
+;*************************************************;
+;	OEM Parameter block
+;*************************************************;
+
+TIMES 0Bh-$+start DB 0
+
+bpbBytesPerSector:  	DW 512
+bpbSectorsPerCluster: 	DB 1
+bpbReservedSectors: 	DW 1
+bpbNumberOfFATs: 	    DB 2
+bpbRootEntries: 	    DW 224
+bpbTotalSectors: 	    DW 2880
+bpbMedia: 	            DB 0xF0
+bpbSectorsPerFAT: 	    DW 9
+bpbSectorsPerTrack: 	DW 18
+bpbHeadsPerCylinder: 	DW 2
+bpbHiddenSectors: 	    DD 0
+bpbTotalSectorsBig:     DD 0
+bsDriveNumber: 	        DB 0
+bsUnused: 	            DB 0
+bsExtBootSignature: 	DB 0x29
+bsSerialNumber:	        DD 0xa0a1a2a3
+bsVolumeLabel: 	        DB "MOS FLOPPY "
+bsFileSystem: 	        DB "FAT12   "
+
+;*************************************************;
+;	Bootloader Entry Point
+;*************************************************;
+
+loader:
+
+	cli			; Clear all Interrupts
+	hlt			; halt the system
+	
+times 510 - ($-$$) db 0		; We have to be 512 bytes. Clear the rest of the bytes with 0
+
+dw 0xAA55			; Boot Signiture</DIV></PRE></BLOCKQUOTE>
+
+			<h3>Printing Text - Interrupt 0x10 Function 0x0E</h3>
+			<p>
+			You an use INT 0x10 for video interrupts. Remember, however, that
+			only basic interrupts will work.
+			<p>
+			<b>INT 0x10 - VIDEO TELETYPE OUTPUT</b>
+			<p>
+			AH = 0x0E<br>
+			AL = Character to write<br>
+			BH - Page Number (Should be 0)<br>
+			BL = Foreground color (Graphics Modes Only)<br>
+
+For example:
+      <BLOCKQUOTE><PRE><DIV class=code>	xor	bx, bx		; A faster method of clearing BX to 0
+	mov	ah, 0x0e
+	mov	al, 'A'
+	int	0x10</DIV></PRE></BLOCKQUOTE>
+This will print the character 'A' on the screen.
+
+			<h3>Printing Strings - Interrupt 0x10 Function 0x0E</h3>
+
+			Using the same interrupt, we can easily print out a 0 terminated string:
+      <BLOCKQUOTE><PRE><DIV class=code>msg	db	"Welcome to My Operating System!", 0
+
+;***************************************
+;	Prints a string
+;	DS=>SI: 0 terminated string
+;***************************************
+
+Print:
+			lodsb
+			or			al, al				; al=current character
+			jz			PrintDone			; null terminator found
+			mov			ah,	0eh			; get next character
+			int			10h
+			jmp			Print
+PrintDone:
+			ret
+
+;*************************************************;
+;	Bootloader Entry Point
+;*************************************************;
+
+loader:
+
+; Error Fix 1 ------------------------------------------
+
+	xor	ax, ax		; Setup segments to insure they are 0. Remember that
+	mov	ds, ax		; we have ORG 0x7c00. This means all addresses are based
+	mov	es, ax		; from 0x7c00:0. Because the data segments are within the same
+				; code segment, null em.
+
+	mov	si, msg
+	call	Print
+
+	cli			; Clear all Interrupts
+	hlt			; halt the system
+	
+times 510 - ($-$$) db 0		; We have to be 512 bytes. Clear the rest of the bytes with 0
+
+dw 0xAA55			; Boot Signiture</DIV></PRE></BLOCKQUOTE>
+
+			<h3>Getting amount of RAM</h3>
+
+			This is too easy:
+			<p>
+			<b>INT 0x12 - BIOS GET MEMORY SIZE</b><br>
+			Returns: AX = Kilobytes of contiguous memory starting from absolute address 0x0.
+			<p>
+			Heres an example:
+
+      <BLOCKQUOTE><PRE><DIV class=code>xor	ax, ax
+int	0x12
+; Now AX = Amount of KB in system recorded by BIOS</DIV></PRE></BLOCKQUOTE>
+			Wow... That was hard, wasnt it? :) Actually, it can be very hard to do in Protected Mode (PMode)
+			as you will not have any interrupts available.
+			<p>
+			<b>Note: The amount of memory actually returned from the BIOS might not be accurate!
+			We will look at some other methods later.</b>
+
+	<h1>Demo</h1>
+
+	<p><center><img src="images/Text1.gif" /></center>
+
+
+      <BLOCKQUOTE><PRE><DIV class=code>;*********************************************
+;	Boot1.asm
+;		- A Simple Bootloader
+;
+;	Operating Systems Development Tutorial
+;*********************************************
+
+bits	16							; We are still in 16 bit Real Mode
+
+org		0x7c00						; We are loaded by BIOS at 0x7C00
+
+start:          jmp loader					; jump over OEM block
+
+;*************************************************;
+;	OEM Parameter block
+;*************************************************;
+
+; Error Fix 2 - Removing the ugly TIMES directive -------------------------------------
+
+;;	TIMES 0Bh-$+start DB 0					; The OEM Parameter Block is exactally 3 bytes
+								; from where we are loaded at. This fills in those
+								; 3 bytes, along with 8 more. Why?
+
+bpbOEM			db "My OS   "				; This member must be exactally 8 bytes. It is just
+								; the name of your OS :) Everything else remains the same.
+
+bpbBytesPerSector:  	DW 512
+bpbSectorsPerCluster: 	DB 1
+bpbReservedSectors: 	DW 1
+bpbNumberOfFATs: 	    DB 2
+bpbRootEntries: 	    DW 224
+bpbTotalSectors: 	    DW 2880
+bpbMedia: 	            DB 0xF0
+bpbSectorsPerFAT: 	    DW 9
+bpbSectorsPerTrack: 	DW 18
+bpbHeadsPerCylinder: 	DW 2
+bpbHiddenSectors: 	    DD 0
+bpbTotalSectorsBig:     DD 0
+bsDriveNumber: 	        DB 0
+bsUnused: 	            DB 0
+bsExtBootSignature: 	DB 0x29
+bsSerialNumber:	        DD 0xa0a1a2a3
+bsVolumeLabel: 	        DB "MOS FLOPPY "
+bsFileSystem: 	        DB "FAT12   "
+
+msg	db	"Welcome to My Operating System!", 0		; the string to print
+
+;***************************************
+;	Prints a string
+;	DS=>SI: 0 terminated string
+;***************************************
+
+Print:
+			lodsb					; load next byte from string from SI to AL
+			or			al, al		; Does AL=0?
+			jz			PrintDone	; Yep, null terminator found-bail out
+			mov			ah,	0eh	; Nope-Print the character
+			int			10h
+			jmp			Print		; Repeat until null terminator found
+PrintDone:
+			ret					; we are done, so return
+
+;*************************************************;
+;	Bootloader Entry Point
+;*************************************************;
+
+loader:
+
+	xor	ax, ax		; Setup segments to insure they are 0. Remember that
+	mov	ds, ax		; we have ORG 0x7c00. This means all addresses are based
+	mov	es, ax		; from 0x7c00:0. Because the data segments are within the same
+				; code segment, null em.
+
+	mov	si, msg						; our message to print
+	call	Print						; call our print function
+
+	xor	ax, ax						; clear ax
+	int	0x12						; get the amount of KB from the BIOS
+
+	cli							; Clear all Interrupts
+	hlt							; halt the system
+	
+times 510 - ($-$$) db 0						; We have to be 512 bytes. Clear the rest of the bytes with 0
+
+dw 0xAA55							; Boot Signiture</DIV></PRE></BLOCKQUOTE>
+
+	<h1>Conclusion</h1>
+	<p>
+	Give yourself a pat on the back for making this far. :)
+	<p>
+	This tutorial was a nasty one. I had to find a very good way of explaining segment:offset
+	addressing and the processor modes without going into to much depth. I think I did well :)
+	<p>
+	We talked about the different processor modes--Real Mode, Protected Mode, Unreal Mode, and v86.
+	We looked at Real Mode in depth because we will be in that mode when developing the bootloader.
+	We also went over segent:offset addressing. This might be a refresher course for some of our DOS
+	programmers out there. We also looked at some BIOS interrupts, and ended with a complete example.
+	<p>
+	In the next tutorial, we are going to decypher that ugly OEM Parameter Block that we added.
+	We are also going to take a look at basic File System theory, and loading sectors off disk.
+	<p>
+	Until next time,
+	<p>
+	~Mike<br>
+	<i>BrokenThorn Entertainment. Currently developing DoE and the <a href="http://www.brokenthorn.com/mos/site2/">Neptune Operating System</a></i>
+
+	<br><br>
+	<i>Questions or comments? Feel free to <a href="mailto:neon6000@aol.com">Contact me</a>.</i>
+
+	<br><br>
+	Would you like to contribute and help improve the articles? If so, please <a href="mailto:neon6000@aol.com">let me know!</a>
+
+<br><br>
+<table width=100% border=0>
+<tr>
+<td><p align=left>
+<a class="anchor" href="OSDev3.html">
+<img src="images/left.jpg" border=0></a>
+&nbsp;&nbsp;
+<a class="anchor" href="OSDev3.html">
+<font size=4>Chapter 3</font>
+</a>
+
+</p></td>
+<td>
+<p align=center>
+<font size=4><a class="anchor" href="OSDevIndex.html">Home</a></font>
+</p>
+</td>
+<td><p align=right>
+<a class="anchor" href="OSDev5.html"><font size=4>Chapter 5</font></a>
+&nbsp;&nbsp;
+<a class="anchor" href="OSDev5.html"><img src="images/right.jpg" border=0></a>
+</p></td>
+</tr>
+</table>
+
+
+</BODY></HTML>

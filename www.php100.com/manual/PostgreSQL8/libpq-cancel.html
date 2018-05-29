@@ -1,0 +1,249 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>取消正在处理的查询 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="libpq - C 库" HREF="libpq.html"><LINK REL="PREVIOUS" TITLE="异步命令处理" HREF="libpq-async.html"><LINK REL="NEXT" TITLE="捷径接口" HREF="libpq-fastpath.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="libpq-async.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="libpq.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 28. <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> - C 库</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="libpq.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="libpq-fastpath.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="LIBPQ-CANCEL" >28.5. 取消正在处理的查询</A
+></H1
+><A NAME="AEN25965" ></A
+><P
+>一个客户端应用可以使用本节描述的函数，要求取消一个仍在被服务器处理的命令。
+
+<P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="FUNCTION"
+>PQgetCancel</TT
+><A NAME="AEN25973" ></A
+></DT
+><DD
+><P
+>	创建一个数据结构，这个数据结构包含通过特定数据库连接取消一个命令所需要的信息。
+</P><PRE
+CLASS="SYNOPSIS"
+>PGcancel *PQgetCancel(PGconn *conn);</PRE
+><P></P
+><P
+>给出一个 <TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+> 连接对象，<TT
+CLASS="FUNCTION"
+>PQgetCancel</TT
+> 创建一个
+<TT
+CLASS="STRUCTNAME"
+>PGcancel</TT
+><A NAME="AEN25982" ></A
+> 对象。
+如果给出的 <TT
+CLASS="PARAMETER"
+>conn</TT
+> 是 NULL 或者是一个无效的连接，那么它将返回 NULL。
+<TT
+CLASS="STRUCTNAME"
+>PGcancel</TT
+> 对象是一个不透明的结构，不应该为应用所直接访问；
+我们只能把它传递给 <TT
+CLASS="FUNCTION"
+>PQcancel</TT
+> 或者 <TT
+CLASS="FUNCTION"
+>PQfreeCancel</TT
+>。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQfreeCancel</TT
+><A NAME="AEN25991" ></A
+></DT
+><DD
+><P
+>	  释放 <TT
+CLASS="FUNCTION"
+>PQgetCancel</TT
+> 创建的数据结构。
+</P><PRE
+CLASS="SYNOPSIS"
+>void PQfreeCancel(PGcancel *cancel);</PRE
+><P></P
+><P
+><TT
+CLASS="FUNCTION"
+>PQfreeCancel</TT
+> 释放一个由前面的 <TT
+CLASS="FUNCTION"
+>PQgetCancel</TT
+>
+创建的数据对象。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQcancel</TT
+><A NAME="AEN26003" ></A
+></DT
+><DD
+><P
+>	  要求服务器放弃处理当前命令。
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQcancel(PGcancel *cancel, char *errbuf, int errbufsize);</PRE
+><P></P
+><P
+>如果取消请求成功发送，则返回值为 1，否则为 0。如果不成功，
+则 <TT
+CLASS="PARAMETER"
+>errbuf</TT
+> 里面会填充一些错误信息，解释为何不成功。
+<TT
+CLASS="PARAMETER"
+>errbuf</TT
+> 必须是一个大小为 <TT
+CLASS="PARAMETER"
+>errbufsize</TT
+> 的 char 数组
+（建议大小为 256 字节）。</P
+><P
+>不过，成功发送取消请求并不保证请求会有任何效果。
+如果取消生效，那么当前的命令将提前结束并且返回一个错误的结果。
+如果取消失败（也就是说，因为服务器已经完成命令的处理），那么就根本不会有可见的结果。</P
+><P
+>如果 <TT
+CLASS="PARAMETER"
+>errbuf</TT
+> 是信号句柄里的一个局部变量，那么
+<TT
+CLASS="FUNCTION"
+>PQcancel</TT
+> 可以在一个信号句柄里安全地调用。
+在 <TT
+CLASS="FUNCTION"
+>PQcancel</TT
+> 涉及的范围里，<TT
+CLASS="STRUCTNAME"
+>PGcancel</TT
+> 对象都是只读的，
+因此我们也可以从一个与处理 <TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+> 对象的线程分离的线程里处理它。</P
+></DD
+></DL
+></DIV
+><P>
+
+<P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="FUNCTION"
+>PQrequestCancel</TT
+><A NAME="AEN26023" ></A
+></DT
+><DD
+><P
+>	  要求服务器放弃处理当前命令。
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQrequestCancel(PGconn *conn);</PRE
+><P></P
+><P
+><TT
+CLASS="FUNCTION"
+>PQrequestCancel</TT
+> 是 <TT
+CLASS="FUNCTION"
+>PQcancel</TT
+> 的一个废弃的变种。
+它直接在 <TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+> 对象上进行操作，并且如果失败，就会在 <TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+>
+对象里存储错误信息（因此可以用 <TT
+CLASS="FUNCTION"
+>PQerrorMessage</TT
+> 检索出来。）
+尽管功能一样，但是这个方法在多线程程序里和信号句柄里会有危险，
+因为它可能覆盖 <TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+> 的错误信息，因此将可能把当前连接正在处理的操作打乱。</P
+></DD
+></DL
+></DIV
+><P></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="libpq-async.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="libpq-fastpath.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >异步命令处理</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="libpq.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >捷径接口</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

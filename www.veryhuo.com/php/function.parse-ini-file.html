@@ -1,0 +1,76 @@
+<HTML><HEAD><TITLE>parse_ini_file</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="文件系统函数库" HREF="ref.filesystem.html"><LINK REL="PREVIOUS" TITLE="move_uploaded_file" HREF="function.move-uploaded-file.html"><LINK REL="NEXT" TITLE="pathinfo" HREF="function.pathinfo.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.move-uploaded-file.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.pathinfo.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.parse-ini-file"></A>parse_ini_file</H1><DIV CLASS="refnamediv"><A NAME="AEN29349"></A><P> (PHP 4 )</P>parse_ini_file&nbsp;--&nbsp;解析一个配置文件</DIV><DIV CLASS="refsect1"><A NAME="AEN29352"></A><H2>说明</H2>array <B CLASS="methodname">parse_ini_file</B> ( string filename [, bool process_sections])<BR></BR><P>&#13; <B CLASS="function">parse_ini_file()</B> 载入一个由
+<TT CLASS="parameter"><I>filename</I></TT> 指定的 ini
+文件，并将其中的设置作为一个结合数组返回。如果将最后的
+<TT CLASS="parameter"><I>process_sections</I></TT> 参数设为
+<TT CLASS="constant"><B>TRUE</B></TT>，将得到一个多维数组，包括了配置文件中每一节的名称和设置。<TT CLASS="parameter"><I>process_sections</I></TT>
+的默认值是 <TT CLASS="constant"><B>FALSE</B></TT>。
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+本函数和 <TT CLASS="filename">php.ini</TT>
+文件没有关系，该文件在运行脚本时就已经处理过了。本函数可以用来读取你自己的应用程序的配置文件。
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+如果 ini 文件中的值包含任何非字母数字的字符，需要将其括在双引号中（"）。
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+自 PHP 4.2.1 其本函数也受到<A HREF="features.safe-mode.html#ini.safe-mode">安全模式</A>和
+<A HREF="features.safe-mode.html#ini.open-basedir">open_basedir</A> 的影响。
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+有些保留字不能作为 ini 文件中的键名，包括：null，yes，no，true 和 false。
+</P></BLOCKQUOTE></DIV><P>&#13; ini 文件的结构和 <TT CLASS="filename">php.ini</TT> 的相似。
+</P><P>&#13; <A HREF="language.constants.html">常量</A>也可以在 ini
+文件中被解析，因此如果在运行 <B CLASS="function">parse_ini_file()</B>
+之前定义了常量作为 ini 的值，将会被集成到结果中去。只有 ini
+的值会被求值。例如：
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN29387"></A><P><B>例子 1. <TT CLASS="filename">sample.ini</TT> 的内容</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">; This is a sample configuration file
+; Comments start with ';', as in php.ini
+
+[first_section]
+one = 1
+five = 5
+animal = BIRD
+
+[second_section]
+path = /usr/local/bin
+URL = "http://www.example.com/~username"</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN29392"></A><P><B>例子 2. <B CLASS="function">parse_ini_file()</B> 例子</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">&#60;?php
+
+define ('BIRD', 'Dodo bird');
+
+// Parse without sections
+$ini_array = parse_ini_file("sample.ini");
+print_r($ini_array);
+
+// Parse with sections
+$ini_array = parse_ini_file("sample.ini", TRUE);
+print_r($ini_array);
+
+?&#62;</PRE></TD></TR></TABLE><P>&#13; 将输出：
+</P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">Array
+(
+    [one] =&#62; 1
+    [five] =&#62; 5
+    [animal] =&#62; Dodo bird
+    [path] =&#62; /usr/local/bin
+    [URL] =&#62; http://www.example.com/~username
+)
+Array
+(
+    [first_section] =&#62; Array
+        (
+            [one] =&#62; 1
+            [five] =&#62; 5
+            [animal] = Dodo bird
+        )
+
+    [second_section] =&#62; Array
+        (
+            [path] =&#62; /usr/local/bin
+            [URL] =&#62; http://www.example.com/~username
+        )
+
+)</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.move-uploaded-file.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.pathinfo.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">move_uploaded_file</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.filesystem.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">pathinfo</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

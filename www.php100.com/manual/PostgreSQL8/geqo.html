@@ -1,0 +1,179 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>基因查询优化 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="内部" HREF="internals.html"><LINK REL="PREVIOUS" TITLE="书写一个过程语言句柄" HREF="plhandler.html"><LINK REL="NEXT" TITLE="基因算法" HREF="geqo-intro2.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="CHAPTER" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="plhandler.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="plhandler.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="indexam.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="geqo-intro2.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A NAME="GEQO" >Chapter 47. 基因查询优化</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>47.1. <A HREF="geqo.html#GEQO-INTRO" >作为复杂优化问题的查询处理</A
+></DT
+><DT
+>47.2. <A HREF="geqo-intro2.html" >基因算法</A
+></DT
+><DT
+>47.3. <A HREF="geqo-pg-intro.html" >PostgreSQL 里的基因查询优化（<SPAN
+CLASS="ACRONYM"
+>GEQO</SPAN
+>）</A
+></DT
+><DT
+>47.4. <A HREF="geqo-biblio.html" >进一步阅读</A
+></DT
+></DL
+></DIV
+><P
+>    </P><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>作者: </B
+>	由德国弗来堡矿业及技术大学自动控制系
+	Martin Utesch（<TT
+CLASS="EMAIL"
+>&#60;<A HREF="mailto:utesch@aut.tu-freiberg.de" >utesch@aut.tu-freiberg.de</A
+>&#62;</TT
+>）
+	写作．
+       </P
+></BLOCKQUOTE
+></DIV
+><P>
+  </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="GEQO-INTRO" >47.1. 作为复杂优化问题的查询处理</A
+></H1
+><P
+>	在所有关系型操作符里，最难以处理和优化的一个是<I
+CLASS="FIRSTTERM"
+>连接</I
+>。
+	一个查询需要回答的可选规划的数目将随着该查询包含的连接的个数呈指数增长。
+	在访问关系的分支时的进一步的优化措施是由多种多样的<I
+CLASS="FIRSTTERM"
+>连接方法（join methods）</I
+>
+	（例，在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>	里的嵌套循环，索引扫描，融合连接等）
+	来支持处理独立的连接和多种多样的<I
+CLASS="FIRSTTERM"
+>索引</I
+>，
+	如， <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里的 r-tree，b-tree，散列（hash））。
+   </P
+><P
+>        目前 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 优化器的实现在候选策略空间里执行一个
+        <I
+CLASS="FIRSTTERM"
+>近似穷举搜索（near-exhaustive search）</I
+>。
+	这个算法最早是在 <SPAN
+CLASS="QUOTE"
+>"System R"</SPAN
+> 数据库中引入的，
+	它生成一个近乎最优的连接顺序，但是如果查询中的连接增长得很大，
+	它可能会消耗大量得时间和内存空间。
+	这样就使普通的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 查询优化器不适合那种连接了大量表的查询。
+   </P
+><P
+>	德国弗来堡矿业及技术大学自动控制系的成员在试图把 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> DBMS
+	作为用于一个电力网维护中做决策支持的知识库系统的后端时，碰到了上面的问题。
+	该 DBMS 需要为知识库系统的推导机处理很大的连接查询。
+   </P
+><P
+>	在可能的查询规划空间里进行检索的恶劣性能引起了人们对发展新的优化技术的需求。
+   </P
+><P
+>	在随后的内容里，我们描述了一个
+	<I
+CLASS="FIRSTTERM"
+>基因算法（Genetic Algorithm）</I
+>，
+	这个算法用一种对涉及大量连接的查询很有效的方式解决了连接顺序的问题。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="plhandler.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="geqo-intro2.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >书写一个过程语言句柄</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="internals.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >基因算法</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

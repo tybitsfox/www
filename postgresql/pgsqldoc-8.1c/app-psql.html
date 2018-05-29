@@ -1,0 +1,5182 @@
+<HTML
+><HEAD
+><TITLE
+>psql</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="客户端应用"
+HREF="reference-client.html"><LINK
+REL="PREVIOUS"
+TITLE="pg_restore"
+HREF="app-pgrestore.html"><LINK
+REL="NEXT"
+TITLE="vacuumdb"
+HREF="app-vacuumdb.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="REFENTRY"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="app-pgrestore.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="app-pgrestore.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="app-vacuumdb.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="app-vacuumdb.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="APP-PSQL"
+><SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+></A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN51610"
+></A
+><H2
+>Name</H2
+><SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>&nbsp;--&nbsp;    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 交互终端
+    </DIV
+><A
+NAME="AEN51615"
+></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN51617"
+></A
+><H2
+>Synopsis</H2
+><P
+><TT
+CLASS="COMMAND"
+>psql</TT
+> [<TT
+CLASS="REPLACEABLE"
+><I
+>option</I
+></TT
+>...] [<TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+>
+    [<TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+>]]</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN51626"
+></A
+><H2
+>描述</H2
+><P
+>        <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 是一个以终端为基础的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        前端。它允许你交互地键入查询，把它们发出给 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>，
+        然后看看查询的结果。另外，输入可以来自一个文件。还有，
+	它提供了一些元命令和多种类 shell 地特性来实现书写脚本以及对大量任务的自动化。
+    </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="R1-APP-PSQL-3"
+></A
+><H2
+>选项</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="OPTION"
+>-a</TT
+><BR><TT
+CLASS="OPTION"
+>--echo-all</TT
+></DT
+><DD
+><P
+>        在读取行时向标准输出打印所有内容。
+        这个选项在脚本处理时比交互模式时更有用。这个选项等效于设置变量
+      <TT
+CLASS="VARNAME"
+>ECHO</TT
+> 为 <TT
+CLASS="LITERAL"
+>all</TT
+>。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-A</TT
+><BR><TT
+CLASS="OPTION"
+>--no-align</TT
+></DT
+><DD
+><P
+>        切换为非对齐输出模式。（缺省输出模式是对齐的。）
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-c <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--command <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        声明 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 将执行一条查询字串，
+	<TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+>，然后退出。这一点在 shell 脚本里很有用。
+      </P
+><P
+>      <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+>
+        必须是一条完全可以被服务器分析的查询字串（也就是说，它不包含 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>特有的特性），
+        或者是一个反斜杠命令。这样你就不会混合 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 和 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>
+        元命令。要想混合使用，你可以把字串定向到 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>里，象这样：
+      <TT
+CLASS="LITERAL"
+>echo "\x \\ select * from foo;" | psql</TT
+>。
+      </P
+><P
+>       如果命令字串包含多个 SQL 命令，那么他们在一个事务里处理，
+       除非在字串里包含了明确的 BEGIN/COMMIT 命令把他们分成多个事务。
+       这个和从 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 的标准输入里给它填充相同字串不同。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-d <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--dbname <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        声明想要联接的数据库名称。等效于在命令行行上把 <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+>
+        声明为第一个非选项参数。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-e</TT
+><BR><TT
+CLASS="OPTION"
+>--echo-queries</TT
+></DT
+><DD
+><P
+>        把所有发送给服务器的查询同时也拷贝到标准输出。
+        等效于把变量 <TT
+CLASS="VARNAME"
+>ECHO</TT
+> 设置为 <TT
+CLASS="LITERAL"
+>queries</TT
+>。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-E</TT
+><BR><TT
+CLASS="OPTION"
+>--echo-hidden</TT
+></DT
+><DD
+><P
+>        回显由<TT
+CLASS="COMMAND"
+>\d</TT
+>和其他反斜杠命令生成的实际查询。
+	你可以使用这个命令学习 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 的内部操作。
+        这等效于在<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>里设置变量<TT
+CLASS="VARNAME"
+>ECHO_HIDDEN</TT
+>。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-f <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--file <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+></TT
+></DT
+><DD
+><P
+>      使用 <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>作为命令的语句源而不是交互式读入查询。
+      在处理完文件后，<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 结束。这个选项在很多方面等效于内部命令
+       <TT
+CLASS="COMMAND"
+>\i</TT
+>。
+      </P
+><P
+>       如果 <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+> 是 <TT
+CLASS="LITERAL"
+>-</TT
+>（连字符），则从标准输入读取。
+      </P
+><P
+>        使用这个选项与用 <TT
+CLASS="LITERAL"
+>psql &lt; <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+></TT
+>
+        有微小的区别。通常，两者都回按照你预期那样运行，但是使用 <TT
+CLASS="LITERAL"
+>-f</TT
+>打开了一些很好的特性，
+	比如带行号的错误信息。而且，使用这个选项还有可能有减小启动负荷的机会。
+        另一方面，如果你把所有内容手工输入，
+	使用 shell 输入定向的方式（理论上）能保证生成和你已经得到的完全一样的输出（译注：重复运行命令）。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-F <TT
+CLASS="REPLACEABLE"
+><I
+>separator</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--field-separator <TT
+CLASS="REPLACEABLE"
+><I
+>separator</I
+></TT
+></TT
+></DT
+><DD
+><P
+>      使用 <TT
+CLASS="REPLACEABLE"
+><I
+>separator</I
+></TT
+> 作为未对齐输出的域分隔符。等效于
+      <TT
+CLASS="COMMAND"
+>\pset fieldsep</TT
+> 或 <TT
+CLASS="COMMAND"
+>\f</TT
+>。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-h <TT
+CLASS="REPLACEABLE"
+><I
+>hostname</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--host <TT
+CLASS="REPLACEABLE"
+><I
+>hostname</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        声明正在运行服务器的主机名。
+        如果主机名以斜杠开头，则它被用做到 Unix 域套接字的路径。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-H</TT
+><BR><TT
+CLASS="OPTION"
+>--html</TT
+></DT
+><DD
+><P
+>      打开<SPAN
+CLASS="ACRONYM"
+>HTML</SPAN
+>格式输出。等效于
+      <TT
+CLASS="LITERAL"
+>\pset format html</TT
+>或 <TT
+CLASS="COMMAND"
+>\H</TT
+> 命令。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-l</TT
+><BR><TT
+CLASS="OPTION"
+>--list</TT
+></DT
+><DD
+><P
+>        列出所有可用的数据库，然后退出。其他非联接选项将被忽略。类似于内部命令
+      <TT
+CLASS="COMMAND"
+>\list</TT
+>。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-L <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--log <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+></TT
+></DT
+><DD
+><P
+>      除了正常的输出源之外，把所有查询输出记录到文件 <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-o <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--output <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+></TT
+></DT
+><DD
+><P
+>      将所有查询输出定向到文件 <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>。这个选项等效于命令
+      <TT
+CLASS="COMMAND"
+>\o</TT
+>。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-p <TT
+CLASS="REPLACEABLE"
+><I
+>port</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--port <TT
+CLASS="REPLACEABLE"
+><I
+>port</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        声明被服务器侦听的 TCP 端口或使用的缺省本地 Unix 主控套接字文件句柄。
+        缺省的是环境变量<TT
+CLASS="VARNAME"
+>PGPORT</TT
+>的值，如果没有设置的话是编译是声明的端口，通常是 5432。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-P <TT
+CLASS="REPLACEABLE"
+><I
+>assignment</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--pset <TT
+CLASS="REPLACEABLE"
+><I
+>assignment</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        允许你在命令行上以 <TT
+CLASS="COMMAND"
+>\pset</TT
+>的风格设置打印选项。
+        要注意的是你在这里用等号分割名称和值，而不能用空格。
+        因此要把输出格式设置为 LaTeX，你可以敲入 <TT
+CLASS="LITERAL"
+>-P format=latex</TT
+>。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-q</TT
+><BR><TT
+CLASS="OPTION"
+>--quiet</TT
+></DT
+><DD
+><P
+>      声明 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 将安静地执行处理任务。
+        缺省时<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>将打印欢迎和许多其他输出信息。
+        如果使用了此选项，这些都不出现。这在和 <TT
+CLASS="OPTION"
+>-c</TT
+> 选项一起使用时很有效。在
+        <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 里，你可以通过设置 <TT
+CLASS="VARNAME"
+>QUIET</TT
+> 变量实现同样效果。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-R <TT
+CLASS="REPLACEABLE"
+><I
+>separator</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--record-separator <TT
+CLASS="REPLACEABLE"
+><I
+>separator</I
+></TT
+></TT
+></DT
+><DD
+><P
+>      使用 <TT
+CLASS="REPLACEABLE"
+><I
+>separator</I
+></TT
+>  做为非对齐输出的记录分隔符。
+      等效于<TT
+CLASS="COMMAND"
+>\pset recordsep</TT
+>命令。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-s</TT
+><BR><TT
+CLASS="OPTION"
+>--single-step</TT
+></DT
+><DD
+><P
+>        进入单步模式运行。意味着每个查询在发往服务器之前都要提示用户，
+        用这个选项也可以取消执行。此选项主要用于调试脚本。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-S</TT
+><BR><TT
+CLASS="OPTION"
+>--single-line</TT
+></DT
+><DD
+><P
+>        进入单行运行模式，这时每个命令都将由换行符结束，象分号那样。
+      </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>        注意这个模式是给那些坚持要这个特性的人的，我们不鼓励你这么用。
+	实际上，如果你在一行里混合使用 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 和元命令，执行的顺序对不熟练的用户而言不总是清晰的。
+      </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-t</TT
+><BR><TT
+CLASS="OPTION"
+>--tuples-only</TT
+></DT
+><DD
+><P
+>        关闭打印列名称和结果行计数脚注等信息。等效于 <TT
+CLASS="COMMAND"
+>\t</TT
+> 命令。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-T <TT
+CLASS="REPLACEABLE"
+><I
+>table_options</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--table-attr <TT
+CLASS="REPLACEABLE"
+><I
+>table_options</I
+></TT
+></TT
+></DT
+><DD
+><P
+>      允许你声明放在 <SPAN
+CLASS="ACRONYM"
+>HTML</SPAN
+> <TT
+CLASS="SGMLTAG"
+>table</TT
+> 标记里的选项。
+        参阅 <TT
+CLASS="COMMAND"
+>\pset</TT
+> 获取细节。
+      </P
+></DD
+><DT
+>-u</DT
+><DD
+><P
+>      强制 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 在和数据库联接之提示输入用户的用户名和口令。
+      </P
+><P
+>        这个选项已经废弃了，因为它在概念上有漏洞。
+        （提示输入非缺省用户名和提示输入服务器要求的口令是完全两码事。）我们鼓励你用
+      <TT
+CLASS="OPTION"
+>-U</TT
+> 和 <TT
+CLASS="OPTION"
+>-W</TT
+> 选项取代。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-U <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--username <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+></TT
+></DT
+><DD
+><P
+>      以用户 <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+>
+        代替缺省用户与数据库联接。（当然，你必须有这么做的权限。）
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-v <TT
+CLASS="REPLACEABLE"
+><I
+>assignment</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--set <TT
+CLASS="REPLACEABLE"
+><I
+>assignment</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--variable <TT
+CLASS="REPLACEABLE"
+><I
+>assignment</I
+></TT
+></TT
+></DT
+><DD
+><P
+>      进行一次变量分配，象内部命令 <TT
+CLASS="COMMAND"
+>\set</TT
+> 那样。
+        注意，如果有变量名和值的话，你必须在命令行上用等号分隔它们。要重置一个变量，
+        去掉等号。这个分配是在启动的很早的阶段进行的，所以为内部使用保留的变量可能被再次覆盖。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-V</TT
+><BR><TT
+CLASS="OPTION"
+>--version</TT
+></DT
+><DD
+><P
+>      打印 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 版本然后退出。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-W</TT
+><BR><TT
+CLASS="OPTION"
+>--password</TT
+></DT
+><DD
+><P
+>      强制 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 在与一个数据库联接前提示输入口令。
+      </P
+><P
+>        如果服务器要求口令认证，<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>
+        自动提出一个口令提示符。不过，目前是否需要输入口令的判断并不完全可靠，
+        因此用这个选项强制一个提示符。
+        如果没有发出口令提示符而服务器要求口令认证，那么联接企图将失败。
+      </P
+><P
+>      这个选项将在整个会话过程中有效，即使你用元命令 <TT
+CLASS="COMMAND"
+>\connect</TT
+> 改变了所联接的数据库。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-x</TT
+><BR><TT
+CLASS="OPTION"
+>--expanded</TT
+></DT
+><DD
+><P
+>        打开扩展表格式模式。等效于命令 <TT
+CLASS="COMMAND"
+>\x</TT
+>。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-X,</TT
+><BR><TT
+CLASS="OPTION"
+>--no-psqlrc</TT
+></DT
+><DD
+><P
+>      不读取启动文件（系统的 <TT
+CLASS="FILENAME"
+>psqlrc</TT
+> 或者你的 <TT
+CLASS="FILENAME"
+>~/.psqlrc</TT
+> 都不读取）。
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-?</TT
+><BR><TT
+CLASS="OPTION"
+>--help</TT
+></DT
+><DD
+><P
+>      显示关于<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>命令行参数的帮助然后退出。
+      </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN51938"
+></A
+><H2
+>退出状态</H2
+><P
+>        如果正常结束，那么 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 向 shell 返回 0，
+	如果自身发生致命错误，则返回 1（内存用尽，未找到文件等），
+        如果和数据库的连接失效而且会话不再活跃则返回 2，
+	如果脚本中发生错误并且设置了 <TT
+CLASS="VARNAME"
+>ON_ERROR_STOP</TT
+> 则返回 3。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN51943"
+></A
+><H2
+>用法</H2
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="R2-APP-PSQL-CONNECTING"
+></A
+><H3
+>与一个数据库联接</H3
+><P
+>        <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 是一个普通的
+        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        客户端应用。为了与一个数据库联接，你需要知道你的目标数据库，
+        服务器的主机名和端口号以及你希望以哪个用户的身份进行联接等信息。
+	我们可以通过命令行参数告诉 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 这些信息，分别是 <TT
+CLASS="OPTION"
+>-d</TT
+>，
+	<TT
+CLASS="OPTION"
+>-h</TT
+>，<TT
+CLASS="OPTION"
+>-p</TT
+>，和 <TT
+CLASS="OPTION"
+>-U</TT
+>。
+        如果有个参数不属于任何选项开关，
+	那么它会被解释成数据库名（或者是用户名——如果数据库名称已经给出了。）。
+        不是所有这些选项都是必须的，有缺省存在。
+	如果你省略主机名， psql 将通过 Unix 域套接字与本地主机的服务器相联，
+	或者在没有 unix 域套接字的机器上，通过 TCP/IP 与 <TT
+CLASS="LITERAL"
+>localhost</TT
+> 连接。
+        缺省的端口号是编译时确定的。因为数据库服务器使用同样的缺省值，
+        所以在大多数设置下，你可能不需要声明端口号。缺省的用户名是你的 Unix 用户名，与数据库同名。
+        要注意的是你不能用任意用户名与任何数据库相联。你的数据库管理员应该告诉你你的访问权限。
+    </P
+><P
+>	如果缺省不太正确，那么你可以通过设置几个环境变量 <TT
+CLASS="VARNAME"
+>PGDATABASE</TT
+>，
+	<TT
+CLASS="VARNAME"
+>PGHOST</TT
+>，<TT
+CLASS="VARNAME"
+>PGPORT</TT
+> 和/或 <TT
+CLASS="VARNAME"
+>PGUSER</TT
+>
+        为对应的值的方法节约几次敲击。
+	（其它的环境变量的信息，参阅 <A
+HREF="libpq-envars.html"
+>Section 28.11</A
+>。）
+	另外，用一个 <TT
+CLASS="FILENAME"
+>~/.pgpass</TT
+> 文件来避免输入密码也是很方便的。
+	参阅 <A
+HREF="libpq-pgpass.html"
+>Section 28.12</A
+> 获取更多信息。
+    </P
+><P
+>        如果因为任何原因而无法与数据库相联（例如，权限不够，服务器没有运行等），
+    <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 将返回一个错误并退出。
+    </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="R2-APP-PSQL-4"
+></A
+><H3
+>输入 SQL 命令</H3
+><P
+>    通常状况下，<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 提供一个带有
+    <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 正在与之联接的接数据库名的，后缀
+     <TT
+CLASS="LITERAL"
+>=&gt;</TT
+>的提示符。例如，
+</P><PRE
+CLASS="PROGRAMLISTING"
+>$ <TT
+CLASS="USERINPUT"
+><B
+>psql testdb</B
+></TT
+>
+Welcome to psql 8.1, the PostgreSQL interactive terminal.
+
+Type:  \copyright for distribution terms
+       \h for help with SQL commands
+       \? for help with psql commands
+       \g or terminate with semicolon to execute query
+       \q to quit
+
+testdb=&gt;</PRE
+><P>
+    </P
+><P
+>        用户可以在这个提示符下键入<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 查询。
+        通常，输入的行将在命令终止分号出现时送到服务器。
+        一行的终止并不结束命令！因此命令可以因清晰起见跨越好几行。如果命令发送出去而且执行没有错误，
+        命令结果会显示在屏幕上。
+    </P
+><P
+>    当命令正在进行时，<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 同样还轮询由
+    <A
+HREF="sql-listen.html"
+><I
+>LISTEN</I
+></A
+> 和
+    <A
+HREF="sql-notify.html"
+><I
+>NOTIFY</I
+></A
+>.
+        生成的异步通知信号。
+    </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN51980"
+></A
+><H3
+>元命令</H3
+><P
+>        你在 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 里输入的任何以不带引号的反斜杠（'\'）开头的东西都是
+        <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 元命令，这些命令是由
+        <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 自己处理的。这些命令也是令
+        <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 更可用于管理或书写脚本的原因。
+        元命令更常见的叫法是斜杠或反斜杠命令。
+    </P
+><P
+>        一个 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 命令的格式是反斜杠后面紧跟一个命令动词，然后是任意参数。
+        参数与命令动词和其他参数以任意个空白字符间隔。
+    </P
+><P
+>        要在参数里面包含空白，你必须用单引号把它包围起来。
+        要在这样的参数里包含单引号，前面加一个反斜杠。
+        任何包含在单引号里的东西会被进一步进行类 C 的替换，把
+	<TT
+CLASS="LITERAL"
+>\n</TT
+> （新行），<TT
+CLASS="LITERAL"
+>\t</TT
+>
+	（tab），<TT
+CLASS="LITERAL"
+>\</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>digits</I
+></TT
+>（八进制），
+	<TT
+CLASS="LITERAL"
+>\0x</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>digits</I
+></TT
+>（十六进制）。
+    </P
+><P
+>        如果一个不带引号的参数以冒号（<TT
+CLASS="LITERAL"
+>:</TT
+>）开头，
+	它会被当作一个<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 变量，并且该变量的值会最终成为真正的参数值。
+        （译注：类似 ecpg 和 pl/pgsql 的变量用法。）
+    </P
+><P
+>        用“反勾号” （<SPAN
+CLASS="QUOTE"
+>"backticks"</SPAN
+> <TT
+CLASS="LITERAL"
+>`</TT
+>）
+        包围的内容被当作一个命令行传入 shell。
+        该命令的输出（删除了结尾的新行）被当作参数值。上面描述的逃逸（字符）序列在反勾号里也生效。
+    </P
+><P
+>        有些命令以一个 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 标识的名称（如，一个表名）为参数。
+        这些参数遵循 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语法关于双引号的规则：
+        不带双引号的标识强制成小写，
+        而双引号保护字母不受大小写转换，并且允许在标识符中使用空白。
+        在双引号中，成对的双引号在结果名字中分析成一个双引号。比如，
+        <TT
+CLASS="LITERAL"
+>FOO"BAR"BAZ</TT
+> 解析成 <TT
+CLASS="LITERAL"
+>fooBARbaz</TT
+>，而
+        <TT
+CLASS="LITERAL"
+>"A weird"" name"</TT
+> 变成 <TT
+CLASS="LITERAL"
+>A weird" name</TT
+>。
+    </P
+><P
+>        对参数的分析在碰到另一个不带引号的反斜杠时停止。
+        这里会认为是一个新的元命令的开始。特殊序列 <TT
+CLASS="LITERAL"
+>\\</TT
+>（双反斜杠）标识参数的结尾并将继续分析后面的
+	<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令（如果存在的话）。这样 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 和 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>命令可以自由的在一行里面混合。
+        但是在任何情况下，一条元命令的参数不能延续超过行尾。
+    </P
+><P
+>        下列元命令是已定义的：
+
+    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>\a</TT
+></DT
+><DD
+><P
+>        如果目前的表输出格式是不对齐的，切换成对齐的。
+        如果是对齐的，切换成不对齐。这条命令是为了向后兼容。参阅
+        <TT
+CLASS="COMMAND"
+>\pset</TT
+> 获取一个更通用的解决方法。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\cd [ <TT
+CLASS="REPLACEABLE"
+><I
+>directory</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        把当前工作目录改变到 <TT
+CLASS="REPLACEABLE"
+><I
+>directory</I
+></TT
+>。
+        没有参数是则改变到当前用户的家目录。
+        </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>        要打印出你的当前工作目录，使用 <TT
+CLASS="LITERAL"
+>\!pwd</TT
+>。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\C [ <TT
+CLASS="REPLACEABLE"
+><I
+>title</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        把正在打印的表的标题设置为一个查询的结果或者取消这样的设置。
+        这条命令等效于 <TT
+CLASS="LITERAL"
+>\pset title <TT
+CLASS="REPLACEABLE"
+><I
+>title</I
+></TT
+></TT
+>.
+        （这条命令的名称源于 <SPAN
+CLASS="QUOTE"
+>"caption"</SPAN
+>，因为以前只是用于在一个 <SPAN
+CLASS="ACRONYM"
+>HTML</SPAN
+> 表里面设置标题。）
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\connect</TT
+> （或者 <TT
+CLASS="LITERAL"
+>\c</TT
+>）<TT
+CLASS="LITERAL"
+>[ <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+> [ <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+> ] ]</TT
+></DT
+><DD
+><P
+>        与一个新的数据库建立一个联接，使用/不用一个用户名。
+        前面的联接将关闭。如果 <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+> 是 <TT
+CLASS="LITERAL"
+>-</TT
+>，那么就假设是当前数据库名称。
+        </P
+><P
+>        如果省略 <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+>，则假设是当前用户名。
+        </P
+><P
+>        作为一条特殊规则，不带任何参数运行<TT
+CLASS="COMMAND"
+>\connect</TT
+>
+        将以缺省用户身份与缺省数据库连接（正如你不带任何参数运行 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 一样。）
+        </P
+><P
+>        如果联接失败（用户名错，访问拒绝等），那么将保留前面的联接--当且仅当在 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 处于交互模式下如此。
+        如果运行的是非交互的脚本，处理会马上停止，并返回一个错误。
+        选择这样的区别是一方面为用户使用方便考虑，另一方面为保证脚本不会碰巧操作了错误的数据库的安全机制考虑的。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\copy <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+>
+      [ ( <TT
+CLASS="REPLACEABLE"
+><I
+>column_list</I
+></TT
+> ) ]
+        { <TT
+CLASS="LITERAL"
+>from</TT
+> | <TT
+CLASS="LITERAL"
+>to</TT
+> }
+        { <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+> | stdin | stdout | pstdin | pstdout }
+        [ with ]
+            [ oids ]
+            [ delimiter [ as ] '<TT
+CLASS="REPLACEABLE"
+><I
+>character</I
+></TT
+>' ]
+            [ null [ as ] '<TT
+CLASS="REPLACEABLE"
+><I
+>string</I
+></TT
+>' ]
+            [ csv [ quote [ as ] '<TT
+CLASS="REPLACEABLE"
+><I
+>character</I
+></TT
+>' ]
+            [ escape [ as ] '<TT
+CLASS="REPLACEABLE"
+><I
+>character</I
+></TT
+>' ]
+            [ force quote <TT
+CLASS="REPLACEABLE"
+><I
+>column_list</I
+></TT
+> ]
+            [ force not null <TT
+CLASS="REPLACEABLE"
+><I
+>column_list</I
+></TT
+> ] ]</TT
+></DT
+><DD
+><P
+>        执行前端（客户端）拷贝。这是一个运行 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>
+        <A
+HREF="sql-copy.html"
+><I
+>COPY</I
+></A
+> 命令的操作，
+        不同的是 SQL COPY 是服务器在读写指明的文件，而 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 读写文件并作为本地的文件系统和服务器之间的路由取出或写入数据。
+        这意味着文件访问性和权限都是本地用户的，而不是服务器的，因此不需要 SQL 超级用户权限。
+        </P
+><P
+>        这条命令的语法是模拟 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> <A
+HREF="sql-copy.html"
+><I
+>COPY</I
+></A
+> 命令的。
+        要注意的是由此而来，有一些特殊的分析规则应用于 <TT
+CLASS="COMMAND"
+>\copy</TT
+> 命令。
+        尤其是变量替换规则和反斜杠代换规则不起作用。
+        </P
+><P
+>	<TT
+CLASS="LITERAL"
+>\copy <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> from <TT
+CLASS="REPLACEABLE"
+><I
+>stdin | stdout</I
+></TT
+></TT
+>
+	分别基于命令输入和输出读/写。所有行都从发出命令的同一个源读取，直到读到了 <TT
+CLASS="LITERAL"
+>\.</TT
+> 或者流达到 <SPAN
+CLASS="ACRONYM"
+>EOF</SPAN
+>。
+	输出发送到和命令输出相同的位置。要从 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 的标准输入或者输出读/写，
+	使用 <TT
+CLASS="LITERAL"
+>pstdin</TT
+> 或者 <TT
+CLASS="LITERAL"
+>pstdout</TT
+>。这个选项用于把和 SQL 脚本嵌在一起的文件填充表很有用。
+        </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>        此操作不象 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> <TT
+CLASS="COMMAND"
+>COPY</TT
+> 命令这样高效，
+        因为所有数据必须通过客户端/服务器联接。对于大数据量的操作，另一种方法更可行。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\copyright</TT
+></DT
+><DD
+><P
+>        显示 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的版权和版本信息。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\d [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+><BR><TT
+CLASS="LITERAL"
+>\d+ [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        对于每个匹配<TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>的关系（表，视图，索引或者序列），
+        显示所有列，它们的类型，表空间（如果不是缺省的）和任何特殊属性，象<TT
+CLASS="LITERAL"
+>NOT NULL</TT
+>或缺省等－－只要存在。
+        如果实际上这个关系是一个表，任何已定义的索引，主键，唯一约束相关的索引，规则，约束，和触发器也同样显示出来，
+	如果关系是一个视图，还显示视图的定义。
+        （<SPAN
+CLASS="QUOTE"
+>"匹配模式"</SPAN
+>在下面定义。）
+        </P
+><P
+>        从 <TT
+CLASS="LITERAL"
+>\d+</TT
+> 来的命令也是一样的，只不过显示更多信息：任何与表的列关联的注解也都会显示，
+	还有就是表中出现的 OID。
+        </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>        如果如果不带任何<TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>调用 <TT
+CLASS="COMMAND"
+>\d</TT
+>，
+	等效于 <TT
+CLASS="COMMAND"
+>\dtvs</TT
+>，将显示一个所有表，视图和序列的列表。
+        这完全是出于方便的考虑。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\da [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        列出所有可用聚集函数，以及它们操作的数据类型。如果声明了
+         <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>，那么只显示匹配（正则表达式）的聚集函数。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\db [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+><BR><TT
+CLASS="LITERAL"
+>\db+ [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>	列出所有可用的表空间。如果声明了 <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>，
+	那么只显示那些匹配模式的表空间。如果在命令名上附加了 <TT
+CLASS="LITERAL"
+>+</TT
+>，那么每个对象都和与之相关的权限一起列出。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\dc [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        列出所有字符集之间的可用转换。如果声明了 <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>，
+        则只列出那些匹配模式的转换。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\dC</TT
+></DT
+><DD
+><P
+>        列出所有类型转换。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\dd [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        显示所有匹配
+        <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>
+        的描述，如果没有给出参数，显示所有可视对象。
+        但是不管怎样，只有那些有描述内容的对象才显示出来。
+        （<SPAN
+CLASS="QUOTE"
+>"对象"</SPAN
+>包括聚集，函数，操作符，类型，
+        关系（表，视图，索引，序列，大对象），规则和触发器。）例如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\dd version</B
+></TT
+>
+                     Object descriptions
+   Schema   |  Name   |  Object  |      Description
+------------+---------+----------+---------------------------
+ pg_catalog | version | function | PostgreSQL version string
+(1 row)</PRE
+><P>
+        </P
+><P
+>        可以用 <A
+HREF="sql-comment.html"
+><I
+>COMMENT</I
+></A
+>
+        <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令生成对对象的描述。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\dD [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        列出所有可用域。如果声明了 <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>，那么只显示匹配的域。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\df [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+><BR><TT
+CLASS="LITERAL"
+>\df+ [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        列出所有可用函数，以及它们的参数和返回的数据类型。如果声明了
+         <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>，那么只显示匹配（正则表达式）的函数。如果使用了
+        <TT
+CLASS="LITERAL"
+>\df+</TT
+> 的形式，每个函数的附加信息，包括语言和描述也会显示出来。
+        </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	要查找接受或者返回特定类型的函数，使用你的分页器的搜索功能来滚动 <TT
+CLASS="LITERAL"
+>\df</TT
+> 的输出。
+        </P
+><P
+>        为了减少混乱，<TT
+CLASS="LITERAL"
+>\df</TT
+> 并不显示数据类型的 I/O 函数。
+        这样是通过忽略那些接受或者返回类型 <TT
+CLASS="TYPE"
+>cstring</TT
+> 的函数实现的。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\dg [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>	列出所有数据库组。如果声明了 <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>，
+	只显示那些匹配模式的名字。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\distvS [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        这不是实际的命令名称：字母 <TT
+CLASS="LITERAL"
+>i</TT
+>，<TT
+CLASS="LITERAL"
+>s</TT
+>，
+	<TT
+CLASS="LITERAL"
+>t</TT
+>，<TT
+CLASS="LITERAL"
+>v</TT
+>，<TT
+CLASS="LITERAL"
+>S</TT
+> 分别代表索引（index），
+        序列（sequence），表（table），视图（view）和系统表（system table）。
+        你可以以任意顺序声明任意或者所有这些字母获得这些对象的一个列表。
+        字幕 S 把列表限制于系统对象；如果没有 <TT
+CLASS="LITERAL"
+>S</TT
+>，则只显示非系统对象。
+        如果在命令名上附加了 <TT
+CLASS="LITERAL"
+>+</TT
+>，那么还会列出和每个对象相关联的描述，如果有的话。
+        </P
+><P
+>        如果声明了 <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>，那么只列出匹配模式的对象。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\dl</TT
+></DT
+><DD
+><P
+>        这是 <TT
+CLASS="COMMAND"
+>\lo_list</TT
+>的别名，显示一个大对象的列表。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\dn [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+><BR><TT
+CLASS="LITERAL"
+>\dn+ [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        列出所有可用模式（名字空间）。如果声明了 <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>
+        （一个正则表达式），那么只列出匹配模式的模式名。不显示非本地的临时模式。
+	如果在命令名上附加了 <TT
+CLASS="LITERAL"
+>+</TT
+>，那么每个对象都和与之相关的权限和注释一起列出（如果有的话）。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\do [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        列出所有可用操作符，以及它们的操作数和返回的数据类型。
+        如果声明了 <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>，那么只显示匹配模式的操作符。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\dp [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        生成一列可用的表和它们相关的权限。
+        如果声明了 <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>，
+        那么只列出名字可以匹配模式的表。
+        </P
+><P
+>        命令 <TT
+CLASS="COMMAND"
+>GRANT</TT
+> 和 <TT
+CLASS="COMMAND"
+>REVOKE</TT
+> 用于设置访问权限。
+	参阅 <A
+HREF="sql-grant.html"
+><I
+>GRANT</I
+></A
+> 获取更多信息。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\dT [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+><BR><TT
+CLASS="LITERAL"
+>\dT+ [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        列出所有数据类型或只显示那些匹配
+        <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>的。这条命令的
+         <TT
+CLASS="LITERAL"
+>\dT+</TT
+> 形式显示更多信息。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\du [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        列出所有已配置用户或者只列出那些匹配 <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> 的用户。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\edit</TT
+> (or <TT
+CLASS="LITERAL"
+>\e</TT
+>) <TT
+CLASS="LITERAL"
+>[ <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        如果声明了 <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>，
+        则编辑此文件并且在编辑器退出后将其内容拷贝回查询缓冲区。
+        如果没有给出参数，则把当前查询缓冲区内容拷贝到一个临时文件然后以相同方式编辑。
+        </P
+><P
+>        然后根据一般的<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>规则重新分析查询缓冲区，
+        这时整个缓冲区当作一个单行。（因此你无法用这个方法制作“脚本”，用 <TT
+CLASS="COMMAND"
+>\i</TT
+> 做脚本。）
+	这还意味着如果该查询以分号结尾（或者包含分号），它就会马上被执行。否则它只是在查询缓冲区里等待。
+        </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>        <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 搜索环境变量 <TT
+CLASS="VARNAME"
+>PSQL_EDITOR</TT
+>，<TT
+CLASS="VARNAME"
+>EDITOR</TT
+>
+        和 <TT
+CLASS="VARNAME"
+>VISUAL</TT
+>（以此顺序）查找要用到哪个编辑器。如果上面的都没有设置，那么在 Unix 系统上使用
+        <TT
+CLASS="FILENAME"
+>vi</TT
+>，在 Windows 系统上用 <TT
+CLASS="FILENAME"
+>notepad.exe</TT
+>。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\echo <TT
+CLASS="REPLACEABLE"
+><I
+>text</I
+></TT
+> [ ... ]</TT
+></DT
+><DD
+><P
+>        向标准输出打印参数，用一个空格分隔并且最后跟着一个新行。
+        这个特性在显示脚本的输出时会有用。例如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\echo `date`</B
+></TT
+>
+Tue Oct 26 21:40:57 CEST 1999</PRE
+><P>
+        果第一个参数是一个无引号的 <TT
+CLASS="LITERAL"
+>-n</TT
+>，那么不会写出结尾的新行。
+        </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>        如果你使用 <TT
+CLASS="COMMAND"
+>\o</TT
+> 命令重定向你的查询的输出，你可能会用
+        <TT
+CLASS="COMMAND"
+>\qecho</TT
+>取代这条命令。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\encoding [ <TT
+CLASS="REPLACEABLE"
+><I
+>encoding</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        设置客户端字符编码方式。不带参数时，这条命令显示当前的编码方式。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\f [ <TT
+CLASS="REPLACEABLE"
+><I
+>string</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        为不对齐的查询输出设置域分隔符。缺省时是竖条（<TT
+CLASS="LITERAL"
+>|</TT
+>）。
+        参阅 <TT
+CLASS="COMMAND"
+>\pset</TT
+> 获取设置输出选项的通用方法。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\g</TT
+> [ { <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+> | <TT
+CLASS="LITERAL"
+>|</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+> } ]</DT
+><DD
+><P
+>        把当前的查询输入缓冲区的内容发送给服务器并且把查询的输出存储到可选的
+         <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>
+        或者把输出定向到一个独立的在执行 <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+> 的 Unix shell。
+        单独一个 <TT
+CLASS="LITERAL"
+>\g</TT
+> 实际上等效于一个分号。一个带有参数的<TT
+CLASS="LITERAL"
+>\g</TT
+> 是<SPAN
+CLASS="QUOTE"
+>"一次性"</SPAN
+>的
+        <TT
+CLASS="COMMAND"
+>\o</TT
+>命令的代用品。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\help</TT
+> （或者 <TT
+CLASS="LITERAL"
+>\h</TT
+>） <TT
+CLASS="LITERAL"
+>[ <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        给出指定 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令的语法帮助。如果没有给出
+        <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+> ，那么
+        <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 将列出可获得语法帮助的所有命令。如果
+        <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+>
+        是一个星号（<SPAN
+CLASS="QUOTE"
+>"*"</SPAN
+>），则显示所有 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令的语法帮助。
+        </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>        为简化敲击，包含多个单字的命令不需要引起。因此键入
+        <TT
+CLASS="USERINPUT"
+><B
+>\help alter table</B
+></TT
+> 是正确的。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\H</TT
+></DT
+><DD
+><P
+>        打开 <SPAN
+CLASS="ACRONYM"
+>HTML</SPAN
+> 查询输出格式。如果 <SPAN
+CLASS="ACRONYM"
+>HTML</SPAN
+>
+        格式已经打开，则切换回缺省的对齐的文本格式。
+        这个命令是为了兼容和方便，参阅 <TT
+CLASS="COMMAND"
+>\pset</TT
+> 获取设置其他输出选项的内容。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\i <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        从文件<TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>中读取并把其内容当作从键盘输入的那样执行查询。
+        </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>        如果你想在屏幕上看到读入的行，你必须对所有行设置变量 <TT
+CLASS="VARNAME"
+>ECHO</TT
+> 为 <TT
+CLASS="LITERAL"
+>all</TT
+>。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\l</TT
+> （或 <TT
+CLASS="LITERAL"
+>\list</TT
+>）<BR><TT
+CLASS="LITERAL"
+>\l+</TT
+> （或 <TT
+CLASS="LITERAL"
+>\list+</TT
+>）</DT
+><DD
+><P
+>        列出服务器上所有数据库的名字和它们的所有者以及字符集编码。在命令名称后面加一个
+        <SPAN
+CLASS="QUOTE"
+>"+"</SPAN
+> 还可以看到对数据库的描述。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\lo_export</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>loid</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+></DT
+><DD
+><P
+>        从数据库里读取 <SPAN
+CLASS="ACRONYM"
+>OID</SPAN
+> 为 <TT
+CLASS="REPLACEABLE"
+><I
+>loid</I
+></TT
+>
+        的大对象并把她写到 <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>里。
+        注意这个功能与服务器函数 <TT
+CLASS="FUNCTION"
+>lo_export</TT
+> 有些微小的区别，
+        <TT
+CLASS="FUNCTION"
+>lo_export</TT
+> 运行时带着运行数据库服务器的用户权限，
+        而且是在服务器的文件系统上。
+        </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>        使用 <TT
+CLASS="COMMAND"
+>\lo_list</TT
+> 查看大对象的 <SPAN
+CLASS="ACRONYM"
+>OID</SPAN
+>。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\lo_import <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+> [ <TT
+CLASS="REPLACEABLE"
+><I
+>comment</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        把文件存储为一个
+        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 大对象。可以带着一个该对象的注解选项。例如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>foo=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\lo_import '/home/peter/pictures/photo.xcf' 'a picture of me'</B
+></TT
+>
+lo_import 152801</PRE
+><P>
+        响应表明此大对象得到一个对象标识 152801，如果你还想访问该对象，就应该把这个对象标识记住。
+        因此，我们建议总是给每个对象关联一个人类可读的注解。
+	那样就可以用 <TT
+CLASS="COMMAND"
+>\lo_list</TT
+> 命令看到这些注解。
+        </P
+><P
+>        注意这条命令与服务器端的 <TT
+CLASS="FUNCTION"
+>lo_import</TT
+> 有一些区别，
+	因为这条命令是本地用户在本地文件系统上操作，
+        而不是以服务器用户在服务器文件系统上操作。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\lo_list</TT
+></DT
+><DD
+><P
+>        显示一个目前存储在该数据库里的所有
+        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 大对象和它们的所有者的列表。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\lo_unlink <TT
+CLASS="REPLACEABLE"
+><I
+>loid</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        从数据库里删除<SPAN
+CLASS="ACRONYM"
+>OID</SPAN
+>为 <TT
+CLASS="REPLACEABLE"
+><I
+>loid</I
+></TT
+> 的大对象。
+        </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>        使用 <TT
+CLASS="COMMAND"
+>\lo_list</TT
+> 查找大对象的 <SPAN
+CLASS="ACRONYM"
+>OID</SPAN
+>。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\o</TT
+> [ {<TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+> | <TT
+CLASS="LITERAL"
+>|</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+>} ]</DT
+><DD
+><P
+>        把后面的查询结果保存到文件
+        <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>
+        里或者把后面的查询结果定向到一个独立的 Unix shell 执行
+        <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+>。
+        如果没有声明参数，查询输出重置为标准输出。
+        </P
+><P
+>        <SPAN
+CLASS="QUOTE"
+>"查询结果"</SPAN
+>包括所有表，命令响应和从数据库服务器来的提示，
+        同样还有各种各样查询数据库的反斜杠命令的输出（如 <TT
+CLASS="COMMAND"
+>\d</TT
+>），但是没有错误信息。
+        </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>        要用文本分散查询结果之间的输出，用 <TT
+CLASS="COMMAND"
+>\qecho</TT
+>。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\p</TT
+></DT
+><DD
+><P
+>        打印当前查询缓冲区到标准输出。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\pset <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+> [ <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        这条命令设置影响查询结果表输出的选项。<TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+>
+        描述要设置的选项是哪一个。<TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+> 的语意也取决于它。
+        </P
+><P
+>        可调节的打印选项有：
+        <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>format</TT
+></DT
+><DD
+><P
+>          设置输出格式为 <TT
+CLASS="LITERAL"
+>unaligned</TT
+>，<TT
+CLASS="LITERAL"
+>aligned</TT
+>，<TT
+CLASS="LITERAL"
+>html</TT
+>，
+	  <TT
+CLASS="LITERAL"
+>latex</TT
+> 或 <TT
+CLASS="LITERAL"
+>troff-ms</TT
+> 之一。允许使用唯一的缩写。
+	  （这也意味着一个字母就够了。）
+          </P
+><P
+>          <SPAN
+CLASS="QUOTE"
+>"Unaligned"</SPAN
+> （不对齐）把一条记录的所有字段都输出到一行，
+	  用当前有效的域分隔符分隔。这主要用于生成那些要被其他程序读取的输出（tab分隔，逗号分隔）。
+          <SPAN
+CLASS="QUOTE"
+>"Aligned"</SPAN
+> （对齐）模式是标准的，人类可读的，格式化好了的文本输出，也是缺省。
+          <SPAN
+CLASS="QUOTE"
+>"<SPAN
+CLASS="ACRONYM"
+>HTML</SPAN
+>"</SPAN
+> 和 <SPAN
+CLASS="QUOTE"
+>"LaTeX"</SPAN
+>
+	  模式把表输出为可用于文档里的对应标记语言。它们还不是完整的文档！
+	  （可能对于 <SPAN
+CLASS="ACRONYM"
+>HTML</SPAN
+> 变化还不是太大，
+	  但是在 LaTeX 里，你必须有一个完整的文档包装器。）
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>border</TT
+></DT
+><DD
+><P
+>                第二个参数必须是一个数字。通常，数字越大，表就有越宽的边界和越多的线，
+                但是这个参数取决于实际的格式。在<SPAN
+CLASS="ACRONYM"
+>HTML</SPAN
+>模式里，
+		这个参数会直接翻译成<TT
+CLASS="LITERAL"
+>border=...</TT
+>属性，在其他的模式里，
+                只有值 0 （无边界），1 （内部分隔线）和 2 （表框架）有意义。
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>expanded</TT
+> ）（或者 <TT
+CLASS="LITERAL"
+>x</TT
+>）</DT
+><DD
+><P
+>	  在正常和扩展格式之间切换。当打开扩展格式时，查询结果用两列显示，
+	  字段名称在左，数据在右。这个选项只影响正常查询结果的显示方式；
+	  <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 元命令的输出总是使用正常的格式。
+	  这个模式在数据无法放进通常的<SPAN
+CLASS="QUOTE"
+>"水平"</SPAN
+>模式的屏幕时很有用。
+          </P
+><P
+>                所有四种输出模式都支持扩展格式。
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>null</TT
+></DT
+><DD
+><P
+>                第二个参数是一个字串，用以代表字段的值为 null 时的打印输出。
+                缺省是什么都不打，这样很容易和类似一个空字串混淆。
+                因此，我们可能选择 <TT
+CLASS="LITERAL"
+>\pset null '(null)'</TT
+>。
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>fieldsep</TT
+></DT
+><DD
+><P
+>                声明在非对齐模式时的域分隔符。
+                这样我们就可以创建其他程序希望的tab或逗号分隔的输出。要设置 tab 域分隔符，
+		键入 <TT
+CLASS="LITERAL"
+>\pset fieldsep '\t'</TT
+>。缺省域分隔符是 <TT
+CLASS="LITERAL"
+>'|'</TT
+> （一个竖条符号）。
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>footer</TT
+></DT
+><DD
+><P
+>	  切换缺省脚注 <TT
+CLASS="LITERAL"
+>(x rows)</TT
+>。
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>recordsep</TT
+></DT
+><DD
+><P
+>          声明在非对齐模式时的记录分隔符。缺省是换行符。
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>tuples_only</TT
+> （或者 <TT
+CLASS="LITERAL"
+>t</TT
+>）</DT
+><DD
+><P
+>                在完全显示和只显示记录之间切换。
+                完全显示将显示象列头，标题和各种脚注等信息。
+                在这个模式下，只显示记录模式将只显示实际的表数据。
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>title</TT
+> [ <TT
+CLASS="REPLACEABLE"
+><I
+>text</I
+></TT
+> ]</DT
+><DD
+><P
+>                为任何随后打印的表设置标题。
+                这个参数可以用于给你的输出一个描述性标记。
+                如果不带参数，重置标题。
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>tableattr</TT
+> （或者 <TT
+CLASS="LITERAL"
+>T</TT
+>）<TT
+CLASS="LITERAL"
+>[ <TT
+CLASS="REPLACEABLE"
+><I
+>text</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>          允许你声明放在 <SPAN
+CLASS="ACRONYM"
+>HTML</SPAN
+> <TT
+CLASS="SGMLTAG"
+>table</TT
+> 标记里的任何属性。例如，可以是
+          <TT
+CLASS="LITERAL"
+>cellpadding</TT
+> 或 <TT
+CLASS="LITERAL"
+>bgcolor</TT
+>。注意你可能不需要在这里声明
+          <TT
+CLASS="LITERAL"
+>border</TT
+> ，因为已经在 <TT
+CLASS="LITERAL"
+>\pset border</TT
+> 里用过了。
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>pager</TT
+></DT
+><DD
+><P
+>        控制查询和<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>帮助输出的分页器。如果设置了环境变量 <TT
+CLASS="VARNAME"
+>PAGER</TT
+>，
+	输出被定向到指定程序，否则使用系统缺省（比如  <TT
+CLASS="FILENAME"
+>more</TT
+>）。
+          </P
+><P
+>                如果关闭了分页器，则不使用它，如果打开了，程序只在需要的时候使用分页器，也就是说，
+                输出是到终端，而且那个表很可能无法与屏幕匹配。
+                （<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 在决定何时分页时不是很完美。）
+                <TT
+CLASS="LITERAL"
+>\pset pager</TT
+> 开关分页器。我们也可以把分页器设置为 <TT
+CLASS="LITERAL"
+>always</TT
+>，导致我们在任何情况下都使用分页器。
+          </P
+></DD
+></DL
+></DIV
+><P>
+        </P
+><P
+>        可以在 <A
+HREF="app-psql.html#APP-PSQL-EXAMPLES"
+><I
+>例子</I
+></A
+> 节看到这些不同格式输出的示例。
+        </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>        有很多用于<TT
+CLASS="COMMAND"
+>\pset</TT
+>的快速命令。参阅
+        <TT
+CLASS="COMMAND"
+>\a</TT
+>，<TT
+CLASS="COMMAND"
+>\C</TT
+>，<TT
+CLASS="COMMAND"
+>\H</TT
+>，
+        <TT
+CLASS="COMMAND"
+>\t</TT
+>，<TT
+CLASS="COMMAND"
+>\T</TT
+>，和 <TT
+CLASS="COMMAND"
+>\x</TT
+>。
+        </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>        无参数运行 <TT
+CLASS="COMMAND"
+>\pset</TT
+>是错误的。
+        以后这样调用将显示当前打印选项状态。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\q</TT
+></DT
+><DD
+><P
+>        退出<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>程序。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\qecho <TT
+CLASS="REPLACEABLE"
+><I
+>text</I
+></TT
+> [ ... ] </TT
+></DT
+><DD
+><P
+>        这条命令等效于 <TT
+CLASS="COMMAND"
+>\echo</TT
+> ，区别是所有输出将写入由 <TT
+CLASS="COMMAND"
+>\o</TT
+>设置的输出通道。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\r</TT
+></DT
+><DD
+><P
+>        重置（清空）查询缓冲区。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\s [ <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        将命令行历史打印出或是存放到 <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>。
+	如果省略 <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>，
+        历史将输出到标准输出。这个选项只有在 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 配置成使用
+         <SPAN
+CLASS="ACRONYM"
+>GNU</SPAN
+> <SPAN
+CLASS="APPLICATION"
+>Readline</SPAN
+> 库后才生效。
+        </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>        在当前版本里，这个（ GNU 历史库）不再是必须的了，
+        实际上，在程序结束时自动保存命令行历史。每次 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 启动都会装载命令行历史。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\set [ <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> [ <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+> [ ... ] ] ]</TT
+></DT
+><DD
+><P
+>        设置内部变量 <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>
+        为 <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+> 或着如果给出了多于一个值，
+        设置为所有这些值的联接结果。如果没有给出第二个参数，只设变量不设值。要重置一个变量，使用
+        <TT
+CLASS="COMMAND"
+>\unset</TT
+> 命令。
+        </P
+><P
+>        有效的变量名可以包含字符，数字和下划线。
+        参阅下面的 <A
+HREF="app-psql.html#APP-PSQL-VARIABLES"
+><I
+>变量</I
+></A
+> 获取细节。
+        </P
+><P
+>        尽管你可以设置任何变量为任意值，
+        <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>对一些变量特殊对待。它们在关于变量的节里面有文档。
+        </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>        这条命令是完全和 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令 <A
+HREF="sql-set.html"
+><I
+>SET</I
+></A
+> 不一样的。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\t</TT
+></DT
+><DD
+><P
+>        切换输出的列/字段名的信息头和行记数脚注。
+        这条命令等效于 <TT
+CLASS="LITERAL"
+>\pset tuples_only</TT
+>，提供主要为了方便。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\T <TT
+CLASS="REPLACEABLE"
+><I
+>table_options</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        允许你在使用<SPAN
+CLASS="ACRONYM"
+>HTML</SPAN
+>输出模式时声明放在 <TT
+CLASS="SGMLTAG"
+>table</TT
+> 标记里的属性。
+	这条命令等效于 <TT
+CLASS="LITERAL"
+>\pset tableattr <TT
+CLASS="REPLACEABLE"
+><I
+>table_options</I
+></TT
+></TT
+>。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\w</TT
+> {<TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+> | <TT
+CLASS="REPLACEABLE"
+><I
+>|command</I
+></TT
+>}</DT
+><DD
+><P
+>        将当前查询缓冲区输出到文件
+        <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>
+         或者定向到 Unix 命令
+         <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+>。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\x</TT
+></DT
+><DD
+><P
+>        切换扩展行格式。等效于 <TT
+CLASS="LITERAL"
+>\pset expanded</TT
+>。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\z [ <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        生成一个带有访问权限列表的数据库中所有表，视图和序列的列表。
+        如果给出任何<TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>，则被当成一个规则表达式，
+        只显示匹配的表，视图和序列。
+        </P
+><P
+>        命令 <TT
+CLASS="COMMAND"
+>GRANT</TT
+> 和 <TT
+CLASS="COMMAND"
+>REVOKE</TT
+> 用于设置访问权限。
+        参阅 <A
+HREF="sql-grant.html"
+><I
+>GRANT</I
+></A
+> 获取更多信息。
+        </P
+><P
+>        这是 <TT
+CLASS="COMMAND"
+>\dp</TT
+>（<SPAN
+CLASS="QUOTE"
+>"显示权限"</SPAN
+>）的别名。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\! [ <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        返回到一个独立的 Unix shell 或者执行 Unix 命令
+        <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+>。
+        参数不会被进一步解释，shell 将看到全部参数。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\?</TT
+></DT
+><DD
+><P
+>        获得关于反斜杠命令的帮助信息。
+        </P
+></DD
+></DL
+></DIV
+><P>
+  </P
+><P
+>        各种 <TT
+CLASS="LITERAL"
+>\d</TT
+> 命令都接受一个 <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>
+        参数，声明要显示的对象名字。<TT
+CLASS="LITERAL"
+>*</TT
+> 表示<SPAN
+CLASS="QUOTE"
+>"任何字符序列"</SPAN
+>，
+        而  <TT
+CLASS="LITERAL"
+>?</TT
+> 表示<SPAN
+CLASS="QUOTE"
+>"任何单个字符"</SPAN
+>。（这个表示法和 Unix 的 shell 文件名模式兼容。）
+        高级用户也可以使用正则表达式表示法，比如字符表，<TT
+CLASS="LITERAL"
+>[0-9]</TT
+> 这样的东西来匹配<SPAN
+CLASS="QUOTE"
+>"任意数字"</SPAN
+>。
+        要让任何这些模式匹配字符可以安字面方式解析，那就应该用双引号包围它们。
+  </P
+><P
+>        一个包含（无引号的）句点的模式会被解析承一个模式名的模式后面跟着一个对象名的模式。
+	比如，<TT
+CLASS="LITERAL"
+> \dt foo*.bar*</TT
+> 显示所有以<TT
+CLASS="LITERAL"
+>foo</TT
+> 开头的模式里的以 <TT
+CLASS="LITERAL"
+>bar</TT
+> 开头的表名字。
+	如果没有出现句点，那么这个模式只匹配在当前模式搜索路径中可见的对象。
+  </P
+><P
+>        如果完全省略 <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> 参数，
+        那么 <TT
+CLASS="LITERAL"
+>\d</TT
+> 命令显示所有在当前模式搜索路径中可见的对象。
+	要查阅在数据库中的所有对象，使用模式 <TT
+CLASS="LITERAL"
+>*.*</TT
+>。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN52698"
+></A
+><H3
+>高级特性</H3
+><DIV
+CLASS="REFSECT3"
+><A
+NAME="APP-PSQL-VARIABLES"
+></A
+><H4
+>变量</H4
+><P
+>    <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>
+        提供类似通常 Unix 命令 shell 那样的变量替换特性。
+        变量只是简单的名称/数值对，
+        这里的值可以是任何长度的任何值。要设置一个变量，使用
+    <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 元命令 <TT
+CLASS="COMMAND"
+>\set</TT
+>：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\set foo bar</B
+></TT
+></PRE
+><P>
+        把变量<SPAN
+CLASS="QUOTE"
+>"foo"</SPAN
+>  设置为值 <SPAN
+CLASS="QUOTE"
+>"bar"</SPAN
+>。
+        要检索变量的内容，在变量名前面放上冒号然后把它用在任意斜杠命令里：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\echo :foo</B
+></TT
+>
+bar</PRE
+><P>
+    </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>    <TT
+CLASS="COMMAND"
+>\set</TT
+> 的参数服从和其他命令一样的替换规则。
+        因此你可以构造有趣的引用，象
+    <TT
+CLASS="LITERAL"
+>\set :foo 'something'</TT
+> 这样，
+    获得分别象<SPAN
+CLASS="PRODUCTNAME"
+>Perl</SPAN
+>或
+    <SPAN
+CLASS="PRODUCTNAME"
+><SPAN
+CLASS="ACRONYM"
+>PHP</SPAN
+></SPAN
+>那样有名的<SPAN
+CLASS="QUOTE"
+>"软连接（soft links）"</SPAN
+>或<SPAN
+CLASS="QUOTE"
+>"变量 变量"</SPAN
+>。
+        不幸的是（或者 万幸的？），用这些构造不能做任何有用的事情。另一方面，
+    <TT
+CLASS="LITERAL"
+>\set bar :foo</TT
+> 是一个非常有效的拷贝变量的方法。
+    </P
+></BLOCKQUOTE
+></DIV
+><P
+>    如果你不带第二个参数调用<TT
+CLASS="COMMAND"
+>\set</TT
+>， 那么只是设置这个变量而没有值。
+        要重置（或删除）一个变量，使用命令 <TT
+CLASS="COMMAND"
+>\unset</TT
+>。
+    </P
+><P
+>    <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>的内部变量可以包括任意顺序，
+        任意数量的字母，数字和下划线。
+        有一些常用变量被 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 另眼相待。它们是一些选项设置，
+	这些选项在运行时可以通过改变变量的值或者改变一些应用的表现状态而改变。
+        尽管你可以把这些变量用于其他用途，但是我们不鼓励这么做，因为程序的特性可能会很快变得非常奇怪。
+        通常，所有特殊对待的变量都是由大写字母组成（可能还有数字和下划线）。
+        为了保证和未来的最大限度的兼容性，请避免使用这样的变量。
+        下面是一个所有特殊对待的变量列表。
+    </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="VARNAME"
+>AUTOCOMMIT</TT
+></DT
+><DD
+><P
+>	如果是 <TT
+CLASS="LITERAL"
+>on</TT
+>（缺省），那么每个 SQL 命令都在成功完成后自动提交。
+	要推迟这种模式下的提交，你必须输入一个 <TT
+CLASS="COMMAND"
+>BEGIN</TT
+> 或者 <TT
+CLASS="COMMAND"
+>START TRANSACTION</TT
+> SQL 命令。
+	如果是 <TT
+CLASS="LITERAL"
+>off</TT
+> 或者未设置，SQL 命令不会提交，知道你明确地发出 <TT
+CLASS="COMMAND"
+>COMMIT</TT
+> 或者 <TT
+CLASS="COMMAND"
+>END</TT
+>。
+	关闭自动提交的模式是通过为你明确发出一个 <TT
+CLASS="COMMAND"
+>BEGIN</TT
+> 实现的，
+	它是放在任何尚未在一个事务块中并且自己不是 <TT
+CLASS="COMMAND"
+>BEGIN</TT
+> 或者其它事务控制命令也不是那些不能在事务块里执行的命令
+	（比如 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>）的前面。
+        </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	 在关闭自动提交的模式下，你必须明确放弃任何失败的事务，方法是执行 <TT
+CLASS="COMMAND"
+>ABORT</TT
+> 或者 <TT
+CLASS="COMMAND"
+>ROLLBACK</TT
+>。
+	 还要注意如果你不提交就退出会话，你的工作会丢失。
+        </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	 自动提交打开方式是 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 传统的行为，
+	 但是关闭自动提交更接近 SQL 规范。如果你喜欢关闭自动提交，你应该在你的 <TT
+CLASS="FILENAME"
+>.psqlrc</TT
+> 文件里设置它。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>DBNAME</TT
+></DT
+><DD
+><P
+>        你正在联接着的数据库名称。
+        每次你与一个数据库联结都会设置这个值（包括程序启动），但是可以删除。
+        </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>ECHO</TT
+></DT
+><DD
+><P
+>        如果置为 <TT
+CLASS="LITERAL"
+>all</TT
+>，
+        输入的或者来自键盘或者一个脚本的所有行在分析或执行前都写到标准输出。
+        要在程序启动时声明这些，使用 <TT
+CLASS="OPTION"
+>-a</TT
+>如果设置为 <TT
+CLASS="LITERAL"
+>queries</TT
+>，
+        <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 只是在查询发送给服务器之前打印出来。
+        实现这个功能的命令行选项是 <TT
+CLASS="OPTION"
+>-e</TT
+>。
+        </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>ECHO_HIDDEN</TT
+></DT
+><DD
+><P
+>        当设置了这个变量并且一个反斜杠命令查询数据库时，首先显示查询。
+        这样你可以学习 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        内部的东西并且在你自己的程序里提供类似功能。如果你设置该变量的值为
+         <SPAN
+CLASS="QUOTE"
+>"noexec"</SPAN
+>，查询只是显示出来但是实际上不发送到服务器和执行。
+        </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>ENCODING</TT
+></DT
+><DD
+><P
+>        当前的客户端字符集编码。
+        </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>HISTCONTROL</TT
+></DT
+><DD
+><P
+>        如果这个变量设置为 <TT
+CLASS="LITERAL"
+>ignorespace</TT
+>，
+        以空格开始的行将不会进入历史列表。
+        如果设置为变量 <TT
+CLASS="LITERAL"
+>ignoredups</TT
+>，
+        与以前历史记录里匹配的行也不会进入历史记录。值
+        <TT
+CLASS="LITERAL"
+>ignoreboth</TT
+>是上面两个的结合。
+        如果删除此变量或者其值为任何与上面的值不同的东西，
+        所有交互模式读入的行都被保存入历史列表。
+        </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>        这个特性是无耻地从 <SPAN
+CLASS="APPLICATION"
+>Bash</SPAN
+> 里剽窃来的。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>HISTFILE</TT
+></DT
+><DD
+><P
+>	此文件将用于存储历史列表。缺省值是 <TT
+CLASS="FILENAME"
+>~/.psql_history</TT
+>。
+	比如，在 <TT
+CLASS="FILENAME"
+>~/.psqlrc</TT
+> 里使用：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>\set HISTFILE ~/.psql_history- :DBNAME</PRE
+><P>
+	将令 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 为每个数据库维护一个独立的历史。
+        </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	这个特性是从 <SPAN
+CLASS="APPLICATION"
+>Bash</SPAN
+> 里偷学来的。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>HISTSIZE</TT
+></DT
+><DD
+><P
+>        存在命令历史里的命令的个数。缺省值是 500。
+        </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>        这个特性是无耻地从 <SPAN
+CLASS="APPLICATION"
+>Bash</SPAN
+>里剽窃来的。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>HOST</TT
+></DT
+><DD
+><P
+>        当前你正联接的数据库服务器主机。
+        这是在每次你与数据库联接时（包括程序启动）设置的，但是可以删除。
+        </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>IGNOREEOF</TT
+></DT
+><DD
+><P
+>         如果删除此变量，向一个交互的 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>会话发送一个 EOF
+        （通常是 Control-D）将终止应用。如果设置为一个数字值，那么在应用终止前该数值的 EOF 字符将被忽略。
+        如果设置了此变量但是没有数字值，缺省是 10。
+        </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>        这个特性是无耻地从 <SPAN
+CLASS="APPLICATION"
+>Bash</SPAN
+> 里剽窃来的。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>LASTOID</TT
+></DT
+><DD
+><P
+>        最后影响的oid值，即为从一条 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 或 <TT
+CLASS="COMMAND"
+>lo_insert</TT
+> 命令返回的值。
+	此变量只保证在下一条 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令的结果显示之前有效。
+        </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>ON_ERROR_ROLLBACK</TT
+></DT
+><DD
+><P
+>	如果是 <TT
+CLASS="LITERAL"
+>on</TT
+>，如果一个事务块里的语句产生一个错误，
+	那么这个错误被忽略而事务讲继续。如果是 <TT
+CLASS="LITERAL"
+>interactive</TT
+>，
+	那么这样的错误只是在交互的会话里忽略，而不是在从读取脚本文件的时候。
+	如果是 <TT
+CLASS="LITERAL"
+>off</TT
+>（缺省），事务块里一个语句生成的错误将会回滚整个事务。
+	on_error_rollback-on 的模式是通过在一个事务块的每个命令前为你隐含地发出一个 <TT
+CLASS="COMMAND"
+>SAVEPONT</TT
+>
+	的方式工作的，在发生错误的时候回滚到该事务块。
+        </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>ON_ERROR_STOP</TT
+></DT
+><DD
+><P
+>        缺省时，如果非交互的脚本碰到一个错误，象一条错误的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令或者内部元命令，处理会继续进行。
+	这是 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 的传统特性，
+        但是有时候我们不太希望这样。如果设置了这个变量，脚本处理将马上停止。
+        如果该脚本是从另外一个脚本调用的，那个脚本也会按同样的方式停止。
+	如果最外层的脚本不是从一次交互的 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>
+	会话中调用的而是用 <TT
+CLASS="OPTION"
+>-f</TT
+> 选项调用的，<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>
+        将返回错误代码 3，以示这个情况与致命错误条件的区别（错误代码 1）。
+        </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>PORT</TT
+></DT
+><DD
+><P
+>        当前你正在联接的数据库服务器的端口。
+        这是在每次你与数据库联接时（包括程序启动）设置的，但是可以删除。
+        </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>PROMPT1</TT
+><BR><TT
+CLASS="VARNAME"
+>PROMPT2</TT
+><BR><TT
+CLASS="VARNAME"
+>PROMPT3</TT
+></DT
+><DD
+><P
+>        这些指明<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 显示的提示符看上去象什么。
+        参阅下面的
+        <A
+HREF="app-psql.html#APP-PSQL-PROMPTING"
+><I
+>提示符</I
+></A
+>。
+        </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>QUIET</TT
+></DT
+><DD
+><P
+>        这个变量等效于命令行选项 <TT
+CLASS="OPTION"
+>-q</TT
+>。
+        可能在交互模式下没有什么用。
+        </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>SINGLELINE</TT
+></DT
+><DD
+><P
+>        这个变量等效于设置命令行选项
+        <TT
+CLASS="OPTION"
+>-S</TT
+>。你可以在运行时删除或设置它。
+        </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>SINGLESTEP</TT
+></DT
+><DD
+><P
+>        这个变量等效于命令行选项 <TT
+CLASS="OPTION"
+>-s</TT
+>。
+        </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>USER</TT
+></DT
+><DD
+><P
+>        当前你正用于联接的数据库用户。
+        这是在每次你与数据库联接时（包括程序启动）设置的，但是可以删除/重置。
+        </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>VERBOSITY</TT
+></DT
+><DD
+><P
+>	这个选项可以设置为值 <TT
+CLASS="LITERAL"
+>default</TT
+>，<TT
+CLASS="LITERAL"
+>verbose</TT
+>，或者 <TT
+CLASS="LITERAL"
+>terse</TT
+>
+	以控制错误报告的冗余行。
+        </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT3"
+><A
+NAME="AEN52909"
+></A
+><H4
+><SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 代换</H4
+><P
+>    一个附加的 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 变量的有用特性是你可以把它们替换（<SPAN
+CLASS="QUOTE"
+>"代换"</SPAN
+>）成正规的
+    <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语句。这样做的语法同样还是变量名前面加一个冒号（<TT
+CLASS="LITERAL"
+>:</TT
+>）。
+</P><PRE
+CLASS="PROGRAMLISTING"
+>testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\set foo 'my_table'</B
+></TT
+>
+testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>SELECT * FROM :foo;</B
+></TT
+></PRE
+><P>
+        将会查询表<TT
+CLASS="LITERAL"
+>my_table</TT
+>。变量的值是逐字拷贝的，
+        所以它甚至可以包含不对称的引号或反斜杠命令。你必须保证你输入的东西是有意义的。
+	变量替换将不会在引号引起来的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语句里面发生。
+    </P
+><P
+>        利用这个功能的一个时髦的应用是通过使用一个随后的语句中最后插入的
+    <SPAN
+CLASS="ACRONYM"
+>OID</SPAN
+> 建立一个外键仿真场景。
+        另一个可能用到这个机制的地方是把一个文件的内容拷贝到一个字段里面去。
+        首先把文件装载到一个变量然后象上面那样处理。
+</P><PRE
+CLASS="PROGRAMLISTING"
+>testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\set content '\'' `cat my_file.txt` '\''</B
+></TT
+>
+testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>INSERT INTO my_table VALUES (:content);</B
+></TT
+></PRE
+><P>
+        这样处理的一个可能问题是
+    <TT
+CLASS="FILENAME"
+>my_file.txt</TT
+>
+        可能包含单引号。这些需要被逃逸以免在处理第三行时不会导致语法错误。
+        可以使用程序
+        <TT
+CLASS="COMMAND"
+>sed</TT
+>来做这个处理：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\set content '\'' `sed -e "s/'/\\\\\\'/g" &#60; my_file.txt` '\''</B
+></TT
+></PRE
+><P>
+        观察正确数量的反斜杠（6）！你可以这样解释它：在 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 分析完这行后，它把
+    <TT
+CLASS="LITERAL"
+>sed -e "s/'/\\\'/g" &lt; my_file.txt</TT
+> 传递给shell。
+        shell 将对双引号里的东西做其处理然后用参数
+        <TT
+CLASS="LITERAL"
+>-e</TT
+> 和 <TT
+CLASS="LITERAL"
+>s/'/\\'/g</TT
+>执行
+    <TT
+CLASS="COMMAND"
+>sed</TT
+>。当 <TT
+CLASS="COMMAND"
+>sed</TT
+>分析这些时，
+        它将把双反斜杠替换为单个反斜杠然后进行替换。
+        可能有时候你认为所有 Unix 命令使用同一个逃逸字符是个好事。
+        但具有讽刺意味的事实是你可能不得不逃逸所有反斜杠，因为 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 文本常量同样也惨遭这种解释。
+        这种情况下你可能最好在外部准备文件。
+    </P
+><P
+>        因为冒号也可以合法的出现在 SQL 命令里，便有下面规则的应用：
+        如果没有设置变量，字符序列 <SPAN
+CLASS="QUOTE"
+>"冒号+名称"</SPAN
+> 不会被改变。
+        在任何情况下你都可以用反斜杠逃逸冒号以保护它免于被解释。
+        （变量的冒号语法是 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 用于嵌入查询语言的标准，如
+    <SPAN
+CLASS="APPLICATION"
+>ECPG</SPAN
+>。用于数组片段和类型转换的冒号语法是
+     <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 扩展，因此有冲突。）
+    </P
+></DIV
+><DIV
+CLASS="REFSECT3"
+><A
+NAME="APP-PSQL-PROMPTING"
+></A
+><H4
+>提示符</H4
+><P
+>    <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>使用的提示符可以根据你的喜好客户化。三个变量
+    <TT
+CLASS="VARNAME"
+>PROMPT1</TT
+>，<TT
+CLASS="VARNAME"
+>PROMPT2</TT
+>，和 <TT
+CLASS="VARNAME"
+>PROMPT3</TT
+>
+    包含描述提示符的外观的字串和特殊逃逸序列。Prompt 1 是
+    <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 请求一个新命令时的使用的正常提示符。
+    Prompt 2 是在一个命令输入期待更多输入时（因为查询没有用一个分号结束或者引号没有关闭）显示的提示符。
+    Prompt 3 在你运行一个 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> <TT
+CLASS="COMMAND"
+>COPY</TT
+> 命令和等待你在终端上键入记录时使用。
+    </P
+><P
+>        相应的提示符变量的值是按字面打印的，除非碰到一个百分号（<TT
+CLASS="LITERAL"
+>%</TT
+>）。这时某些其他的文本被替换，
+        替换为何物取决于下一个字符。已定义的替换是：
+
+    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>%M</TT
+></DT
+><DD
+><P
+>        数据库服务器主机名全名（带着域名），如果联接是通过 Unix 域套接字进行的就是 <TT
+CLASS="LITERAL"
+>[local]</TT
+>，
+	或者如果 Unix 域套接字不是编译的缺省位置，就是
+        <TT
+CLASS="LITERAL"
+>[local:<TT
+CLASS="REPLACEABLE"
+><I
+>/dir/name</I
+></TT
+>]</TT
+>。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>%m</TT
+></DT
+><DD
+><P
+>        数据库服务器的主机名删去第一个点后面的部分剩下的东西。
+        或者如果联接是通过 Unix 域套接字，就是 <TT
+CLASS="LITERAL"
+>[local]</TT
+>。
+         </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>%&gt;</TT
+></DT
+><DD
+><P
+>数据库服务器正在侦听的端口号。</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>%n</TT
+></DT
+><DD
+><P
+>	数据库会话的用户名。
+	（这个值的扩展可能在一个数据库会话过程中因为 <TT
+CLASS="COMMAND"
+>SET SESSION AUTHORIZATION</TT
+> 命令而改变。）
+         </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>%/</TT
+></DT
+><DD
+><P
+>当前数据库名称。</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>%~</TT
+></DT
+><DD
+><P
+>类似 <TT
+CLASS="LITERAL"
+>%/</TT
+>，
+        但如果数据库是你的缺省数据库输出是<SPAN
+CLASS="QUOTE"
+>"~"</SPAN
+>
+         （波浪线（tilde））。</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>%#</TT
+></DT
+><DD
+><P
+>	如果会话用户是数据库超级用户，使用
+         <SPAN
+CLASS="QUOTE"
+>"#"</SPAN
+>，否则用<SPAN
+CLASS="QUOTE"
+>"&gt;"</SPAN
+>。
+	（这个值的扩展可能在一个数据库会话过程中因为 <TT
+CLASS="COMMAND"
+>SET SESSION AUTHORIZATION</TT
+> 命令而改变。）
+	 </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>%R</TT
+></DT
+><DD
+><P
+>        对于 prompt 1 通常是 <TT
+CLASS="LITERAL"
+>=</TT
+>，但是如果是单行模式则是
+        <TT
+CLASS="LITERAL"
+>^</TT
+>，而如果会话与数据库断开（如果
+        <TT
+CLASS="COMMAND"
+>\connect</TT
+> 失败可能发生）是
+         <TT
+CLASS="LITERAL"
+>!</TT
+>。对于 prompt 2 该序列被
+        <TT
+CLASS="LITERAL"
+>-</TT
+>，<TT
+CLASS="LITERAL"
+>*</TT
+>，一个单引号，一个双引号或者一个美元符代替，这取决于
+        <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>是否等待更多的输入（因为查询没有终止，或着正在一个
+        <TT
+CLASS="LITERAL"
+>/* ... */</TT
+>注释里面，或者因为你在引号或者美元符扩展里面）。对于 prompt 3 该序列不解释成任何东西。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>%x</TT
+></DT
+><DD
+><P
+>	事务状态：如果不在事务块里，是一个空字串，如果在事务块里，是 <TT
+CLASS="LITERAL"
+>*</TT
+>，
+	如果在一个失败的事务块里是 <TT
+CLASS="LITERAL"
+>!</TT
+>，或者无法判断事务状态时为 <TT
+CLASS="LITERAL"
+>?</TT
+>
+	（比如，因为没有连接）。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>%</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>digits</I
+></TT
+></DT
+><DD
+><P
+>	 指定字节值的字符被替换到该位置。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>%:</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+><TT
+CLASS="LITERAL"
+>:</TT
+></DT
+><DD
+><P
+>        <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>变量<TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>的值。参阅
+        <A
+HREF="app-psql.html#APP-PSQL-VARIABLES"
+><I
+>变量</I
+></A
+>
+        节获取细节。
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>%`</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+><TT
+CLASS="LITERAL"
+>`</TT
+></DT
+><DD
+><P
+>        <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+>的输出，
+        类似于通常的<SPAN
+CLASS="QUOTE"
+>"反勾号（back-tick）"</SPAN
+> 替换。</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>%[</TT
+> ... <TT
+CLASS="LITERAL"
+>%]</TT
+></DT
+><DD
+><P
+>	 提示可以包含终端控制字符，这些字符可以改变颜色，北京，或者提示文本的风格，
+	 或者改变终端窗口的标题。为了让 <SPAN
+CLASS="APPLICATION"
+>Readline</SPAN
+> 的行编辑特性正确运行，
+	 这些不可打印的控制字符必须设计成不可见的，方法是用 <TT
+CLASS="LITERAL"
+>%[</TT
+> 和 <TT
+CLASS="LITERAL"
+>%]</TT
+> 包围它们。
+	 在提示符里可能出现这些东西的多个配对。
+</P><PRE
+CLASS="PROGRAMLISTING"
+>testdb=&gt; \set PROMPT1 '%[%033[1;33;40m%]%n@%/%R%[%033[0m%#%] '</PRE
+><P>
+	 这样的结果是在 VT100
+	 兼容的可显示彩色的终端上的一个宽体（<TT
+CLASS="LITERAL"
+>1;</TT
+>）黑底黄字（<TT
+CLASS="LITERAL"
+>33;40</TT
+>）。
+        </P
+></DD
+></DL
+></DIV
+><P>
+
+        要在提示符里插入百分号，键入<TT
+CLASS="LITERAL"
+>%%</TT
+>。缺省提示符等效于
+    <TT
+CLASS="LITERAL"
+>'%/%R%# '</TT
+> 用于 prompts 1 和 2，以及<TT
+CLASS="LITERAL"
+>'&gt;&gt; '</TT
+> 用于 prompt 3。
+    </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>    这个特性是无耻地从<SPAN
+CLASS="APPLICATION"
+>tcsh</SPAN
+> 里剽窃来的。
+    </P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT3"
+><A
+NAME="AEN53066"
+></A
+><H4
+>命令行编辑</H4
+><P
+>    <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 为了编辑和检索命令行的方便支持 <SPAN
+CLASS="APPLICATION"
+>Readline</SPAN
+> 和历史库。
+        命令历史在 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 退出的时候自动保存，在 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>
+	启动的时候装载。
+        还支持 Tab 补齐，尽管该补齐逻辑并不是一个 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 分析器必备的。
+        如果因某些原因你不喜欢 tab 补齐，你可以把下面几行放在你的家目录的一个叫
+    <TT
+CLASS="FILENAME"
+>.inputrc</TT
+> 的文件里关闭这个特性：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>$if psql
+set disable-completion on
+$endif</PRE
+><P>
+    （这不是<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 的特性，
+        是 <SPAN
+CLASS="APPLICATION"
+>Readline</SPAN
+> 的。参考它的文档获取更多细节。）
+    </P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN53078"
+></A
+><H2
+>环境</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="ENVAR"
+>PAGER</TT
+></DT
+><DD
+><P
+>        如果查询结果在一页里放不下，那么它们被定向到这个命令。
+        典型的值是 <TT
+CLASS="LITERAL"
+>more</TT
+> 或者 <TT
+CLASS="LITERAL"
+>less</TT
+>。
+        缺省的是平台相关的。我们可以用 <TT
+CLASS="COMMAND"
+>\pset</TT
+> 命令关闭分页器。
+     </P
+></DD
+><DT
+><TT
+CLASS="ENVAR"
+>PGDATABASE</TT
+></DT
+><DD
+><P
+>        缺省数据库
+     </P
+></DD
+><DT
+><TT
+CLASS="ENVAR"
+>PGHOST</TT
+><BR><TT
+CLASS="ENVAR"
+>PGPORT</TT
+><BR><TT
+CLASS="ENVAR"
+>PGUSER</TT
+></DT
+><DD
+><P
+>        缺省连接参数
+     </P
+></DD
+><DT
+><TT
+CLASS="ENVAR"
+>PSQL_EDITOR</TT
+><BR><TT
+CLASS="ENVAR"
+>EDITOR</TT
+><BR><TT
+CLASS="ENVAR"
+>VISUAL</TT
+></DT
+><DD
+><P
+>        <TT
+CLASS="COMMAND"
+>\e</TT
+> 命令使用的编辑器。这些变量是按照上面的顺序检查的；设置最早的最先使用。
+     </P
+></DD
+><DT
+><TT
+CLASS="ENVAR"
+>SHELL</TT
+></DT
+><DD
+><P
+>        <TT
+CLASS="COMMAND"
+>\!</TT
+> 命令执行的命令。
+     </P
+></DD
+><DT
+><TT
+CLASS="ENVAR"
+>TMPDIR</TT
+></DT
+><DD
+><P
+>        存储临时文件的目录。缺省是 <TT
+CLASS="FILENAME"
+>/tmp</TT
+>。
+     </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN53125"
+></A
+><H2
+>文件</H2
+><P
+></P
+><UL
+><LI
+><P
+>        在启动之前，<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 视图读取系统的 <TT
+CLASS="FILENAME"
+>psqlrc</TT
+>
+	文件和执行来自用户家目录的文件 <TT
+CLASS="FILENAME"
+>~/.psqlrc</TT
+> 里面的命令。
+	（在 Windows 里，用户的启动文件名字叫 <TT
+CLASS="FILENAME"
+>%APPDATA%\postgresql\psqlrc.conf</TT
+>。）
+	参阅 <TT
+CLASS="FILENAME"
+><TT
+CLASS="REPLACEABLE"
+><I
+>PREFIX</I
+></TT
+>/share/psqlrc.sample</TT
+> 获取如何设置全系统的文件的信息。
+        可将它用于设置客户端或者服务器的风格（使用 <TT
+CLASS="COMMAND"
+>\set</TT
+>和<TT
+CLASS="COMMAND"
+>SET</TT
+>命令）。
+    </P
+></LI
+><LI
+><P
+>     系统的 <TT
+CLASS="FILENAME"
+>psqlrc</TT
+> 和用户自己的 <TT
+CLASS="FILENAME"
+>~/.psqlrc</TT
+>
+     都可以通过在后面附着一个划线和 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本号的方法变得与版本相关，
+     比如 <TT
+CLASS="FILENAME"
+>~/.psqlrc-8.1</TT
+>。
+     匹配版本相关的文件比无版本的文件优先读取。
+    </P
+></LI
+><LI
+><P
+>        命令行历史存储在 <TT
+CLASS="FILENAME"
+>~/.psql_history</TT
+>，或者在 Windows 里是
+	<TT
+CLASS="FILENAME"
+>%APPDATA%\postgresql\psql_history</TT
+>。
+    </P
+></LI
+></UL
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN53148"
+></A
+><H2
+>注意</H2
+><P
+></P
+><UL
+><LI
+><P
+>      一些 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>的早期版本允许一个单字母的反斜杠命令（元命令）的第一个参数直接跟在命令后面，
+      而不用空白间隔。出于兼容性原因，这个特性仍然在某些程度上被支持，但是我不准备在这里详细解释，因为我不鼓励这样使用。
+        不过如果你收到莫名其妙的信息，想想这个用法。例如
+</P><PRE
+CLASS="PROGRAMLISTING"
+>testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\foo</B
+></TT
+>
+Field separator is "oo".</PRE
+><P>
+        可能不是你想要的东西。
+      </P
+></LI
+><LI
+><P
+>      <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 只能与同版本的服务器平稳地工作。
+        这不意味着其他组合会完全失败，但是可能有微小的或者不那么微小的问题。
+        如果服务器的版本不同，反斜杠命令是特别容易失效的。
+      </P
+></LI
+></UL
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN53159"
+></A
+><H2
+>Windows 用户需要注意的地方</H2
+><P
+>  <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 是以一种<SPAN
+CLASS="QUOTE"
+>"控制台应用"</SPAN
+>的方式制作的。
+  因为 Windows 控制台窗口和系统其它部分使用不同的编码，
+  所以在 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 里使用 8 位字符的时候必须采取特殊的注意措施。
+  如果 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 检测到一个有问题的控制台代码页，
+  那么它在启动的时候会警告你。要修改控制台代码页，有两件事是必须做的：
+
+   <P
+></P
+></P><UL
+><LI
+><P
+>      通过输入 <TT
+CLASS="USERINPUT"
+><B
+>cmd.exe /c chcp 1252</B
+></TT
+>
+      设置代码页。（1252 是适用于德语的代码页；换成合适你的数值。译注：中文 GB2312 的代码页是 936。）
+      如果你使用 Cygwin，你可以在 <TT
+CLASS="FILENAME"
+>/etc/profile</TT
+> 里面输入这条命令。
+     </P
+></LI
+><LI
+><P
+>      把控制台字体设置为 <SPAN
+CLASS="QUOTE"
+>"Lucida Console"</SPAN
+>，因为光栅字体（点阵字体）不能在 ANSI 代码页下工作。
+     </P
+></LI
+></UL
+><P>
+ </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="APP-PSQL-EXAMPLES"
+></A
+><H2
+>例子</H2
+><P
+>        第一个例子演示了如何把一个查询分成多个行进行输入。注意提示符的变化：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>CREATE TABLE my_table (</B
+></TT
+>
+testdb(&gt; <TT
+CLASS="USERINPUT"
+><B
+> first integer not null default 0,</B
+></TT
+>
+testdb(&gt; <TT
+CLASS="USERINPUT"
+><B
+> second text)</B
+></TT
+>
+testdb-&gt; <TT
+CLASS="USERINPUT"
+><B
+>;</B
+></TT
+>
+CREATE TABLE</PRE
+><P>
+        现在再看看表定义：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\d my_table</B
+></TT
+>
+             Table "my_table"
+ Attribute |  Type   |      Modifier
+-----------+---------+--------------------
+ first     | integer | not null default 0
+ second    | text    |&#13;</PRE
+><P>
+        把提示符变成更有趣的东西：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\set PROMPT1 '%n@%m %~%R%# '</B
+></TT
+>
+peter@localhost testdb=&gt;</PRE
+><P>
+        假设你用数据填充了表并且想看一眼：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>peter@localhost testdb=&gt; SELECT * FROM my_table;
+ first | second
+-------+--------
+     1 | one
+     2 | two
+     3 | three
+     4 | four
+(4 rows)&#13;</PRE
+><P>
+        你可以用
+   <TT
+CLASS="COMMAND"
+>\pset</TT
+> 命令用不同的方法显示表：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>peter@localhost testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\pset border 2</B
+></TT
+>
+Border style is 2.
+peter@localhost testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>SELECT * FROM my_table;</B
+></TT
+>
++-------+--------+
+| first | second |
++-------+--------+
+|     1 | one    |
+|     2 | two    |
+|     3 | three  |
+|     4 | four   |
++-------+--------+
+(4 rows)
+
+peter@localhost testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\pset border 0</B
+></TT
+>
+Border style is 0.
+peter@localhost testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>SELECT * FROM my_table;</B
+></TT
+>
+first second
+----- ------
+    1 one
+    2 two
+    3 three
+    4 four
+(4 rows)
+
+peter@localhost testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\pset border 1</B
+></TT
+>
+Border style is 1.
+peter@localhost testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\pset format unaligned</B
+></TT
+>
+Output format is unaligned.
+peter@localhost testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\pset fieldsep ","</B
+></TT
+>
+Field separator is ",".
+peter@localhost testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\pset tuples_only</B
+></TT
+>
+Showing only tuples.
+peter@localhost testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>SELECT second, first FROM my_table;</B
+></TT
+>
+one,1
+two,2
+three,3
+four,4</PRE
+><P>
+        还可以用短（缩写）命令：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>peter@localhost testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>\a \t \x</B
+></TT
+>
+Output format is aligned.
+Tuples only is off.
+Expanded display is on.
+peter@localhost testdb=&gt; <TT
+CLASS="USERINPUT"
+><B
+>SELECT * FROM my_table;</B
+></TT
+>
+-[ RECORD 1 ]-
+first  | 1
+second | one
+-[ RECORD 2 ]-
+first  | 2
+second | two
+-[ RECORD 3 ]-
+first  | 3
+second | three
+-[ RECORD 4 ]-
+first  | 4
+second | four</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN53201"
+></A
+><H2
+>又见</H2
+>环境变量（<A
+HREF="libpq-envars.html"
+>Section 28.11</A
+>）</DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="app-pgrestore.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="app-vacuumdb.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>pg_restore</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="reference-client.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><SPAN
+CLASS="APPLICATION"
+>vacuumdb</SPAN
+></TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

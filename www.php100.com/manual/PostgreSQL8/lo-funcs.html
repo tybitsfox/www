@@ -1,0 +1,134 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>服务器端函数 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="大对象" HREF="largeobjects.html"><LINK REL="PREVIOUS" TITLE="客户端接口" HREF="lo-interfaces.html"><LINK REL="NEXT" TITLE="例子程序" HREF="lo-examplesect.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="lo-interfaces.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="largeobjects.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 29. 大对象</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="largeobjects.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="lo-examplesect.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="LO-FUNCS" >29.4. 服务器端函数</A
+></H1
+><P
+>   还有一些对应上面那些客户端函数的服务器端函数，可以在 SQL 命令里使用；
+   实际上，大多数客户端函数都只是服务器端函数的等效接口。这些服务器端函数中，
+   通过 SQL 命令调用的实际有用的是
+   <TT
+CLASS="FUNCTION"
+>lo_creat</TT
+><A NAME="AEN27020" ></A
+>，
+   <TT
+CLASS="FUNCTION"
+>lo_create</TT
+><A NAME="AEN27023" ></A
+>，
+   <TT
+CLASS="FUNCTION"
+>lo_unlink</TT
+><A NAME="AEN27026" ></A
+>，
+   <TT
+CLASS="FUNCTION"
+>lo_import</TT
+><A NAME="AEN27029" ></A
+>，和
+   <TT
+CLASS="FUNCTION"
+>lo_export</TT
+><A NAME="AEN27032" ></A
+>。
+   下面是一些例子：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE image (
+    name            text,
+    raster          oid
+);
+
+SELECT lo_creat(-1);       -- 返回新创建的空的大对象的 OID
+
+SELECT lo_create(43213);   -- 企图创建 OID 为 43213 的大对象
+
+SELECT lo_unlink(173454);  -- 删除 OID 为 173454 的大对象
+
+INSERT INTO image (name, raster)
+    VALUES ('beautiful image', lo_import('/etc/motd'));
+
+SELECT lo_export(image.raster, '/tmp/motd') FROM image
+    WHERE name = 'beautiful image';</PRE
+><P>
+  </P
+><P
+>    服务器端的 <TT
+CLASS="FUNCTION"
+>lo_import</TT
+> 和 <TT
+CLASS="FUNCTION"
+>lo_export</TT
+>
+    函数和客户端的那几个有着显著的不同。这辆个函数在服务器的文件系统里读写文件，
+    使用数据库所有者的权限进行。因此，只有超级用户才能使用他们。相比之下，
+    客户端的输入和输出函数在客户的文件系统里读写文件，使用客户端程序的权限。
+    客户端函数可以由任何<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>用户使用。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="lo-interfaces.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="lo-examplesect.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >客户端接口</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="largeobjects.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >例子程序</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

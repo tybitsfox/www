@@ -1,0 +1,317 @@
+<HTML
+><HEAD
+><TITLE
+>操作符表</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="索引"
+HREF="indexes.html"><LINK
+REL="PREVIOUS"
+TITLE="部分索引"
+HREF="indexes-partial.html"><LINK
+REL="NEXT"
+TITLE="检查索引的使用"
+HREF="indexes-examine.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="indexes-partial.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="indexes.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 11. 索引</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="indexes.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="indexes-examine.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="INDEXES-OPCLASS"
+>11.8. 操作符表</A
+></H1
+><A
+NAME="AEN15149"
+></A
+><P
+>        一次索引定义可以为索引的每个字段声明一个
+        <I
+CLASS="FIRSTTERM"
+>操作符表(operator class)</I
+>。
+</P><PRE
+CLASS="SYNOPSIS"
+>CREATE INDEX <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> ON <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> (<TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>opclass</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>, ...</SPAN
+>]);</PRE
+><P>
+        这个操作符表标识该索引用于该字段要使用的操作符。
+	例如，一个在<TT
+CLASS="TYPE"
+>int4</TT
+>上的 B-tree 索引将使用 <TT
+CLASS="LITERAL"
+>int4_ops</TT
+> 表；
+        这个操作符表包括用于<TT
+CLASS="TYPE"
+>int4</TT
+>的比较函数。
+	实际上，该字段类型的缺省操作符通常就足够了。
+        拥有操作符表的原因是：对于某些数据类型，可能存在多于一个有意义的索引行为。
+	例如，我们可能想排序两个复数，既可能通过绝对值，
+        也可能通过实部。我们可以通过为该数据类型定义两个操作符表，然后在建立索引时选择合适的一个来实现这个目的。
+  </P
+><P
+>        除了缺省的以外，还有一些有内置的操作符表：
+
+   <P
+></P
+></P><UL
+><LI
+><P
+>      操作符表 <TT
+CLASS="LITERAL"
+>text_pattern_ops</TT
+>，<TT
+CLASS="LITERAL"
+>varchar_pattern_ops</TT
+>，
+      <TT
+CLASS="LITERAL"
+>bpchar_pattern_ops</TT
+>，和 <TT
+CLASS="LITERAL"
+>name_pattern_ops</TT
+> 分别支持在类型 
+      <TT
+CLASS="TYPE"
+>text</TT
+>，<TT
+CLASS="TYPE"
+>varchar</TT
+>，<TT
+CLASS="TYPE"
+>char</TT
+>，和 <TT
+CLASS="TYPE"
+>name</TT
+> 上的 B-tree
+      索引。他们与初始的操作符表的区别是数值是严格地一个一个字符比较的，
+      而不是根据区域相关的集合规则进行比较。
+      这样，如果服务器不使用标准的 <SPAN
+CLASS="QUOTE"
+>"C"</SPAN
+> 区域设置，
+      那么这些操作符表适合用于那些涉及模式匹配（<TT
+CLASS="LITERAL"
+>LIKE</TT
+> 或者 POSIX 正则表达式）表达式的查询。
+      举一个例子，你可以像下面这样对一个 <TT
+CLASS="TYPE"
+>varchar</TT
+> 字段进行索引：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE INDEX test_index ON test_table (col varchar_pattern_ops);</PRE
+><P>
+      请注意，如果你希望涉及普通比较的查询使用索引，那么你还应该创建一个使用缺省操作符表的索引。
+      这样的查询不能使用　<TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>xxx</I
+></TT
+>_pattern_ops</TT
+>
+      操作符表。在同一个字段上创建多个使用不同操作符表的索引是允许的。
+      如果你的确使用了 C 区域，那么你就不需要 <TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>xxx</I
+></TT
+>_pattern_ops</TT
+>
+      操作符表，因为使用缺省操作符表的索引可以用于 C 区域里面的模式匹配查询。
+     </P
+></LI
+></UL
+><P>
+  </P
+><P
+>   下面的查询显示所有已定义的操作符表：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT am.amname AS index_method,
+       opc.opcname AS opclass_name
+    FROM pg_am am, pg_opclass opc
+    WHERE opc.opcamid = am.oid
+    ORDER BY index_method, opclass_name;</PRE
+><P>
+
+        我们可以把它扩展为显示每个表中的所有操作符：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT am.amname AS index_method,
+       opc.opcname AS opclass_name,
+       opr.oprname AS opclass_operator
+    FROM pg_am am, pg_opclass opc, pg_amop amop, pg_operator opr
+    WHERE opc.opcamid = am.oid AND
+          amop.amopclaid = opc.oid AND
+          amop.amopopr = opr.oid
+    ORDER BY index_method, opclass_name, opclass_operator;</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="indexes-partial.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="indexes-examine.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>部分索引</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="indexes.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>检查索引的使用</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

@@ -1,0 +1,371 @@
+<HTML
+><HEAD
+><TITLE
+>PL/Python - 过程语言</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="服务器端编程"
+HREF="server-programming.html"><LINK
+REL="PREVIOUS"
+TITLE="限制及缺少的特性"
+HREF="plperl-missing.html"><LINK
+REL="NEXT"
+TITLE="触发器函数"
+HREF="plpython-trigger.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plperl-missing.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plperl.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="spi.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plpython-trigger.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="PLPYTHON"
+>Chapter 39. PL/Python - 过程语言</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>39.1. <A
+HREF="plpython.html#PLPYTHON-FUNCS"
+>PL/Python 函数</A
+></DT
+><DT
+>39.2. <A
+HREF="plpython-trigger.html"
+>触发器函数</A
+></DT
+><DT
+>39.3. <A
+HREF="plpython-database.html"
+>数据库访问</A
+></DT
+></DL
+></DIV
+><A
+NAME="AEN36499"
+></A
+><A
+NAME="AEN36501"
+></A
+><P
+>	<SPAN
+CLASS="APPLICATION"
+>PL/Python</SPAN
+> 过程语言允许用 
+	<A
+HREF="http://www.python.org"
+TARGET="_top"
+>Python 语言</A
+>写 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 函数。
+  </P
+><P
+>	要在特定数据库里安装 PL/Python，使用
+	<TT
+CLASS="LITERAL"
+>createlang plpython <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></TT
+>。
+  </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>	如果一门语言安装到了 <TT
+CLASS="LITERAL"
+>template1</TT
+> 里面，
+	那么所有随后创建的数据库都会自动安装该语言。
+   </P
+></BLOCKQUOTE
+></DIV
+><P
+>  到 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 7.4 为止，PL/Python 只能当作一种<SPAN
+CLASS="QUOTE"
+>"不可信任的"</SPAN
+>语言
+  （意思是它没有提供任何限制用户可为与不可为的手段）。因此，它被重新命名为 <TT
+CLASS="LITERAL"
+>plpythonu</TT
+>。
+  可信任的 <TT
+CLASS="LITERAL"
+>plpython</TT
+> 可能在将来的某个时间能够获得，条件是在 Python 里开发出了新的安全执行机制。
+ </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	使用源码包的用户必须在安装过程中声明打开 PL/Python 的制作。
+	（请参考安装指导获取更多信息。）二进制包的用户可能会在独立的子包中找到 PL/Python。
+   </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="PLPYTHON-FUNCS"
+>39.1. PL/Python 函数</A
+></H1
+><P
+>	PL/Python 写的函数用通常的
+	<A
+HREF="sql-createfunction.html"
+><I
+>CREATE FUNCTION</I
+></A
+>
+	方法声明。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION myfunc(text) RETURNS text
+	AS 'return args[0]'
+LANGUAGE plpython;</PRE
+><P>
+
+   以函数体形式给出的 Python 转换成 Python 函数。比如，上面的转换成
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>def __plpython_procedure_myfunc_23456():
+	return args[0]</PRE
+><P>
+
+	这里假设 23456 是 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 赋予这个函数的 OID。
+  </P
+><P
+>	如果你没有提供返回数值，Python 返回缺省的 <TT
+CLASS="SYMBOL"
+>None</TT
+>。
+	<SPAN
+CLASS="APPLICATION"
+>PL/Python</SPAN
+> 把 Python 的<TT
+CLASS="SYMBOL"
+>None</TT
+> 转换成 SQL 的空值。
+	<A
+NAME="AEN36533"
+></A
+>
+  </P
+><P
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>函数变量可以通过全局的
+	<TT
+CLASS="VARNAME"
+>args</TT
+> 列表获取.
+	在 <TT
+CLASS="FUNCTION"
+>myfunc</TT
+> 例子里， <TT
+CLASS="VARNAME"
+>args[0]</TT
+> 
+	包含当做文本参数传递的数值。对于
+	<TT
+CLASS="LITERAL"
+>myfunc2(text, integer)</TT
+>，<TT
+CLASS="VARNAME"
+>args[0]</TT
+> 将包含
+	<TT
+CLASS="TYPE"
+>text</TT
+> 参数和整数变量 <TT
+CLASS="VARNAME"
+>args[1]</TT
+>。
+  </P
+><P
+>	全局字典<TT
+CLASS="VARNAME"
+>SD</TT
+>可以用于在函数调用中间存储数据。
+	这个变量是私有静态数据。全局字典<TT
+CLASS="VARNAME"
+>GD</TT
+>是公共数据，
+	可以在一个后端里的所有 python 函数之间使用。用时小心。
+  </P
+><P
+>	每个函数都在 Python 解释器里获得自己的受限制的执行对象，
+	因此来自 <TT
+CLASS="FUNCTION"
+>myfunc</TT
+> 的全局数据很函数参数是 <TT
+CLASS="FUNCTION"
+>myfunc2</TT
+> 所看不到的。
+	这里的例外是我们上面提到的<TT
+CLASS="VARNAME"
+>GD</TT
+>字典。
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plperl-missing.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plpython-trigger.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>限制及缺少的特性</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="server-programming.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>触发器函数</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

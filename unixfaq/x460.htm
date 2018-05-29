@@ -1,0 +1,139 @@
+<html><head><title>怎样控制一个串行口和调制解调器？</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="终端输入/输出" href="./c432.htm"><link rel="PREVIOUS" title="pttys是什么？" href="./x456.htm"><link rel="NEXT" title="系统信息" href="./c533.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x456.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 3. 终端输入/输出</td><td align="right" valign="bottom" width="10%"><a href="./c533.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN460">3.6. 怎样控制一个串行口和调制解调器？</a></h1><p>Unix系统下对于串行口的控制很大程度上受串行终端传统的使用影响。以往，
+需要不同ioctls函数调用的组合和其它黑客行为才能控制一个串行设备的正确操
+作，不过值得庆幸的是，POSIX在这个方面的标准化作了一些努力。
+    </p><p>如果你使用的系统不支持‘&lt;termios.h&gt;’头文件，‘tcsetattr()’和其它相关函数，
+那么你只能到其它地方去找点资料(或将你的老古董系统升级一下)。
+    </p><p>但是不同的系统仍然有显著的区别，主要是在设备名，硬件流控制的操作，和
+调制解调器的信号方面。(只要可能，尽量让设备驱动程序去做握手(handshaking)
+工作，而不要试图直接操纵握手信号。)
+    </p><p>打开和初始华串行设备的基本步骤是：
+    </p><p></p><ul><li><p>     调用‘open()’函数打开设备；而且可能需要使用特定标志作为参数：
+        </p><pre class="PROGRAMLISTING">    `O_NONBLOCK'
+          除非使用这个标志，否则打开一个供拨入(dial-in)或由调制解调器控制的设
+          备会造成‘open()’调用被阻塞直到线路接通(carrier is present)。一个非
+          阻塞的打开操作给你在需要时令调制解调器控制失效的机会。(参见下面的
+          CLOCAL)
+
+    `O_NOCTTY'
+          在自4.4BSD演化的系统上这个标志是多余的，但在其它系统上它控制串行
+          设备是否成为会话的控制终端。在大多数情况下你可能不想获得一个控制
+          终端，所以就要设置这个标志，但是也有例外情况。
+	</pre></li><li><p>    调用‘tcgetattr()’函数获得当前设备模式。虽然有人会经常取消(ignore)得到的
+      大多数或全部初始设定，但它仍然不失为一个初始化‘struct termios’结构的
+      便利方法。
+        </p></li><li><p>    设置termios 结构里‘c_iflag’，‘c_oflag’，‘c_flag’，
+   ‘c_lfag’和‘c_cc’为合适的值。(参见下面部分。)
+        </p></li><li><p>    调用‘cfsetispeed()’和‘cfsetospeed()’设定设想的波特率。很少系统允许你
+     设置不同的输入和输出速度，所以普通规律是你需要设成同一个设想的值。
+        </p></li><li><p>    调用‘tcsetattr()’设定设备模式。
+        </p></li><li><p>    如果你是用‘O_NONBLOCK’标志打开的端口，你可能希望调用‘fcntl()’
+     函数将‘O_NONBLOCK’标志重新设置成关闭。因为不同系统看来对是否
+     由非阻塞打开的端口对今后的‘read()’调用造成影响有不同的处理；所以
+     最好显式地设置好。
+        </p></li></ul><p>一旦你打开并设置了端口，你可以正常地调用‘read()’函数和‘write()’函数。
+注意到‘read()’函数的行为将受到你调用‘tcsetattr()’函数时的标志参数设定
+的控制。
+    </p><p>‘tcflush()’，‘tcdrain()’，‘tcsendbreak()’和‘tcflow()’是其它一些你应当
+注意的函数。
+    </p><p>当你使用完端口想要关闭时，要注意一些系统上特别恶心的小危险；如果有任何
+输出数据等待被写到设备(比如输出流被硬件或软件握手而暂停)，你的进程将因
+为‘close()’函数调用而被挂起(hang)直到输出数据排空，而且这时的进程是*不
+可杀的*(unkillably)。所以调用‘tcflush()’函数丢弃待发数据可能是个明智之举。
+    </p><p>(在我的经验中，在tty设备上被阻塞的输出数据是造成不可杀进程最普通的原因。)
+    </p><div class="SECT2"><h2 class="SECT2"><a name="AEN484">3.6.1. 串行设备和类型</a></h2><p>不同系统用于串行端口设备的设备名大相径庭。以下是不同系统的一些例子：
+      </p><p></p><ul><li><p>    ‘/dev/tty[0-9][a-z]’作为直接访问设备，而
+     ‘/dev/tty[0-9][A-Z]’ 作为调制解调器控制设备(比如SCO Unix)
+          </p></li><li><p>    ‘/dev/cua[0-9]p[0-9]’作为直接访问设备，‘/dev/cul[0-9]p[0-9]’作为拨出设
+      备，而‘/dev/ttyd[0-9]p[0-9]’作为拨入设备(比如HP-UX)
+          </p></li><li><p>    ‘/dev/cua[a-z][0-9]’作为拨出设备而‘/dev/tty[a-z][0-9]’作为拨入设备(比如
+      FreeBSD)
+          </p></li></ul><p>是否正确地同所用设备名交互，并在任何硬件握手信号线上产生相应的效果是
+与系统，配置和硬件有关的，但是差不多总是遵循下面这些规则(假设硬件是
+RS-232 DTE)：
+      </p><p></p><ul><li><p>    对于任何设备的一个成功打开操作应当设置DTR和RTS
+          </p></li><li><p>    一个对于由调制解调器控制或供拨入的设备的阻塞打开操作将等待DCD(并且
+     可能DSR和/或CTS也需要)被设置，通常在设置DTR/RTS之后。
+          </p></li><li><p>    如果一个对于拨出设备的打开操作正巧赶上一个对于相应拨入设备的打开操作
+     因为等待线路接通而阻塞，那么打开拨出的操作*也许*造成打开拨入的操作完
+     成，但*也许也不*造成。一些系统为拨入和拨出端口实现一个简单的共享方案，
+     当拨出端口在使用时，拨入端口被有效地设置成睡眠状态(“put to sleep”)；其
+     它系统不这样做，在这种系统上为避免竞争(contention)问题，需要外部的协助才
+     能使拨入和拨出共享端口(比如UUCP锁定文件的使用)。
+          </p></li></ul></div><div class="SECT2"><h2 class="SECT2"><a name="AEN502">3.6.2. 设置termios的标志位</a></h2><p>这里是对你在使用你自己打开的串行设备时设置termios标志的一些提示(即与你使
+用已存在的控制tty相反)
+      </p><div class="SECT3"><h3 class="SECT3"><a name="AEN505">3.6.2.1. c_iflag</a></h3><p>你也许希望将*所有*‘c_iflag’的标志位设成0，除非你希望使用软件流控制(ick)，
+在这种情况下你设置‘IXON’和‘IXOFF’。(译者注：有三个标志控制流控制：
+IXON，IXOFF ，和IXANY，如果IXON被设置，那么tty输入队列的软件流控制
+被设置。当程序无法跟上输入队列的速度，tty传输一个STOP字符，而当输入队
+列差不多空时发送START字符。如果IXON被设置，那么tty输出队列的软件流控
+制被设置。当tty所连接的设备跟不上输出速度，tty将阻塞程序对tty的写操作。如果
+IXANY被设置，那么一旦tty从设备收到任何字符，被暂定的输出将继续 - 译自SCO
+Unix 网上文档http://uw7doc.sco.com/SDK_sysprog/CTOC-TermDevCntl.html，“TTY flow
+control”章节，第五，六段)
+        </p></div><div class="SECT3"><h3 class="SECT3"><a name="AEN508">3.6.2.2. c_oflag</a></h3><p>大部分‘c_oflag’的标志位是为了能使对于慢终端的输出可以正常工作所做的这
+样或那样的黑客行为，由此，一些较新的系统认为几乎所有这些标志位已经过
+时从而摈弃了它们(特别是所有血淋淋(gory)的输出排列对齐(output-padding)选项)。
+如同‘c_iflag’，将它设置成全0对于大部分应用程序来说是合理的。
+        </p></div><div class="SECT3"><h3 class="SECT3"><a name="AEN511">3.6.2.3. c_cflag</a></h3><p>当设置字符的大小时，记住首先使用‘CSIZE’屏蔽，比如设置8位字符，需要：
+        </p><pre class="PROGRAMLISTING">         attr.c_cflag &amp;= ~CSIZE;
+         attr.c_cflag |= CS8;
+	</pre><p>在‘c_cflag’里的其它你有可能需要设置为*真*的标志包括‘CREAD’和
+‘HUPCL’。
+        </p><p>如果你需要产生偶校验，那么设置‘PARENB’并清除‘PARODD’；如果你
+需要产生奇校验，那么同时设置‘PARENB’和‘PARODD’。如果你根本不
+想设置校验，那么确认清除‘PARENB’。
+        </p><p>清除‘CSTOPB’ ，除非你真需要产生两个停止位。
+        </p><p>设置硬件流控制的标志可能也能在‘c_cflag’中找到，但它们不是被标准化的(
+这是一个遗憾)。
+        </p></div><div class="SECT3"><h3 class="SECT3"><a name="AEN519">3.6.2.4. c_lflag</a></h3><p>大部分应用程序可能需要关闭‘ICANON’(标准状态，即基于行的，并进行输
+入处理)，‘ECHO’和‘ISIG’。
+        </p><p>‘IEXTEN’是个更复杂的问题。如果你不把它关闭，具体实现允许你作一些非
+标准的事情(比如在‘c_cc’中定义增加的控制字符)从而可能导致不可预料的接
+果，但是在一些系统上，你可能需要保持‘IEXTEN’标志为真以得到一些有用
+的特征，比如硬件流控制。
+        </p></div><div class="SECT3"><h3 class="SECT3"><a name="AEN523">3.6.2.5. c_cc</a></h3><p>这是一个包括输入中带有特殊含义字符的数组。这些字符被命名为‘VINTR’，
+‘VSTOP’等等；这些名字是这个数组的索引。
+        </p><p>(这些字符中的两个其实根本不是字符，而是当‘ICANON’被关闭时对于
+‘read()’函数行为的控制；它们是‘VMIN’和‘VTIME’。)
+        </p><p>这些索引名字经常被提及的方式会让人以为它们是实在的变量，比如“设置
+VMIN为1” 其实意味着“设置c_cc[VMIN]为1”。这种简写是有用的并且只是
+偶尔引起误会。
+        </p><p>‘c_cc’的很多变量位置只有当其它标志被设定时才会用到。
+        </p><pre class="PROGRAMLISTING">只有‘ICANON’被设置，才用到以下变量：
+     ‘VEOF’，‘VEOL’，‘VERASE’，‘VKILL’(如果定义了而且
+     ‘IEXTEN’被设定，那么‘VEOL2’，‘VSTATUS’和‘VWERASE’
+        也用到)
+
+只有‘ISIG’被设置，才用到以下变量：
+     ‘VINTR’，‘VQUIT’，‘VSUSP’(如果定义了而且‘IEXTEN’被设定，
+       那么‘VDSUSP’也用到)
+
+只有‘IXON’或‘IXOFF’被设置，才用到以下变量：
+     ‘VSTOP’，‘VSTART’
+
+只有‘ICANON’被取消，才用到以下变量：
+     ‘VMIN’，‘VTIME’
+        </pre><p>不同系统实现会定义增加的‘c_cc’变量。谨慎的做法是在设定你希望使用的值
+以前，使用‘_POSIX_VDISABLE’初始化这些变量(常量‘NCCS’提供这个数
+组的大小)
+        </p><p>‘VMIN’和‘VTIME’(根据不同的实现方法，它们有可能和‘VEOF’和‘VEOL’
+分享相同两个变量)具有以下含义。‘VTIME’的值(如果不为0)总是被解释为以十
+分之一秒为单位的计时器)(译者注：VTIME变量是一个字节长，所以1表示0.1秒，
+最大为255，表示25.5秒)
+        </p><pre class="PROGRAMLISTING">`c_cc[VMIN] &gt; 0, c_cc[VTIME] &gt; 0'
+     只要输入已经有VMIN字节长，或者输入至少有一个字符而在读取最后一个字
+     符之前VTIME已经过期，或者被信号中断，‘read()’将返回。
+
+`c_cc[VMIN] &gt; 0, c_cc[VTIME] == 0'
+     只要输入已经有VMIN字节长，或者被信号中断，‘read()’将返回。否则，将
+     无限等待下去。
+
+`c_cc[VMIN] == 0, c_cc[VTIME] &gt; 0'
+     只要有输入‘read()’就返回；如果VTIME过期却没有数据，它会返回没有读
+     到字符。(这和调制解调器挂断时的文件结束标志有一点冲突；使用1作为VMIN，
+     调用‘alarm()’或‘select()’函数并给定超时参数可以避免这个问题。)
+
+`c_cc[VMIN] == 0, c_cc[VTIME] == 0'
+      ‘read()’总是立刻返回；如果没有数据则返回没有读到字符。(与上面的问题
+        相同)
+	</pre></div></div></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x456.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./c533.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">pttys是什么？</td><td align="center" valign="top" width="34%"><a href="./c432.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">系统信息</td></tr></tbody></table></div></body></html>

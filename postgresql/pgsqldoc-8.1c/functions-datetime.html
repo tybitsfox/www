@@ -1,0 +1,2894 @@
+<HTML
+><HEAD
+><TITLE
+>时间/日期函数和操作符</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="函数和操作符"
+HREF="functions.html"><LINK
+REL="PREVIOUS"
+TITLE="数据类型格式化函数"
+HREF="functions-formatting.html"><LINK
+REL="NEXT"
+TITLE="几何函数和操作符"
+HREF="functions-geometry.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="functions-formatting.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="functions.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 9. 函数和操作符</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="functions.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="functions-geometry.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="FUNCTIONS-DATETIME"
+>9.9. 时间/日期函数和操作符</A
+></H1
+><P
+>	<A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-TABLE"
+>Table 9-26</A
+> 显示了 PostgreSQL
+	里可以用于处理日期/时间数值的函数，随后一节里描述了细节。
+	
+	<A
+HREF="functions-datetime.html#OPERATORS-DATETIME-TABLE"
+>Table 9-25</A
+>
+	演示了基本算术操作符
+	（<TT
+CLASS="LITERAL"
+>+</TT
+>，<TT
+CLASS="LITERAL"
+>*</TT
+> 等等）的行为。
+	而与格式化相关的函数，可以参考<A
+HREF="functions-formatting.html"
+>Section 9.8</A
+>。
+	你应该很熟悉来自 <A
+HREF="datatype-datetime.html"
+>Section 8.5</A
+> 的日期/时间数据类型的背景知识。
+   </P
+><P
+>	所有下面描述的函数和操作符接收的<TT
+CLASS="TYPE"
+>time</TT
+>或者<TT
+CLASS="TYPE"
+>timestamp</TT
+>输入实际上都来自两种可能：
+	一个是接收<TT
+CLASS="TYPE"
+>time with time zone</TT
+> 或 <TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+>，
+	另外一种是<TT
+CLASS="TYPE"
+>time without time zone</TT
+> 或者 <TT
+CLASS="TYPE"
+>timestamp without time zone</TT
+>。
+	出于简化考虑，这些变种没有独立显示出来。还有，<TT
+CLASS="LITERAL"
+>+</TT
+> 和 <TT
+CLASS="LITERAL"
+>*</TT
+> 操作符都是以可交换的操作符对方式存在的
+	（比如，date + integer 和 integer + date）；我们只显示了这样的交换操作符对中的一个。
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="OPERATORS-DATETIME-TABLE"
+></A
+><P
+><B
+>Table 9-25. 日期/时间操做符</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>操作符</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>例子</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>结果</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>+</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>date '2001-09-28' + integer '7'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>date '2001-10-05'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>+</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>date '2001-09-28' + interval '1 hour'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>timestamp '2001-09-28 01:00'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>+</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>date '2001-09-28' + time '03:00'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>timestamp '2001-09-28 03:00'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>+</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>interval '1 day' + interval '1 hour'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>interval '1 day 01:00'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>+</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>timestamp '2001-09-28 01:00' + interval '23 hours'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>timestamp '2001-09-29 00:00'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>+</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>time '01:00' + interval '3 hours'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>time '04:00'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>-</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>- interval '23 hours'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>interval '-23:00'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>-</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>date '2001-10-01' - date '2001-09-28'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>integer '3'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>-</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>date '2001-10-01' - integer '7'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>date '2001-09-24'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>-</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>date '2001-09-28' - interval '1 hour'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>timestamp '2001-09-27 23:00'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>-</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>time '05:00' - time '03:00'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>interval '02:00'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>-</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>time '05:00' - interval '2 hours'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>time '03:00'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>-</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>timestamp '2001-09-28 23:00' - interval '23 hours'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>timestamp '2001-09-28 00:00'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>-</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>interval '1 day' - interval '1 hour'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>interval '23:00'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>-</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>timestamp '2001-09-29 03:00' - timestamp '2001-09-27 12:00'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>interval '1 day 15:00'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>*</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>interval '1 hour' * double precision '3.5'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>interval '03:30'</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+> <TT
+CLASS="LITERAL"
+>/</TT
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>interval '1 hour' / double precision '1.5'</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>interval '00:40'</TT
+></TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><A
+NAME="AEN10840"
+></A
+><A
+NAME="AEN10842"
+></A
+><A
+NAME="AEN10844"
+></A
+><A
+NAME="AEN10846"
+></A
+><A
+NAME="AEN10848"
+></A
+><A
+NAME="AEN10850"
+></A
+><A
+NAME="AEN10852"
+></A
+><A
+NAME="AEN10854"
+></A
+><A
+NAME="AEN10856"
+></A
+><A
+NAME="AEN10858"
+></A
+><A
+NAME="AEN10860"
+></A
+><A
+NAME="AEN10862"
+></A
+><A
+NAME="AEN10864"
+></A
+><A
+NAME="AEN10866"
+></A
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-DATETIME-TABLE"
+></A
+><P
+><B
+>Table 9-26. 日期/时间函数</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>函数</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>返回类型</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>例子</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>结果</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>age</TT
+>(<TT
+CLASS="TYPE"
+>timestamp</TT
+>, <TT
+CLASS="TYPE"
+>timestamp</TT
+>)</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>interval</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>减去参数，生成一个使用年、月的<SPAN
+CLASS="QUOTE"
+>"符号化"</SPAN
+>的结果</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>age('2001-04-10', timestamp '1957-06-13')</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>43 years 9 mons 27 days</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>age</TT
+>(<TT
+CLASS="TYPE"
+>timestamp</TT
+>)</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>interval</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>从<TT
+CLASS="FUNCTION"
+>current_date</TT
+>减去得到的数值</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>age(timestamp '1957-06-13')</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>43 years 8 mons 3 days</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>current_date</TT
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>date</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>今天的日期；见 <A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-CURRENT"
+>Section 9.9.4</A
+>
+	</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>current_time</TT
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>time with time zone</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>现在的时间；见 <A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-CURRENT"
+>Section 9.9.4</A
+>
+	</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>current_timestamp</TT
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>日期和时间；见 <A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-CURRENT"
+>Section 9.9.4</A
+>
+	</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>date_part</TT
+>(<TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="TYPE"
+>timestamp</TT
+>)</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>double precision</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>获取子域(等效于
+	 <TT
+CLASS="FUNCTION"
+>extract</TT
+>)；又见 <A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-EXTRACT"
+>Section 9.9.1</A
+>
+	</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>date_part('hour', timestamp '2001-02-16 20:38:40')</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>20</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>date_part</TT
+>(<TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="TYPE"
+>interval</TT
+>)</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>double precision</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>获取子域(等效于
+	 <TT
+CLASS="FUNCTION"
+>extract</TT
+>)；又见 <A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-EXTRACT"
+>Section 9.9.1</A
+>
+	</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>date_part('month', interval '2 years 3 months')</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>3</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>date_trunc</TT
+>(<TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="TYPE"
+>timestamp</TT
+>)</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>timestamp</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>截断成指定的精度；又见<A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-TRUNC"
+>Section 9.9.2</A
+>
+	</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>date_trunc('hour', timestamp '2001-02-16 20:38:40')</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>2001-02-16 20:00:00+00</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>extract</TT
+>(<TT
+CLASS="PARAMETER"
+>field</TT
+> from <TT
+CLASS="TYPE"
+>timestamp</TT
+>)</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>double precision</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>获取子域；又见 <A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-EXTRACT"
+>Section 9.9.1</A
+>
+	</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>extract(hour from timestamp '2001-02-16 20:38:40')</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>20</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>extract</TT
+>(<TT
+CLASS="PARAMETER"
+>field</TT
+> from <TT
+CLASS="TYPE"
+>interval</TT
+>)</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>double precision</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>获取子域；又见 <A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-EXTRACT"
+>Section 9.9.1</A
+>
+	</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>extract(month from interval '2 years 3 months')</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>3</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>isfinite</TT
+>(<TT
+CLASS="TYPE"
+>timestamp</TT
+>)</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>测试有穷时间戳(非无穷)</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>isfinite(timestamp '2001-02-16 21:28:30')</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>true</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>isfinite</TT
+>(<TT
+CLASS="TYPE"
+>interval</TT
+>)</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>测试有穷时间间隔</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>isfinite(interval '4 hours')</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>true</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>localtime</TT
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>time</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>今日的时间；见 <A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-CURRENT"
+>Section 9.9.4</A
+>
+	</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>localtimestamp</TT
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>timestamp</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>日期和时间；见 <A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-CURRENT"
+>Section 9.9.4</A
+>
+	</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>now</TT
+>()</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>当前的日期和时间(等效于
+	 <TT
+CLASS="FUNCTION"
+>current_timestamp</TT
+>)；见<A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-CURRENT"
+>Section 9.9.4</A
+>
+	</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>timeofday</TT
+>()</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>当前日期和时间；见<A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-CURRENT"
+>Section 9.9.4</A
+>
+	</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>    If you are using both <TT
+CLASS="FUNCTION"
+>justify_hours</TT
+> and <TT
+CLASS="FUNCTION"
+>justify_days</TT
+>,
+    it is best to use <TT
+CLASS="FUNCTION"
+>justify_hours</TT
+> first so any additional days will
+    justified by <TT
+CLASS="FUNCTION"
+>justify_days</TT
+>.
+    如果你同时使用 <TT
+CLASS="FUNCTION"
+>justify_hours</TT
+> 和 <TT
+CLASS="FUNCTION"
+>justify_days</TT
+>，
+    那么最好先用 <TT
+CLASS="FUNCTION"
+>justify_hours</TT
+>，这样任何额外的天数都会被  <TT
+CLASS="FUNCTION"
+>justify_days</TT
+>
+    对齐。
+   </P
+><P
+>    除了这些函数以外，还支持 SQL 操作符 <TT
+CLASS="LITERAL"
+>OVERLAPS</TT
+>：
+</P><PRE
+CLASS="SYNOPSIS"
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>start1</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>end1</I
+></TT
+> ) OVERLAPS ( <TT
+CLASS="REPLACEABLE"
+><I
+>start2</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>end2</I
+></TT
+>)
+(<TT
+CLASS="REPLACEABLE"
+><I
+>start1</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>length1</I
+></TT
+> ) OVERLAPS ( <TT
+CLASS="REPLACEABLE"
+><I
+>start2</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>length2</I
+></TT
+>)</PRE
+><P>
+    这个表达式在两个时间域（用它们的终点定义）重叠的时候生成真值。
+    终点可以以一对日期，时间，或者时间戳来声明；或者是一个后面跟着一个时间间隔的
+    日期，时间，时间戳。
+   </P
+><PRE
+CLASS="SCREEN"
+>SELECT (DATE '2001-02-16', DATE '2001-12-21') OVERLAPS
+       (DATE '2001-10-30', DATE '2002-10-30');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>true</TT
+>
+SELECT (DATE '2001-02-16', INTERVAL '100 days') OVERLAPS
+       (DATE '2001-10-30', DATE '2002-10-30');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>false</TT
+></PRE
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="FUNCTIONS-DATETIME-EXTRACT"
+>9.9.1. <TT
+CLASS="FUNCTION"
+>EXTRACT</TT
+>，<TT
+CLASS="FUNCTION"
+>date_part</TT
+></A
+></H2
+><A
+NAME="AEN11102"
+></A
+><A
+NAME="AEN11104"
+></A
+><PRE
+CLASS="SYNOPSIS"
+>EXTRACT(<TT
+CLASS="REPLACEABLE"
+><I
+>field</I
+></TT
+> from <TT
+CLASS="REPLACEABLE"
+><I
+>source</I
+></TT
+>)</PRE
+><P
+>	<TT
+CLASS="FUNCTION"
+>extract</TT
+> 函数从日期/时间数值里抽取
+	子域，比如年或者小时等。<TT
+CLASS="REPLACEABLE"
+><I
+>source</I
+></TT
+>
+	必须是一个类型 <TT
+CLASS="TYPE"
+>timestamp</TT
+>，<TT
+CLASS="TYPE"
+>time</TT
+>，或者 <TT
+CLASS="TYPE"
+>interval</TT
+> 的值表达式。
+	（类型为 <TT
+CLASS="TYPE"
+>date</TT
+> 的表达式将转换为 <TT
+CLASS="TYPE"
+>timestamp</TT
+>，因此也可以用。）
+	<TT
+CLASS="REPLACEABLE"
+><I
+>field</I
+></TT
+> 是一个标识符
+	或者字串，它指定从源数据中抽取的数域。<TT
+CLASS="FUNCTION"
+>extract</TT
+> 
+	函数返回类型为<TT
+CLASS="TYPE"
+>double precision</TT
+> 的数值。
+	下列数值是有效数据域的名字∶
+
+    
+    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>century</TT
+></DT
+><DD
+><P
+>	世纪。
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(CENTURY FROM TIMESTAMP '2000-12-16 12:21:13');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>20</TT
+>
+SELECT EXTRACT(CENTURY FROM TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>21</TT
+></PRE
+><P
+>       第一个世纪从 0001-01-01 00:00:00 AD 开始，
+       尽管那时候人们还不知道这是第一个世纪。这个定义适用于所有使用格里高利历法的国家。
+       没有 0 世纪，我们直接从公元前 1 世纪到公元 1 世纪。
+       
+       如果你认为这个不合理，那么请把抱怨发给：罗马圣彼得教堂，梵蒂冈，教皇收。
+       </P
+><P
+>       <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 8.0 以前版本里并不遵循世纪的习惯编号，只是把年份除以 100。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>day</TT
+></DT
+><DD
+><P
+>	(月分)里的日期域(1-31)
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(DAY from TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>16</TT
+></PRE
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>decade</TT
+></DT
+><DD
+><P
+>	年份域除以10
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(DECADE from TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>200</TT
+></PRE
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>dow</TT
+></DT
+><DD
+><P
+>	每周的星期号(0 - 6；星期天是 0)
+	(仅用于 <TT
+CLASS="TYPE"
+>timestamp</TT
+>)
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(DOW FROM TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>5</TT
+></PRE
+><P
+>	请注意 <TT
+CLASS="FUNCTION"
+>extract</TT
+> 的星期几编号和 <TT
+CLASS="FUNCTION"
+>to_char</TT
+>
+	函数的不同。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>doy</TT
+></DT
+><DD
+><P
+>	一年的第几天(1 -365/366)
+	(仅用于 <TT
+CLASS="TYPE"
+>timestamp</TT
+>)
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(DOY from TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>47</TT
+></PRE
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>epoch</TT
+></DT
+><DD
+><P
+>	对于 <TT
+CLASS="TYPE"
+>date</TT
+> 和 <TT
+CLASS="TYPE"
+>timestamp</TT
+> 数值而言，
+	是自 1970-01-01 00:00:00 以来的秒数(结果可能是负数。)；
+	对于 <TT
+CLASS="TYPE"
+>interval</TT
+> 数值而言，它是时间间隔的总秒数。
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(EPOCH from TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>982352320</TT
+>
+
+SELECT EXTRACT(EPOCH from INTERVAL '5 days 3 hours');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>442800</TT
+></PRE
+><P
+>	下面是把 epoch 值转换回时间戳的方法：
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT TIMESTAMP WITH TIME ZONE 'epoch' + 982384720 * INTERVAL '1 second';</PRE
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>hour</TT
+></DT
+><DD
+><P
+>	小时域 (0 - 23)
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(HOUR from TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>20</TT
+></PRE
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>microseconds</TT
+></DT
+><DD
+><P
+>	秒域，包括小数部分，乘以 1,000,000。请注意它包括全部的秒。
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(MICROSECONDS from TIME '17:12:28.5');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>28500000</TT
+></PRE
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>millennium</TT
+></DT
+><DD
+><P
+>       千年。
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(MILLENNIUM from TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>3</TT
+></PRE
+><P
+>       20世纪（19xx年）里面的年份在第二个千年里。第三个千年从 2001 年一月一日开始。
+       </P
+><P
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 8.0 之前的版本并不遵循前年编号的习惯，只是返回年份除以 1000。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>milliseconds</TT
+></DT
+><DD
+><P
+>	秒域，包括小数部分，乘以 1000。请注意它包括完整的秒。
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(MILLISECONDS from TIME '17:12:28.5');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>28500</TT
+></PRE
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>minute</TT
+></DT
+><DD
+><P
+>	分钟域 (0 - 59)
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(MINUTE from TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>38</TT
+></PRE
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>month</TT
+></DT
+><DD
+><P
+>	对于 <TT
+CLASS="TYPE"
+>timestamp</TT
+> 数值，它是一年里的月份数(1 - 12)；
+	对于 <TT
+CLASS="TYPE"
+>interval</TT
+> 数值，它是月的数目，然后对 12 取模(0 - 11)
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(MONTH from TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>2</TT
+>
+
+SELECT EXTRACT(MONTH from INTERVAL '2 years 3 months');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>3</TT
+>
+
+SELECT EXTRACT(MONTH from INTERVAL '2 years 13 months');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>1</TT
+></PRE
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>quarter</TT
+></DT
+><DD
+><P
+>	该天所在的该年的季度(1 - 4)(仅用于 <TT
+CLASS="TYPE"
+>timestamp</TT
+>)
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(QUARTER from TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>1</TT
+></PRE
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>second</TT
+></DT
+><DD
+><P
+>	秒域，包括小数部分 (0 - 59
+	<A
+NAME="AEN11257"
+HREF="#FTN.AEN11257"
+>[1]</A
+>)
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(SECOND from TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>40</TT
+>
+
+SELECT EXTRACT(SECOND from TIME '17:12:28.5');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>28.5</TT
+></PRE
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>timezone</TT
+></DT
+><DD
+><P
+>	与 UTC 的时区偏移，以秒记。正数对应 UTC 东边的时区，负数对应 UTC 西边的时区。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>timezone_hour</TT
+></DT
+><DD
+><P
+>	时区偏移的小时部分。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>timezone_minute</TT
+></DT
+><DD
+><P
+>	时区偏移的分钟部分。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>week</TT
+></DT
+><DD
+><P
+>	该天在所在的年份里是第几周。根据定义 (<SPAN
+CLASS="ACRONYM"
+>ISO</SPAN
+> 8601)，
+	一年的第一周包含该年的一月四日。(<SPAN
+CLASS="ACRONYM"
+>ISO</SPAN
+>-8601的周从星期一开始。)
+	换句话说，一年的第一个星期四在第一周。（只用于 <TT
+CLASS="TYPE"
+>timestamp</TT
+> 数值）。
+       </P
+><P
+>	因此，一月的头几天可能是前一年的第五十二或者第五十三周。比如，
+	<TT
+CLASS="LITERAL"
+>2005-01-01</TT
+> 是 2004 年的第五十三周，而 <TT
+CLASS="LITERAL"
+>2006-01-01</TT
+> 是
+	2005 年的第五十二周。
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(WEEK from TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>7</TT
+></PRE
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>year</TT
+></DT
+><DD
+><P
+>	年份域。要记住这里没有 <TT
+CLASS="LITERAL"
+>0 AD</TT
+>，所以从 <TT
+CLASS="LITERAL"
+>AD</TT
+> 年里抽取 <TT
+CLASS="LITERAL"
+>BC</TT
+> 年应该小心些。
+       </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(YEAR from TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>2001</TT
+></PRE
+></DD
+></DL
+></DIV
+><P>
+   </P
+><P
+>	<TT
+CLASS="FUNCTION"
+>extract</TT
+> 函数主要的用途是做运算用。
+	对于用于显示的日期/时间数值格式化，参阅
+	<A
+HREF="functions-formatting.html"
+>Section 9.8</A
+>。
+   </P
+><P
+>	<TT
+CLASS="FUNCTION"
+>date_part</TT
+> 函数是在传统的
+	<SPAN
+CLASS="PRODUCTNAME"
+>Ingres</SPAN
+> 函数的基础上制作的(该
+	函数等效于 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 标准函数 <TT
+CLASS="FUNCTION"
+>extract</TT
+>)∶
+</P><PRE
+CLASS="SYNOPSIS"
+>date_part('<TT
+CLASS="REPLACEABLE"
+><I
+>field</I
+></TT
+>', <TT
+CLASS="REPLACEABLE"
+><I
+>source</I
+></TT
+>)</PRE
+><P>
+	请注意这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>field</I
+></TT
+> 参数必须是
+	一个字串值，而不是一个名字。有效的 <TT
+CLASS="FUNCTION"
+>date_part</TT
+> 数域名
+	和用于 <TT
+CLASS="FUNCTION"
+>extract</TT
+> 的是一样的。
+   </P
+><PRE
+CLASS="SCREEN"
+>SELECT date_part('day', TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>16</TT
+>
+
+SELECT date_part('hour', INTERVAL '4 hours 3 minutes');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>4</TT
+></PRE
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="FUNCTIONS-DATETIME-TRUNC"
+>9.9.2. <TT
+CLASS="FUNCTION"
+>date_trunc</TT
+></A
+></H2
+><A
+NAME="AEN11326"
+></A
+><P
+>	<TT
+CLASS="FUNCTION"
+>date_trunc</TT
+> 函数在概念上和用于
+	数字的 <TT
+CLASS="FUNCTION"
+>trunc</TT
+> 函数类似。
+   </P
+><P
+></P><PRE
+CLASS="SYNOPSIS"
+>date_trunc('<TT
+CLASS="REPLACEABLE"
+><I
+>field</I
+></TT
+>', <TT
+CLASS="REPLACEABLE"
+><I
+>source</I
+></TT
+>)</PRE
+><P>
+	<TT
+CLASS="REPLACEABLE"
+><I
+>source</I
+></TT
+> 是类型
+	<TT
+CLASS="TYPE"
+>timestamp</TT
+> 的值表达式(类型 <TT
+CLASS="TYPE"
+>date</TT
+> 
+	和 <TT
+CLASS="TYPE"
+>time</TT
+> 的数值都分别自动转换成<TT
+CLASS="TYPE"
+>timestamp</TT
+>或者<TT
+CLASS="TYPE"
+>interval</TT
+>)。
+	用 <TT
+CLASS="REPLACEABLE"
+><I
+>field</I
+></TT
+> 选择对该时间戳数值
+	选用什么样的精度进行截断)。
+	返回的数值是 <TT
+CLASS="TYPE"
+>timestamp</TT
+> 类型或者<TT
+CLASS="TYPE"
+>interval</TT
+>，所有小于选定的
+	精度的域都设置为零(或者一，如果是日期和月份域的话)。
+   </P
+><P
+>	<TT
+CLASS="REPLACEABLE"
+><I
+>field</I
+></TT
+> 的有效数值是∶
+    <P
+></P
+><TABLE
+BORDER="0"
+><TBODY
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>microseconds</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>milliseconds</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>second</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>minute</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>hour</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>day</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>week</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>month</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>year</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>decade</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>century</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>millennium</TT
+></TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+>
+   </P
+><P
+>	例子：
+</P><PRE
+CLASS="SCREEN"
+>SELECT date_trunc('hour', TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>2001-02-16 20:00:00+00</TT
+>
+
+SELECT date_trunc('year', TIMESTAMP '2001-02-16 20:38:40');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>2001-01-01 00:00:00+00</TT
+></PRE
+><P>
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="FUNCTIONS-DATETIME-ZONECONVERT"
+>9.9.3. <TT
+CLASS="LITERAL"
+>AT TIME ZONE</TT
+></A
+></H2
+><A
+NAME="AEN11380"
+></A
+><A
+NAME="AEN11383"
+></A
+><P
+>	<TT
+CLASS="LITERAL"
+>AT TIME ZONE</TT
+> 构造允许把时间戳转换成不同的	
+	时区。<A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-ZONECONVERT-TABLE"
+>Table 9-27</A
+> 显示了其变体。
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-DATETIME-ZONECONVERT-TABLE"
+></A
+><P
+><B
+>Table 9-27. <TT
+CLASS="LITERAL"
+>AT TIME ZONE</TT
+>变体</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>表达式</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>返回类型</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>       <TT
+CLASS="LITERAL"
+><TT
+CLASS="TYPE"
+>timestamp without time zone</TT
+> <TT
+CLASS="LITERAL"
+>AT TIME ZONE</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>zone</I
+></TT
+></TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>把给出的<I
+CLASS="EMPHASIS"
+>不带时区的</I
+>时间戳转换成指定时区的时间</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>       <TT
+CLASS="LITERAL"
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+> <TT
+CLASS="LITERAL"
+>AT TIME ZONE</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>zone</I
+></TT
+></TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>timestamp without time zone</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>把给出的<I
+CLASS="EMPHASIS"
+>带时区</I
+>的时间转换为转换成给定时区的时间</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>       <TT
+CLASS="LITERAL"
+><TT
+CLASS="TYPE"
+>time with time zone</TT
+> <TT
+CLASS="LITERAL"
+>AT TIME ZONE</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>zone</I
+></TT
+></TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>time with time zone</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>在时区之间转换当地时间</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	在这些表达式里，我们需要的 <TT
+CLASS="REPLACEABLE"
+><I
+>zone</I
+></TT
+> 可以声明为
+	文本串（比如，<TT
+CLASS="LITERAL"
+>'PST'</TT
+>）或者一个时间间隔
+	（比如，<TT
+CLASS="LITERAL"
+>INTERVAL '-08:00'</TT
+>）。
+	在文本的情况下，可用的时区名字要么在
+	<A
+HREF="datetime-keywords.html#DATETIME-TIMEZONE-INPUT-TABLE"
+>Table B-4</A
+>
+	要么在
+	<A
+HREF="datetime-keywords.html#DATETIME-TIMEZONE-INPUT-TABLE"
+>Table B-4</A
+> 里面。
+   </P
+><P
+>	例子（假设本地时区是 <TT
+CLASS="LITERAL"
+>PST8PDT</TT
+>）：
+</P><PRE
+CLASS="SCREEN"
+>SELECT TIMESTAMP '2001-02-16 20:38:40' AT TIME ZONE 'MST';
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>2001-02-16 19:38:40-08</TT
+>
+
+SELECT TIMESTAMP WITH TIME ZONE '2001-02-16 20:38:40-05' AT TIME ZONE 'MST';
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>2001-02-16 18:38:40</TT
+></PRE
+><P>
+	第一个例子接受一个无时区的时间戳然后把她解释成 MST 时间（UTC-7）
+	生成 UTC 时间戳，然后这个时间转换为 PST（UTC-8）来显示。
+	第二个例子接受一个声明为 EST（UTC-5）的时间戳，然后把它
+	转换成 MST（UTC-7）的当地时间。
+   </P
+><P
+>	函数<TT
+CLASS="LITERAL"
+><TT
+CLASS="FUNCTION"
+>timezone</TT
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>zone</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>timestamp</I
+></TT
+>)</TT
+>
+	等效于 SQL 兼容的构造<TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>timestamp</I
+></TT
+> <TT
+CLASS="LITERAL"
+>AT TIME ZONE</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>zone</I
+></TT
+></TT
+>。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="FUNCTIONS-DATETIME-CURRENT"
+>9.9.4. 当前日期/时间</A
+></H2
+><A
+NAME="AEN11451"
+></A
+><A
+NAME="AEN11454"
+></A
+><P
+>	我们可以使用下面的函数获取当前的日期和/或时间∶
+</P><PRE
+CLASS="SYNOPSIS"
+>CURRENT_DATE
+CURRENT_TIME
+CURRENT_TIMESTAMP
+CURRENT_TIME (<TT
+CLASS="REPLACEABLE"
+><I
+>precision</I
+></TT
+>)
+CURRENT_TIMESTAMP (<TT
+CLASS="REPLACEABLE"
+><I
+>precision</I
+></TT
+>)
+LOCALTIME
+LOCALTIMESTAMP
+LOCALTIME (<TT
+CLASS="REPLACEABLE"
+><I
+>precision</I
+></TT
+>)
+LOCALTIMESTAMP (<TT
+CLASS="REPLACEABLE"
+><I
+>precision</I
+></TT
+>)</PRE
+><P>
+   </P
+><P
+>     <TT
+CLASS="FUNCTION"
+>CURRENT_TIME</TT
+> 和
+     <TT
+CLASS="FUNCTION"
+>CURRENT_TIMESTAMP</TT
+> 带有时区值；
+     <TT
+CLASS="FUNCTION"
+>LOCALTIME</TT
+> 和
+     <TT
+CLASS="FUNCTION"
+>LOCALTIMESTAMP</TT
+> 的数值没有时区值。
+    </P
+><P
+>	<TT
+CLASS="FUNCTION"
+>CURRENT_TIME</TT
+> ，
+	<TT
+CLASS="FUNCTION"
+>CURRENT_TIMESTAMP</TT
+>，
+	<TT
+CLASS="FUNCTION"
+>LOCALTIME</TT
+> 和
+	<TT
+CLASS="FUNCTION"
+>LOCALTIMESTAMP</TT
+> 可以有选择地给予一个精度参数，
+	该精度导致结果的秒数域园整为指定小数位。如果没有精度参数，
+	将给予所能得到的全部精度。
+   </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 7.2 之前没有实现精度参数，
+	结果总是给出整数的秒。
+    </P
+></BLOCKQUOTE
+></DIV
+><P
+>	一些例子：
+</P><PRE
+CLASS="SCREEN"
+>SELECT CURRENT_TIME;
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>14:39:53.662522-05</TT
+>
+
+SELECT CURRENT_DATE;
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>2001-12-23</TT
+>
+
+SELECT CURRENT_TIMESTAMP;
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>2001-12-23 14:39:53.662522-05</TT
+>
+
+SELECT CURRENT_TIMESTAMP(2);
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>2001-12-23 14:39:53.66-05</TT
+>
+
+SELECT LOCALTIMESTAMP;
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>2001-12-23 14:39:53.662522</TT
+></PRE
+><P>
+   </P
+><P
+>	函数 <TT
+CLASS="FUNCTION"
+>now()</TT
+> 是传统的
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 和
+	<TT
+CLASS="FUNCTION"
+>CURRENT_TIMESTAMP</TT
+> 的等效物。
+   </P
+><P
+>	还有一件事提醒大家，那就是 <TT
+CLASS="FUNCTION"
+>CURRENT_TIMESTAMP</TT
+> 
+	和相关的函数把时间当做当前事务的开始返回；在事务运行的时候，
+	它们的数值并不改变。
+	我们认为这是一个特性：目的是为了允许一个事务在<SPAN
+CLASS="QUOTE"
+>"当前"</SPAN
+>
+	时间上有连贯的概念，这样在同一个事务离得多个修改可以有同样的时间戳。
+   </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	许多其它数据库系统更频繁地更新这些数值。
+    </P
+></BLOCKQUOTE
+></DIV
+><P
+>	还有一个 <TT
+CLASS="FUNCTION"
+>timeofday()</TT
+> 函数，它返回实时的时间值，
+	并且会在事务里随时间前进。
+	由于历史原因，它返回一个<TT
+CLASS="TYPE"
+>text</TT
+>字串，而不是 <TT
+CLASS="TYPE"
+>timestamp</TT
+> 值∶
+</P><PRE
+CLASS="SCREEN"
+>SELECT timeofday();
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><TT
+CLASS="COMPUTEROUTPUT"
+>Sat Feb 17 19:07:32.000126 2001 EST</TT
+></PRE
+><P>
+   </P
+><P
+>	所有日期/时间类型还接受特殊的文本值 <TT
+CLASS="LITERAL"
+>now</TT
+>，
+	用于声明当前的日期和时间。因此，下面三个都返回相同的结果∶
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT CURRENT_TIMESTAMP;
+SELECT now();
+SELECT TIMESTAMP 'now'; -- 用在 DEFAULT 里是不正确的</PRE
+><P>
+   </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>	在创建表声明一个<TT
+CLASS="LITERAL"
+>DEFAULT</TT
+>值的时候你是不会想用第三种形式的。
+	因为系统将在分析这个常量的时候把 <TT
+CLASS="LITERAL"
+>now</TT
+> 转换成
+	一个 <TT
+CLASS="TYPE"
+>timestamp</TT
+>，因此在需要缺省值的时候，
+	就会使用创建表的时间!
+	而头两种形式要到实际使用缺省值的时候才计算，
+	因为它们是函数调用。因此它们可以给出插入时间行的时候
+	需要的缺省行为。
+     </P
+></BLOCKQUOTE
+></DIV
+></DIV
+></DIV
+><H3
+CLASS="FOOTNOTES"
+>Notes</H3
+><TABLE
+BORDER="0"
+CLASS="FOOTNOTES"
+WIDTH="100%"
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+WIDTH="5%"
+><A
+NAME="FTN.AEN11257"
+HREF="functions-datetime.html#AEN11257"
+>[1]</A
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+WIDTH="95%"
+><P
+>如果操作系统实现了润秒，
+	那么上限是 60</P
+></TD
+></TR
+></TABLE
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="functions-formatting.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="functions-geometry.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>数据类型格式化函数</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="functions.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>几何函数和操作符</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

@@ -1,0 +1,514 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>环境变量 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="libpq - C 库" HREF="libpq.html"><LINK REL="PREVIOUS" TITLE="注意信息处理" HREF="libpq-notice-processing.html"><LINK REL="NEXT" TITLE="口令文件" HREF="libpq-pgpass.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="libpq-notice-processing.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="libpq.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 28. <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> - C 库</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="libpq.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="libpq-pgpass.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="LIBPQ-ENVARS" >28.11. 环境变量</A
+></H1
+><A NAME="AEN26483" ></A
+><P
+>下面的环境变量可以用于选择缺省的连接参数值，
+这些值将被
+ <TT
+CLASS="FUNCTION"
+>PQconnectdb</TT
+> 或
+<TT
+CLASS="FUNCTION"
+>PQsetdbLogin</TT
+> 使用 &mdash; 如果调用代码没有直接声明相应值的话。
+比如，这些（环境变量）可以避免把麻烦的数据库名强加入简单的应用程序的硬代码里面。
+
+<P
+></P
+></P><UL
+><LI
+><P
+><A NAME="AEN26491" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGHOST</TT
+> 设置数据库服务器名。
+如果它以一个斜杠开头，那么它声明一个 Unix 域套接字而不是 TCP/IP 通讯；
+其值就是该套接字文件存储的目录（在缺省安装中，这个目录会是 <TT
+CLASS="FILENAME"
+>/tmp</TT
+>）。</P
+></LI
+><LI
+><P
+><A NAME="AEN26498" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGHOSTADDR</TT
+> 声明数据库服务器地数值 IP 地址。
+我们可以额外设置这个环境变量，或者是替代 <TT
+CLASS="ENVAR"
+>PGHOST</TT
+>，以避免 DNS 查找的过热。
+参阅这个参数的文档，在上面的 <TT
+CLASS="FUNCTION"
+>PQconnectdb</TT
+> 里，获取它们的相互关系的细节。</P
+><P
+>如果既没有声明 <TT
+CLASS="ENVAR"
+>PGHOST</TT
+> 也没有声明 <TT
+CLASS="ENVAR"
+>PGHOSTADDR</TT
+>，
+缺省的行为是使用一个 Unix 域套接字连接；或者在没有 Unix 域套接字的机器上，
+<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 将试图与 <TT
+CLASS="LITERAL"
+>localhost</TT
+> 连接。</P
+></LI
+><LI
+><P
+><A NAME="AEN26511" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGPORT</TT
+> 设置 TCP 端口号或者设置与 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 通讯的 Unix 域套接字的文件扩展。</P
+></LI
+><LI
+><P
+><A NAME="AEN26518" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGDATABASE</TT
+>  设置
+<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 数据库名。</P
+></LI
+><LI
+><P
+><A NAME="AEN26525" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGUSER</TT
+>
+设置用于与数据库连接的用户名。</P
+></LI
+><LI
+><P
+><A NAME="AEN26531" ></A
+>
+如果服务器要求口令认证，<TT
+CLASS="ENVAR"
+>PGPASSWORD</TT
+>
+设置使用的口令。
+因为安全原因，我们不建议使用这个环境变量（有些操作系统允许非 root 用户使用 <SPAN
+CLASS="APPLICATION"
+>ps</SPAN
+>
+查看进程的环境变量。）；应该考虑使用
+<TT
+CLASS="FILENAME"
+>~/.pgpass</TT
+>代替（参阅<A HREF="libpq-pgpass.html" >Section 28.12</A
+>）。</P
+></LI
+><LI
+><P
+><A NAME="AEN26540" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGPASSFILE</TT
+>
+声明用于查找的口令文件。如果没有设置，则缺省为 <TT
+CLASS="FILENAME"
+>~/.pgpass</TT
+>（参阅 <A HREF="libpq-pgpass.html" >Section 28.12</A
+>）。</P
+></LI
+><LI
+><P
+><A NAME="AEN26548" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGSERVICE</TT
+>
+设置要在 <TT
+CLASS="FILENAME"
+>pg_service.conf</TT
+> 中查找的服务名。
+这样提供了设置全部参数的一个缩写方式。</P
+></LI
+><LI
+><P
+><TT
+CLASS="ENVAR"
+>PGREALM</TT
+> 设置与<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>一起使用的
+Kerberos 领地 &mdash; 如果该领地与本地领地不同的话。
+如果设置了 <TT
+CLASS="ENVAR"
+>PGREALM</TT
+> ，<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>
+应用将试图用这个域（realm）与服务器进行认证并且使用独立的门票文件（ticket files）以避免与本地的门票文件冲突。
+只有在服务器选择了 Kerberos 认证时才使用这个环境变量。
+（译注：门票文件是 Kerberos认证协议中用于交换密钥的一个文件/服务器。）</P
+></LI
+><LI
+><P
+><A NAME="AEN26561" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGOPTIONS</TT
+> 为
+ <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器设置附加的运行时选项。</P
+></LI
+><LI
+><P
+><A NAME="AEN26568" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGSSLMODE</TT
+> 设置该连接是否与服务器协商在 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接，
+以及 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接的优先级。
+有四种模式：<TT
+CLASS="LITERAL"
+>disable</TT
+> 将只进行无加密的 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接尝试；
+<TT
+CLASS="LITERAL"
+>allow</TT
+> 将进行协商，首先尝试非 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接，如果这个失败，
+再尝试 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接；<TT
+CLASS="LITERAL"
+>prefer</TT
+> （缺省）将进行协商，首先尝试 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接，
+然后如何这个失败，将尝试一个普通的非<SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+>连接；<TT
+CLASS="LITERAL"
+>require</TT
+> 将只尝试<SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接。
+如果编译 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的时候没有打开 SSL 支持，那么使用 <TT
+CLASS="LITERAL"
+>require</TT
+> 选项将导致一个错误，
+而使用 <TT
+CLASS="LITERAL"
+>allow</TT
+> 和 <TT
+CLASS="LITERAL"
+>prefer</TT
+> 将被接受，
+但是 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 实际上不会准备进行 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接。</P
+></LI
+><LI
+><P
+><A NAME="AEN26592" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGREQUIRESSL</TT
+>设置一个连接是否必须在 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 上进行。
+如果设置为 <SPAN
+CLASS="QUOTE"
+>"1"</SPAN
+>，那么如果服务器不支持 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+>
+连接，那么 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 将拒绝连接（等效于 <TT
+CLASS="LITERAL"
+>sslmode</TT
+> 为 <TT
+CLASS="LITERAL"
+>prefer</TT
+>）。
+因为有了 <TT
+CLASS="LITERAL"
+>sslmode</TT
+> 的设置，所以这个选项已经废弃了，这个选项只有在
+<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 编译的时候打开了 SSL 支持才能用。</P
+></LI
+><LI
+><P
+><A NAME="AEN26606" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGKRBSRVNAME</TT
+> 设置在使用 Kerberos 5 认证的时候使用的 Kerberos 服务名。</P
+></LI
+><LI
+><P
+><A NAME="AEN26612" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGCONNECT_TIMEOUT</TT
+> 设置在等待与 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+服务器连接的时候，<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 等待的最大的秒数。
+如果未设置或者为 0，<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 将不停等待。
+我们不建议把这个值设置得少于 2 秒。</P
+></LI
+></UL
+><P></P
+><P
+>下面的环境变量可以用于为每个<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+会话声明缺省特性（又见 <A HREF="sql-alteruser.html" ><I
+>ALTER USER</I
+></A
+>
+和 <A HREF="sql-alterdatabase.html" ><I
+>ALTER DATABASE</I
+></A
+>
+命令获取基于用户和数据库设置缺省行为的方法。）
+
+<P
+></P
+></P><UL
+><LI
+><P
+><A NAME="AEN26626" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGDATESTYLE</TT
+>
+设置缺省的日期/时间表现形式。
+（等效于<TT
+CLASS="LITERAL"
+>SET datestyle TO ...</TT
+>。）</P
+></LI
+><LI
+><P
+><A NAME="AEN26633" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGTZ</TT
+>
+设置缺省的时区。
+（等效于 <TT
+CLASS="LITERAL"
+>SET timezone TO ...</TT
+>。）</P
+></LI
+><LI
+><P
+><A NAME="AEN26640" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGCLIENTENCODING</TT
+>
+设置缺省的客户端编码。
+（等效于 <TT
+CLASS="LITERAL"
+>SET client_encoding TO ...</TT
+>。）</P
+></LI
+><LI
+><P
+><A NAME="AEN26647" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGGEQO</TT
+>
+为基因优化器设置缺省模式。
+（等效于 <TT
+CLASS="LITERAL"
+>SET geqo TO ...</TT
+>。）</P
+></LI
+></UL
+><P>
+
+请参考 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令 <A HREF="sql-set.html" ><I
+>SET</I
+></A
+>
+获取这些环境变量的正确数值。</P
+><P
+>下面的环境变量决定 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 的内部行为；
+它们覆盖编译的缺省。
+
+<P
+></P
+></P><UL
+><LI
+><P
+><A NAME="AEN26659" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGSYSCONFDIR</TT
+>
+设置包含 <TT
+CLASS="FILENAME"
+>pg_service.conf</TT
+> 文件的目录。</P
+></LI
+><LI
+><P
+><A NAME="AEN26666" ></A
+>
+<TT
+CLASS="ENVAR"
+>PGLOCALEDIR</TT
+>
+设置包含信息国际化的 <TT
+CLASS="LITERAL"
+>locale</TT
+> 文件的目录。</P
+></LI
+></UL
+><P></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="libpq-notice-processing.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="libpq-pgpass.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >注意信息处理</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="libpq.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >口令文件</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

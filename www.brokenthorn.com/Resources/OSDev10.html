@@ -1,0 +1,874 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+<!-- saved from url=(0056)http://www.gamedev.net/reference/articles/article290.asp --> 
+<HTML><HEAD><TITLE>Operating Systems Development Series</TITLE> 
+<META http-equiv=Content-Type content="text/html; charset=windows-1252"><LINK 
+href="Files/reference.css" 
+type=text/css rel=stylesheet> 
+<META content="MSHTML 6.00.6000.16441" name=GENERATOR></HEAD> 
+<BODY text=#000000 vLink=#666699 aLink=#000000 link=#666699 bgColor=#ffffff 
+leftMargin=0 
+background=Files/watermark.gif 
+topMargin=0 marginheight="0" marginwidth="0"> 
+
+
+<table border=0 cellpadding=0 cellspacing=0 width="100%"> 
+<tr> 
+     <td width="60%"> 
+	<a href="http://www.brokenthorn.com"><img src="site/5.png" border=0></a> 
+     </td> 
+     <td width="40%"> 
+ 
+        <div id="ad_main"> 
+ 
+        </div> 
+ 
+     </td> 
+  </tr> 
+</table> 
+
+<TABLE cellSpacing=0 cellPadding=3 width="100%" border=0> 
+  <TBODY> 
+  <TR> 
+    <TD class=tblhdr>Operating Systems Development Series</TD> 
+</TR> 
+  <TR> 
+ 
+    <TD align=middle colSpan=2></TD></TR></TBODY></TABLE> 
+<TABLE cellSpacing=0 cellPadding=5 width="100%" border=0> 
+  <TBODY> 
+  <TR> 
+    <TD> 
+ 
+ 
+<!-- Title --> 
+ 
+      <CENTER><SPAN class=title>Operating Systems Development - Prepare for the Kernel part 1</SPAN> 
+ 
+<BR><SPAN class=author>by Mike, 2008</SPAN></CENTER> 
+ 
+ 
+      <P>This series is intended to demonstrate and teach operating system development from
+	the ground up.</p> 
+ 
+	<h1>Introduction</h1> 
+	Welcome! :)
+	<p> 
+	We have went over alot so far, havn't we? You should now be aware of the amount of complexity there
+	is in OS development. And yet--it only gets harder.
+	<p> 
+	This is our first two-part tutorial. The first part will describe all of the new code in detail.
+	We will cover basic 32 bit graphics programming in assembly. This includes: Basic VGA Programming
+	concepts, accessing video display, printing strings, clearing the screen, and updating the hardware
+	cursor. There is a little math involved, but not too much :)
+	<p> 
+ 
+	The demo itself is completed. It will be shown in the second part of this tutorial, along with an
+	overview of the completed Stage 2 source code, including its new little FAT12 driver, Floppy driver.
+	These are not "real" drivers by definition that we will add. However, they will help demenstrate the
+	functionality of drivers, and why they are usefull. All of the code is a heavily modified version
+	of our FAT12 loading code from the bootloader, so I will not be describing FAT12 again in detail.
+	<p> 
+	With that, Part two--as being the last tutorial for Stage 2--will go over the loading and executing
+	of a basic (pure binary) Kernel image at 1 MB.
+	<p> 
+	<b>This two part tutorial is the last tutorial for Stage 2!</b> When we start the Kernel, we will need
+	to cover different executable format files. We will need to insure Stage 2 executes the object files
+	correctly. Because of this, when we start the Kernel, we will add the loader to our current Stage 2
+	bootloader to insure it loads our Kernel correctly. This is later, though :)
+	<p> 
+	With all of that in mind, <b>Part 1 of this tutorial covers</b>:
+	<ul> 
+		<li>Basic VGA Programming Concepts</li> 
+ 
+		<li>Accessing the Display</li> 
+		<li>Printing characters</li> 
+		<li>Printing strings</li> 
+		<li>CRT Microcontroller theory and updating the hardware cursor</li> 
+		<li>Clearing the screen</li> 
+	</ul> 
+ 
+	This tutorial references <a href="OSDev7.html">The infamous Tutorial 7</a> alot. That is,
+	the <b>Real Mode Addressing Map</b> and <b>Default I/O Port Addresses</b>. It may be helpfull
+	to have that tutorial up when we talk about video address space and VGA port access.
+	<p> 
+	<i>Ready?</i> 
+ 
+	<h1>The Display</h1> 
+ 
+	<h2>VGA - Theory</h2> 
+	The <b>Video Graphics Array (VGA)</b> is an anolog computer display standard marketed in 1987
+	by IBM. It is called an "Array" because it was originally developed as a single chip, replacing
+	dozens of logic chips in a Industry Standard Architecture (ISA) board that the <b>MDA</b>, <b>CGA</b>, and <b>EGA</b> used. Because this was all on
+	a single ISA board, it was very easy to connect it to the motherboard.
+	<p> 
+ 
+	The VGA consists of the <b>video buffer, video DAC, CRT Controller, Sequencer unit, Graphics Controller,
+	and an Attribute Controller</b>. Please note that, we will not cover everything in detail yet until
+	we start talking about video drivers. This is primarily to preseve space, and to make things more easier
+	as programming the VGA can get quite complex.
+	<p> 
+	<h3>Video Buffer</h3> 
+	The Video Buffer is a segment of memory mapped as Video Memory. We can change what region of memory
+	is mapped to video memory. <b>At startup, the BIOS maps it to 0xA0000.</b>, which means that video
+	memory is mapped to 0xA0000. (Remember the Real Mode Address Map from Tutorial 7?) <b>This is important!</b> 
+ 
+	<h3>Video DAC</h3> 
+ 
+	The Video Digital to Analog Converter (DAC) contains the <b>color palette</b> that is used
+	to convert the video data into an analog video signal that is sent to the display. This
+	signal indicates the <b>red, green, and blue intensities</b> in analog form. We will go into more
+	detail later, so don't worry if you do not understand this yet.
+ 
+	<h3>CRT Controller</h3> 
+	This controller generates horizontal and vertical synchronization signal timings, <b>addressing
+	for the video buffer, cursor and underline timings.</b> We will go into more detail later in this
+	tutorial, as we need to go through the CRT Controller when updating the cursor.
+ 
+	<h3>Sequencer</h3> 
+ 
+	The Sequencer generates basic memory timings for video memory and the character clock for controlling
+	regenerative buffer fetches. It allows the system to access memory during active display intervals.
+	Once more, we will not cover this in detail yet. We will cover everything in great detail later when
+	looking at Video Drivers, don't worry :)
+ 
+	<h3>Graphics Controller</h3> 
+	This is the interface between video memory and the attribute controller, and between video memory
+	and the CPU. <b>During active display times, memory data is sent from the video buffer (Video Memory)
+	and sent to the Attribute Controller.</b> In Graphics Modes, this data is converted from parallel
+	to a serial bit plane data before being sent. In text modes, Just the parallel data is sent.
+	<p> 
+	Don't worry if you do not understand these yet. I do not plan on going into much detail here.
+	We will cover everything in detail later when we talk about developing a video driver. For now,
+	just remember that: <b>The Graphics Controller refreshes the display from the parallel data
+	from video memory.</b> This is automatic based on the active display times. This simply means,
+	that <b>By writing to video memory (Default mapped to 0xA0000) we effectivly write to video display,
+	depending on the current mode.</b> This is important when printing characters.
+	<p> 
+ 
+	Remember that it is possible to change the address range used by the Graphics Cotroller. When initializing,
+	the BIOS does just this to map video memory to 0xA0000.
+ 
+	<h2>Video Modes</h2> 
+	A "Video Mode" is a specification of display. That is, it describes how <b>Video Memory</b> 
+	is refrenced, and how this data is displayed by the video adapter.
+	<p> 
+	The VGA supports two types of modes: <b>APA Graphics</b>, and <b>Text</b>.
+ 
+	<h3>APA Graphics</h3> 
+ 
+	<b>All Points Addressable (APA)</b> is a display mode, that, on a video monitor, dot matrix,
+	or any device that consists of a pixel array, where every cell can be refrenced individually.
+	In the case of video display, where every cell represents a "pixel", where every pixel can
+	be manipulated directly. Because of this, almost all graphic modes use this method. <b>By modifying
+	this pixel buffer, we effectivly modify individual pixels on screen.</b> 
+	<p> 
+	<b>Pixel</b><p> 
+	A "Pixel" is the smallest unit that can be represented on a display. On a display, it represents the smallest unit of color.
+	That is, basically, a single dot. The size of each pixel depends heavily on the current resolution and video mode.
+ 
+	<h3>Text Modes</h3> 
+	A Text Mode is a display mode where the content on the screen is internally represented in
+	terms of characters rather then pixels, as with APA.
+	<p> 
+ 
+	A Video Controller implimenting text mode uses two buffers: A character map representing
+	the pixels for each individual character to be displayed, and a buffer that represents
+	what characters are in each cell. By changing the character map buffer, we effectivly change
+	the characters themselves, allowing us to create a new character set. By changing the <b>Screen
+	Buffer</b>, which represents what characters are in each cell, <b>we effectivly change what
+	characters are displayed on screen.</b> 
+ 
+	Some text modes also allow attributes, which may provide a character color, or even blinking,
+	underlined, inversed, brightened, etc.
+	<p> 
+ 
+	<h2>MDA, CGA, EGA</h2> 
+	Remember that VGA is based off of MDA, CGA, and EGA. VGA also supports alot of the
+	modes these adapters do. Understanding these modes will help in better understanding VGA.
+ 
+	<h3>MDA - Theory</h3> 
+ 
+	Back before I was born (Seriously :) ) in 1981, IBM developed a standard video display
+	card for the PC. They were the <b>Monochrome Display Adapter (MDA), and Monochrome
+	Display and Printer Adapter (MDPA)</b>.
+	<p> 
+	The MDA did not have any graphics mode of any kind. <b>It only had a single text mode,
+	(Mode 7) which could display 80 columns by 25 lines of high resolution text characters.</b> 
+	<p> 
+	This display adapter was a common standard used in older PC's.
+	<p> 
+	<h3>CGA - Theory</h3> 
+ 
+	In 1981, IBM also developed the <b>Color Graphics Adapter (CGA)</b>, coinsidered the
+	first color display standard for PC's.
+	<p> 
+	The CGA only supported a <b>Color Palette</b> of 16 colors, because it was limited to
+	<b>4 bytes per pixel.</b> 
+	<p> 
+	CGA supported two text modes and two graphics modes, including:
+	<ul> 
+ 
+		<li>40x25 characters (16 color) text mode</li> 
+		<li>18x25 characters (16 color) text mode</li> 
+		<li>320x200 pixels (4 colors) graphics modes</li> 
+		<li>640x200 pixels (Monochrome) graphics mode</li> 
+	</ul> 
+	It is possible to treak the display adapter in creating and discovering new,
+	"undocumented" video modes. More on this later.
+ 
+	<h3>EGA - Theory</h3> 
+ 
+	Introduced in 1984 by IBM, The <b>Enhanced Graphics Adapter (EGA)</b> produced
+	a display of 16 colors at a resolution up to 640x350 pixels.
+	<p> 
+	<b>Remember that the VGA adapters are backward compatible, simular to the 80x86
+	microprocessor family. Because of this, and to insure backward compatibility,
+	the BIOS starts up in Mode 7 (Originally from the MDA), which supports 80 columns,
+	by 25 lines. This is important to us, because this is the mode we are in!</b> 
+ 
+	<h2>VGA Memory Addressing</h2> 
+	Video memory used by the VGA Controller is mapped to the PC's memory from 0xA0000 to
+	0xBFFFF. <b>Remember the Real Mode Memory Map from <a href="OSDev7.html">Tutorial 7</a></b>!
+	<p> 
+ 
+	Typically, the Video Memory is mapped as the following:
+	<ul> 
+		<li><b>0xA0000 - 0xBFFFF</b> Video Memory used for graphics modes</li> 
+		<ul> 
+			<li><b>0xB0000 - 0xB7777</b> Monochrome Text mode</li> 
+			<li><b>0xB8000 - 0xBFFFF</b> Color text mode and CGA compatible graphics modes</li> 
+ 
+		</ul> 
+	</ul> 
+	Do to the different addresses used in the memory mapping, it is possible to have both
+	ECG, CGA, and VGA display adapters installed on the same machine.
+	<p> 
+	<b>It is possible to change the memory mappings used by the video adapter cards through the
+	CRT Microcontroller. Normally this is done through Video Drivers.</b> More on this later, though.
+	<p> 
+	One can also modify how the Video Controller uses this memory. In doing so, we can create
+	"new", or rather, "undocumented" modes. One common mode is the infamous "Mode X".
+ 
+	<p> 
+	Remember that modifying the display buffer and text buffers effectivly change what is displayed
+	on screen? This is do to the video controller refreshing the display based on the current refresh
+	rate. The Video Controller sends commands to the CRT Controller inside the Monitor through the VGA
+	Port. This generates a <b>Vertical and Horizontal Retrace</b> of the CRT to refresh the monitors'
+	display. And, because the text and display adapter is mapped to the above PC memory addresses:
+	<p> 
+ 
+	<b>Writing to this region of memory changes what is displayed on screen</b> 
+	<p> 
+	For an example, remember that we are in Mode 7? Mode 7 is a color text mode, hence uses
+	memory that begins at 0xB8000. Because this is the text buffer used by the Video Controller
+	to determin what to display, <b>Writing to 0xB8000 effectivley displays text on screen.</b> 
+	<p> 
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>	%define	VIDMEM	0xB8000		; video memory
+ 
+	mov	edi, VIDMEM		; get pointer to video memory
+	mov	[edi], 'A'		; print character 'A'
+	mov	[edi+1], 0x7		; character attribute</DIV></PRE></BLOCKQUOTE> 
+ 
+	The above will display the character "A", in white, black background (The attribute),
+	in the top left corner of the display. Too cool for school :)
+ 
+	<h1>Printing characters</h1> 
+ 
+	Okay, so how do we print a character at any x/y location on screen?
+	<p> 
+	A special property about memory is how it is linear. If we reach the end of a line being
+	displayed, the next byte is on the line right below it. Because of linear addressing, we
+	have to be able to convert an x/y location to a linear address to render it to screen.
+	And, a special forumula to do that is: <b>x + y * screen width</b>.
+	<p> 
+	<img src="images/vram.jpg"><p> 
+	Here is an example. Lets say, we want to print a character, 'A', into location x/y (5,5).
+	Knowing that video memory begins at 0xb8000, and is linear, we can use the formula to
+	convert this x/y location to an absolute address:
+      <BLOCKQUOTE><PRE><DIV class=code>		address = x + (y * screen width)
+		address = 5 + (5 * 80)
+		address = 5 + 400
+		address = 405
+ 
+		This means, from the start of video memory, location 5,5 is 405 bytes away.
+		So, add this to the base address of video memory:
+ 
+		0xB8000 + 405 = 0xB8195</DIV></PRE></BLOCKQUOTE> 
+	So... by writing character 'A' to 0xB8195, we effectivly write to x/y location (5,5). Cool, huh?
+	<p> 
+ 
+	Knowing this, lets first provide a way to store the current location at where we are on screen.
+	This is so that we can act like the BIOS, so that the rest of the program does not need to:
+      <BLOCKQUOTE><PRE><DIV class=code>_CurX db 0					; current x/y location
+_CurY db 0
+ 
+%define		VIDMEM	0xB8000			; video memory
+%define		COLS	80			; width and height of screen
+%define		LINES	25
+%define		CHAR_ATTRIB 14			; character attribute (White text on black background)</DIV></PRE></BLOCKQUOTE> 
+ 
+	Remember that we are in Mode 7. This mode has 80 colums of characters per row, and 25 lines.
+	And, of course, video memory begins at 0xB8000. But wait! What is the character attribute?
+	<p> 
+	Text Mode 7 actually uses <b>two</b> bytes per character, not one. <b>Remember this!</b> 
+	The first byte represents the actual character, and the second byte is a ...wait for it...
+	attribute byte! Because of this, when writing a character to screen in Mode 7, you will
+	need to write <b>two</b> bytes, not one.
+	<p> 
+ 
+	The attribute byte provides a way of supplying color, as well as certain attributes, such
+	as blinking. The values can be...
+ 
+	<ul> 
+		<li><b>0</b> - Black</li> 
+		<li><font color="#0000FF"><b>1</b> - Blue</font></li> 
+		<li><font color="#00FF00"><b>2</b> - Green</font></li> 
+ 
+		<li><font color="#00FFFF"><b>3</b> - Cyan</font></li> 
+		<li><font color="#FF0000"><b>4</b> - Red</font></li> 
+		<li><font color="#CC0099"><b>5</b> - Magenta</font></li> 
+		<li><font color="#663300"><b>6</b> - Brown</font></li> 
+ 
+		<li><font color="#CCCCCC"><b>7</b> - Light Gray</font></li> 
+		<li><font color="#444444"><b>8</b> - Dark Gray</font></li> 
+		<li><font color="#3399FF"><b>9</b> - Light Blue</font></li> 
+		<li><font color="#99FF66"><b>10</b> - Light Green</font></li> 
+ 
+		<li><font color="#CCFFFF"><b>11</b> - Light Cyan</font></li> 
+		<li><font color="#FF6600"><b>12</b> - Light Red</font></li> 
+		<li><font color="#FF66FF"><b>13</b> - Light Magenta</font></li> 
+		<li><font color="#CC6600"><b>14</b> - Light Brown</font></li> 
+ 
+		<li><font color="#444444"><b>15</b> - White</font></li> 
+	</ul> 
+	<p> 
+	The attribute byte is a byte that defines certain attributes, and defining both foreground
+	and background colors. The byte follows the format:
+	<ul> 
+		<li><b>Bits 0 - 2:</b> Foreground color</li> 
+ 
+		<ul> 
+			<li>Bit 0: Red</li> 
+			<li>Bit 1: Green</li> 
+			<li>Bit 2: Blue</li> 
+		</ul> 
+		<li><b>Bit 3:</b> Foreground Intensity</li> 
+ 
+		<li><b>Bits 4 - 6:</b> Background color</li> 
+		<ul> 
+			<li>Bit 4: Red</li> 
+			<li>Bit 5: Green</li> 
+			<li>Bit 6: Blue</li> 
+		</ul> 
+ 
+		<li><b>Bit 7:</b> Blinking or background intensity</li> 
+	</ul> 
+ 
+	Okay, now that we have everything set up, lets print a character!
+ 
+	<h3>Setting up</h3> 
+	Printing characters is a little complex because we have to track where we are,
+	both in current x/y location and when writing to video memory. We also need to
+	track certain characters, such as the newline character, and to watch for the end of
+	line. And yet, we still need to update the hardware cursor to this position as well.
+	<p> 
+	Putch32 is the pmode routine that will display a character in stage 2. Don't worry,
+	we will rewrite these routines for the Kernel using C. By showing how it's done in assembly,
+	we can compare assembly language relationships with C. More on this later.
+	<p> 
+ 
+	Anyways, heres the startup code:
+      <BLOCKQUOTE><PRE><DIV class=code>bits 32
+ 
+%define		VIDMEM	0xB8000			; video memory
+%define		COLS	80			; width and height of screen
+%define		LINES	25
+%define		CHAR_ATTRIB 14			; character attribute (White text on black background)
+ 
+_CurX db 0					; current x/y location
+_CurY db 0
+ 
+;**************************************************;
+;	Putch32 ()
+;		- Prints a character to screen
+;	BL => Character to print
+;**************************************************;
+ 
+Putch32:
+ 
+	pusha				; save registers
+	mov	edi, VIDMEM		; get pointer to video memory</DIV></PRE></BLOCKQUOTE> 
+	Okay, we have some basic definitions. _CurX and _CurY will contain the current x/y location
+	to write the character to. By incrementing _CurX, we effectivly go to the next character in the line.
+	Also note that EDI contains the base address of video memory. Now, by writing to video memory [EDI],
+	we an display characters on screen do to the current video memory map.
+	<p> 
+	Before displaying characters, we have to find out where to display it. To do this, just write it
+	to the current x/y location (_CurX and _CurY). This is not quite simple though.
+	<p> 
+	As you remember, video memory is linear, so we have to convert the x/y location into
+	linear memory. Remember our formula <b>x + y * screen width</b>. This can be easily computed.
+	However, <b>remember that every character is two bytes in size. Remember that _CurX, _CurY, COLS, LINES, are based off characters,
+	not bytes.</b> i.e., COLS=80 characters. Because there are two bytes per character, we have to compare with 80*2. Simple, huh?
+	<p> 
+ 
+	This makes things a little more complex, but not that hard:
+      <BLOCKQUOTE><PRE><DIV class=code>	;-------------------------------;
+	;   Get current position	;
+	;-------------------------------;
+ 
+	xor	eax, eax		; clear eax
+ 
+		;--------------------------------
+		; Remember: currentPos = x + y * COLS! x and y are in _CurX and _CurY.
+		; Because there are two bytes per character, COLS=number of characters in a line.
+		; We have to multiply this by 2 to get number of bytes per line. This is the screen width,
+		; so multiply screen with * _CurY to get current line
+		;--------------------------------
+ 
+		mov	ecx, COLS*2		; Mode 7 has 2 bytes per char, so its COLS*2 bytes per line
+		mov	al, byte [_CurY]	; get y pos
+		mul	ecx			; multiply y*COLS
+		push	eax			; save eax--the multiplication</DIV></PRE></BLOCKQUOTE> 
+	This is the first part of the formula: <b>y * screen width (in bytes)</b>, or _CurY *
+	(COLS*bytes per character). We store it on the stack so that we could finish the formula.
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>		;--------------------------------
+		; Now y * screen width is in eax. Now, just add _CurX. But, again remember that _CurX is relative
+		; to the current character count, not byte count. Because there are two bytes per character, we
+		; have to multiply _CurX by 2 first, then add it to our screen width * y.
+		;--------------------------------
+ 
+		mov	al, byte [_CurX]	; multiply _CurX by 2 because it is 2 bytes per char
+		mov	cl, 2
+		mul	cl
+		pop	ecx			; pop y*COLS result
+		add	eax, ecx</DIV></PRE></BLOCKQUOTE> 
+	Okay then! Notice that we multiply _CurX by 2 to get the current byte location. Then, we
+	pop the result of y * COLS and add it to the x position--completing our x+y*COLS formula.
+	<p> 
+	Yey! Okay, now EAX contains the offset byte to print our character to, so lets add it
+	to EDI--which holds the base address of video memory:
+      <BLOCKQUOTE><PRE><DIV class=code>		;-------------------------------
+		; Now eax contains the offset address to draw the character at, so just add it to the base address
+		; of video memory (Stored in edi)
+		;-------------------------------
+ 
+		xor	ecx, ecx
+		add	edi, eax		; add it to the base address</DIV></PRE></BLOCKQUOTE> 
+ 
+	Okay, now EDI contains the exact byte to write to. BL contains the character to write.
+	If the character is a newline character, we will want to move to the next row. Else,
+	just print the character:
+      <BLOCKQUOTE><PRE><DIV class=code>	;-------------------------------;
+	;   Watch for new line          ;
+	;-------------------------------;
+ 
+	cmp	bl, 0x0A		; is it a newline character?
+	je	.Row			; yep--go to next row
+ 
+	;-------------------------------;
+	;   Print a character           ;
+	;-------------------------------;
+ 
+	mov	dl, bl			; Get character
+	mov	dh, CHAR_ATTRIB		; the character attribute
+	mov	word [edi], dx		; write to video display
+ 
+	;-------------------------------;
+	;   Update next position        ;
+	;-------------------------------;
+ 
+	inc	byte [_CurX]		; go to next character
+	cmp	[_CurX], COLS		; are we at the end of the line?
+	je	.Row			; yep-go to next row
+	jmp	.done			; nope, bail out</DIV></PRE></BLOCKQUOTE> 
+	Okay then! Pretty easy, huh? Oh right..to go to the next row is easy:
+      <BLOCKQUOTE><PRE><DIV class=code>	;-------------------------------;
+	;   Go to next row              ;
+	;-------------------------------;
+ 
+.Row:
+	mov	byte [_CurX], 0		; go back to col 0
+	inc	byte [_CurY]		; go to next row
+ 
+	;-------------------------------;
+	;   Restore registers & return  ;
+	;-------------------------------;
+ 
+.done:
+	popa				; restore registers and return
+	ret</DIV></PRE></BLOCKQUOTE> 
+ 
+ 
+	<h1>Working with strings</h1> 
+	Okay, so we can print a character. Yippe. I am very excited to see a single character. Yeah,
+	I don't think so :)
+	<p> 
+ 
+	To print actual information, we will need a way to print full strings. Because we already
+	have a routine that tracks current position (and updates it), and prints the characters,
+	all we need to do to print a string is a simple loop.
+      <BLOCKQUOTE><PRE><DIV class=code>Puts32:
+ 
+	;-------------------------------;
+	;   Store registers             ;
+	;-------------------------------;
+ 
+	pusha				; save registers
+	push	ebx			; copy the string address
+	pop	edi</DIV></PRE></BLOCKQUOTE> 
+	Okay, Heres our Puts32() function. It takes one parameter: EBX, which contains the address
+	of a null terminated string to print. Because out Putch32() function requires that BL store
+	the character to print, we need to save a copy of EBX, so we do it here.
+	<p> 
+	Now, we loop:
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>.loop:
+ 
+	;-------------------------------;
+	;   Get character               ;
+	;-------------------------------;
+ 
+	mov	bl, byte [edi]		; get next character
+	cmp	bl, 0			; is it 0 (Null terminator)?
+	je	.done			; yep-bail out</DIV></PRE></BLOCKQUOTE> 
+	We use EDI to derefrence the string to get the current character to display. Note the test for
+	the null terminator. If found, we bail out. Now, to display the character... The most complex code
+	you will ever see:
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>	;-------------------------------;
+	;   Print the character         ;
+	;-------------------------------;
+ 
+	call	Putch32			; Nope-print it out</DIV></PRE></BLOCKQUOTE> 
+ 
+	...Or not :)
+ 	<p> 
+	All we need to do now is to go to the next character, and loop:
+      <BLOCKQUOTE><PRE><DIV class=code>	;-------------------------------;
+	;   Go to next character        ;
+	;-------------------------------;
+ 
+.Next:
+	inc	edi			; go to next character
+	jmp	.loop
+ 
+.done:
+	;-------------------------------;
+	;   Update hardware cursor      ;
+	;-------------------------------;
+ 
+	; Its more efficiant to update the cursor after displaying
+	; the complete string because direct VGA is slow
+ 
+	mov	bh, byte [_CurY]	; get current position
+	mov	bl, byte [_CurX]
+	call	MovCur			; update cursor
+ 
+	popa				; restore registers, and return
+	ret</DIV></PRE></BLOCKQUOTE> 
+	<p> 
+	Voila! We got ourselves a way to print strings in 32 bit protected mode. Not to hard, is it?
+	Oh wait.. What is MovCur for? We will look at that next.
+ 
+	<h1>Updating the hardware cursor</h1> 
+ 
+	Okay, so we can print characters and strings out now. You might notice something though: the cursor
+	does not move! Because of this, it just stays no matter what we do. This cursor is a simple underline
+	that the BIOS uses to indicate the current position when printing text.
+	<p> 
+ 
+	This cursor is handled by the hardware. The <b>CRT Microcontroller</b>, in fact. So, we have
+	to know some basic vga programming in order to move this cursor.
+ 
+	<h2>CRT Microcontroller</h2> 
+	<p> 
+	<h3>Warning for CRT users</h3> 
+	While I incourage practicing and trying new things, please remember that, in an OS envirement,
+	you are working directly with the hardware, and have direct control over everything.
+	<p> 
+	<b>CRT Monitor failures are violent in nature, and can explode and produce sharp glass fragments to fly
+	at high speeds.</b> It is possible to change frequency settings greater then the devices can handle.
+	<b>This may increase the chanches of a device or microchip to malfunction, producing unpredictable or
+	desasterous results.</b> 
+ 
+	<p> 
+	Because of this, if you, the reader, like experementing with the code, I recommend testing all
+	experemental code in an emulator to its fullest first, before attempting real hardware.
+	<p> 
+	I will not explain everything reguarding video programming yet until we talk about Video Drivers.
+	We will look at everything in detail then, cool?
+ 
+	<p> 
+	Anywhoo...On to the CRT Controller!
+ 
+	<h3>Port Mapping</h3> 
+ 
+	The CRT Controller uses a single <b>Data Register</b> which is mapped to <b>port 0x3D5</b>. Remember the Port table from Tutorial 7?
+	The CRT Controller uses a special register - an <b>Index Register</b>, to determin the type
+	of data in the Data Register is.
+	<p> 
+ 
+	So, in order to give data to the CRT Controller,<b> we have too write two values. One to the Index Register
+	(Containing the type of data we are writing), and one to the Data Register (Containing the data).</b> Not
+	too hard :)
+	<p> 
+	The Index Register is mapped to ports 0x3D5 or 0x3B5.<br> 
+	The Data Register is mapped to ports 0x3D4 or 0x3B4.
+	<p> 
+	There are more registers then these two (Such as the Misc. Output Register), but we will focus on these
+	two for now.
+ 
+	<h3>Index Register Mapping</h3> 
+ 
+	By default, the indices for the Index Register are mapped to the following:
+	<p> 
+	<center> 
+ 
+	<table border=1 bgcolor="CCCCCC"> 
+		<th colspan=5 bgcolor="FFFFFF">CRT Microcontroller - Index Register</th> 
+		<tr bgcolor="#AAAAAA"> 
+		<td>Index Offset</td><td>CRT Controller Register</td> 
+ 
+		</tr> 
+	<tr><td bgcolor="ffffff">0x0</td><td colspan=4>Horizontal Total</td></tr> 
+	<tr><td bgcolor="ffffff">0x1</td><td colspan=4>Horizontal Display Enable End</td></tr> 
+	<tr><td bgcolor="ffffff">0x2</td><td colspan=4>Start Horizontal Blanking</td></tr> 
+	<tr><td bgcolor="ffffff">0x3</td><td colspan=4>End Horizontal Blanking</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">0x4</td><td colspan=4>Start Horizontal Retrace Pulse</td></tr> 
+	<tr><td bgcolor="ffffff">0x5</td><td colspan=4>End Horizontal Retrace</td></tr> 
+	<tr><td bgcolor="ffffff">0x6</td><td colspan=4>Vertical Total</td></tr> 
+	<tr><td bgcolor="ffffff">0x7</td><td colspan=4>Overflow</td></tr> 
+	<tr><td bgcolor="ffffff">0x8</td><td colspan=4>Preset Row Scan</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">0x9</td><td colspan=4>Maximum Scan Line</td></tr> 
+	<tr><td bgcolor="ffffff">0xA</td><td colspan=4>Cursor Start</td></tr> 
+	<tr><td bgcolor="ffffff">0xB</td><td colspan=4>Cursor End</td></tr> 
+	<tr><td bgcolor="ffffff">0xC</td><td colspan=4>Start Address High</td></tr> 
+	<tr><td bgcolor="ffffff">0xD</td><td colspan=4>Start Address Low</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">0xE</td><td colspan=4>Cursor Location High</td></tr> 
+	<tr><td bgcolor="ffffff">0xF</td><td colspan=4>Cursor Location Low</td></tr> 
+	<tr><td bgcolor="ffffff">0x10</td><td colspan=4>Vertical Retrace Start</td></tr> 
+	<tr><td bgcolor="ffffff">0x11</td><td colspan=4>Vertical Retrace End</td></tr> 
+	<tr><td bgcolor="ffffff">0x12</td><td colspan=4>Vertical Display Enable End</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">0x13</td><td colspan=4>Offset</td></tr> 
+	<tr><td bgcolor="ffffff">0x14</td><td colspan=4>Underline Location</td></tr> 
+	<tr><td bgcolor="ffffff">0x15</td><td colspan=4>Start Vertical Blanking</td></tr> 
+	<tr><td bgcolor="ffffff">0x16</td><td colspan=4>End Vertical Blanking</td></tr> 
+	<tr><td bgcolor="ffffff">0x17</td><td colspan=4>CRT Mode Control</td></tr> 
+ 
+	<tr><td bgcolor="ffffff">0x18</td><td colspan=4>Line Compare</td></tr> 
+ 
+	</table> 
+ 
+	</center> 
+	<p> 
+	<b>By writing an index offset value into the index Register, it indicates what register
+	the Data Register points to (That is, what it refrences.)</b> 
+	<p> 
+ 
+	Most of what is in the above table we don't need to worry about right now. However, look at indices
+	0xE and 0xF for a moment:
+ 
+	<ul> 
+		<li><b>0x0E:</b> Cursor Location High Byte</li> 
+		<li><b>0x0F:</b> Cursor Location Low Byte</li> 
+	</ul> 
+	Yippe! These indices refer to the current offset location of the hardware cursor. This offset
+	is just an x/y location (as a linear location - remember the formula <b>x + y * screen width!</b>),
+	split into its high and low bytes.
+ 
+	<h3>Moving the hardware cursor</h3> 
+ 
+	Okay, first remember that the indices for the cursor are 0x0E and 0x0F, which we have to first
+	put into the Index Register at port 0x3D4:
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>	mov	al, 0x0f
+	mov	dx, 0x03D4
+	out	dx, al</DIV></PRE></BLOCKQUOTE> 
+	This puts index 0x0F (the cursor low byte address) into the index register. Now, this means the
+	value put into the Data Register (Port 0x3d5) indicates the low byte of the cursor location:
+      <BLOCKQUOTE><PRE><DIV class=code>	mov	al, bl                  ; al contains the low byte address
+	mov	dx, 0x03D5
+	out	dx, al			; low byte</DIV></PRE></BLOCKQUOTE> 
+	This sets the new low byte location for the cursor! Cool, huh? Setting the high byte is exactally
+	the same, except we have to set the index to 0x0E, which is, again, the high byte index.
+	<p> 
+	Here is the complete routine:
+      <BLOCKQUOTE><PRE><DIV class=code>;**************************************************;
+;	MoveCur ()
+;		- Update hardware cursor
+;	parm/ bh = Y pos
+;	parm/ bl = x pos
+;**************************************************;
+ 
+bits 32
+ 
+MovCur:
+ 
+	pusha				; save registers (aren't you getting tired of this comment?)
+ 
+	;-------------------------------;
+	;   Get current position        ;
+	;-------------------------------;
+ 
+	; Here, _CurX and _CurY are relitave to the current position on screen, not in memory.
+	; That is, we don't need to worry about the byte alignment we do when displaying characters,
+	; so just follow the forumla: location = _CurX + _CurY * COLS
+ 
+	xor	eax, eax
+	mov	ecx, COLS
+	mov	al, bh			; get y pos
+	mul	ecx			; multiply y*COLS
+	add	al, bl			; Now add x
+	mov	ebx, eax
+ 
+	;--------------------------------------;
+	;   Set low byte index to VGA register ;
+	;--------------------------------------;
+ 
+	mov	al, 0x0f		; Cursor location low byte index
+	mov	dx, 0x03D4		; Write it to the CRT index register
+	out	dx, al
+ 
+	mov	al, bl			; The current location is in EBX. BL contains the low byte, BH high byte
+	mov	dx, 0x03D5		; Write it to the data register
+	out	dx, al			; low byte
+ 
+	;---------------------------------------;
+	;   Set high byte index to VGA register ;
+	;---------------------------------------;
+ 
+	xor	eax, eax
+ 
+	mov	al, 0x0e		; Cursor location high byte index
+	mov	dx, 0x03D4		; Write to the CRT index register
+	out	dx, al
+ 
+	mov	al, bh			; the current location is in EBX. BL contains low byte, BH high byte
+	mov	dx, 0x03D5		; Write it to the data register
+	out	dx, al			; high byte
+ 
+	popa
+	ret</DIV></PRE></BLOCKQUOTE> 
+ 
+	That was easy, huh?
+	<p> 
+	Next up: Clearing the screen!
+ 
+	<h1>Clearing the screen</h1> 
+	Because we already have a way to display text, just loop, and reset the current position to 0!
+	This is surprisingly simple...
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>;**************************************************;
+;	ClrScr32 ()
+;		- Clears screen
+;**************************************************;
+ 
+bits 32
+ 
+ClrScr32:
+ 
+	pusha
+	cld
+	mov	edi, VIDMEM
+	mov	cx, 2000
+	mov	ah, CHAR_ATTRIB
+	mov	al, ' '	
+	rep	stosw
+ 
+	mov	byte [_CurX], 0
+	mov	byte [_CurY], 0
+	popa
+	ret</DIV></PRE></BLOCKQUOTE> 
+	Easy, huh?
+	<p> 
+	Okay, so we have a way to print text, which also updates the hardware cursor,
+	and clear the screen. If we wanted to, we can expand this stage 2 loader to include
+	a small menu and advanced options when giving control to the Kernel. More on this later...
+ 
+	<h1>Demo</h1> 
+ 
+	<center> 
+	<img src="images/Tutorial10.jpg"> 
+	</center> 
+	<p> 
+	I decided to create a little demo to demenstrate everything in this tutorial. The next tutorial
+	builds directly on this code.
+	<p> 
+	This tutorial uses everything we talked about in this tutorial. It sets the foreground and background
+	colors based on the character attribute byte. And, because of our ClrScr32() routine, effectivly clears
+	the screen to that background color. Cool, huh?
+	<p> 
+ 
+	You can download the demo <a href="Demos/Demo3.zip">Here</a>.
+ 
+      <H1>Conclusion</H1> 
+ 
+	I was pretty stumped on how to go about these next tutorials. I believe (Hope!) splitting it in two parts
+	was a good solution.
+	<p> 
+	We have went over alot of stuff here, more specifically graphics concepts. We talked about basic
+	VGA concepts, printing characters, strings, clearing the screen, and updating the hardware cursor.
+	By changing the <b>attribute byte</b> of the text we print out, we could easily print characters
+	out in all shorts of colors! You can even get a new background by changing the color in the
+	attribute byte, and calling our <b>ClrScr32 ()</b> function! Cool, dont you think? It certanly
+	beets the boring black and white... :)
+	<p> 
+	The next tutorial finishes Stage 2, and loads and executes a basic pure binary 32 bit Kernel image at 1 MB.
+	Don't worry--When we get into the Kernel section of this series, we will change the way the Kernel is built,
+	and modify how it is loaded. This will allow us to load the Kernel as an object format--allowing it to
+	import or export symbols, and mix it in with C. I cannot wait!
+	<p> 
+	The next tutorial is not a tutorial in a sense of learning new things. Instead, it covers all of the code
+	that has already been explained. This code, however, is modified for better code layout, and provide
+	the interface (and seperation) between a basic FileSystem (FAT12) Driver and a Floppy Driver. Nontheless,
+	it is the closing tutorial for Stage 2.
+	<p> 
+ 
+	We will go back to Stage 2 a bit later, as Stage 2 can be modified to provide more options, or even
+	to support <b>Multibooting</b>, and <b>Boot Options</b>. We shall see... ;)
+	<p> 
+	Until next time,
+	<p>
+	~Mike<br>
+	<i>BrokenThorn Entertainment. Currently developing DoE and the <a href="http://www.brokenthorn.com/mos/site2/">Neptune Operating System</a></i>
+
+	<br><br>
+	<i>Questions or comments? Feel free to <a href="mailto:neon6000@aol.com">Contact me</a>.</i>
+
+	<br><br>
+	Would you like to contribute and help improve the articles? If so, please <a href="mailto:neon6000@aol.com">let me know!</a>
+
+<br><br> 
+<table width=100% border=0> 
+<tr> 
+<td><p align=left> 
+<a class="anchor" href="OSDev9.html"> 
+<img src="images/left.jpg" border=0></a> 
+&nbsp;&nbsp;
+<a class="anchor" href="OSDev9.html"> 
+<font size=4>Chapter 9</font> 
+</a> 
+ 
+</p></td> 
+<td> 
+<p align=center> 
+<font size=4><a class="anchor" href="OSDevIndex.html">Home</a></font> 
+</p> 
+</td> 
+<td><p align=right> 
+<a class="anchor" href="OSDev11.html"><font size=4>Chapter 11</font></a> 
+&nbsp;&nbsp;
+<a class="anchor" href="OSDev11.html"><img src="images/right.jpg" border=0></a> 
+</p></td> 
+</tr> 
+</table> 
+ 
+ 
+</BODY></HTML> 

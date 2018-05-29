@@ -1,0 +1,38 @@
+<HTML><HEAD><TITLE>移植配置文件</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="从 PHP 3 移植到 PHP 4" HREF="migration4.html"><LINK REL="PREVIOUS" TITLE="同时运行 PHP 3 和 PHP 4" HREF="migration4.php4.with.php3.html"><LINK REL="NEXT" TITLE="解析器行为" HREF="migration4.parser.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="section" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="migration4.php4.with.php3.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">附录 C. 从 PHP 3 移植到 PHP 4</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="migration4.parser.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="section"><H1 CLASS="section"><A NAME="migration4.configuration"></A>移植配置文件</H1><P>&#13; 全局配置文件 <TT CLASS="filename">php3.ini</TT> 已经改名为 <TT CLASS="filename">php.ini</TT>。
+</P><P>&#13; Apache 配置文件也有一些细微的改动。PHP 模块所属的 MIME 类型已经改变。
+<DIV CLASS="informalexample"><A NAME="AEN126744"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="apache">application/x-httpd-php3        --&#62;    application/x-httpd-php
+application/x-httpd-php3-source --&#62;    application/x-httpd-php-source</PRE></TD></TR></TABLE><P></P></DIV>
+</P><P>&#13; 您可以使得您的配置文件工作在两个 PHP 版本上（取决于哪个版本编译到服务器上），使用下面的语法：
+<DIV CLASS="informalexample"><A NAME="AEN126747"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">AddType  application/x-httpd-php3        .php3
+AddType  application/x-httpd-php3-source .php3s
+
+AddType  application/x-httpd-php         .php
+AddType  application/x-httpd-php-source  .phps</PRE></TD></TR></TABLE><P></P></DIV>
+</P><P>&#13; 除此之外，关于 PHP 的 Apache 指令已经改变。
+</P><P>&#13; 从 PHP 4.0 开始，只有四个 Apache 指令与 PHP 相关：
+<DIV CLASS="informalexample"><A NAME="AEN126751"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="apache">php_value [PHP directive name] [value]
+php_flag [PHP directive name] [On|Off]
+php_admin_value [PHP directive name] [value]
+php_admin_flag [PHP directive name] [On|Off]</PRE></TD></TR></TABLE><P></P></DIV>
+</P><P>&#13; Admin values 和非 Admin values 有两处不同：
+</P><P></P><UL><LI><P>&#13; Admin values（或 flags）指仅可以出现在服务器范围内的 apache 配置文件（例如：<TT CLASS="filename">httpd.conf</TT>）。
+</P></LI><LI><P>&#13; Standard values（或 flags）无法控制某种 PHP 指令，例如：<A HREF="features.safe-mode.html#ini.safe-mode">安全模式</A>（如果您在
+<TT CLASS="filename">.htaccess</TT> 文件中覆盖了安全模式的设定，<A HREF="features.safe-mode.html#ini.safe-mode">安全模式</A>
+就失去了它的意义）。相比较，Admin values 可以更改任何 PHP 指令的值。
+</P></LI></UL><P>&#13; 为了使转移过程更加容易，PHP 4 捆绑了自动转换您的 Apache
+配置文件和 <TT CLASS="filename">.htaccess</TT> 文件使 PHP 3 和 PHP 4 都可以工作。但这些脚本并不转换 MIME 类型！您需要自己转换它。
+</P><P>&#13; 要转换您的 Apache 配置文件，运行 apconf-conv.sh 脚本（在 scripts/apache/ 目录）例如：
+<DIV CLASS="informalexample"><A NAME="AEN126766"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="shell">~/php4/scripts/apache:#  ./apconf-conv.sh /usr/local/apache/conf/httpd.conf</PRE></TD></TR></TABLE><P></P></DIV>
+</P><P>&#13; 您原来的配置文件会更名为 httpd.conf.orig。
+</P><P>&#13; 要转换您的 <TT CLASS="filename">.htaccess</TT> 文件，运行
+<TT CLASS="filename">aphtaccess-conv.sh</TT> 脚本（也在 scripts/apache/ directory 目录下）：
+<DIV CLASS="informalexample"><A NAME="AEN126772"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="shell">~/php4/scripts/apache:#  find / -name .htaccess -exec ./aphtaccess-conv.sh {} \;</PRE></TD></TR></TABLE><P></P></DIV>
+</P><P>&#13; 同样的，您原有的 <TT CLASS="filename">.htaccess</TT> 文件会以 .orig 后缀保存。
+</P><P>&#13; 运行转换脚本需要安装 awk。
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="migration4.php4.with.php3.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="migration4.parser.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">同时运行 PHP 3 和 PHP 4</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="migration4.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">解析器行为</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

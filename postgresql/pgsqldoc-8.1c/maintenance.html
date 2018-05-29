@@ -1,0 +1,1193 @@
+<HTML
+><HEAD
+><TITLE
+>日常数据库维护工作</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="服务器管理"
+HREF="admin.html"><LINK
+REL="PREVIOUS"
+TITLE="字符集支持"
+HREF="multibyte.html"><LINK
+REL="NEXT"
+TITLE="经常重建索引"
+HREF="routine-reindex.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="multibyte.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="charset.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="backup.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="routine-reindex.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="MAINTENANCE"
+>Chapter 22. 日常数据库维护工作</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>22.1. <A
+HREF="maintenance.html#ROUTINE-VACUUMING"
+>日常清理</A
+></DT
+><DD
+><DL
+><DT
+>22.1.1. <A
+HREF="maintenance.html#VACUUM-FOR-SPACE-RECOVERY"
+>恢复磁盘空间</A
+></DT
+><DT
+>22.1.2. <A
+HREF="maintenance.html#VACUUM-FOR-STATISTICS"
+>更新规划器统计</A
+></DT
+><DT
+>22.1.3. <A
+HREF="maintenance.html#VACUUM-FOR-WRAPAROUND"
+>避免事务 ID 重叠造成的问题</A
+></DT
+><DT
+>22.1.4. <A
+HREF="maintenance.html#AUTOVACUUM"
+>auto-vacuum 守护进程</A
+></DT
+></DL
+></DD
+><DT
+>22.2. <A
+HREF="routine-reindex.html"
+>经常重建索引</A
+></DT
+><DT
+>22.3. <A
+HREF="logfile-maintenance.html"
+>日志文件维护</A
+></DT
+></DL
+></DIV
+><A
+NAME="AEN22800"
+></A
+><P
+>	为了保持所安装的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器平稳运行,
+	我们必须做一些日常性的维护工作。我们在这里讨论的这些工作都是经常重复的事情，
+	可以很容易地使用标准的 Unix 工具，比如<SPAN
+CLASS="APPLICATION"
+>cron</SPAN
+> 脚本来实现。
+	不过，设置合适的脚本以及检查它们是否成功执行则是数据库管理员的责任，
+  </P
+><P
+>	一件很明显的维护工作就是经常性地创建数据的备份拷贝。
+	如果没有最近的备份，那么你就没有从灾难中恢复的机会（比如磁盘坏了，失火，误删了表等等）。
+	可以在<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里面使用的备份和恢复机制在 <A
+HREF="backup.html"
+>Chapter 23</A
+> 里面有比较详细的讨论。
+  </P
+><P
+>	其它主要的维护范畴的工作包括周期性的 <SPAN
+CLASS="QUOTE"
+>"vacuuming"</SPAN
+> （清理）数据库。
+	这个工作我们在 <A
+HREF="maintenance.html#ROUTINE-VACUUMING"
+>Section 22.1</A
+>里讨论。
+  </P
+><P
+>	其它需要周期性注意的东西是日志文件的管理。
+	我们在 <A
+HREF="logfile-maintenance.html"
+>Section 22.3</A
+> 里讨论了这个问题。
+  </P
+><P
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 和其它数据库产品比较起来是低维护量的。
+	但是，适当在这些任务上放一些注意将更加能够确保我们的愉快工作和获取对这个系统富有成效的经验。
+  </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="ROUTINE-VACUUMING"
+>22.1. 日常清理</A
+></H1
+><A
+NAME="AEN22817"
+></A
+><P
+>	由于以下几个原因，必须周期性运行 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的
+	<TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 命令∶
+
+    <P
+></P
+></P><OL
+TYPE="1"
+><LI
+><P
+>	恢复那些由已更新的或已删除的行占据的磁盘空间。
+      </P
+></LI
+><LI
+><P
+>	更新 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 查询规划器使用的数据统计信息。
+      </P
+></LI
+><LI
+><P
+>	避免因为<I
+CLASS="FIRSTTERM"
+>事务 ID 重叠</I
+>造成的老旧数据的丢失。
+      </P
+></LI
+></OL
+><P>
+
+	对上面每个条件进行 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 操作的频率和范围因不同的节点而不同。
+	因此，数据库管理员必须理解这些问题并且开发出合适的维护策略。
+	本节的重点就放在解释这些高级别的问题；
+	至于命令语法的细节，请参阅 <A
+HREF="sql-vacuum.html"
+><I
+>VACUUM</I
+></A
+> 命令手册页。
+  </P
+><P
+>	从 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 7.2 开始，
+	<TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 的标准形式可以和普通的数据库操作
+	（selects, inserts, updates, deletes, 但不包括表定义的修改）。
+	因此日常的清理也不再象以前的版本那样具有干扰性，
+	也不再那么特别要求安排在每天的低使用的时间里进行。
+  </P
+><P
+>   从 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 8.0 开始，有一些配置参数可以设置，
+   用来进一步减小后端清理的的性能影响。参阅 <A
+HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-VACUUM-COST"
+>Section 17.4.4</A
+>。
+  </P
+><P
+>   在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 8.1 中增加了一个自动的机制，用于执行必要的 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>
+   操作。参阅 <A
+HREF="maintenance.html#AUTOVACUUM"
+>Section 22.1.4</A
+>。
+  </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="VACUUM-FOR-SPACE-RECOVERY"
+>22.1.1. 恢复磁盘空间</A
+></H2
+><A
+NAME="AEN22845"
+></A
+><P
+>	在正常的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 操作里，
+	对一行的<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>或<TT
+CLASS="COMMAND"
+>DELETE</TT
+>并未立即删除旧版本的数据行。
+	这个方法对于获取多版本并行控制的好处是必要的（参阅 <A
+HREF="mvcc.html"
+>Chapter 12</A
+>）：
+	如果一个行的版本仍有可能被其它事务看到，那么你就不能删除它。
+	但到了最后，不会有任何事务对过期的或者已经删除的元组感兴趣。
+	而它占据的空间必须为那些新的元组使用而回收，
+	以避免对磁盘空间增长的无休止的需求。这件事是通过运行 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 实现的。
+   </P
+><P
+>	很明显，那些经常更新或者删除元组的表需要比那些较少更新的表清理的更频繁一些。
+	所以，设置一个周期性的 <SPAN
+CLASS="APPLICATION"
+>cron</SPAN
+> 
+	任务 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 那些选定的表，而忽略那些已经知道变化比较少的表．
+	这个方法只是在你拥有大量更新频繁的表和大量很少更新的表的时候有意义 &mdash; 清理一个小表的额外开销根本不值得担心．
+   </P
+><P
+>    <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 命令有两个变种。第一种形式，叫做<SPAN
+CLASS="QUOTE"
+>"懒汉 vacuum"</SPAN
+>或者只是 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>，
+    在表和索引中标记过期的数据为将来使用；它并<I
+CLASS="EMPHASIS"
+>不</I
+>试图立即恢复这些过期数据使用的空间。
+    因此，表文件不会缩小，并且任何文件中没有使用的空间都不会返回给操作系统。
+    这个变种的 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 可以和通常的数据库操作并发执行。
+   </P
+><P
+>    第二种形式是 <TT
+CLASS="COMMAND"
+>VACUUM FULL</TT
+> 命令。
+    这个形式使用一种更加激进的算法来恢复过期的的行版本占据的空间。
+    任何 <TT
+CLASS="COMMAND"
+>VACUUM FULL</TT
+> 释放的空间都立即返回给操作系统。
+    但是，这个形式的 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 命令在进行 <TT
+CLASS="COMMAND"
+>VACUUM FULL</TT
+> 一个表的时候在其上要求一个排他锁。
+    因此，经常使用 <TT
+CLASS="COMMAND"
+>VACUUM FULL</TT
+> 会对并发数据库查询有着非常糟糕的影响。    
+   </P
+><P
+>	标准形式的 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 最适合用于维护相当程度的磁盘用量的稳定状态。
+	如果你需要把磁盘空间归还给操作系统，那么你可以使用 <TT
+CLASS="COMMAND"
+>VACUUM FULL</TT
+> &mdash; 
+	不过如果释放的磁盘空间又会很快再次被分配又怎样？
+	如果维护更新频繁的表，那么中等频率的多次标准 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 运行方法比很低频率的 <TT
+CLASS="COMMAND"
+>VACUUM FULL</TT
+> 更好。
+   </P
+><P
+>	对于大多数节点而言，我们推荐的习惯是在一天中的低使用的时段安排一次整个数据库的 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>，
+	必要时外加对更新频繁的表的更经常的清理。
+	（有些环境下，对那些更新非常频繁的表可能会每几分钟就 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 一次。）
+	如果你的集群中有多个数据库，别忘记对每个库进行清理；
+	<A
+HREF="app-vacuumdb.html"
+><I
+><I
+>vacuumdb</I
+></I
+></A
+> 脚本可能会帮你的忙。
+   </P
+><P
+>	如果你知道自己刚删除掉一个表中大部分的行，那么我们建议使用<TT
+CLASS="COMMAND"
+>VACUUM FULL</TT
+>，
+	这样该表的稳定态尺寸可以因为<TT
+CLASS="COMMAND"
+>VACUUM FULL</TT
+>更富侵略性的方法而显著减小。
+	日常的磁盘空间清理，请使用 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>，而不是 <TT
+CLASS="COMMAND"
+>VACUUM FULL</TT
+>。
+   </P
+><P
+>	如果你有一个表，它的内容经常被完全删除，那么可以考虑用
+	<TT
+CLASS="COMMAND"
+>TRUNCATE</TT
+>，而不是后面跟着 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>	的 <TT
+CLASS="COMMAND"
+>DELETE</TT
+>。
+	<TT
+CLASS="COMMAND"
+>TRUNCATE</TT
+> 立即删除整个表的内容，
+	而不要求随后的 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 或者<TT
+CLASS="COMMAND"
+>VACUUM FULL</TT
+>
+	来恢复现在没有用的磁盘空间。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="VACUUM-FOR-STATISTICS"
+>22.1.2. 更新规划器统计</A
+></H2
+><A
+NAME="AEN22891"
+></A
+><A
+NAME="AEN22894"
+></A
+><P
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的查询规划器依赖一些有关表内容的统计信息用以为查询生成好的规划。
+	这些统计是通过<TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 命令获得的，你可以直接调用这条命令，
+	也可以把它当做 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 里的一个可选步骤来调用。
+	拥有合理准确的统计是非常重要的，否则，选择了恶劣的规划很可能降低数据库的性能。
+   </P
+><P
+>	和为了回收空间做清理一样，经常更新统计信息也是对更新频繁的表更有用。
+	不过，即使是更新非常频繁的表，如果它的数据的统计分布并不经常改变，那么也不需要更新统计信息。
+	一条简单的拇指定律就是想想表中字段的最大很最小值改变的幅度。
+	比如，一个包含行更新时间的 <TT
+CLASS="TYPE"
+>timestamp</TT
+> 字段将是随着行的追加和更新稳定增长最大值的；
+	这样的字段可能需要比那些包含访问网站的 URL 的字段更频繁一些更新统计信息。
+	那些 URL 字段可能改变得一样频繁，但是其数值的统计分布的改变相对要缓慢得多。
+   </P
+><P
+>	我们可以在特定的表，甚至是表中特定的字段上运行 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+>，
+	所以如果你的应用有需求的话，我们是可以对某些信息更新得比其它信息更频繁的。
+	不过，在实际中，这种做法的有用性是值得怀疑的。
+	从 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 7.2 开始，
+	<TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 是一项相当快的操作，即时在大表上也很快，
+	因为它使用了统计学上的随机采样的方法进行行采样，
+	而不是把每一行都读取进来。因此，每隔一段时间对整个数据库运行一便这条命令可能更简单。
+   </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>	尽管用 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 按字段进行挖掘的方式可能不是很实用，
+	但你可能还是会发现值得按字段对 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 收集的统计信息的详细级别进行调整。
+	那些经常在<TT
+CLASS="LITERAL"
+>WHERE</TT
+>子句里使用的字段如果有非常不规则的数据分布，
+	那么就可能需要比其它字段更细致的数据图表．参阅
+	<TT
+CLASS="COMMAND"
+>ALTER TABLE SET STATISTICS</TT
+>．
+    </P
+></BLOCKQUOTE
+></DIV
+><P
+>	我们对大多数节点都建议在每天的低使用时段安排一次数据库范围的 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+>：
+	这个任务可以有效地和每天的 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 组合在一起。
+	不过，这对那些表统计信息改变相对缓慢的节点可能会过于夸张，
+	而且少一些的 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 也足够了。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="VACUUM-FOR-WRAPAROUND"
+>22.1.3. 避免事务 ID 重叠造成的问题</A
+></H2
+><A
+NAME="AEN22919"
+></A
+><P
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的 MVCC 事务语意依赖于比较事务 ID(<SPAN
+CLASS="ACRONYM"
+>XID</SPAN
+>)的数值：
+	一条带有大于当前事务的	XID 的插入 XID 的行版本是<SPAN
+CLASS="QUOTE"
+>"属于未来的"</SPAN
+>，
+	并且不应为当前事务可见。但是因为事务 ID 的大小有限（在我们写这些的时候是 32 位），
+	如果一次集群如果运行的时间很长（大于 4 十亿次事务），
+	那么它就要受到<I
+CLASS="FIRSTTERM"
+>事务 ID 重叠</I
+>的折磨：XID 计数器回到零位，
+	然后突然间所有以前的事务就变成看上去是在将来的	&mdash; 这意味着它们的输出将变得可见。
+	简而言之，可怕的数据丢失，（实际上数据仍然在那里，但是如果你无法获取数据，这么说也只是幸灾乐祸。）
+   </P
+><P
+>	在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 7.2 之前，
+	防御 XID 重叠的唯一办法就是至少每4十亿事务就重新做一次<TT
+CLASS="COMMAND"
+>initdb</TT
+>。
+	这种做法对高流量的节点而言当然不是令人满意的做法，所以我们设计了更好的方法。
+	新的方法允许某个服务器仍然保持运行状态，不需要 <TT
+CLASS="COMMAND"
+>initdb</TT
+> 或者任何类型的重启。
+	代价就是下面这样的维护要求：
+	<I
+CLASS="EMPHASIS"
+>	数据库中的每个表都必须在每十亿次事务中至少清理一次
+	</I
+>．
+   </P
+><P
+>	从实际角度出发，这个要求不算一个很繁重的要求，
+	但是因为如果我们没能满足这个要求的后果是全部数据的丢失（而不仅仅是磁盘空间的浪费或者性能的下降），
+	我们制作了一些特殊的东西来帮助数据库管理员避免灾难的发生。
+	对于集群中的每个数据库，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	都跟踪自上次全数据库范围 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 以来的时间。
+	如果任何数据库接近了十亿次事务的危险级别，系统就开始发出警告信息。
+	如果什么都不干，那么系统最终会停止正常的操作，直到进行了合适的手工操作。
+	本节剩下的部分给出这方面的细节。
+   </P
+><P
+>	XID 比较的新方法剥离出两个特殊的 XID，数字 1 和 2 （<TT
+CLASS="LITERAL"
+>BootstrapXID</TT
+> 和 <TT
+CLASS="LITERAL"
+>FrozenXID</TT
+>）。
+	这两个 XID 总是被认为表任何普通的 XID 旧。普通的 XID（那些大于 2 的）使用模-2<SUP
+>31</SUP
+>运算进行比较。
+	这就意味着对于每个普通的 XID，总是有二十亿个 XID 是<SPAN
+CLASS="QUOTE"
+>"更旧"</SPAN
+>以及二十亿个 XID<SPAN
+CLASS="QUOTE"
+>"更新"</SPAN
+>；
+	表达这个意思的另外一个方法是普通的 XID 空间是没有终点的环。
+	因此，一旦一条元组带着特定的普通 XID 创建出来，那么该元组
+	将在以后的二十亿次事务中表现得是<SPAN
+CLASS="QUOTE"
+>"在过去"</SPAN
+>，而不管我们说的是哪个普通 XID。
+	如果该元组在超过二十亿次事务之后仍然存在，
+	那么它就会突然变成在将来的元组。为了避免数据丢失，
+	老的元组必须在到达二十亿次事务的年龄之前的某个时候赋予 XID <TT
+CLASS="LITERAL"
+>FrozenXID</TT
+>。
+	一旦它被赋予了这个特殊的 XID，那么它们在所有普通事务面前表现为	<SPAN
+CLASS="QUOTE"
+>"在过去"</SPAN
+>，而不管事务 ID 是否重叠，
+	因此这样的元组直到删除之前都会完好，不管要保存多长时间．这个 XID 的重新赋值是<TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 控制的．
+   </P
+><P
+>	<TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 的正常策略是给任何其普通 XID 有超过十亿次已过去事务行版本重新赋值为 <TT
+CLASS="LITERAL"
+>FrozenXID</TT
+>。
+	这个策略保留了原来的插入 XID 直到该数值不再令人感兴趣为止。
+	（实际上，大多数行版本将可能在还没有<SPAN
+CLASS="QUOTE"
+>"冻结"</SPAN
+>之前就完成生存和消亡了）。
+	在这个策略下，任何表在两次 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 运行之间的最大的安全间隔是十亿次事务：
+	如果你等的时间更长，那么最后就可能就会有一条不够老的行版本在重新赋值时变成比二十亿次事务更老，
+	并因此重叠到了未来 &mdash; 也就是说，你失去它了。（当然，它在另外二十亿次事务之后会重新出现，不过那样也无济于事。）
+   </P
+><P
+>	因为上面的原因，我们需要周期性地运行 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>，
+	所以很难有哪个表会到十亿次事务还没有清理过。但是，为了帮助管理员确保满足了这个要求，
+	<TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 在系统表<TT
+CLASS="LITERAL"
+>pg_database</TT
+> 里存储了事务 ID 统计。
+	尤其是一个数据库的 <TT
+CLASS="LITERAL"
+>pg_database</TT
+> 行中的 <TT
+CLASS="LITERAL"
+>datfrozenxid</TT
+>
+	字段在任何数据库范围的 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 操作（也就是没有声明任何表的<TT
+CLASS="COMMAND"
+>VACUUM</TT
+>）之后将会被更新。
+	这个字段里存储的数值是该 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 命令使用的冻结终止的 XID。
+	系统保证在该数据库中所有比这个终止 XID 老的普通 XID 都被 <TT
+CLASS="LITERAL"
+>FrozenXID</TT
+> 代替。
+	检查这个信息的一个便利的方法是执行下面的查询
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT datname, age(datfrozenxid) FROM pg_database;</PRE
+><P>
+	<TT
+CLASS="LITERAL"
+>age</TT
+> 字段用于测量从中止 XID 到当前事务的 XID 的数目。
+   </P
+><P
+>	使用了这种标准的冻结策略，对一个刚清理过的数据库而言，
+	<TT
+CLASS="LITERAL"
+>age</TT
+> 字段将从十亿处开始。当<TT
+CLASS="LITERAL"
+>age</TT
+>到达二十亿次的时候，
+	数据库必须再次清理以避免事务标识重叠造成的问题。
+	我们建议的策略是至少每半个十亿次（5亿次）事务 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 一次数据库，
+	这样就可以保证足够的安全边界范围．为了帮助满足这条规则，
+	如果有任何 <TT
+CLASS="LITERAL"
+>pg_database</TT
+> 记录显示出超过15亿次事务的 <TT
+CLASS="LITERAL"
+>age</TT
+>，
+	那么每次数据库范围的<TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 都会自动发出一条警告，比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>play=# VACUUM;
+WARNING:  database "mydb" must be vacuumed within 177009986 transactions
+HINT:  To avoid a database shutdown, execute a full-database VACUUM in "mydb".
+VACUUM</PRE
+><P>
+   </P
+><P
+>    如果忽略了上面这样的 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 信息，如果距离事务 ID 重叠小于 1 千万次，
+    那么 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 就会在每次事务开始前发出类似上面的警告。
+    如果这些警告还是被忽略了，那么系统将在距离重叠小于 1 百万次的时候关闭，并且拒绝执行任何新的事务：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>play=# select 2+2;
+ERROR:  database is shut down to avoid wraparound data loss in database "mydb"
+HINT:  Stop the postmaster and use a standalone backend to VACUUM in "mydb".</PRE
+><P>
+
+    这个 1 百万的事务安全边界留下来用于让管理员在不丢失数据的情况下进行恢复，
+    方法是手工执行所需要的 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 命令。不过，因为一旦进入了安全关闭模式，系统就不能再执行命令，
+    做这件事情的唯一的方法是停止 postmaster，使用一个单独运行的后端来执行 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>。
+    关闭模式不会强制于独立运行的后端。参阅 <A
+HREF="app-postgres.html"
+><SPAN
+CLASS="APPLICATION"
+>postgres</SPAN
+></A
+> 手册也获取有关使用独立运行后端的细节。
+   </P
+><P
+>	带着 <TT
+CLASS="COMMAND"
+>FREEZE</TT
+> 选项的 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 使用了更大胆的冻结策略：
+	如果行版本已经老得被所有打开的事务看做是良好的，
+	那么就都冻结．特别是如果在一个空闲的数据库上运行
+	<TT
+CLASS="COMMAND"
+>VACUUM FREEZE</TT
+>，那么就保证该数据库中<I
+CLASS="EMPHASIS"
+>所有</I
+>的行版本都被冻结。
+	因此，只要该数据库没有其它的变化，那么它就不需要后续的清理以避免事务 ID 重叠问题。
+	这个技巧被 <TT
+CLASS="COMMAND"
+>initdb</TT
+> 用于准备 <TT
+CLASS="LITERAL"
+>template0</TT
+>数据库。
+	我们也应该用这个方法对所有在 <TT
+CLASS="LITERAL"
+>pg_database</TT
+>表里标记着
+	<TT
+CLASS="LITERAL"
+>datallowconn</TT
+> = <TT
+CLASS="LITERAL"
+>false</TT
+>的数据库进行初始化，
+	因为我们还没有任何便利的方法 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 一个你无法联接的数据库。
+   </P
+><DIV
+CLASS="WARNING"
+><P
+></P
+><TABLE
+CLASS="WARNING"
+BORDER="1"
+WIDTH="100%"
+><TR
+><TD
+ALIGN="CENTER"
+><B
+>Warning</B
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+><P
+>	请注意，那些<TT
+CLASS="LITERAL"
+>pg_database</TT
+> 记录里有
+	<TT
+CLASS="LITERAL"
+>datallowconn</TT
+> = <TT
+CLASS="LITERAL"
+>false</TT
+> 条件的数据库被认为是正确冻结住的；
+	自动警告和重叠保护关闭并不会处理这些数据库。
+	因此，在把数据库标记为 <TT
+CLASS="LITERAL"
+>datallowconn</TT
+> = <TT
+CLASS="LITERAL"
+>false</TT
+> 之前，
+	确保这样的数据库的正常冻结是你的责任。
+    </P
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AUTOVACUUM"
+>22.1.4. auto-vacuum 守护进程</A
+></H2
+><A
+NAME="AEN22997"
+></A
+><P
+>    从 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL </SPAN
+> 8.1 开始，系统带有一个额外的可选服务进程，
+    叫做 <I
+CLASS="FIRSTTERM"
+>autovacuum 守护进程</I
+>，它的目的是自动执行 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>
+    和 <TT
+CLASS="COMMAND"
+>ANALYZE </TT
+> 命令。在打开这个选项之后，autovacuum
+    守护进程将周期性运行并且检查那些有大量插入，更新或者删除元组操作的表。
+    这些检查使用行级别的统计收集设施；因此，除非把 <A
+HREF="runtime-config-statistics.html#GUC-STATS-ROW-LEVEL"
+>stats_row_level</A
+> 和 <A
+HREF="runtime-config-statistics.html#GUC-STATS-ROW-LEVEL"
+>stats_row_level</A
+> 设置为 <TT
+CLASS="LITERAL"
+>true</TT
+>，否则无法使用 autovacuum 守护。
+    还有，在为 <A
+HREF="runtime-config-connection.html#GUC-SUPERUSER-RESERVED-CONNECTIONS"
+>superuser_reserved_connections</A
+> 选择数值的时候，不要忘记给 autovacuum
+    进程保留一个槽位。
+   </P
+><P
+>    如果打开了 autovacuum 守护，那么它会每隔 <A
+HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-NAPTIME"
+>autovacuum_naptime</A
+> 秒钟运行一次，并且检查应该处理哪个数据库。
+    任何临近事务 ID 重叠的数据库都会被立即处理。这个时候，autovacuum 发出一个数据库反胃的
+    <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 调用，如果是模板数据库，则发出 <TT
+CLASS="COMMAND"
+>VACUUM FREEZE</TT
+>，
+    然后终止。如果没有数据库复合这个标准，则选择被上次 autovacuum 处理时间最远的那个数据库。
+    这种情况下，该数据库里的表被检查，然后根据需要发出独立的 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 或者
+    <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 命令。
+   </P
+><P
+>    对于每个表，用两个条件来判断应该使用哪个操作。
+    如果上次 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 之后的过期元组的数量超过了<SPAN
+CLASS="QUOTE"
+>"清理阈值（vacuum threshold）"</SPAN
+>，
+    那么就清理改表。清理阈值是定义为：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>清理阈值 = 清理基本阈值 + 清理缩放系数 * 元组数
+(vacuum threshold = vacuum base threshold + vacuum scale factor * number of tuples)</PRE
+><P>
+    这里的清理基本阈值是
+    <A
+HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-VACUUM-THRESHOLD"
+>autovacuum_vacuum_threshold</A
+>，
+    清理的缩放系数是
+    <A
+HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-VACUUM-SCALE-FACTOR"
+>autovacuum_vacuum_scale_factor</A
+>，
+    元组的数目是
+    失效的元组数目是从统计收集器里面获取的；这事一个半精确的计数，由每次
+    <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> 和 <TT
+CLASS="COMMAND"
+>DELETE</TT
+> 操作更新。
+    （它只是半精确的是因为在重载下，有些信息可能会丢失。）
+    为了分析，使用了一个类似的条件：分析阈值，定义为
+</P><PRE
+CLASS="PROGRAMLISTING"
+>分析阈值 = 分析基本阈值 + 分析缩放系数 * 元组数目
+(analyze threshold = analyze base threshold + analyze scale factor * number of tuples)</PRE
+><P>
+    它会和上次 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 插入，更新，或者删除的元组总数进行比较。
+   </P
+><P
+>    缺省的阈值和伸缩系数是从 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 里面取得的，
+    不过，我们可以以每个表独立设置的方式覆盖它，方法就是在系统表
+    <A
+HREF="catalog-pg-autovacuum.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_autovacuum</TT
+></A
+> 里输入记录。
+    如果 <TT
+CLASS="STRUCTNAME"
+>pg_autovacuum</TT
+> 里面存在对某个特定表的行，那么就使用它声明的设置；
+    否则使用全局设置。参阅 <A
+HREF="runtime-config-autovacuum.html"
+>Section 17.9</A
+> 获取有关全局设置的更多细节。
+   </P
+><P
+>    除了基本阈值和缩放系数之外，在 <TT
+CLASS="STRUCTNAME"
+>pg_autovacuum</TT
+> 里还有三个参数可以为每个表进行设置。
+    首先，<TT
+CLASS="STRUCTNAME"
+>pg_autovacuum</TT
+>.<TT
+CLASS="STRUCTFIELD"
+>enabled</TT
+> 可以设置为 <TT
+CLASS="LITERAL"
+>false</TT
+>，
+    让 autovacuum 守护进程完全忽略某个表。这种情况下，autovacuum 只有在为了避免事务
+    ID 重叠清理整个数据库的时候才会动那个表。另外两个参数，清理开销延迟
+    （<TT
+CLASS="STRUCTNAME"
+>pg_autovacuum</TT
+>.<TT
+CLASS="STRUCTFIELD"
+>vac_cost_delay</TT
+>）和清理开销限制
+    （<TT
+CLASS="STRUCTNAME"
+>pg_autovacuum</TT
+>.<TT
+CLASS="STRUCTFIELD"
+>vac_cost_limit</TT
+>），
+    用于为
+    <A
+HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-VACUUM-COST"
+><I
+>基于开销的清理延迟</I
+></A
+>
+    特性设置表相关的数值。
+   </P
+><P
+>    如果在 <TT
+CLASS="STRUCTNAME"
+>pg_autovacuum</TT
+> 里任何数值设置为负数，
+    或者在 <TT
+CLASS="STRUCTNAME"
+>pg_autovacuum</TT
+> 里就根本没有出现特定表的数据行，
+    那么使用 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 里面对应的数值。
+   </P
+><P
+>    目前没有任何制作 <TT
+CLASS="STRUCTNAME"
+>pg_autovacuum</TT
+> 记录的支持，
+    只能手工向该系统表中 <TT
+CLASS="COMMAND"
+>INSERT</TT
+>。这个特性将在以后的版本中改进，
+    并且这个系统表的定义也很有可能会改变。
+   </P
+><DIV
+CLASS="CAUTION"
+><P
+></P
+><TABLE
+CLASS="CAUTION"
+BORDER="1"
+WIDTH="100%"
+><TR
+><TD
+ALIGN="CENTER"
+><B
+>Caution</B
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+><P
+>     目前，<TT
+CLASS="STRUCTNAME"
+>pg_autovacuum</TT
+> 的内容没有被工具
+      <TT
+CLASS="COMMAND"
+>pg_dump</TT
+> 和 <TT
+CLASS="COMMAND"
+>pg_dumpall</TT
+> 创建的转储所保存。
+      如果你想在转储/恢复的过程中保留它们，那么要确信你手工转储了这个系统表。
+    </P
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="multibyte.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="routine-reindex.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>字符集支持</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="admin.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>经常重建索引</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

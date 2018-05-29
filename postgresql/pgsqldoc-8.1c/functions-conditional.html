@@ -1,0 +1,618 @@
+<HTML
+><HEAD
+><TITLE
+>条件表达式</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="函数和操作符"
+HREF="functions.html"><LINK
+REL="PREVIOUS"
+TITLE="序列操作函数"
+HREF="functions-sequence.html"><LINK
+REL="NEXT"
+TITLE="数组函数和操作符"
+HREF="functions-array.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="functions-sequence.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="functions.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 9. 函数和操作符</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="functions.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="functions-array.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="FUNCTIONS-CONDITIONAL"
+>9.13. 条件表达式</A
+></H1
+><A
+NAME="AEN12563"
+></A
+><A
+NAME="AEN12565"
+></A
+><P
+>	本节描述在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里可以用的<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>兼容的条件表达式。
+  </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>	如果你的需求超过这些条件表达式的能力，你可能会希望用一种更富表现力的编程语言写一个存储过程。
+   </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN12573"
+>9.13.1. <TT
+CLASS="LITERAL"
+>CASE</TT
+></A
+></H2
+><P
+>	<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> <TT
+CLASS="TOKEN"
+>CASE</TT
+> 表达式是一种通用的条件表达式，类似于其它语言中的 if/else 语句。
+
+</P><PRE
+CLASS="SYNOPSIS"
+>CASE WHEN <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+> THEN <TT
+CLASS="REPLACEABLE"
+><I
+>result</I
+></TT
+>
+     [<SPAN
+CLASS="OPTIONAL"
+>WHEN ...</SPAN
+>]
+     [<SPAN
+CLASS="OPTIONAL"
+>ELSE <TT
+CLASS="REPLACEABLE"
+><I
+>result</I
+></TT
+></SPAN
+>]
+END</PRE
+><P>
+
+	<TT
+CLASS="TOKEN"
+>CASE</TT
+> 子句可以用于任何表达式可以有效存在的地方。
+	<TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+> 是一个返回<TT
+CLASS="TYPE"
+>boolean</TT
+>
+	的表达式。
+	如果结果为真，那么 <TT
+CLASS="TOKEN"
+>CASE</TT
+> 表达式的结果就是符合条件的 <TT
+CLASS="REPLACEABLE"
+><I
+>result</I
+></TT
+>。
+	如果结果为假，那么以相同方式搜寻任何随后的 <TT
+CLASS="TOKEN"
+>WHEN</TT
+> 子句。
+	如果没有 <TT
+CLASS="TOKEN"
+>WHEN</TT
+>
+	<TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+> 为真，那么
+	case 表达式的结果就是在 <TT
+CLASS="TOKEN"
+>ELSE</TT
+> 子句里的值。
+	如果省略了 <TT
+CLASS="TOKEN"
+>ELSE</TT
+> 子句而且没有匹配的条件，
+	结果为 NULL。
+  </P
+><P
+>	例子：
+</P><PRE
+CLASS="SCREEN"
+>SELECT * FROM test;
+
+ a
+---
+ 1
+ 2
+ 3
+
+
+SELECT a,
+       CASE WHEN a=1 THEN 'one'
+	    WHEN a=2 THEN 'two'
+	    ELSE 'other'
+       END
+    FROM test;
+
+ a | case
+---+-------
+ 1 | one
+ 2 | two
+ 3 | other</PRE
+><P>
+   </P
+><P
+>	所有 <TT
+CLASS="REPLACEABLE"
+><I
+>result</I
+></TT
+> 表达式的数据的类型都必须可以转换成单一的输出类型。
+	参阅 <A
+HREF="typeconv-union-case.html"
+>Section 10.5</A
+> 获取细节。
+  </P
+><P
+>	下面这个<SPAN
+CLASS="QUOTE"
+>"简单的"</SPAN
+> <TT
+CLASS="TOKEN"
+>CASE</TT
+> 表达式是上面的通用形式的一个特殊的变种。
+
+</P><PRE
+CLASS="SYNOPSIS"
+>CASE <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+>
+    WHEN <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+> THEN <TT
+CLASS="REPLACEABLE"
+><I
+>result</I
+></TT
+>
+    [<SPAN
+CLASS="OPTIONAL"
+>WHEN ...</SPAN
+>]
+    [<SPAN
+CLASS="OPTIONAL"
+>ELSE <TT
+CLASS="REPLACEABLE"
+><I
+>result</I
+></TT
+></SPAN
+>]
+END</PRE
+><P>
+
+	先计算 <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> 的值，
+	然后与所有在<TT
+CLASS="TOKEN"
+>WHEN</TT
+> 子句里声明的
+	<TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+> 对比，直到找到一个相等的。
+	如果没有找到匹配的，则返回在 <TT
+CLASS="TOKEN"
+>ELSE</TT
+> 子句里的
+	 <TT
+CLASS="REPLACEABLE"
+><I
+>result</I
+></TT
+> （或者 NULL）。
+	这个类似于 C 里的 <TT
+CLASS="FUNCTION"
+>switch</TT
+> 语句。
+  </P
+><P
+>	上面的例子可以用简单 <TT
+CLASS="TOKEN"
+>CASE</TT
+> 语法来写：
+</P><PRE
+CLASS="SCREEN"
+>SELECT a,
+       CASE a WHEN 1 THEN 'one'
+	      WHEN 2 THEN 'two'
+	      ELSE 'other'
+       END
+    FROM test;
+
+ a | case
+---+-------
+ 1 | one
+ 2 | two
+ 3 | other</PRE
+><P>
+    </P
+><P
+>    <TT
+CLASS="TOKEN"
+>CASE</TT
+> 表达式并不计算任何对于判断结果并不需要的子表达式。
+    比如，下面是一个可以避免被零除的方法：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT ... WHERE CASE WHEN x &lt;&gt; 0 THEN y/x &gt; 1.5 ELSE false END;</PRE
+><P>
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN12622"
+>9.13.2. <TT
+CLASS="LITERAL"
+>COALESCE</TT
+></A
+></H2
+><PRE
+CLASS="SYNOPSIS"
+><TT
+CLASS="FUNCTION"
+>COALESCE</TT
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+>[<SPAN
+CLASS="OPTIONAL"
+>, ...</SPAN
+>])</PRE
+><P
+>	<TT
+CLASS="FUNCTION"
+>COALESCE</TT
+> 返回它的第一个非 NULL 的参数的值。
+	它常用于在为显示目的检索数据时用缺省值替换 NULL 值。
+	比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT COALESCE(description, short_description, '(none)') ...</PRE
+><P>
+  </P
+><P
+>    和 <TT
+CLASS="TOKEN"
+>CASE</TT
+> 表达式一样，<TT
+CLASS="FUNCTION"
+>COALESCE</TT
+> 将不会
+    计算不需要用来判断结果的参数；也就是说，在第一个非空参数右边的参数不会被
+    计算。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN12635"
+>9.13.3. <TT
+CLASS="LITERAL"
+>NULLIF</TT
+></A
+></H2
+><A
+NAME="AEN12638"
+></A
+><PRE
+CLASS="SYNOPSIS"
+><TT
+CLASS="FUNCTION"
+>NULLIF</TT
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>value1</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>value2</I
+></TT
+>)</PRE
+><P
+>	当且仅当
+	 <TT
+CLASS="REPLACEABLE"
+><I
+>value1</I
+></TT
+> 和
+	<TT
+CLASS="REPLACEABLE"
+><I
+>value2</I
+></TT
+> 相等时，<TT
+CLASS="FUNCTION"
+>NULLIF</TT
+>
+	才返回 NULL。
+	否则它返回 <TT
+CLASS="REPLACEABLE"
+><I
+>value1</I
+></TT
+>。
+	这些可以用于执行上面给出的 <TT
+CLASS="FUNCTION"
+>COALESCE</TT
+>
+	例子的反例：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT NULLIF(value, '(none)') ...</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN12651"
+>9.13.4. <TT
+CLASS="LITERAL"
+>GREATEST</TT
+> 和 <TT
+CLASS="LITERAL"
+>LEAST</TT
+></A
+></H2
+><A
+NAME="AEN12655"
+></A
+><A
+NAME="AEN12657"
+></A
+><PRE
+CLASS="SYNOPSIS"
+><TT
+CLASS="FUNCTION"
+>GREATEST</TT
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>, ...</SPAN
+>])</PRE
+><PRE
+CLASS="SYNOPSIS"
+><TT
+CLASS="FUNCTION"
+>LEAST</TT
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>, ...</SPAN
+>])</PRE
+><P
+>    <TT
+CLASS="FUNCTION"
+>GREATEST</TT
+> 和 <TT
+CLASS="FUNCTION"
+>LEAST</TT
+>
+    函数从一个任意的数字表达式列表里选取最大或者最小的数值。
+    这些表达式必须都可以转换成一个普通的数据类型，它将会是结果类型
+    （参阅 <A
+HREF="typeconv-union-case.html"
+>Section 10.5</A
+> 获取细节）。
+    列表中的 NULL 数值将被忽略。只有所有表达式的结果都是 NULL 的时候，结果才会是 NULL。
+   </P
+><P
+>    请注意 <TT
+CLASS="FUNCTION"
+>GREATEST</TT
+> 和 <TT
+CLASS="FUNCTION"
+>LEAST</TT
+>
+    都不是 SQL 标准，但却是很常见的扩展。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="functions-sequence.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="functions-array.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>序列操作函数</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="functions.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>数组函数和操作符</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

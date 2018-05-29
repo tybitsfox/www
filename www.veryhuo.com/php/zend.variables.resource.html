@@ -1,0 +1,214 @@
+<HTML><HEAD><TITLE>Resources</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Creating Variables" HREF="zend.variables.html"><LINK REL="PREVIOUS" TITLE="Objects" HREF="zend.variables.object.html"><LINK REL="NEXT" TITLE="Macros for Automatic Global Variable Creation" HREF="zend.variables.global.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="section" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="zend.variables.object.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 33. Creating Variables</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="zend.variables.global.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="section"><H1 CLASS="section"><A NAME="zend.variables.resource"></A>Resources</H1><P>&#13; Resources are a special kind of data type in PHP. The term
+<SPAN CLASS="emphasis"><I CLASS="emphasis">resources</I></SPAN> doesn't really refer to any special
+kind of data, but to an abstraction method for maintaining any kind
+of information. Resources are kept in a special resource list within
+Zend. Each entry in the list has a correspondending type definition
+that denotes the kind of resource to which it refers. Zend then
+internally manages all references to this resource. Access to a
+resource is never possible directly - only via a provided API. As soon
+as all references to a specific resource are lost, a corresponding
+shutdown function is called.
+</P><P>&#13; For example, resources are used to store database links and file
+descriptors. The <SPAN CLASS="emphasis"><I CLASS="emphasis">de facto</I></SPAN> standard implementation
+can be found in the MySQL module, but other modules such as the Oracle
+module also make use of resources.
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+In fact, a resource can be a pointer to anything you need to
+handle in your functions (e.g. pointer to a structure) and the
+user only has to pass a single resource variable to your
+function.
+</P></BLOCKQUOTE></DIV>
+</P><P>&#13; To create a new resource you need to register a resource
+destruction handler for it. Since you can store any kind of data as a
+resource, Zend needs to know how to free this resource if its not longer
+needed. This works by registering your own resource destruction handler
+to Zend which in turn gets called by Zend whenever your resource can be
+freed (whether manually or automatically). Registering your resource
+handler within Zend returns you the <SPAN CLASS="strong"><B CLASS="emphasis">resource
+type handle</B></SPAN> for that resource. This handle is needed
+whenever you want to access a resource of this type later and is most
+of time stored in a global static variable within your extension.
+There is no need to worry about thread safety here because you only
+register your resource handler once during module initialization.
+</P><P>&#13; The Zend function to register your resource handler is defined as:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">ZEND_API int zend_register_list_destructors_ex(rsrc_dtor_func_t ld, rsrc_dtor_func_t pld, char *type_name, int module_number);</PRE></TD></TR></TABLE>
+</P><P>&#13; There are two different kinds of resource destruction handlers you can
+pass to this function: a handler for normal resources and a handler
+for persistent resources. Persistent resources are for example used
+for database connection. When registering a resource, either of these
+handlers must be given. For the other handler just pass
+<TT CLASS="literal">NULL</TT>.
+</P><P>&#13; <B CLASS="function">zend_register_list_destructors_ex()</B> accepts the
+following parameters:
+<DIV CLASS="informaltable"><A NAME="AEN123102"></A><P></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD WIDTH="17%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">ld</TT></TD><TD WIDTH="83%" ALIGN="LEFT" VALIGN="MIDDLE">Normal resource destruction
+handler callback</TD></TR><TR><TD WIDTH="17%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">pld</TT></TD><TD WIDTH="83%" ALIGN="LEFT" VALIGN="MIDDLE">Pesistent resource destruction
+handler callback</TD></TR><TR><TD WIDTH="17%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">type_name</TT></TD><TD WIDTH="83%" ALIGN="LEFT" VALIGN="MIDDLE">A string specifying the name of
+your resource. It's always a good thing to
+specify an unique name within PHP for the resource type
+so when the user for example calls
+<TT CLASS="literal">var_dump($resource);</TT>
+he also gets the name of the resource.</TD></TR><TR><TD WIDTH="17%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">module_number</TT></TD><TD WIDTH="83%" ALIGN="LEFT" VALIGN="MIDDLE">The <TT CLASS="literal">module_number</TT>
+is automatically available in your
+<TT CLASS="literal">PHP_MINIT_FUNCTION</TT>
+function and therefore you just pass it over.</TD></TR></TBODY></TABLE><P></P></DIV>
+The return value is an unique integer ID for your
+<SPAN CLASS="strong"><B CLASS="emphasis">resource type</B></SPAN>.
+</P><P>&#13; The resource destruction handler (either normal or persistent
+resources) has the following prototype:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">void resource_destruction_handler(zend_rsrc_list_entry *rsrc TSRMLS_DC);</PRE></TD></TR></TABLE>
+The passed <TT CLASS="literal">rsrc</TT> is a pointer to the following structure:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">typedef struct _zend_rsrc_list_entry {
+     
+    void *ptr;
+    int type;
+    int refcount;
+
+} zend_rsrc_list_entry;</PRE></TD></TR></TABLE>
+The member <TT CLASS="literal">void *ptr</TT> is the actual pointer to
+your resource.
+</P><P>&#13; Now we know how to start things, we define our own resource we want
+register within Zend. It is only a simple structure with two integer
+members:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">typedef struct {
+     
+    int resource_link;
+    int resource_type;
+
+} my_resource;</PRE></TD></TR></TABLE>
+Our resource destruction handler is probably going to look something like this:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">void my_destruction_handler(zend_rsrc_list_entry *rsrc TSRMLS_DC) {
+
+    // You most likely cast the void pointer to your structure type
+
+    my_resource *my_rsrc = (my_resource *) rsrc-&#62;ptr;
+
+    // Now do whatever needs to be done with you resource. Closing
+    // Files, Sockets, freeing additional memory, etc.
+    // Also, don't forget to actually free the memory for your resource too!
+
+    do_whatever_needs_to_be_done_with_the_resource(my_rsrc);
+}</PRE></TD></TR></TABLE>
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>One important thing to mention: If your resource
+is a rather complex structure which also contains pointers to
+memory you allocated during runtime you have to free them
+<SPAN CLASS="strong"><B CLASS="emphasis">before</B></SPAN> freeing
+the resource itself!
+</P></BLOCKQUOTE></DIV>
+</P><P>&#13; Now that we have defined
+<P></P><OL TYPE="1"><LI><P>what our resource is and</P></LI><LI><P>our resource destruction handler</P></LI></OL>
+we can go on and do the rest of the steps:
+<P></P><OL TYPE="1"><LI><P>create a global variable within the extension holding
+the resource ID so it can be accessed from every function
+which needs it</P></LI><LI><P>define the resource name</P></LI><LI><P>write the resource destruction handler</P></LI><LI><P>and finally register the handler</P></LI></OL>
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">// Somewhere in your extension, define the variable for your registered resources.
+    // If you wondered what 'le' stands for: it simply means 'list entry'.
+    static int le_myresource;
+
+    // It's nice to define your resource name somewhere
+    #define le_myresource_name  "My type of resource"
+
+    [...]
+
+    // Now actually define our resource destruction handler
+    void my_destruction_handler(zend_rsrc_list_entry *rsrc TSRMLS_DC) {
+
+        my_resource *my_rsrc = (my_resource *) rsrc-&#62;ptr;
+        do_whatever_needs_to_be_done_with_the_resource(my_rsrc);
+    }
+
+    [...]
+
+    PHP_MINIT_FUNCTION(my_extension) {
+
+        // Note that 'module_number' is already provided through the
+        // PHP_MINIT_FUNCTION() function definition.
+
+        le_myresource = zend_register_resource_destructors_ex(my_destruction_handler, NULL, le_myresource_name, module_number);
+
+        // You can register additional resources, initialize
+        // your global vars, constants, whatever.
+    }</PRE></TD></TR></TABLE>
+</P><P>&#13; To actually register a new resource you use can either use
+the <B CLASS="function">zend_register_resource()</B> function or
+the <B CLASS="function">ZEND_REGISTER_RESOURE()</B> macro, both
+defined in zend_list.h . Although the arguments for both map
+1:1 it's a good idea to always use macros to be upwards
+compatible:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">int ZEND_REGISTER_RESOURCE(zval *rsrc_result, void *rsrc_pointer, int rsrc_type);</PRE></TD></TR></TABLE>
+<DIV CLASS="informaltable"><A NAME="AEN123158"></A><P></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD WIDTH="17%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">rsrc_result</TT></TD><TD WIDTH="83%" ALIGN="LEFT" VALIGN="MIDDLE">This is an already initialized
+<TT CLASS="literal">zval *</TT> container.</TD></TR><TR><TD WIDTH="17%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">rsrc_pointer</TT></TD><TD WIDTH="83%" ALIGN="LEFT" VALIGN="MIDDLE">Your resource pointer you want to
+store.</TD></TR><TR><TD WIDTH="17%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">rsrc_type</TT></TD><TD WIDTH="83%" ALIGN="LEFT" VALIGN="MIDDLE">The type which you received when
+you registered the resource destruction handler. If you
+followed the naming scheme this would be
+<TT CLASS="literal">le_myresource</TT>.</TD></TR></TBODY></TABLE><P></P></DIV>
+The return value is an unique integer identifier for that resource.
+</P><P>&#13; What is really going on when you register a new resource is it gets
+inserted in an internal list in Zend and the result is just stored
+in the given <TT CLASS="literal">zval *</TT> container:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">rsrc_id = zend_list_insert(rsrc_pointer, rsrc_type);
+     
+    if (rsrc_result) {
+        rsrc_result-&#62;value.lval = rsrc_id;
+        rsrc_result-&#62;type = IS_RESOURCE;
+    }
+
+    return rsrc_id;</PRE></TD></TR></TABLE>
+The returned <TT CLASS="literal">rsrc_id</TT> uniquly identifies the newly
+registered resource. You can use the macro
+<TT CLASS="literal">RETURN_RESOURE</TT> to return it to the user:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">RETURN_RESOURCE(rsrc_id)</PRE></TD></TR></TABLE>
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>It is common practice that if you want to return the resource
+immidiately to the user you specify the <TT CLASS="literal">return_value</TT>
+as the <TT CLASS="literal">zval *</TT> container.
+</P></BLOCKQUOTE></DIV>
+</P><P>&#13; Zend now keeps track of all references to this resource. As soon as
+all references to the resource are lost, the destructor that you
+previously registered for this resource is called. The nice thing
+about this setup is that you don't have to worry about memory leakages
+introduced by allocations in your module - just register all memory
+allocations that your calling script will refer to as resources. As
+soon as the script decides it doesn't need them anymore, Zend will
+find out and tell you.
+</P><P>&#13; Now that the user got his resource, at some point he is passing it
+back to one of your functions. The <TT CLASS="envar">value.lval</TT> inside
+the <TT CLASS="literal">zval *</TT> container contains the key to your
+resource and thus can be used to fetch the resource with the following
+macro:
+<TT CLASS="literal">ZEND_FETCH_RESOURCE</TT>:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">ZEND_FETCH_RESOURCE(rsrc, rsrc_type, rsrc_id, default_rsrc_id, resource_type_name, resource_type)</PRE></TD></TR></TABLE>
+<DIV CLASS="informaltable"><A NAME="AEN123193"></A><P></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD WIDTH="17%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">rsrc</TT></TD><TD WIDTH="83%" ALIGN="LEFT" VALIGN="MIDDLE">This is your pointer which will
+point to your previously registered resource.</TD></TR><TR><TD WIDTH="17%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">rsrc_type</TT></TD><TD WIDTH="83%" ALIGN="LEFT" VALIGN="MIDDLE">This is the typecast argument for
+your pointer, e.g. <TT CLASS="literal">myresource *</TT>.</TD></TR><TR><TD WIDTH="17%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">rsrc_id</TT></TD><TD WIDTH="83%" ALIGN="LEFT" VALIGN="MIDDLE">This is the address of the
+<TT CLASS="literal">zval *</TT>container the user passed to
+your function, e.g. <TT CLASS="literal">&#38;z_resource</TT> if
+<TT CLASS="literal">zval *z_resource</TT> is given.</TD></TR><TR><TD WIDTH="17%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">default_rsrc_id</TT></TD><TD WIDTH="83%" ALIGN="LEFT" VALIGN="MIDDLE">This integer specifies the default
+resource <TT CLASS="literal">ID</TT> if no resource could be fetched
+or -1.</TD></TR><TR><TD WIDTH="17%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">resource_type_name</TT></TD><TD WIDTH="83%" ALIGN="LEFT" VALIGN="MIDDLE">This is the name of the requested resource.
+It's a string and is used when the resource can't be
+found or is invalid to form a meaningful error
+message.</TD></TR><TR><TD WIDTH="17%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">resource_type</TT></TD><TD WIDTH="83%" ALIGN="LEFT" VALIGN="MIDDLE">The <TT CLASS="literal">resource_type</TT>
+you got back when registering the resource destruction handler.
+In our example this was <TT CLASS="envar">le_myresource</TT>.</TD></TR></TBODY></TABLE><P></P></DIV>
+This macro has no return value.
+It is for the developers convenience and takes care
+of TSRMLS arguments passing and also does check if the resource
+could be fetched.
+It throws a warning message and returns the current PHP function
+with <TT CLASS="literal">NULL</TT> if there was a problem retrieving the
+resource.
+</P><P>&#13; To force removal of a resource from the list, use the function
+<B CLASS="function">zend_list_delete()</B>. You can also force the
+reference count to increase if you know that you're creating another
+reference for a previously allocated value (for example, if you're
+automatically reusing a default database link). For this case, use the
+function <B CLASS="function">zend_list_addref()</B>. To search for
+previously allocated resource entries, use
+<B CLASS="function">zend_list_find()</B>. The complete API can be found
+in <TT CLASS="filename">zend_list.h</TT>.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="zend.variables.object.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="zend.variables.global.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Objects</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="zend.variables.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Macros for Automatic Global Variable Creation</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

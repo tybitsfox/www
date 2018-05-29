@@ -1,0 +1,494 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+<!-- saved from url=(0056)http://www.gamedev.net/reference/articles/article290.asp --> 
+<HTML><HEAD><TITLE>Operating Systems Development Series</TITLE> 
+<META http-equiv=Content-Type content="text/html; charset=windows-1252"><LINK 
+href="Files/reference.css" 
+type=text/css rel=stylesheet> 
+<META content="MSHTML 6.00.6000.16441" name=GENERATOR></HEAD> 
+<BODY text=#000000 vLink=#666699 aLink=#000000 link=#666699 bgColor=#ffffff 
+leftMargin=0 
+background=Files/watermark.gif 
+topMargin=0 marginheight="0" marginwidth="0"> 
+
+<table border=0 cellpadding=0 cellspacing=0 width="100%"> 
+<tr> 
+     <td width="60%"> 
+	<a href="http://www.brokenthorn.com"><img src="site/5.png" border=0></a> 
+     </td> 
+     <td width="40%"> 
+ 
+        <div id="ad_main"> 
+        </div> 
+ 
+     </td> 
+  </tr> 
+</table> 
+
+<TABLE cellSpacing=0 cellPadding=3 width="100%" border=0> 
+  <TBODY> 
+  <TR> 
+    <TD class=tblhdr>Operating Systems Development Series</TD> 
+</TR> 
+  <TR> 
+    <TD align=middle colSpan=2></TD></TR></TBODY></TABLE> 
+<TABLE cellSpacing=0 cellPadding=5 width="100%" border=0> 
+  <TBODY> 
+  <TR> 
+    <TD> 
+ 
+ 
+<!-- Title --> 
+ 
+      <CENTER><SPAN class=title>Operating Systems Development - Bootloaders</SPAN> 
+ 
+<BR><SPAN class=author>by Mike, 2008, 2009</SPAN></CENTER> 
+ 
+ 
+      <P>This series is intended to demonstrate and teach operating system development from
+	the ground up.</p> 
+ 
+ 
+ 
+      <H1>Introduction</H1> 
+	<p> 
+	Welcome! This is the tutorial you have been waiting for. We will cover many
+	topics such as:
+	<ul> 
+		<li>The booting process - How it works</li> 
+		<li>Bootloader Theory</li> 
+		<li>Developing a simple bootloader</li> 
+		<li>Assembling the bootloader with NASM</li> 
+		<li>Using the VFD (Virtual Floppy Drive) software; Creating a floppy image</li> 
+		<li>Using PartCopy; Copying our bootloader to the floppy image</li> 
+		<li>Using Bochs - Basic Setup and Use; Testing the bootloader</li> 
+	</ul> 
+	<i>Ready?</i> 
+	<p> 
+	<h1>The Boot Process</h1> 
+	<p> 
+	<h2> 
+	Pressing the power button</h2> 
+	<p> 
+	What actually happens when you press the power button? When this button is pressed,
+	the wires connected to the button send an electronic signal to the motherboard.
+	The motherboard simply reroutes this signal to the power supply (PSU).
+	<p> 
+	This signal contains a single bit of data. If it is 0, there is, of course, no power
+	(so the computer is off, or the motherboard is dead). If it is a 1 (meaning an active
+	signal), it means that power is being supplied.
+	<p> 
+	To better understand this, remember the basics of binary logic in computers. 8 "bits"
+	simply represent 8 "wires" or "lines" where electricity can go. A 0 represents no
+	current, while a 1 represents current within a line. This, along with Logic Gates,
+	is the bases of Digital Logic Electronics, at which computers were built.
+	<p> 
+	When the PSU recieves this active signal, it begins supplying power to the rest of the system.
+	When the correct amount of power is supplied to all devices, the PSU will be able to continue
+	suppling that power without any major problems.
+	<p> 
+	The PSU then sends a signal, called the "power_good" signal into the motherboard to the Basic
+	Input Output System (BIOS).
+ 
+	<h2> 
+	BIOS POST</h2> 
+	<p> 
+	When the BIOS recieves this "power_good" signal, the BIOS begins initializing a process called
+	POST (Power On Self Test). The POST then tests to insure there is good amount of power being supplied,
+	the devices installed (such as keyboard, mouse, USB, serial ports, etc.), and insures the memory
+	is good (By testing for memory curruption).
+	<p> 
+	The POST then gives control to the BIOS. The POST loads the BIOS at the end of memory (Might be 0xFFFFF0)
+	and puts a jump instruction at the first byte in memory.
+	<p> 
+	The processors Instruction Pointer (CS:IP) is set to 0, and the processor takes control.
+	<p> 
+	What does this mean? The processor starts executing instructions at address 0x0. In this case,
+	it is the jump instruction placed by the POST. This jump instruction jumps to 0xFFFFF0 (or wherever
+	the BIOS was loaded), and the processor starts executing the BIOS.
+	<p> 
+	The BIOS takes control...
+ 
+	<h2> 
+	The BIOS</h2> 
+	The Basic Input Output System (BIOS) does several things. It creates an Interrupt Vector Table (IVT),
+	and provides some basic interrupt services. The BIOS then does some more tests to insure there is no
+	hardware problems. The BIOS also supplies a Setup utility.
+	<p> 
+	The BIOS then needs to find an OS. Based on the boot order that you set in the BIOS Setup,
+	the BIOS will execute Interrupt (INT) 0x19 to attempt to find a bootable device.
+	<p> 
+	If no bootable device is found (INT 0x19 returns), the BIOS goes on to the next device listed
+	in the boot order. If there is no more devices, it will print an error simular to "No Operating System
+	found" and halt the system.
+ 
+	<h3> 
+	Interrupts and the Interrupt Vector Table (IVT)
+	</h3> 
+	An Interrupt is a subroutine that can be executed from many different programs.
+	These interrupts are stored at address 0x0 into a table called the Interupt Vector Table.
+	A common interrupts, for example, is <b>INT 0x21</b> used for DOS.
+	<p> 
+	<b>Note: There is no DOS! The *Only* interrupts available are the interrupts set up by the
+	BIOS, and no more! The use of other interrupts will cause the system to execute a nonexistant
+	routine, causing your program to crash.</b> 
+	<p> 
+	<b>Note: If you switch processor modes, the IVT will not be avilable. This means absolutley
+	*no* interrupts--neither software nor hardware, will be avilable, Not even the BIOS.</b>. For a 32 bit OS, we are
+	going to have to do this. Not yet, though.
+	<h2> 
+	BIOS Interrupt 0x19</h2> 
+	<p> 
+	<b>INT 0x19 - SYSTEM: BOOTSTRAP LOADER</b> 
+	<p> 
+	<b>Reboots the system through a Warm Reboot without clearing memory or restoring the Interrupt Vector Table (IVT).</b> 
+	<p> 
+	This interrupt is executed by the BIOS. It reads the first sector (Sector 1, Head 0, Track 0) of the first
+	hard disk.
+	<p> 
+	<h3> 
+	Sectors
+	</h3> 
+	A "Sector" simply represents a goupe of 512 bytes. So, Sector 1 represents the first 512 bytes of a disk.
+	<h3> 
+	Heads
+	</h3> 
+	A "Head" (or Face) represents the side of the disk. Head 0 is the front side, Head 1 is the back side.
+	Most disks only have 1 side, hence only 1 head ("Head 1")
+	<h3> 
+	Tracks
+	</h3> 
+	To understand tracks, we should look at a picture:<p><center> 
+	<img src="images/platter[1].gif" /> 
+	</center> 
+	<p> 
+	In this picture, This disk could represent a hard disk or floppy disk. Here, we are looking at Head 1
+	(The front side), and the Sector represents 512 bytes. A Track is a collection of sectors.
+	<p> 
+	<b>Note: Remember that 1 sector is 512 bytes, and there are 18 sectors per track on floppy disks.
+	This wil be important when loading files.</b> 
+	<p> 
+	If the disk is bootable, <b>Then the bootsector will be loaded at 0x7C00</b>, and INT 0x19
+	will jump to it, therby giving control to the bootloader.
+	<p> 
+	<b>Note: Remember that the bootloader is loaded at 0x7C00. This is important!</b> 
+	<p> 
+	<b>Note: On some systems, you can also execute a warm boot by putting 0x1234 at
+	address 0x0040:0072, and jumping to 0xFFFF:0. For a cold reboot, store 0x0 instead.</b> 
+	<p> 
+	Now, our 1337 bootloader is in control!
+ 
+	<h1>Bootloader Theory</h1> 
+	<p> 
+	We have talked alot about bootloaders. Lets put the important parts together, shall we?
+	<p> 
+	So far, bootloaders...
+	<ul> 
+		<li>...Are stored with the Master Boot Record (MBR).</li> 
+		<li>...Are in the first sector of the disk.</li> 
+		<li>...Is the size of a single sector (512) bytes.</li> 
+		<li>...Are loaded by the BIOS INT 0x19 at address 0x7C00.</li> 
+	</ul> 
+	<p> 
+	As you can imagine, we cannot do a whole lot in 512 bytes. What do we do?
+	<p> 
+	In Assembly Language, we can very easily go beyond the 512 byte mark. So,
+	the code could look just fine, but only a <b>part</b> of it will be in memory.
+	For example, coinsider this:
+ 
+ <BLOCKQUOTE><PRE><DIV class=code>mov	ax, 4ch
+inc	bx         ; 512 byte
+mov     [var], bx  ; 514 byte</DIV></PRE></BLOCKQUOTE> 
+ 
+	In Assembly language, execution begins from the top of the file downward.
+	However, remember that, when loading files in memory, we are loading sectors.
+	Each of these sectors is 512 bytes, so it will only copy 512 bytes of the file
+	into memory.
+	<p> 
+	If the above code was executed, and only the first sector was loaded in memory,
+	It will only copy up to the 512 byte (The <b>inc bx</b> instruction). So, while
+	the last mov instruction is still on disk, <b>It isnt in memory!</b>.
+	<p> 
+	What will the processor do after <b>inc bx</b> then? It will stll continue on
+	to the 514 byte. As this was not in memory, <b>It will execute past the end
+	of our file!</b> The end result? A crash.
+	<p> 
+	However, it is possible to load the second sector (or more) at a given address and execute it.
+	Then the rest of the file will be in memory, and everything will work just fine.
+	<p> 
+	This approch will work, but it will be hard hacked. The most common approch is keeping
+	the bootloader at 512 bytes in size, searching, loading, and executing a second stage bootloader.
+	We will look more into this later.
+ 
+	<h3> 
+	Hardware Exceptions
+	</h3> 
+ 
+	Hardware Exceptions are just like Software Exceptions, however the <b>processor</b> will execute them
+	rather then software.
+	<p> 
+	There are times when one must stop all exceptions for happening. For example, when switching
+	computer modes, the entire Interrupt Vector Table is not avilable, so <b>any interrupt-hardware or
+	software, will cause your system to crash</b>. More on this later.
+ 
+	<h3>CLI and STI Instructions</h3> 
+ 
+	You can use the STI and CLI instructions to enable and disable all interrupts.
+	Most systems do not allow these instructions for applications as it can cause
+	big problems (Although systems can emulate them).
+ 
+ <BLOCKQUOTE><PRE><DIV class=code>cli		; clear interrupts
+ 
+; do something...
+ 
+sti		; enable interrupts--we're in the clear!</DIV></PRE></BLOCKQUOTE> 
+ 
+	<h3>Double Fault Hardware Exception</h3> 
+	<p> 
+	If the processor finds a problem during execution (Such as an invalid instruction,
+	division by 0, etc.) It executes a Second Fault Exception Handler (Double Fault),
+	Which is Interrupt 0x8.
+	<p> 
+	We will be looking a Double Faults later. If the processor still cannot continue
+	after a double fault, it will execute a <b>Triple Fault</b>.
+ 
+	<h3>Triple Fault</h3> 
+	<p> 
+	We seen this term before, havn't we? A CPU that "Triple Faults" simply means the system hard reboots.
+	<p> 
+	<b>In early stages, such as the bootloader, whenever there is a bug in your code, the system will triple fault.
+	This indicates a problem in your code.</b> 
+ 
+	<h1>Developing a simple Bootloader</h1> 
+	Yiippee! *drum rolls* The moment we have been waiting for! :)
+	<p> 
+	Lets take another look at our list:
+	<ul> 
+		<li>Are stored with the Master Boot Record (MBR).</li> 
+		<li>Are in the first sector of the disk.</li> 
+		<li>Is the size of a single sector (512) bytes.</li> 
+		<li>Are loaded by the BIOS INT 0x19 at address 0x7C00.</li> 
+	</ul> 
+	Open up any ordinary text editor (I am using Visual Studio 2005), but Notepad will suffice.
+	<p> 
+	Heres the bootloader (Boot1.asm)...
+ 
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>;*********************************************
+;	Boot1.asm
+;		- A Simple Bootloader
+;
+;	Operating Systems Development Tutorial
+;*********************************************
+ 
+org		0x7c00				; We are loaded by BIOS at 0x7C00
+ 
+bits	16					; We are still in 16 bit Real Mode
+ 
+Start:
+ 
+	cli					; Clear all Interrupts
+	hlt					; halt the system
+	
+times 510 - ($-$$) db 0				; We have to be 512 bytes. Clear the rest of the bytes with 0
+ 
+dw 0xAA55					; Boot Signiture</DIV></PRE></BLOCKQUOTE> 
+ 
+	Some of this should not come to much of a surprise. Lets analize line by line:
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>org		0x7c00				; We are loaded by BIOS at 0x7C00</DIV></PRE></BLOCKQUOTE> 
+Remember: <b>The BIOS loads us at 0x7C00.</b> The above code tells NASM to insure all addresses
+are relitave to 0x7C00. This means, the first instruction will be at 0x7C00.
+      <BLOCKQUOTE><PRE><DIV class=code>bits	16					; We are still in 16 bit Real Mode</DIV></PRE></BLOCKQUOTE> 
+	Remember tutorial two? In that tutorial, I explained how the x86 family is backward compatible
+	with the old DOS systems. Because the old DOS systems were 16 bit, <b>All x86 compatible
+	computers boot into 16 bit mode</b>. This means:
+	<ul> 
+		<li>We are limited to 1 MB of memory.</li> 
+		<li>We are limited to the 16 bit registers.</li> 
+	</ul> 
+	We will need to switch the computer into a 32 bit mode. We will do this later.
+      <BLOCKQUOTE><PRE><DIV class=code>times 510 - ($-$$) db 0				; We have to be 512 bytes. Clear the rest of the bytes with 0</DIV></PRE></BLOCKQUOTE> 
+	I wish this was more documented. In NASM, the dollar operator ($) represents the address
+	of the current line. $$ represents the address of the first instruction (Should be 0x7C00).
+	So, <b>$-$$</b> returns the number of bytes from the current line to the start (In this case,
+	the size of the program).
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>dw 0xAA55					; Boot Signiture</DIV></PRE></BLOCKQUOTE> 
+	This needs some explanation.
+	<p> 
+	Remember that the BIOS INT 0x19 searches for a bootable disk. How does it know if the disk
+	is bootable? The boot signiture. If the 511 byte is 0xAA and the 512 byte is 0x55, INT 0x19
+	will load and execute the bootloader.
+	<p> 
+	Because the boot signiture must be the last two bytes in the bootsector, We use the <b>times</b> 
+	keyword to calculate the size different to fill in up to the 510th byte, rather then the 512th byte.
+ 
+	<h1>Assembling with NASM</h1> 
+	NASM is a command line assembler, and hence must be executed either through command line or a batch script.
+	To assemble <b>Boot1.asm</b> do this:
+      <BLOCKQUOTE><PRE><DIV class=code>nasm -f bin Boot1.asm -o Boot1.bin</DIV></PRE></BLOCKQUOTE> 
+	The <b>-f</b> option is used to tell NASM what type of output to generate. In this case, it
+	is a binary program.
+	<p> 
+	<b>-o</b> option is used to give your generated file a different output name. In this case, its <b>Boot1.bin</b> 
+	<p> 
+	After assembling, you should have an exact 512 byte file named "Boot1.bin".
+	<p> 
+	<b>Note: For some reason, Windows Explorer limits displaying file sizes to 1 KB. Just see the properties
+	of the file, and it should say 512 bytes.</b> 
+ 
+	<h1>How to use VFD (Virtual Floppy Drive)</h1> 
+	We will use VFD to create a virtual floppy image to copy our OS to. This will explain how
+	to use it.
+ 
+	<ol> 
+		<li>Open vfdwin.exe.</li> 
+		<li>Under the Driver tab, Click the Start button. This starts the driver.</li> 
+		<li>Click either the Drive0 or Drive1 tab.</li> 
+		<li>Click Open</li> 
+	</ol> 
+	You should see this:<p><center> 
+	<img src="images/VFD.gif" /></center> 
+	<p> 
+	Insure Media Type is a standard 3.5" 1.44 MB floppy, and disk type is in RAM.
+	Also, insure Write Protect is disabled. Click "Create".
+	<p> 
+	Go to My Computer (On *your* computer ;) ) and you should see a new floppy drive.
+	<p> 
+	To format the disk, right click the drive and go to Properties. Under the VFD Tab
+	will be a format option.
+ 
+	<h1>PartCopy - Copying to the Bootsector</h1> 
+	Great... Now that we have our boot loader ready, how do we copy it to our disk?
+	As you probably know, Windows will not allow us to directly copy it to the first
+	sector of a disk. Because of this, we need to use a command to do it.
+	<p/> 
+	In the first tutorial we have looked at one of these commands: <b>debug</b>. If you have
+	decided to use this command, you can skip this section on <b>partcopy</b>.
+	<p/> 
+	PartCopy is a command line program. It uses the following synthax:
+      <BLOCKQUOTE><PRE><DIV class=code>partcopy file first_byte last_byte drive</DIV></PRE></BLOCKQUOTE> 
+	PartCopy can be used for more then just copying files. It can be used for copying
+	certain bytes to and from sectors. Thinking of its format (Shown above) is a safe method.
+	<p> 
+	Because you have an emulated floppy drive, you can refrence the drive name by letter (Like A:).
+	<p> 
+	To copy our bootloader, this will work:
+      <BLOCKQUOTE><PRE><DIV class=code>partcopy Boot1.bin 0 200 -f0</DIV></PRE></BLOCKQUOTE> 
+f0 represents Floppy Disk 0. You can change between f0, f1, etc based on what drive your floppy disk is in. Boot1.bin is our file to copy. This copies from the first byte (0x0) of the file to the last byte (0x200, which is 512 decimal). Notice that partcopy only accepts hexadecimal numbers.
+	<p> 
+	<b>Warning: Remember using this program can cause parmenant disk curruption if you are not carefull.
+	The above command line commands will only work for floppy disks. Do not attempt to try on hard disks!
+	</b> 
+ 
+	<h1>Bochs: Testing the bootloader</h1> 
+	Bochs is a 32 bit PC emulator. We are going to use Bochs for debugging and testing.
+	<p> 
+	Bochs uses a configuation file that describes the hardware to emulate. For example,
+	this is the configuation file I am using:
+      <BLOCKQUOTE><PRE><DIV class=code># ROM and VGA BIOS images ---------------------------------------------
+ 
+romimage:    file=BIOS-bochs-latest, address=0xf0000 
+vgaromimage: VGABIOS-lgpl-latest 
+ 
+# boot from floppy using our disk image -------------------------------
+ 
+floppya: 1_44=a:, status=inserted  # Boot from drive A
+ 
+# logging and reporting -----------------------------------------------
+ 
+log:         OSDev.log             # All errors and info logs will output to OSDev.log
+error:       action=report 
+info:        action=report</DIV></PRE></BLOCKQUOTE> 
+ 
+The configuation file uses # for comments. It will attempt to boot from whatever floppy
+disk image (Like the one we created in VFD) in drive A.
+<p> 
+The ROM BIOS and VGA BIOS images come with Bochs, so you dont need to worry about that.
+<p> 
+ 
+<h3>Locating the BIOS ROM</h3> 
+ 
+	Alot of the lines in the configuation file are very simple. There is however one line that we
+	need to look at here however:
+ 
+      <BLOCKQUOTE><PRE><DIV class=code>romimage:    file=BIOS-bochs-latest, address=0xf0000 </DIV></PRE></BLOCKQUOTE> 
+ 
+	This line tells Bochs where to place the BIOS in its memory (Virtual RAM). Remember that BIOS sizes
+	may differ? Also remember that the BIOS must end at the end of the first megabyte (0xFFFFF) in memory?
+	<p/> 
+	Because of this, you may need to change this line to reposition the Bios. This can be done by getting the
+	size of the Bios image (It should be named <b>BIOS-bochs-latest</b> in your Bochs directory). Get the size in bytes.
+	<p/> 
+	After this, simply subtract 0xFFFFF - size of bochs file (in bytes). This will be the new Bios address,
+	so update the <b>address</b> on this line to move the Bios to its new location.
+	<p/> 
+	You may or may not need to do this step. If you get an error from Bochs telling you that the Bios must end
+	at 0xFFFFF, then you do need to complete this step and it should work.
+ 
+<h3>How to use Bochs</h2> 
+ 
+To use Bochs:
+<ol> 
+	<li>Execute bochs.exe</li> 
+	<li>Select option 2 (Read options form); hit enter.</li> 
+	<li>Type in the configuation files name (The one we created above); hit enter.</li> 
+	<li>You will be back to the main menu. Select option 5: Begin Simulation, and hit enter.</li> 
+</ol> 
+ 
+A new window will open, and this is what you should see:
+<p><center><img src="images/Bochs.gif" /></center><p> 
+ 
+<h2>If Bochs just quits or restarts</h2> 
+...Then you have just experenced a Triple Fault. Go back to the code and try to find where the problem is at.
+If you need any help, feel free to contact me.
+ 
+<h2>If the Window appears, but does nothing</h2> 
+Congrats! That is our <b>cli</b> and <b>hlt</b> instructions haulting the system, so we know
+our bootloader is being executed.
+ 
+	<h1>The Build Process - Abstract</h1> 
+	Compare what we have done with the Build process we looked at in the previous tutorial.
+	Its very simple once you get used to it.
+	<p> 
+	From here on out, I wont be describing these steps of the build process in detail anymore.
+ 
+	<br><br>
+	Until next time,
+	<br><br>
+	~Mike<br>
+	<i>BrokenThorn Entertainment. Currently developing DoE and the <a href="http://www.brokenthorn.com/mos/site2/">Neptune Operating System</a></i>
+
+	<br><br>
+	<i>Questions or comments? Feel free to <a href="mailto:neon6000@aol.com">Contact me</a>.</i>
+
+	<br><br>
+	Would you like to contribute and help improve the articles? If so, please <a href="mailto:neon6000@aol.com">let me know!</a>
+
+<br><br> 
+<table width=100% border=0> 
+<tr> 
+<td><p align=left> 
+<a class="anchor" href="OSDev2.html"> 
+<img src="images/left.jpg" border=0></a> 
+&nbsp;&nbsp;
+<a class="anchor" href="OSDev2.html"> 
+<font size=4>Chapter 2</font> 
+</a> 
+ 
+</p></td> 
+<td> 
+<p align=center> 
+<font size=4><a class="anchor" href="OSDevIndex.html">Home</a></font> 
+</p> 
+</td> 
+<td><p align=right> 
+<a class="anchor" href="OSDev4.html"><font size=4>Chapter 4</font></a> 
+&nbsp;&nbsp;
+<a class="anchor" href="OSDev4.html"><img src="images/right.jpg" border=0></a> 
+</p></td> 
+</tr> 
+</table> 
+ 
+ 
+</BODY></HTML> 

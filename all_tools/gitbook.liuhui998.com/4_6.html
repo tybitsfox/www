@@ -1,0 +1,205 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+  "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<meta http-equiv="content-language" content="en">
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+	<title>Git Book 中文版 - Git树名</title>
+	<link rel="icon" href="favicon.png" type="image/png">
+	<link rel="stylesheet" href="assets/blueprint/screen.css" type="text/css" media="screen, projection">
+  <link rel="stylesheet" href="assets/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="assets/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="assets/stylesheets/mac_classic.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="assets/stylesheets/style.css" type="text/css" media="screen, projection">
+</head>
+
+<body>
+<div class="container chapter showgrids">
+
+  <div class="span-21 header">
+    <div class="nav"><a href="4_5.html">Prev</a>  <a href="4_7.html">Next</a></div>
+    <div class="title"><a href='index.html'>Git Community Book 中文版</a></div>
+  </div>
+  
+  <div class="span-21">
+    <br/>
+  </div>
+  
+  <div class="span-21">
+    <h2>Git树名</h2>
+
+<p>不用40个字节长的SHA串来表示一个提交(commit)或是其它git对象, 有很多种名字表示方法.　在Git里,这些名字就叫'树名'(treeish).</p>
+
+<p>译者注:我目前没有想到更好的中文名字,就先叫'树名'.</p>
+
+<h3>Sha短名</h3>
+
+<p>如果你的一个提交(commit)的sha名字是 '<code>980e3ccdaac54a0d4de358f3fe5d718027d96aae</code>', git会把下面的串视为等价的:</p>
+
+<pre><code>980e3ccdaac54a0d4de358f3fe5d718027d96aae
+980e3ccdaac54a0d4
+980e3cc
+</code></pre>
+
+<p>只要你的‘sha短名’(Partial Sha)是不重复的(unique)，它就不会和其它名字到冲突(如果你使用了5个字节以上那是很难重复的)，git也会把‘sha短名’(Partial Sha)自动补全.</p>
+
+<h3>分支, Remote 或 标签</h3>
+
+<p>你可以使用分支,remote或标签名来代替SHA串名, 它们只是指向某个对象的指针. 假设你的master分支目前在在提交(commit):'980e3'上, 现在把它推送(push)到origin上并把它命名为标签'v1.0', 那么下面的串都会被git视为等价的:</p>
+
+<pre><code>980e3ccdaac54a0d4de358f3fe5d718027d96aae
+origin/master
+refs/remotes/origin/master
+master
+refs/heads/master
+v1.0
+refs/tags/v1.0
+</code></pre>
+
+<p>这意味着你执行下面的两条命令会有同样的输出:</p>
+
+<pre><code>$ git log master
+
+$ git log refs/tags/v1.0
+</code></pre>
+
+<h3>日期标识符</h3>
+
+<p>The Ref Log that git keeps will allow you to do some relative stuff locally,
+such as:</p>
+
+<p>Git的引用日志(Ref Log)可以让你做一些‘相对'查询操作:</p>
+
+<pre><code>master@{yesterday}
+
+master@{1 month ago}
+</code></pre>
+
+<p>上面的第一条命令是:'master分支的昨天状态(head)的缩写‘. 注意: 即使在两个有相同master分支指向的仓库上执行这条命令, 但是如果这个两个仓库在不同机器上,　那么执行结果也很可能会不一样.</p>
+
+<p>译者注:因为两个不同机器上的仓库的历史一般很难相同.</p>
+
+<h3>顺序标识符</h3>
+
+<p>这种格式用来表达某点前面的第N个提交(ref).</p>
+
+<pre><code>master@{5}
+</code></pre>
+
+<p>上面的表达式代表着master前面的第5个提交(ref).</p>
+
+<h3>多个父对象</h3>
+
+<p>这能告诉你某个提交的第N个直接父提交(parent). 这种格式在合并提交(merge commits)时特别有用, 这样就可以使提交对象(commit object)有多于一个直接父对象(direct parent).</p>
+
+<p>译者注:假设master是由a和b两个分支合并的,那么 <code>master^1</code> 是指分支a, <code>master^2</code> 就是指分支b.</p>
+
+<pre><code>master^2
+</code></pre>
+
+<h3>波浪号</h3>
+
+<p>波浪号用来标识一个提交对象(commit object)的第N级嫡(祖)父对象(Nth grandparent). 例如:</p>
+
+<pre><code>master~2
+</code></pre>
+
+<p>就代表master所指向的提交对象的第一个父对象的第一个父对象(译者:你可以理解成是嫡系爷爷:)). 它和下面的这个表达式是等价的:</p>
+
+<pre><code>master^^
+</code></pre>
+
+<p>你也可以把这些‘标识符'(spec)叠加起来, 下面这个3个表达式都是指向同一个提交(commit):</p>
+
+<pre><code>master^^^^^^
+master~3^~2
+master~6
+</code></pre>
+
+<h3>树对象指针</h3>
+
+<p>如果大家对第一章<a href="http://gitbook.liuhui998.com/1_2.html">Git对象模型</a>还有印象的话, 就记得提交对象(commit object)是指向一个树对象(tree object)的. 假如你要得到一个提交对象(commit object)指向的树对象(tree object)的sha串名, 你就可以在‘树名'的后面加上'<sup>{tree}'来得到它:</sup></p>
+
+<pre><code>master^{tree}
+</code></pre>
+
+<h3>二进制标识符</h3>
+
+<p>如果你要某个二次制对象(blob)的sha串名,你可以在'树名'(treeish)后添加二次制对象(blob)对应的文件路径来得到它.</p>
+
+<pre><code>master:/path/to/file
+</code></pre>
+
+<h3>区间</h3>
+
+<p>最后, 你可以用".."来指两个提交(commit)之间的区间. 下面的命令会给出你在"7b593b5" 和"51bea1"之间除了"7b593b5外"的所有提交(commit)(注意:51bea1是最近的提交).</p>
+
+<pre><code>7b593b5..51bea1
+</code></pre>
+
+<p>这会包括所有 <em>从</em> 7b593b开始的提交(commit).
+译者注: 相当于 7b593b..HEAD</p>
+
+<pre><code>7b593b.. 
+</code></pre>
+
+
+  </div>
+  
+  <div class="span-21">
+    <hr/>
+    <div class="center"><a href="4_5.html">Prev</a>  <a href="4_7.html">Next</a></div>
+    <hr/>
+  </div>
+  
+  <div class="span-17 footer">
+  	<div class="menu">
+  		This book is maintained by Scott Chacon, and hosting is donated by GitHub.
+  		<br>
+  		Please email me at <a href="mailto:schacon@gmail.com">schacon@gmail.com</a>
+  		with patches, suggestions and comments.<br>
+		中文版是由 <a href="http://liuhui998.com">liuhui998.com</a>维护,如果有任何意见建议或发现有bug,请联系我.
+	  </div>
+
+  </div>
+  <div class="span-4 last center">
+    <a href="http://github.com/liuhui998/gitbook"><img src="assets/images/github.png" alt="github logo"></a>
+  </div>
+  
+</div>
+
+
+
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-82337-12");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>
+<script src="http://static.getclicky.com/40584.js" type="text/javascript"></script>
+<noscript><p><img alt="Clicky" src="http://in.getclicky.com/40584-db6.gif" /></p></noscript>
+
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-6896227-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+
+</script>
+
+<div style="display:none">
+<script src="http://s9.cnzz.com/stat.php?id=2459744&web_id=2459744" language="JavaScript"></script>
+</div>
+
+</body>
+</html>

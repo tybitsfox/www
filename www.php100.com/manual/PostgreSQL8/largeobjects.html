@@ -1,0 +1,221 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>大对象 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="客户端接口" HREF="client-interfaces.html"><LINK REL="PREVIOUS" TITLE="例子程序" HREF="libpq-example.html"><LINK REL="NEXT" TITLE="实现特点" HREF="lo-implementation.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="CHAPTER" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="libpq-example.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="libpq.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="ecpg.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="lo-implementation.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A NAME="LARGEOBJECTS" >Chapter 29. 大对象</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>29.1. <A HREF="largeobjects.html#LO-HISTORY" >历史</A
+></DT
+><DT
+>29.2. <A HREF="lo-implementation.html" >实现特点</A
+></DT
+><DT
+>29.3. <A HREF="lo-interfaces.html" >客户端接口</A
+></DT
+><DD
+><DL
+><DT
+>29.3.1. <A HREF="lo-interfaces.html#AEN26885" >创建大对象</A
+></DT
+><DT
+>29.3.2. <A HREF="lo-interfaces.html#AEN26914" >输入大对象</A
+></DT
+><DT
+>29.3.3. <A HREF="lo-interfaces.html#AEN26921" >输出大对象</A
+></DT
+><DT
+>29.3.4. <A HREF="lo-interfaces.html#AEN26929" >打开一个现有的大对象</A
+></DT
+><DT
+>29.3.5. <A HREF="lo-interfaces.html#AEN26959" >向大对象中写数据</A
+></DT
+><DT
+>29.3.6. <A HREF="lo-interfaces.html#AEN26970" >从大对象中读取数据</A
+></DT
+><DT
+>29.3.7. <A HREF="lo-interfaces.html#AEN26981" >大对象中数据的查找</A
+></DT
+><DT
+>29.3.8. <A HREF="lo-interfaces.html#AEN26993" >获取一个大对象的当前搜索位置</A
+></DT
+><DT
+>29.3.9. <A HREF="lo-interfaces.html#AEN26999" >关闭一个大对象描述符</A
+></DT
+><DT
+>29.3.10. <A HREF="lo-interfaces.html#AEN27009" >删除一个大对象</A
+></DT
+></DL
+></DD
+><DT
+>29.4. <A HREF="lo-funcs.html" >服务器端函数</A
+></DT
+><DT
+>29.5. <A HREF="lo-examplesect.html" >例子程序</A
+></DT
+></DL
+></DIV
+><A NAME="AEN26834" ></A
+><A NAME="AEN26836" ></A
+><P
+>    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 有一个<I
+CLASS="FIRSTTERM"
+>大对象</I
+>设施，
+    它为存储在特殊的大对象结构里的用户数据提供流状的访问方式。
+    流访问对那些数据值太大，因而不能一次性操作的数据是很有用的。
+  </P
+><P
+>	本章描述 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 大对象数据的实现以及编程和查询语言接口。
+	我们在本章中使用 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 的 C 库作为例子，
+	但是大多数 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 内置的接口都支持等效的功能。
+	其它接口可以在内部使用大对象接口以提供对大对象值的一般性支持。那些内容没有在这里描述。
+   </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="LO-HISTORY" >29.1. 历史</A
+></H1
+><P
+>	最初，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL 4.2</SPAN
+>
+	（<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的间接前身）支持三种大对象的标准实现：
+	作为 <SPAN
+CLASS="PRODUCTNAME"
+>POSTGRES</SPAN
+>服务器外部的文件扩展，
+	作为由 <SPAN
+CLASS="PRODUCTNAME"
+>POSTGRES</SPAN
+> 管理的外部文件，
+	以及作为存储在
+	<SPAN
+CLASS="PRODUCTNAME"
+>POSTGRES</SPAN
+> 数据库里面的数据．
+	这样做容易导致用户的迷惑．结果是，我们只支持把大对象作为数据存储在
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 数据库里．
+	即使这样做令数据访问变得有些慢，但却保证了更严格的数据完整性．
+	由于历史原因，这种存储机制被称为<I
+CLASS="FIRSTTERM"
+>转置大对象</I
+>．
+	（我们将在本章中交互使用转置和大对象来表示同一个意思）。
+	自 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL 7.1</SPAN
+> 开始，所由大对象都保留在一个叫<TT
+CLASS="CLASSNAME"
+>pg_largeobject</TT
+>的系统表里．
+   </P
+><P
+>    <A NAME="AEN26859" ></A
+>
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL 7.1</SPAN
+> 引入了一种新的机制
+	（外号叫 <SPAN
+CLASS="QUOTE"
+>"<SPAN
+CLASS="ACRONYM"
+>TOAST</SPAN
+>"</SPAN
+>），
+	允许数据行远远大于单个数据页面。这样就令大对象接口在一定程度上过时了。
+	大对象接口剩余的一个优点是它允许数据最大有 2 G，而 <SPAN
+CLASS="ACRONYM"
+>TOAST</SPAN
+> 字段只能处理 1 G。
+	并且，大对象可以比普通数据值更容易地一片片操作，因此，实际地局限是不一定的。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="libpq-example.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="lo-implementation.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >例子程序</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="client-interfaces.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >实现特点</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

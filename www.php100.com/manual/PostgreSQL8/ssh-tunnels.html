@@ -1,0 +1,149 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>用SSH隧道进行安全 TCP/IP 联接 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="操作系统环境" HREF="runtime.html"><LINK REL="PREVIOUS" TITLE="用 SSL 进行安全的 TCP/IP 联接" HREF="ssl-tcp.html"><LINK REL="NEXT" TITLE="服务器配置" HREF="runtime-config.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="ssl-tcp.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="runtime.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 16. 操作系统环境</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="runtime.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="runtime-config.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="SSH-TUNNELS" >16.8. 用<SPAN
+CLASS="APPLICATION"
+>SSH</SPAN
+>隧道进行安全 TCP/IP 联接</A
+></H1
+><A NAME="AEN18223" ></A
+><P
+>        我们可以使用 <SPAN
+CLASS="PRODUCTNAME"
+>SSH</SPAN
+> 对 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        服务器和客户端之间的网络联接进行加密。经过适当处理后，这样做可以获得一个足够安全的网络联接。
+	即使是没有 SSL 的客户端上也如此。
+  </P
+><P
+>        首先确认 <SPAN
+CLASS="APPLICATION"
+>SSH</SPAN
+> 正在和 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器的同一台机器上正确地运行，
+	而且你可以通过某个用户用<TT
+CLASS="COMMAND"
+>SSH</TT
+>登录。然后你可以用下面这样的命令从客户端的机器上建立一个安全通道：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>ssh -L 3333:foo.com:5432 joe@foo.com</PRE
+><P>
+        <TT
+CLASS="OPTION"
+>-L</TT
+>
+        参数的第一个数字，3333，是通道你这端的端口号；可以自由选择。
+        第二个数字，5432，是通道的远端：你的服务器使用的端口号。
+	在两个端口号之间的名称或者 IP 地址是你准备联接的数据库服务器。
+        为了使用这个通道与你的数据库服务器联接，你在本机于端口 3333 联接：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>psql -h localhost -p 3333 postgres</PRE
+><P>
+        对于数据库服务器而言，她会把你当做真正的用户 <TT
+CLASS="LITERAL"
+>joe@foo.com</TT
+>
+	并且使用为这个用户和主机设置的认证手段进行认证。
+	请注意，服务器不会认为连接是 SSL 加密的，因为实际上在 <SPAN
+CLASS="APPLICATION"
+>SSH</SPAN
+> 服务器和
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器之间是没有加密的。
+	只要它们在同一台机器上，这么做并不会导致任何安全漏洞。
+  </P
+><P
+>	为了保证能够成功地建立通道，你必须被允许作为 <TT
+CLASS="LITERAL"
+>joe@foo.com</TT
+> 通过<TT
+CLASS="COMMAND"
+>ssh</TT
+>建立联接，
+        就象你使用<TT
+CLASS="COMMAND"
+>ssh</TT
+>建立终端会话一样。
+  </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>        还有几种不同的产品可以提供安全的通道，所使用的过程类似我们刚刚描述的过程。
+   </P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="ssl-tcp.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="runtime-config.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >用 SSL 进行安全的 TCP/IP 联接</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="runtime.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >服务器配置</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

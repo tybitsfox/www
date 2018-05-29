@@ -1,0 +1,96 @@
+<HTML><HEAD><TITLE>Dealing with a Variable Number of Arguments/Optional Parameters</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Accepting Arguments" HREF="zend.arguments.html"><LINK REL="PREVIOUS" TITLE="Old way of retrieving arguments (deprecated)" HREF="zend.arguments.deprecated-retrieval.html"><LINK REL="NEXT" TITLE="Accessing Arguments" HREF="zend.arguments.access.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="section" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="zend.arguments.deprecated-retrieval.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 32. Accepting Arguments</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="zend.arguments.access.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="section"><H1 CLASS="section"><A NAME="zend.arguments.variable"></A>Dealing with a Variable Number of Arguments/Optional Parameters</H1><P>&#13; If your function is meant to accept a variable number of
+arguments, the snippets just described are sometimes suboptimal
+solutions. You have to create a line calling
+<B CLASS="function">zend_get_parameters_ex()</B> for every possible
+number of arguments, which is often unsatisfying.
+</P><P>&#13; For this case, you can use the
+function <B CLASS="function">zend_get_parameters_array_ex()</B>, which accepts the
+number of parameters to retrieve and an array in which to store them:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">zval **parameter_array[4];
+
+/* get the number of arguments */
+argument_count = ZEND_NUM_ARGS();
+
+/* see if it satisfies our minimal request (2 arguments) */
+/* and our maximal acceptance (4 arguments) */
+if(argument_count &#60; 2 || argument_count &#62; 5)
+    WRONG_PARAM_COUNT;
+
+/* argument count is correct, now retrieve arguments */
+if(zend_get_parameters_array_ex(argument_count, parameter_array) != SUCCESS)
+    WRONG_PARAM_COUNT;</PRE></TD></TR></TABLE>
+First, the number of arguments is checked to make sure that it's in the accepted range. After that,
+<B CLASS="function">zend_get_parameters_array_ex()</B> is used to
+fill <TT CLASS="envar">parameter_array</TT> with valid pointers to the argument
+values.
+</P><P>&#13; A very clever implementation of this can be found in the code
+handling PHP's <A HREF="function.fsockopen.html"><B CLASS="function">fsockopen()</B></A> located in
+<TT CLASS="filename">ext/standard/fsock.c</TT>, as shown in
+<A HREF="zend.arguments.variable.html#example.fsockopen">例子 32-1</A>. Don't worry if you don't know all the functions used in this
+source yet; we'll get to them shortly.
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="example.fsockopen"></A><P><B>例子 32-1. PHP's implementation of variable arguments in fsockopen().</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">pval **args[5];
+int *sock=emalloc(sizeof(int));
+int *sockp;
+int arg_count=ARG_COUNT(ht);
+int socketd = -1;
+unsigned char udp = 0;
+struct timeval timeout = { 60, 0 };
+unsigned short portno;
+unsigned long conv;
+char *key = NULL;
+FLS_FETCH();
+
+if (arg_count &#62; 5 || arg_count &#60; 2 || zend_get_parameters_array_ex(arg_count,args)==FAILURE) {
+    CLOSE_SOCK(1);
+    WRONG_PARAM_COUNT;
+}
+
+switch(arg_count) {
+    case 5:
+        convert_to_double_ex(args[4]);
+        conv = (unsigned long) (Z_DVAL_P(args[4]) * 1000000.0);
+        timeout.tv_sec = conv / 1000000;
+        timeout.tv_usec = conv % 1000000;
+        /* fall-through */
+    case 4:
+        if (!PZVAL_IS_REF(*args[3])) {
+            php_error(E_WARNING,"error string argument to fsockopen not passed by reference");
+        }
+        pval_copy_constructor(*args[3]);
+        ZVAL_EMPTY_STRING(*args[3]);
+        /* fall-through */
+    case 3:
+        if (!PZVAL_IS_REF(*args[2])) {
+            php_error(E_WARNING,"error argument to fsockopen not passed by reference");
+            return;
+        }
+        ZVAL_LONG(*args[2], 0);
+        break;
+}
+
+convert_to_string_ex(args[0]);
+convert_to_long_ex(args[1]);
+portno = (unsigned short) Z_LVAL_P(args[1]);
+
+key = emalloc(Z_STRLEN_P(args[0]) + 10);</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE><P>&#13; <A HREF="function.fsockopen.html"><B CLASS="function">fsockopen()</B></A> accepts two, three, four, or five
+parameters. After the obligatory variable declarations, the
+function checks for the correct range of arguments. Then it uses a
+fall-through mechanism in a <TT CLASS="literal">switch()</TT> statement
+to deal with all arguments. The <TT CLASS="literal">switch()</TT>
+statement starts with the maximum number of arguments being passed
+(five). After that, it automatically processes the case of four
+arguments being passed, then three, by omitting the otherwise
+obligatory <TT CLASS="literal">break</TT> keyword in all stages. After
+having processed the last case, it exits the
+<TT CLASS="literal">switch()</TT> statement and does the minimal
+argument processing needed if the function is invoked with only
+two arguments.
+</P><P>&#13; This multiple-stage type of processing, similar to a stairway, allows
+convenient processing of a variable number of arguments.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="zend.arguments.deprecated-retrieval.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="zend.arguments.access.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Old way of retrieving arguments (deprecated)</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="zend.arguments.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Accessing Arguments</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

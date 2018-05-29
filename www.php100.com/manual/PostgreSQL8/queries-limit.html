@@ -1,0 +1,209 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>LIMIT 和 OFFSET PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="查询" HREF="queries.html"><LINK REL="PREVIOUS" TITLE="行排序" HREF="queries-order.html"><LINK REL="NEXT" TITLE="数据类型" HREF="datatype.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="queries-order.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="queries.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 7. 查询</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="queries.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="datatype.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="QUERIES-LIMIT" >7.6. <TT
+CLASS="LITERAL"
+>LIMIT</TT
+> 和 <TT
+CLASS="LITERAL"
+>OFFSET</TT
+></A
+></H1
+><A NAME="AEN3523" ></A
+><A NAME="AEN3525" ></A
+><P
+>	附加上 <TT
+CLASS="LITERAL"
+>LIMIT</TT
+>和<TT
+CLASS="LITERAL"
+>OFFSET</TT
+> 子句之后，你就可以检索原来查询语句查询出来的结果中的一部分数据行：
+</P><PRE
+CLASS="SYNOPSIS"
+>SELECT <TT
+CLASS="REPLACEABLE"
+><I
+>select_list</I
+></TT
+>
+	FROM <TT
+CLASS="REPLACEABLE"
+><I
+>table_expression</I
+></TT
+>
+	[<SPAN
+CLASS="OPTIONAL"
+>LIMIT { <TT
+CLASS="REPLACEABLE"
+><I
+>number</I
+></TT
+> | ALL }</SPAN
+>] [<SPAN
+CLASS="OPTIONAL"
+>OFFSET <TT
+CLASS="REPLACEABLE"
+><I
+>number</I
+></TT
+></SPAN
+>]</PRE
+><P>
+  </P
+><P
+>	如果给出了一个限制计数，那么返回不超过那么多的行。
+	（但可能更少些，因为查询本身可能生成的行数就比较少。）
+	<TT
+CLASS="LITERAL"
+>LIMIT ALL</TT
+>和省略 <TT
+CLASS="LITERAL"
+>LIMIT</TT
+>子句一样。
+  </P
+><P
+>	<TT
+CLASS="LITERAL"
+>OFFSET</TT
+>说明在开始返回行之前忽略多少行。
+	<TT
+CLASS="LITERAL"
+>OFFSET 0</TT
+>和省略<TT
+CLASS="LITERAL"
+>OFFSET</TT
+>子句是一样的。
+	如果<TT
+CLASS="LITERAL"
+>OFFSET</TT
+>和<TT
+CLASS="LITERAL"
+>LIMIT</TT
+>都出现了，
+	那么在计算<TT
+CLASS="LITERAL"
+>LIMIT</TT
+>个行之前忽略<TT
+CLASS="LITERAL"
+>OFFSET</TT
+>行。
+  </P
+><P
+>	如果使用<TT
+CLASS="LITERAL"
+>LIMIT</TT
+>，那么用<TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> 子句把结果行约束成一个唯一的顺序是一个好主意。
+	否则你就会拿到一个不可预料的该查询的行的子集。 &mdash; 你要的可能是第十到二十行，但以什么顺序的十到二十？
+	除非你声明了<TT
+CLASS="LITERAL"
+>ORDER BY</TT
+>，否则顺序是不知道的。
+  </P
+><P
+>	查询优化器在生成查询规划的时候会考虑<TT
+CLASS="LITERAL"
+>LIMIT</TT
+>，因此如果你给
+	<TT
+CLASS="LITERAL"
+>LIMIT</TT
+>和<TT
+CLASS="LITERAL"
+>OFFSET</TT
+>不同的东西，那么你很可能收到不同的规划（产生不同的行顺序）。
+	因此，使用不同的<TT
+CLASS="LITERAL"
+>LIMIT</TT
+>/<TT
+CLASS="LITERAL"
+>OFFSET</TT
+>值选择不同的查询结果的子集<I
+CLASS="EMPHASIS"
+>将生成不一致的结果</I
+>，
+	除非你用<TT
+CLASS="LITERAL"
+>ORDER BY</TT
+>强制一个可预料的顺序。这可不是臭虫；
+	这是一个很自然的结果，因为 SQL 没有许诺把查询的结果按照任何特定的顺序发出，除非用了<TT
+CLASS="LITERAL"
+>ORDER BY</TT
+>来约束顺序。
+  </P
+><P
+>   <TT
+CLASS="LITERAL"
+>OFFSET</TT
+> 子句忽略的行仍然需要在服务器内部计算；因此，一个很大的 <TT
+CLASS="LITERAL"
+>OFFSET</TT
+>
+   可能还是不够有效率的。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="queries-order.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="datatype.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >行排序</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="queries.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >数据类型</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

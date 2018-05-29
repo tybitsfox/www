@@ -1,0 +1,292 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>NOTIFY PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="MOVE" HREF="sql-move.html"><LINK REL="NEXT" TITLE="PREPARE" HREF="sql-prepare.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-move.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-move.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-prepare.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-prepare.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-NOTIFY" >NOTIFY</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN46873" ></A
+><H2
+>Name</H2
+>NOTIFY&nbsp;--&nbsp;生成一个通知</DIV
+><A NAME="AEN46876" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN46878" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>NOTIFY <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>        </PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46881" ></A
+><H2
+>描述</H2
+><P
+>    <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+> 命令向当前数据库中所有执行过
+    <TT
+CLASS="COMMAND"
+>LISTEN <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+></TT
+>，
+    正在监听特定通知条件的前端应用发送一个通知事件。
+  </P
+><P
+>        <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+> 为访问同一个
+        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        数据库的一组进程提供了一种简单的信号形式或进程间通讯机制。
+        更高级的机制（除了一个简单的通知名以外）可以通过使用数据库中的表从通知者传递数据到被通知者。
+  </P
+><P
+>        传递给前端的通知事件包括通知条件名和发出通知的后端进程<SPAN
+CLASS="ACRONYM"
+>PID</SPAN
+>。
+        数据库设计者有责任定义用于某个数据库的条件名和每个通知条件的含义。
+  </P
+><P
+>        通常，通知条件名与数据库里的表的名字相同，
+        通知时间实际上意味着<SPAN
+CLASS="QUOTE"
+>"我修改了此数据库，请看一眼有什么新东西"</SPAN
+>。
+        <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+> 和 <TT
+CLASS="COMMAND"
+>LISTEN</TT
+>
+        命令并不强制这种联系。例如，数据库设计者可以使用几个不同的条件名来标志一个表的几种不同改变。
+  </P
+><P
+>   当<TT
+CLASS="COMMAND"
+>NOTIFY</TT
+>用于通知某一特定表修改的动作的发生，
+        一个实用的编程技巧是将
+   <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+> 放在一个由表更新触发的规则里。用这种方法，
+        通知将在表更新的时候自动触发，而且应用程序员不会碰巧忘记处理它。
+  </P
+><P
+>   <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+> 和 SQL 事务用某种重要的方法进行交换。首先，如果
+   <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+> 在事务内部执行，通知事件直到事务提交才会送出。
+        这么做是有道理的，因为如果事务退出了，
+        那么在它里面的所有命令都没有效果 － 包括
+        <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+>。但如果有人希望通知事件立即发送，这就不太好了。
+	其次，当一个正在监听的会话在一次事务内收到一个通知信号，
+        直到本次事务完成（提交或退出）之前，该通知事件将不被送到与之相连的客户端。
+	同样，如果一个通知在事务内部发送出去了，
+        而该事务稍后又退出了，我们就希望通知可以在某种程度上被撤消
+        &mdash; 但通知一旦发送出去，服务器便不能从客户端<SPAN
+CLASS="QUOTE"
+>"收回"</SPAN
+>通知。
+        所以通知时间只是在事务之间传递。这一点就要求使用
+        <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+> 作为实时信号的应用应该确保他们的事务尽可能短。
+  </P
+><P
+>        <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+> 在一方面的行为象 Unix 的信号：
+        如果同一条件名在短时间内发出了多条信号，接收者几次执行
+        <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+> 可能只回收到一条通知信息。
+        所以依赖于收到的通知条数的方法是很不可靠的。因而，使用
+        <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+>唤醒需要关注某事的应用，
+        同时还要使用数据库对象（如序列号）来跟踪事件发生了几次。
+  </P
+><P
+>        客户端经常会自己发送与正在监听的通知名一样的 <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+>。
+        这时它（客户端）也和其他正在监听的会话一样收到一个通知事件。
+	这样可能导致一些无用的工作（与应用逻辑有关）－－ 例如，
+        对客户端刚写过的表又进行一次读操作以发现是否有更新。
+        我们可以通过检查服务器进程的<SPAN
+CLASS="ACRONYM"
+>PID</SPAN
+>（在通知事件中提供）
+        是否与自己的后端的<SPAN
+CLASS="ACRONYM"
+>PID</SPAN
+>一致（从 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 中取得）。当他们一样时，
+	说明这是其自身回弹的信息，可以忽略。（不管前面章节是如何讲的，这是一个安全的技巧。
+        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 保持自身的通知和其他到来的通知区分开。
+	所以你屏蔽了自己的通知后不会略过外部的通知。）
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46915" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+></DT
+><DD
+><P
+>        生成信号（通知）的通知条件（任何标识符）。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46923" ></A
+><H2
+>例子</H2
+><P
+>        在 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 里配置和执行一个监听/通知对：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>LISTEN virtual;
+NOTIFY virtual;
+Asynchronous NOTIFY 'virtual' from backend with pid '8448' received. </PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46928" ></A
+><H2
+>兼容性</H2
+><P
+>    在 SQL 标准里没有 <TT
+CLASS="COMMAND"
+>NOTIFY</TT
+> 语句。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46932" ></A
+><H2
+>又见</H2
+><A HREF="sql-listen.html" ><I
+>LISTEN</I
+></A
+>, <A HREF="sql-unlisten.html" ><I
+>UNLISTEN</I
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-move.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-prepare.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >MOVE</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >PREPARE</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

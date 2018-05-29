@@ -1,0 +1,1087 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>postmaster PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="PostgreSQL 服务器应用" HREF="reference-server.html"><LINK REL="PREVIOUS" TITLE="postgres" HREF="app-postgres.html"><LINK REL="NEXT" TITLE="内部" HREF="internals.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="app-postgres.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="app-postgres.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="internals.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="internals.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="APP-POSTMASTER" ><SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+></A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN54501" ></A
+><H2
+>Name</H2
+>postmaster&nbsp;--&nbsp;<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>多用户数据库服务器</DIV
+><A NAME="AEN54505" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN54507" ></A
+><H2
+>Synopsis</H2
+><P
+><TT
+CLASS="COMMAND"
+>postmaster</TT
+> [-A   0 | 1 ] [-B <TT
+CLASS="REPLACEABLE"
+><I
+>nbuffers</I
+></TT
+>] [-c <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>=<TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+>] [-d <TT
+CLASS="REPLACEABLE"
+><I
+>debug-level</I
+></TT
+>] [-D <TT
+CLASS="REPLACEABLE"
+><I
+>datadir</I
+></TT
+>] [-F] [-h <TT
+CLASS="REPLACEABLE"
+><I
+>hostname</I
+></TT
+>] [-i] [-k <TT
+CLASS="REPLACEABLE"
+><I
+>directory</I
+></TT
+>] [-l] [-N <TT
+CLASS="REPLACEABLE"
+><I
+>max-connections</I
+></TT
+>] [-o <TT
+CLASS="REPLACEABLE"
+><I
+>extra-options</I
+></TT
+>] [-p <TT
+CLASS="REPLACEABLE"
+><I
+>port</I
+></TT
+>] [-S] [--<TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>=<TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+>] [-n | -s]</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN54543" ></A
+><H2
+>描述</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>postmaster</TT
+> 是
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 多用户数据库服务器。
+	一个客户端为了访问一个数据库，它（通过网络或本地）联接到一个运行着的 <TT
+CLASS="COMMAND"
+>postmaster</TT
+>。
+	然后该 <TT
+CLASS="COMMAND"
+>postmaster</TT
+> 启动一个独立的服务器进程（<SPAN
+CLASS="QUOTE"
+>"<A HREF="app-postgres.html" ><SPAN
+CLASS="APPLICATION"
+>postgres</SPAN
+></A
+>"</SPAN
+>）
+	以操作联接。<TT
+CLASS="COMMAND"
+>postmaster</TT
+> 还控制服务器进程之间的通讯。
+  </P
+><P
+>	缺省时<TT
+CLASS="COMMAND"
+>postmaster</TT
+>在前台启动并且向标准错误系统输出打印日志信息。
+	在实际应用里，<TT
+CLASS="COMMAND"
+>postmaster</TT
+>应该作为后台进程启动，也许该在启动时。
+  </P
+><P
+>	一个<TT
+CLASS="COMMAND"
+>postmaster</TT
+>总是管理来自同一个数据库集群的数据。
+	一个数据库集群是一套在同一个文件系统位置存放数据的数据库（<SPAN
+CLASS="QUOTE"
+>"数据区"</SPAN
+>）。
+	一个系统上同时可以运行几个<TT
+CLASS="COMMAND"
+>postmaster</TT
+>进程，
+	只要他们使用不同的数据区和不同的端口号（见下文）。
+	一个数据区是用 <A HREF="app-initdb.html" ><I
+>initdb</I
+></A
+> 创建的。
+  </P
+><P
+>   <TT
+CLASS="COMMAND"
+>postmaster</TT
+> 启动的时候，它需要知道数据库区的位置。
+   该位置通过 <TT
+CLASS="OPTION"
+>-D</TT
+> 选项或者 <TT
+CLASS="ENVAR"
+>PGDATA</TT
+> 环境变量声明的；
+   没有缺省值。通常，<TT
+CLASS="OPTION"
+>-D</TT
+> 或者 <TT
+CLASS="ENVAR"
+>PGDATA</TT
+> 指向一个 <SPAN
+CLASS="APPLICATION"
+>initdb</SPAN
+> 创建的目录。
+   其它可能的布局在 <A HREF="runtime-config-file-locations.html" >Section 17.2</A
+> 里讨论。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="APP-POSTMASTER-OPTIONS" ></A
+><H2
+>选项</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>postmaster</TT
+> 接受下列命令行参数。
+	关于这些选项的更详细的讨论请参考 <A HREF="runtime-config.html" >Chapter 17</A
+>。
+	你也可以通过设置一个配置文件来减少敲击这些选项。
+    
+    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="OPTION"
+>-A 0|1</TT
+></DT
+><DD
+><P
+>	打开运行时断言检查，是检测编程错误的调试帮助。
+	只有在编译 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 时打开了它，你才能使用它。如果编译时打开了，缺省是打开。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-B <TT
+CLASS="REPLACEABLE"
+><I
+>nbuffers</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	为服务器进程分配和管理的共享内存缓冲区数量。
+	这个参数的缺省值是 <SPAN
+CLASS="APPLICATION"
+>initdb</SPAN
+> 自动选择的；
+	参考 <A HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-MEMORY" >Section 17.4.1</A
+> 获取更多信息。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-c <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>=<TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	设置一个命名的运行时参数。<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 支持的配置参数在 <A HREF="runtime-config.html" >Chapter 17</A
+> 里描述。
+	大多数其他命令行选项实际上都是这样的参数赋值的短形式。
+	<TT
+CLASS="OPTION"
+>-c</TT
+> 可以出现多次用以设置多个参数。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-d <TT
+CLASS="REPLACEABLE"
+><I
+>debug-level</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	设置调试级别。数值越高，写到服务器日志的调试输出越多。
+	数值范围是 1 到 5。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-D <TT
+CLASS="REPLACEABLE"
+><I
+>datadir</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	声明数据目录或者配置文件的文件系统路径。细节详见 <A HREF="runtime-config-file-locations.html" >Section 17.2</A
+>。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-F</TT
+></DT
+><DD
+><P
+>	关闭 <TT
+CLASS="FUNCTION"
+>fsync</TT
+> 调用，提高性能，但是要冒系统崩溃时数据毁坏的风险。
+	声明这个选项等效关闭了 <A HREF="runtime-config-wal.html#GUC-FSYNC" >fsync</A
+> 参数。在使用之前阅读详细文档！
+       </P
+><P
+>	<TT
+CLASS="OPTION"
+>--fsync=true</TT
+> 有着这个选项的反面效果。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-h <TT
+CLASS="REPLACEABLE"
+><I
+>hostname</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	声明 <TT
+CLASS="COMMAND"
+>postmaster</TT
+> 侦听着等待来自前端应用 TCP/IP 联接的 IP 主机名或地址。
+	数值也可以是一个用空格分隔的地址列表，或者<TT
+CLASS="LITERAL"
+>*</TT
+>表示监听所有可用的地址。
+	空值表示不监听任何 IP 地址，而只是使用 Unix 域套接字用于与 <TT
+CLASS="COMMAND"
+>postmaster</TT
+> 的连接。
+	缺省的时候是只监听 <SPAN
+CLASS="SYSTEMITEM"
+>localhost</SPAN
+>。
+	声明这个选项等效于设置 <A HREF="runtime-config-connection.html#GUC-LISTEN-ADDRESSES" >listen_addresses</A
+> 配置参数。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-i</TT
+></DT
+><DD
+><P
+>	这个选项打开 TCP/IP （网际域套接字）通讯。
+	没有这个选项，只能接受本地连接。
+	这个选项等效于在 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 中或者通过 <TT
+CLASS="OPTION"
+>-h</TT
+> 设置 <TT
+CLASS="VARNAME"
+>listen_addresses</TT
+> 为 <TT
+CLASS="LITERAL"
+>*</TT
+>。
+       </P
+><P
+>       这个选项已经废弃了，因为它不能实现 <A HREF="runtime-config-connection.html#GUC-LISTEN-ADDRESSES" >listen_addresses</A
+> 的所有功能。
+       我们最好直接设置 <TT
+CLASS="VARNAME"
+>listen_addresses</TT
+>。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-k <TT
+CLASS="REPLACEABLE"
+><I
+>directory</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	声明 <TT
+CLASS="COMMAND"
+>postmaster</TT
+>
+	侦听着等待来自前端应用联接的 Unix 域套接字的位置。
+	缺省通常是 <TT
+CLASS="FILENAME"
+>/tmp</TT
+>，但是可以在制作的时候修改。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-l</TT
+></DT
+><DD
+><P
+>	这个选项打开用 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 进行的安全通讯。要使用这个选项，编译<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>时你必须打开了 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 选项。
+	有关使用 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 的信息，请参考 <A HREF="ssl-tcp.html" >Section 16.7</A
+>。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-N <TT
+CLASS="REPLACEABLE"
+><I
+>max-connections</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	设置<TT
+CLASS="COMMAND"
+>postmaster</TT
+>允许启动的服务器服务器的最大数目。缺省配置时，该值为 32，
+	如果你的系统能支持更多进程，该值最大可以设置为你的系统所能支持的极限。
+	时修改（参阅 src/include/config.h）。
+	（请注意<TT
+CLASS="OPTION"
+>-B</TT
+>选项要求至少是两倍<TT
+CLASS="OPTION"
+>-N</TT
+>参阅
+	<A HREF="kernel-resources.html" >Section 16.4</A
+> 获取有关大客户量的系统资源需求。）
+	声明这个选项等效于声明 <A HREF="runtime-config-connection.html#GUC-MAX-CONNECTIONS" >max_connections</A
+> 配置参数。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-o <TT
+CLASS="REPLACEABLE"
+><I
+>extra-options</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	在 <TT
+CLASS="REPLACEABLE"
+><I
+>extra-options</I
+></TT
+>
+	里声明的 <TT
+CLASS="LITERAL"
+>postgres</TT
+>
+	选项都传递给所有由这个 <TT
+CLASS="COMMAND"
+>postmaster</TT
+> 启动的服务进程。
+	参阅  <A HREF="app-postgres.html" ><SPAN
+CLASS="APPLICATION"
+>postgres</SPAN
+></A
+> 获取可能选项。
+	如果选项字串包含任何空白，整个字串必须引起来。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-p <TT
+CLASS="REPLACEABLE"
+><I
+>port</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	声明 <TT
+CLASS="COMMAND"
+>postmaster</TT
+>
+	侦听着等待客户端应用连接的互联网 TCP/IP 端口或一个本地 Unix
+	域套接字文件扩展（描述符）。
+	缺省的端口号是环境变量 <TT
+CLASS="ENVAR"
+>PGPORT</TT
+> 的值。如果没有设置
+	<TT
+CLASS="ENVAR"
+>PGPORT</TT
+> 缺省是 PostgreSQL 编译时建立的值（通常是 5432）。
+	如果你声明了一个非缺省端口，那么所有前端应用（包括 <TT
+CLASS="COMMAND"
+>psql</TT
+>）都必须用命令行选项或者
+	<TT
+CLASS="ENVAR"
+>PGPORT</TT
+> 声明同一个端口。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-S</TT
+></DT
+><DD
+><P
+>	指明 <TT
+CLASS="COMMAND"
+>postmaster</TT
+> 进程将以安静模式启动。也就是说，
+	它将与用户的（控制）tty 脱离并且启动其自身的进程组。
+	并且它把标准输出和标准错误重定向到 <TT
+CLASS="FILENAME"
+>/dev/null</TT
+>。
+       </P
+><P
+>	使用这个开关会将日志输出都丢弃，可能不是你希望的，
+	因为这样令错误查找非常困难。参阅下文获取一个在后台启动
+	<TT
+CLASS="COMMAND"
+>postmaster</TT
+> 的更好的方法。
+       </P
+><P
+>	<TT
+CLASS="OPTION"
+>--silent_mode=false</TT
+> 的作用和这个选项的效果正好相反。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--<TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>=<TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	设置一个命名的运行时参数；其缩写形式是 <TT
+CLASS="OPTION"
+>-c</TT
+>。
+       </P
+></DD
+></DL
+></DIV
+><P>
+   </P
+><P
+>	有两个额外的命令行选项可以用于调试导致服务器异常退出。
+	用于这种状况的一般策略是通知所有其它服务器必须退出，
+	然后重新初始化共享内存和信号灯。这是因为一个出错的服务器在退出前可能已经破坏了一些共享的状态。
+	这些选项控制这种环境下的 <TT
+CLASS="COMMAND"
+>postmaster</TT
+>
+	的性质，而且<I
+CLASS="EMPHASIS"
+>没有哪个选项是为普通操作准备的</I
+>。
+   </P
+><P
+>   </P
+><P
+>	这些特殊选项是：
+
+    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="OPTION"
+>-n</TT
+></DT
+><DD
+><P
+>	<TT
+CLASS="COMMAND"
+>postmaster</TT
+> 将不会重新初始化共享数据结构。
+	一个有经验的系统程序员这时就可以使用调试器检查共享内存和信号灯状态。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-s</TT
+></DT
+><DD
+><P
+>	<TT
+CLASS="COMMAND"
+>postmaster</TT
+> 将通过发送信号<TT
+CLASS="LITERAL"
+>SIGSTOP</TT
+>
+	停止所有其他服务器进程，但不会导致它们退出。
+	这样就允许系统程序员手工从所有服务器进程收集倾倒的核心（core dumps）。
+       </P
+></DD
+></DL
+></DIV
+><P>
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN54732" ></A
+><H2
+>环境</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="ENVAR"
+>PGCLIENTENCODING</TT
+></DT
+><DD
+><P
+>	客户端使用的确缺省字符编码。（客户端可以独立地覆盖这个。）这个值也可以在配置文件里设置。
+     </P
+></DD
+><DT
+><TT
+CLASS="ENVAR"
+>PGDATA</TT
+></DT
+><DD
+><P
+>	缺省数据目录位置
+     </P
+></DD
+><DT
+><TT
+CLASS="ENVAR"
+>PGDATESTYLE</TT
+></DT
+><DD
+><P
+>	运行时参数 <A HREF="runtime-config-client.html#GUC-DATESTYLE" >DateStyle</A
+> 的缺省值。（已经不再鼓励使用环境变量了。）
+     </P
+></DD
+><DT
+><TT
+CLASS="ENVAR"
+>PGPORT</TT
+></DT
+><DD
+><P
+>	缺省端口（最好再配置文件中设置）
+     </P
+></DD
+><DT
+><TT
+CLASS="ENVAR"
+>TZ</TT
+></DT
+><DD
+><P
+>	服务器时区
+     </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN54761" ></A
+><H2
+>诊断</H2
+><P
+>	一个提到了 <TT
+CLASS="LITERAL"
+>semget</TT
+> 或者 <TT
+CLASS="LITERAL"
+>shmget</TT
+> 的错误信息可能意味着你需要配置你的内核，
+	提供足够的共享内存和信号灯。更多讨论，参阅 <A HREF="kernel-resources.html" >Section 16.4</A
+>。
+       </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>	你也可以通过降低 <A HREF="runtime-config-resource.html#GUC-SHARED-BUFFERS" >shared_buffers</A
+> 参数值以减少
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>的共享内存的消耗，
+	或者降低<A HREF="runtime-config-connection.html#GUC-MAX-CONNECTIONS" >max_connections</A
+>的参数值减少<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>的信号灯的消耗，
+	以此可以推迟重新配置内核。
+	 </P
+></BLOCKQUOTE
+></DIV
+><P
+>	如果是一个说另外一个 postmaster 正在运行的错误信息，那你应该确保没有其他的
+	<TT
+CLASS="COMMAND"
+>postmaster</TT
+> 进程正在运行。判断这个情况的最简单的办法是使用命令
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>ps ax | grep postmaster</B
+></TT
+></PRE
+><P>
+	或者
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>ps -e | grep postmaster</B
+></TT
+></PRE
+><P>
+	具体使用哪种取决于你的系统。如果确信没有冲突的 postmaster 在运行，那么你可以删除消息里提到的锁文件然后再次运行。
+       </P
+><P
+>        一个说无法绑定端口的错误信息可能表明该端口已经背其它非 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 进程使用。
+	如果你终止<TT
+CLASS="COMMAND"
+>postmaster</TT
+>后又马上用同一个端口运行它，你也有可能得到这个错误信息；
+	这时，你必须多等几秒，等操作系统关闭了该端口后再试。
+	最后，如果你使用了一个操作系统认为是保留的端口，也可能导致这个错误信息。
+	例如，我的 Unix 版本认为低于 1024 的端口号是<SPAN
+CLASS="QUOTE"
+>"可信任的"</SPAN
+>，因而只有 Unix 超级用户可以使用它们。
+       </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN54786" ></A
+><H2
+>注意</H2
+><P
+>	如果有可能，<I
+CLASS="EMPHASIS"
+>不要</I
+>使用 <TT
+CLASS="LITERAL"
+>SIGKILL</TT
+>杀死
+	<TT
+CLASS="COMMAND"
+>postmaster</TT
+>。
+	这样会阻止 <TT
+CLASS="COMMAND"
+>postmaster</TT
+>在退出前释放它持有的系统资源（例如共享内存和信号灯）。
+  </P
+><P
+>	要正常结束 postmaster，可以使用信号
+	<TT
+CLASS="LITERAL"
+>SIGTERM</TT
+>，<TT
+CLASS="LITERAL"
+>SIGINT</TT
+>，
+	或 <TT
+CLASS="LITERAL"
+>SIGQUIT</TT
+>。
+	第一个信号将等待所有的客户端退出后才退出。
+	第二个将强制断开所有客户端，而第三个将不停止立刻退出，
+	导致在重起时的恢复运行。
+  </P
+><P
+>	工具命令 <A HREF="app-pg-ctl.html" ><SPAN
+CLASS="APPLICATION"
+>pg_ctl</SPAN
+></A
+> 可以用于安全而有效地启停 <TT
+CLASS="COMMAND"
+>postmaster</TT
+>。
+  </P
+><P
+>	<TT
+CLASS="OPTION"
+>--</TT
+> 在<SPAN
+CLASS="SYSTEMITEM"
+>FreeBSD</SPAN
+>或者
+	<SPAN
+CLASS="SYSTEMITEM"
+>OpenBSD</SPAN
+>上无法运行。
+	应该用 <TT
+CLASS="OPTION"
+>-c</TT
+>。这在受影响的系统里是个臭虫；
+	如果这个毛病没有修补好，将来的
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本将提供一个绕开的办法。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="APP-POSTMASTER-EXAMPLES" ></A
+><H2
+>例子</H2
+><P
+>	用缺省值在后台启动<TT
+CLASS="COMMAND"
+>postmaster</TT
+>，键入：
+
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>nohup postmaster &gt;logfile 2&gt;&amp;1 &lt;/dev/null &amp;</B
+></TT
+></PRE
+><P>
+  </P
+><P
+>	以指定的端口启动 <TT
+CLASS="COMMAND"
+>postmaster</TT
+>：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>postmaster -p 1234</B
+></TT
+></PRE
+><P>
+	这条命令将在端口 1234 启动 <TT
+CLASS="COMMAND"
+>postmaster</TT
+>。
+	为了用<TT
+CLASS="COMMAND"
+>psql</TT
+>与这个 <TT
+CLASS="COMMAND"
+>postmaster</TT
+> 联接，
+	你应该这么运行<TT
+CLASS="COMMAND"
+>psql</TT
+>
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>psql -p 1234</B
+></TT
+></PRE
+><P>
+	或者设置环境变量 <TT
+CLASS="ENVAR"
+>PGPORT</TT
+>：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>export PGPORT=1234</B
+></TT
+>
+<TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>psql</B
+></TT
+></PRE
+><P>
+  </P
+><P
+>	命名的运行时参数可以用下列的风格之一设置：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>postmaster -c work_mem=1234</B
+></TT
+>
+<TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>postmaster --work-mem=1234</B
+></TT
+></PRE
+><P>
+	两种形式都覆盖那些现有的在 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 里面的 <TT
+CLASS="VARNAME"
+>work_mem</TT
+> 的设置。
+	请注意在参数名里的下划线在命令行上可以写成下划线，也可以写成划线。
+  </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>	除了用于短期的实验以外，更好的习惯是编辑放在 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 里面的设置，
+	而不是倚赖命令行开关设置参数。
+  </P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN54843" ></A
+><H2
+>又见</H2
+><P
+>   <A HREF="app-initdb.html" >initdb</A
+>,
+   <A HREF="app-pg-ctl.html" ><SPAN
+CLASS="APPLICATION"
+>pg_ctl</SPAN
+></A
+>
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="app-postgres.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="internals.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><SPAN
+CLASS="APPLICATION"
+>postgres</SPAN
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="reference-server.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >内部</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

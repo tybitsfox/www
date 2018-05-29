@@ -1,0 +1,151 @@
+<HTML><HEAD><TITLE>Process Control Functions</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="函数参考" HREF="funcref.html"><LINK REL="PREVIOUS" TITLE="pg_update" HREF="function.pg-update.html"><LINK REL="NEXT" TITLE="pcntl_alarm" HREF="function.pcntl-alarm.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="reference" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.pg-update.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.pcntl-alarm.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="reference"><A NAME="ref.pcntl"></A><DIV CLASS="TITLEPAGE"><H1 CLASS="title">LXXXV. Process Control Functions</H1><DIV CLASS="PARTINTRO"><A NAME="AEN92786"></A><DIV CLASS="section"><H1 CLASS="section"><A NAME="pcntl.intro"></A>介绍</H1><P>&#13; Process Control support in PHP implements the Unix style of
+process creation, program execution, signal handling and process
+termination. Process Control should not be enabled within a
+webserver environment and unexpected results may happen if any
+Process Control functions are used within a webserver environment.
+</P><P>&#13; This documentation is intended to explain the general usage of
+each of the Process Control functions. For detailed information
+about Unix process control you are encouraged to consult your
+systems documentation including fork(2), waitpid(2) and signal(2)
+or a comprehensive reference such as Advanced Programming in the
+UNIX Environment by W. Richard Stevens (Addison-Wesley).
+</P><P>&#13; PCNTL now uses ticks as the signal handle callback mechanism, which is
+much faster than the previous mechanism. This change follows the same
+semantics as using "user ticks". You use the <B CLASS="function">declare()</B>
+statement to specify the locations in your program where callbacks are
+allowed to occur. This allows you to minimize the overhead of handling
+asynchronous events. In the past, compiling PHP with pcntl enabled would
+always incur this overhead, whether or not your script actually used
+pcntl.
+</P><P>&#13; There is one adjustment that all pcntl scripts prior to PHP 4.3.0 must
+make for them to work which is to either to use
+<B CLASS="function">declare()</B> on a section where you wish to allow
+callbacks or to just enable it across the entire script using
+the new global syntax of <B CLASS="function">declare()</B>.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>该扩展模块不适用于 Windows 平台！</P></BLOCKQUOTE></DIV></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="pcntl.requirements"></A>需求</H1><P>无需外部库文件就可以加入本扩展模块的支持。</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="pcntl.installation"></A>安装</H1><P>&#13; Process Control support in PHP is not enabled by default.
+You have to compile the CGI or CLI version of PHP with
+<TT CLASS="option">--enable-pcntl</TT> configuration
+option when compiling PHP to enable Process Control support.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Currently, this module will not function on non-Unix platforms
+(Windows).
+</P></BLOCKQUOTE></DIV></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="pcntl.configuration"></A>运行时配置</H1><P>该扩展模块未定义任何设置指令。</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="pcntl.resources"></A>资源类型</H1><P>该扩展模块未定义任何资源类型。</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="pcntl.constants"></A>预定义常量</H1><P>&#13; The following list of signals are supported by the Process Control
+functions. Please see your systems signal(7) man page for details
+of the default behavior of these signals.
+</P><P></P><DIV CLASS="variablelist"><DL><DT><TT CLASS="constant"><B>WNOHANG</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>WUNTRACED</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIG_IGN</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIG_DFL</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIG_ERR</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGHUP</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGINT</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGQUIT</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGILL</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGTRAP</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGABRT</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGIOT</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGBUS</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGFPE</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGKILL</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGUSR1</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGSEGV</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGUSR2</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGPIPE</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGALRM</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGTERM</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGSTKFLT</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGCLD</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGCHLD</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGCONT</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGSTOP</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGTSTP</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGTTIN</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGTTOU</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGURG</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGXCPU</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGXFSZ</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGVTALRM</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGPROF</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGWINCH</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGPOLL</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGIO</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGPWR</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGSYS</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>SIGBABY</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD></DL></DIV></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="pcntl.example"></A>范例</H1><P>&#13; This example forks off a daemon process with a signal handler.
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN93060"></A><P><B>例子 1. Process Control Example</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#007700">declare(</font><font color="#0000BB">ticks</font><font color="#007700">=</font><font color="#0000BB">1</font><font color="#007700">);<br /><br /></font><font color="#0000BB">$pid </font><font color="#007700">= </font><font color="#0000BB">pcntl_fork</font><font color="#007700">();<br />if (</font><font color="#0000BB">$pid </font><font color="#007700">== -</font><font color="#0000BB">1</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;die(</font><font color="#DD0000">"could not fork"</font><font color="#007700">); <br />} else if (</font><font color="#0000BB">$pid</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exit(); </font><font color="#FF8000">// we are the parent <br /></font><font color="#007700">} else {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// we are the child<br /></font><font color="#007700">}<br /><br /></font><font color="#FF8000">// detatch from the controlling terminal<br /></font><font color="#007700">if (!</font><font color="#0000BB">posix_setsid</font><font color="#007700">()) {<br />&nbsp;&nbsp;&nbsp;&nbsp;die(</font><font color="#DD0000">"could not detach from terminal"</font><font color="#007700">);<br />}<br /><br /></font><font color="#FF8000">// setup signal handlers<br /></font><font color="#0000BB">pcntl_signal</font><font color="#007700">(</font><font color="#0000BB">SIGTERM</font><font color="#007700">, </font><font color="#DD0000">"sig_handler"</font><font color="#007700">);<br /></font><font color="#0000BB">pcntl_signal</font><font color="#007700">(</font><font color="#0000BB">SIGHUP</font><font color="#007700">, </font><font color="#DD0000">"sig_handler"</font><font color="#007700">);<br /><br /></font><font color="#FF8000">// loop forever performing tasks<br /></font><font color="#007700">while (</font><font color="#0000BB">1</font><font color="#007700">) {<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// do something interesting here<br /><br /></font><font color="#007700">}<br /><br />function </font><font color="#0000BB">sig_handler</font><font color="#007700">(</font><font color="#0000BB">$signo</font><font color="#007700">) <br />{<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;switch (</font><font color="#0000BB">$signo</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case </font><font color="#0000BB">SIGTERM</font><font color="#007700">:<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// handle shutdown tasks<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">exit;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case </font><font color="#0000BB">SIGHUP</font><font color="#007700">:<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// handle restart tasks<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">break;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default:<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// handle all other signals<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">}<br /><br />}<br /><br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="pcntl.seealso"></A>相关参考</H1><P>&#13; A look at the section about
+<A HREF="ref.posix.html">POSIX functions</A>
+may be useful.
+</P></DIV></DIV><DIV CLASS="TOC"><DL><DT><B>目录</B></DT><DT><A HREF="function.pcntl-alarm.html">pcntl_alarm</A>&nbsp;--&nbsp;
+Set an alarm clock for delivery of a signal
+</DT><DT><A HREF="function.pcntl-exec.html">pcntl_exec</A>&nbsp;--&nbsp;
+Executes specified program in current process space
+</DT><DT><A HREF="function.pcntl-fork.html">pcntl_fork</A>&nbsp;--&nbsp;Forks the currently running process</DT><DT><A HREF="function.pcntl-getpriority.html">pcntl_getpriority</A>&nbsp;--&nbsp;
+Get the priority of any process
+</DT><DT><A HREF="function.pcntl-setpriority.html">pcntl_setpriority</A>&nbsp;--&nbsp;
+Change the priority of any process
+</DT><DT><A HREF="function.pcntl-signal.html">pcntl_signal</A>&nbsp;--&nbsp;Installs a signal handler</DT><DT><A HREF="function.pcntl-wait.html">pcntl_wait</A>&nbsp;--&nbsp;
+Waits on or returns the status of a forked child
+</DT><DT><A HREF="function.pcntl-waitpid.html">pcntl_waitpid</A>&nbsp;--&nbsp;Waits on or returns the status of a forked child</DT><DT><A HREF="function.pcntl-wexitstatus.html">pcntl_wexitstatus</A>&nbsp;--&nbsp;
+Returns the return code of a terminated child
+</DT><DT><A HREF="function.pcntl-wifexited.html">pcntl_wifexited</A>&nbsp;--&nbsp;
+Returns <TT CLASS="constant"><B>TRUE</B></TT> if status code represents a successful exit
+</DT><DT><A HREF="function.pcntl-wifsignaled.html">pcntl_wifsignaled</A>&nbsp;--&nbsp;
+Returns <TT CLASS="constant"><B>TRUE</B></TT> if status code represents a termination due to a
+signal
+</DT><DT><A HREF="function.pcntl-wifstopped.html">pcntl_wifstopped</A>&nbsp;--&nbsp;
+Returns <TT CLASS="constant"><B>TRUE</B></TT> if child process is currently stopped
+</DT><DT><A HREF="function.pcntl-wstopsig.html">pcntl_wstopsig</A>&nbsp;--&nbsp;
+Returns the signal which caused the child to stop
+</DT><DT><A HREF="function.pcntl-wtermsig.html">pcntl_wtermsig</A>&nbsp;--&nbsp;
+Returns the signal which caused the child to terminate
+</DT></DL></DIV></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.pg-update.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.pcntl-alarm.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">pg_update</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="funcref.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">pcntl_alarm</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

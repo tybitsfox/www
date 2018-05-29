@@ -1,0 +1,168 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>更新数据 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="数据操作" HREF="dml.html"><LINK REL="PREVIOUS" TITLE="数据操作" HREF="dml.html"><LINK REL="NEXT" TITLE="删除数据" HREF="dml-delete.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="dml.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="dml.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 6. 数据操作</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="dml.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="dml-delete.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="DML-UPDATE" >6.2. 更新数据</A
+></H1
+><A NAME="AEN2895" ></A
+><A NAME="AEN2897" ></A
+><P
+>	修改已经存储在数据库中的数据的行为叫做更新。你可以更新
+	独立的行，也可以更新表中所有的行，还可以更新其中的一部分行。
+	我们可以独立地更新每个字段，而其他的字段则不受影响。
+  </P
+><P
+>	要执行一次更新，你需要三种信息：
+   <P
+></P
+></P><OL
+COMPACT="COMPACT"
+TYPE="1"
+><LI
+><P
+>表的名字和要更新的字段名，</P
+></LI
+><LI
+><P
+>字段的新数值，</P
+></LI
+><LI
+><P
+>要更新的是哪行。</P
+></LI
+></OL
+><P>
+  </P
+><P
+>	我们在 <A HREF="ddl.html" >Chapter 5</A
+> 里说过，SQL 通常并不为数据行提供唯一标识。
+	因此我们无法直接声明需要更新哪一行。但是，
+	我们可以通过声明一个要更新的行必须满足的条件。
+	只有在表里面存在主键的时候（不管你叫它什么），我们才能可靠地指定一个独立的行，
+	方法是选取一个匹配主键的行。图形化的数据库访问工具依赖这个东西来让我们可以独立地更新某些行。
+  </P
+><P
+>	比如，这条命令更新价格为5的所有产品的的价格为10：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>UPDATE products SET price = 10 WHERE price = 5;</PRE
+><P>
+	这样做可能导致零行，一行或者更多数据行被更新。
+	如果我们试图做一个不匹配任何数据行的更新，那也不算错误。
+  </P
+><P
+>	让我们仔细看看这个命令。首先是关键字 <TT
+CLASS="COMMAND"
+>UPDATE</TT
+>，
+	然后跟着表名字。和平常一样，表名字也可以是用模式修饰的，
+	否则就会从路径中把它找出来。然后是关键字 <TT
+CLASS="LITERAL"
+>SET</TT
+>，
+	后面跟着字段名，一个等号以及新的字段数值。新的字段数值可以是任意标量表达式，
+	而不仅仅是常量。比如，如果你想把所有产品的价格提高 10%，你可以用：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>UPDATE products SET price = price * 1.10;</PRE
+><P>
+	如你所见，用于新值的表达式也可以引用行中现有的数值。我们还忽略了
+	<TT
+CLASS="LITERAL"
+>WHERE</TT
+> 子句。如果我们忽略了这个子句，
+	那么就意味着表中的所有行都要更新。如果出现了<TT
+CLASS="LITERAL"
+>WHERE</TT
+> 子句，
+	那么只有匹配它后面的条件的行被更新。请注意在 <TT
+CLASS="LITERAL"
+>SET</TT
+> 子句中的等号是一个赋值，
+	而在 <TT
+CLASS="LITERAL"
+>WHERE</TT
+> 子句中的等号是比较，不过这样并不会导致任何歧义。
+	当然条件 <TT
+CLASS="LITERAL"
+>WHERE</TT
+> 不一定非得是相等测试。
+	许多其他操作符也都可以使用（参阅 <A HREF="functions.html" >Chapter 9</A
+>）。
+	但是表达式必须得出一个布尔结果。
+  </P
+><P
+>	你还可以在一个 <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> 命令中更新更多的字段，
+	方法是在 <TT
+CLASS="LITERAL"
+>SET</TT
+> 子句中列出更多赋值。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>UPDATE mytable SET a = 5, b = 3, c = 1 WHERE a &gt; 0;</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="dml.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="dml-delete.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >数据操作</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="dml.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >删除数据</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

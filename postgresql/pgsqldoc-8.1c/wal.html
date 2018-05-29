@@ -1,0 +1,289 @@
+<HTML
+><HEAD
+><TITLE
+>可靠性和预写式日志</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="服务器管理"
+HREF="admin.html"><LINK
+REL="PREVIOUS"
+TITLE="磁盘满导致的失效"
+HREF="disk-full.html"><LINK
+REL="NEXT"
+TITLE="预写式日志（WAL）"
+HREF="wal-intro.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="disk-full.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="diskusage.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="regress.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="wal-intro.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="WAL"
+>Chapter 26. 可靠性和预写式日志</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>26.1. <A
+HREF="wal.html#WAL-RELIABILITY"
+>可靠性</A
+></DT
+><DT
+>26.2. <A
+HREF="wal-intro.html"
+>预写式日志（<SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+>）</A
+></DT
+><DT
+>26.3. <A
+HREF="wal-configuration.html"
+><SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 配置</A
+></DT
+><DT
+>26.4. <A
+HREF="wal-internals.html"
+>WAL 内部</A
+></DT
+></DL
+></DIV
+><P
+>  本章解释预写式日志如何用于获得有效性，可靠性操作。
+ </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="WAL-RELIABILITY"
+>26.1. 可靠性</A
+></H1
+><P
+>   可靠性是任何严肃的数据库系统的重要属性，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+   进一切可能来保证可靠的操作。可靠性操作的一个方面是，提交的数据库记录的所有数据都应该存储在一个非易失的区域，
+   这样就不会因为电力失效、操作系统失效以及硬件失效（当然，除了非易失区域自身失效之外）等原因导致的数据库丢失。
+   向计算机的永久存储（磁盘驱动器或者等效的东西）成功写入数据通常可以满足这个要求。
+   实际上，即使计算机完全失效，只要磁盘驱动器生存下来，那么它们就可以移动到另外一台类似硬件的计算机上，
+   而所有已经提交的事务将保持原状。
+  </P
+><P
+>   周期地强制数据进入磁盘盘片看上去像一件简单的操作，但实际上并不是。
+   因为磁盘驱动器比内存和 CPU 要慢非常多，在计算机的主存和磁盘盘片之间存在多层的缓存。
+   首先，有操作系统的缓冲区内存，它缓冲常用的磁盘块，并且组合对磁盘写入的请求。
+   幸运的是，所有操作系统都给予应用一个强制从缓冲区写入磁盘的方法，
+   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 则使用了那个特性。
+   （参阅 <A
+HREF="runtime-config-wal.html#GUC-WAL-SYNC-METHOD"
+>wal_sync_method</A
+> 参数调节如何这么做的方法。）
+  </P
+><P
+>   然后，在磁盘驱动器的控制器上可能还有一个缓冲；这个现象在 <SPAN
+CLASS="ACRONYM"
+>RAID</SPAN
+>
+   控制卡上是特别常见的。这些缓冲区中，有些是<I
+CLASS="FIRSTTERM"
+>透过式写入</I
+>的，
+   意思是写入动作在到达的时候，同时写入到磁盘上。其它是<I
+CLASS="FIRSTTERM"
+>回写式</I
+>的，
+   意思式数据在稍后的某些时间写入驱动器。这样的缓冲区可能是可靠性的危害，
+   因为磁盘控制器上的内存是易失的，在发生电力失效的情况下会丢失其内容。
+   好一些的控制器卡有<I
+CLASS="FIRSTTERM"
+>电池供电的</I
+>缓冲区，
+   意思是这种卡上面有电池，可以在系统电力失效的情况下提供电力。
+   在电力恢复之后，这些数据将会被写入磁盘驱动器。
+  </P
+><P
+>   最后，大多数磁盘驱动器都有缓冲。有些是透写的，有些是回写的，
+   和磁盘控制器一样，回写的磁盘缓冲区也存在数据丢失的问题。
+   消费级别的 IDE 驱动器特别容易包含回写的缓冲，在掉电的情况下很容易丢失数据。
+  </P
+><P
+>   在操作系统向磁盘硬件发出一个写请求的时候，它没有什么好办法来保证数据真正到达非易失的存储区域。
+   实际上，确保所有存储部件都保证数据的完整性是管理员的责任。
+   避免使用哪些没有电池供电的回写缓冲磁盘控制器。在磁盘级别，如果驱动器不能保证在关闭（掉电）之前写入数据，
+   那么关闭回写缓冲。
+  </P
+><P
+>   另外一个数据丢失的风险来自磁盘盘片写操作自身。磁盘盘片会被分割为段，通常每段 512 字节。
+   每次物理读写都对整个段进行操作。当一个写操作到达磁盘的时候，它可能是 512 字节，
+   1024 字节，或者 8192 字节，而写入操作可能因为电力失效，在任何时候都有可能失败，
+   意味着某些 512 字节的段写入了，而有些没有。为了避免这样的失效，
+   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 在修改磁盘上的实际页面<I
+CLASS="EMPHASIS"
+>之前</I
+>，
+   周期地把整个页面的影像写入永久存储。这么做之后，在崩溃恢复的时候，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+   可以恢复部分写入的页面。如果你有一个电池供电的磁盘控制器或者是文件系统软件（比如，Reiser4）避免部分页面写入，
+   你可以通过使用 <A
+HREF="runtime-config-wal.html#GUC-FULL-PAGE-WRITES"
+>full_page_writes</A
+> 参数来关闭页面影像的功能。
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="disk-full.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="wal-intro.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>磁盘满导致的失效</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="admin.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>预写式日志（<SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+>）</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

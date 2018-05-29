@@ -1,0 +1,56 @@
+<HTML><HEAD><TITLE>yaz_search</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="YAZ Functions" HREF="ref.yaz.html"><LINK REL="PREVIOUS" TITLE="yaz_schema" HREF="function.yaz-schema.html"><LINK REL="NEXT" TITLE="yaz_set_option" HREF="function.yaz-set-option.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.yaz-schema.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.yaz-set-option.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.yaz-search"></A>yaz_search</H1><DIV CLASS="refnamediv"><A NAME="AEN120048"></A><P> (PHP 4 &#62;= 4.0.1)</P>yaz_search&nbsp;--&nbsp;Prepares for a search</DIV><DIV CLASS="refsect1"><A NAME="AEN120051"></A><H2>Description</H2>int <B CLASS="methodname">yaz_search</B> ( resource id, string type, string query)<BR></BR><P>&#13; <B CLASS="function">yaz_search()</B> prepares for a search on the
+connection given by parameter <TT CLASS="parameter"><I>id</I></TT>.
+The parameter <TT CLASS="parameter"><I>type</I></TT> represents the query type - only
+<TT CLASS="literal">"rpn"</TT> is supported now in which case the
+third argument specifies a Type-1 query in prefix query notation.
+Like <A HREF="function.yaz-connect.html"><B CLASS="function">yaz_connect()</B></A> this
+function is non-blocking and only prepares for a search to be
+executed later when <A HREF="function.yaz-wait.html"><B CLASS="function">yaz_wait()</B></A> is called.
+</P></DIV><DIV CLASS="refsect1"><A NAME="AEN120072"></A><H2>The RPN query</H2><P>&#13; The RPN query is a textual representation of the Type-1 query as
+defined by the Z39.50 standard. However, in the text representation
+as used by YAZ a prefix notation is used, that is the operater
+precedes the operands. The query string is a sequence of tokens where
+white space is ignored unless surrounded by double quotes. Tokens beginning
+with an at-character (<TT CLASS="literal">@</TT>) are considered operators,
+otherwise they are treated as search terms.
+</P><DIV CLASS="table"><A NAME="AEN120076"></A><P><B>表格 1. RPN Operators</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH WIDTH="33%" ALIGN="LEFT" VALIGN="MIDDLE">Construct</TH><TH WIDTH="67%" ALIGN="LEFT" VALIGN="MIDDLE">Description</TH></TR></THEAD><TBODY><TR><TD WIDTH="33%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">@and</TT> query1 query2</TD><TD WIDTH="67%" ALIGN="LEFT" VALIGN="MIDDLE">intersection of query1 and query2</TD></TR><TR><TD WIDTH="33%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">@or</TT> query1 query2</TD><TD WIDTH="67%" ALIGN="LEFT" VALIGN="MIDDLE">union of query1 and query2</TD></TR><TR><TD WIDTH="33%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">@not</TT> query1 query2</TD><TD WIDTH="67%" ALIGN="LEFT" VALIGN="MIDDLE">query1 and not query2</TD></TR><TR><TD WIDTH="33%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">@set</TT> name</TD><TD WIDTH="67%" ALIGN="LEFT" VALIGN="MIDDLE">result set reference</TD></TR><TR><TD WIDTH="33%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">@attrset</TT> set query</TD><TD WIDTH="67%" ALIGN="LEFT" VALIGN="MIDDLE">specifies attribute-set for query. This construction is only
+allowed once - in the beginning of the whole query</TD></TR><TR><TD WIDTH="33%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">@attr</TT> [set] type=value query</TD><TD WIDTH="67%" ALIGN="LEFT" VALIGN="MIDDLE">applies attribute to query. The type and value are
+integers specifying the attribute-type and attribute-value
+respectively. The set, if given, specifies the
+attribute-set.</TD></TR></TBODY></TABLE></DIV><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN120110"></A><P><B>例子 1. Query Examples</B></P><P>&#13; You can search for simple terms, like this
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">computer</PRE></TD></TR></TABLE>
+which matches documents where "computer" occur.
+No attributes are specified.
+</P><P>&#13; The Query
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">"knuth donald"</PRE></TD></TR></TABLE>
+matches documents where "knuth donald" occur (provided that the
+server supports phrase search).
+</P><P>&#13; This query applies two attributes for the same phrase.
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">@attr 1=1003 @attr 4=1 "knuth donald"</PRE></TD></TR></TABLE>
+First attribute is type 1 (Bib-1 use), attribute value is 1003
+(Author).
+Second attribute has is type 4 (structure), value 1 (phrase),
+so this should match documents where Donald Knuth is author.
+</P><P>&#13; This query
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">@and @or a b @not @or c d e</PRE></TD></TR></TABLE>
+would in infix notation look like
+<TT CLASS="literal">(a or b) and ((c or d) not e)</TT>.
+</P><P>&#13; Another, more complex, one:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">@attrset gils @and @attr 1=4 art @attr 1=2000 company</PRE></TD></TR></TABLE>
+The query as a whole uses the GILS attributeset. The query matches
+documents where <TT CLASS="literal">art</TT> occur in the title (GILS,BIB-1)
+and in which <TT CLASS="literal">company</TT> occur as Distributor (GILS).
+</P></DIV></TD></TR></TABLE><P>&#13; You can find information about attributes at the
+<A HREF="http://www.loc.gov/z3950/agency/defns/bib1.html" TARGET="_top">Z39.50 Maintenance Agency</A>
+site.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+If you would like to use a more friendly notation,
+use the CCL parser - functions <A HREF="function.yaz-ccl-conf.html"><B CLASS="function">yaz_ccl_conf()</B></A> and
+<A HREF="function.yaz-ccl-parse.html"><B CLASS="function">yaz_ccl_parse()</B></A>.
+</P></BLOCKQUOTE></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.yaz-schema.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.yaz-set-option.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">yaz_schema</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.yaz.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">yaz_set_option</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

@@ -1,0 +1,725 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>查询规划 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="服务器配置" HREF="runtime-config.html"><LINK REL="PREVIOUS" TITLE="预写式日志" HREF="runtime-config-wal.html"><LINK REL="NEXT" TITLE="错误报告和日志" HREF="runtime-config-logging.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="runtime-config-wal.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="runtime-config.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 17. 服务器配置</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="runtime-config.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="runtime-config-logging.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="RUNTIME-CONFIG-QUERY" >17.6. 查询规划</A
+></H1
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="RUNTIME-CONFIG-QUERY-ENABLE" >17.6.1. 规划器方法配置</A
+></H2
+><P
+>       这些配置参数提供了一个用于影响查询优化器选择的查询规划的原始的方法。
+       如果优化器为特定的查询选择的缺省规划并不是最优，
+       那么我们就可以通过使用这些配置参数强制优化器选择一个更好的规划来临时解决这个问题。
+       不过，永久地关闭这些设置几乎从不是个好主意。
+       更好的改善优化器选择的规划的方法包括调节
+       <A HREF="runtime-config-query.html#RUNTIME-CONFIG-QUERY-CONSTANTS" ><I
+>规划器开销常量</I
+></A
+>，
+       更频繁运行 <A HREF="sql-analyze.html" ><I
+>ANALYZE</I
+></A
+>，
+       增大配置参数 <A HREF="runtime-config-query.html#GUC-DEFAULT-STATISTICS-TARGET" >default_statistics_target</A
+> 的值，
+       以及使用 <TT
+CLASS="COMMAND"
+>ALTER TABLE SET STATISTICS</TT
+> 为某个字段增加收集的统计信息。
+      </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A NAME="GUC-ENABLE-BITMAPSCAN" ><TT
+CLASS="VARNAME"
+>enable_bitmapscan</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	打开或者关闭规划器对位图扫描规划类型的使用。缺省是 <TT
+CLASS="LITERAL"
+>on</TT
+>。
+       </P
+></DD
+><DT
+><A NAME="GUC-ENABLE-HASHAGG" ><TT
+CLASS="VARNAME"
+>enable_hashagg</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	打开或者关闭查询规划器对散列聚集规划类型的时候。缺省是 <TT
+CLASS="LITERAL"
+>on</TT
+>。
+       </P
+></DD
+><DT
+><A NAME="GUC-ENABLE-HASHJOIN" ><TT
+CLASS="VARNAME"
+>enable_hashjoin</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	打开或者关闭查询规划器对散列连接规划类型的使用。
+	缺省是 <TT
+CLASS="LITERAL"
+>on</TT
+>。
+       </P
+></DD
+><DT
+><A NAME="GUC-ENABLE-INDEXSCAN" ><TT
+CLASS="VARNAME"
+>enable_indexscan</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	打开或者关闭查询规划期对索引扫描规划类型的使用。
+	缺省是 <TT
+CLASS="LITERAL"
+>on</TT
+>。
+       </P
+></DD
+><DT
+><A NAME="GUC-ENABLE-MERGEJOIN" ><TT
+CLASS="VARNAME"
+>enable_mergejoin</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	打开或者关闭查询规划器对融合连接规划类型的使用。
+	缺省是 <TT
+CLASS="LITERAL"
+>on</TT
+>。
+       </P
+></DD
+><DT
+><A NAME="GUC-ENABLE-NESTLOOP" ><TT
+CLASS="VARNAME"
+>enable_nestloop</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	打开或者关闭查询规划器对嵌套循环连接规划类型的使用。
+	我们不可能完全消除嵌套循环连接，
+	但是把这个变量关闭就会让规划器在存在其它方法的时候优先选择其他的。	
+	缺省是 <TT
+CLASS="LITERAL"
+>on</TT
+>。
+       </P
+></DD
+><DT
+><A NAME="GUC-ENABLE-SEQSCAN" ><TT
+CLASS="VARNAME"
+>enable_seqscan</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	打开或者关闭查询规划器对顺序扫描规划类型的使用。
+	我们不可能完全消除顺序扫描，但是把这个变量关闭会让规划器在存在其它方法的时候优先选择其它的。
+	缺省是 <TT
+CLASS="LITERAL"
+>on</TT
+>。
+       </P
+></DD
+><DT
+><A NAME="GUC-ENABLE-SORT" ><TT
+CLASS="VARNAME"
+>enable_sort</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	打开或者关闭查询规划器使用明确的排序步骤。我们不可能完全消除明确的排序，
+	但是把这个变量关闭可以让规划器在存在其它方法的时候优先选择其它方法。
+	缺省是 <TT
+CLASS="LITERAL"
+>on</TT
+>。
+       </P
+></DD
+><DT
+><A NAME="GUC-ENABLE-TIDSCAN" ><TT
+CLASS="VARNAME"
+>enable_tidscan</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	打开或者关闭查询规划器对 <SPAN
+CLASS="ACRONYM"
+>TID</SPAN
+> 扫描规划类型的使用。
+	缺省是 <TT
+CLASS="LITERAL"
+>on</TT
+>。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="RUNTIME-CONFIG-QUERY-CONSTANTS" >17.6.2. 规划器开销常量</A
+></H2
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>     糟糕的是，现在还没有定义得很合理的方法来判断下面出现的<SPAN
+CLASS="QUOTE"
+>"开销"</SPAN
+>变量族的理想数值。
+     我们鼓励你做各种试验并分享你的发现。
+    </P
+></BLOCKQUOTE
+></DIV
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A NAME="GUC-EFFECTIVE-CACHE-SIZE" ><TT
+CLASS="VARNAME"
+>effective_cache_size</TT
+> (<TT
+CLASS="TYPE"
+>floating point</TT
+>)</A
+></DT
+><DD
+><P
+>	为规划器设置在一次索引扫描中可用的磁盘缓冲区的有效大小。
+	这个参数在计算一个索引的开销的预计值的时候会加以考虑；
+	一个更高的数值会导致很可能使用索引扫描，数值低了会更有可能选择顺序扫描。
+	在设置这个参数的时候，你还应该考虑 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	的数据文件会使用的的共享缓冲区和内核的磁盘缓冲。
+	还有，还要考虑预计会有的使用不同索引的并发查询数目，
+	因为它们必须共享可用的内存空间。这个参数对 PostgreSQL 分配的共享内存大小没有影响，
+	它也不会使用内核磁盘缓冲；它只用于估算。数值是用磁盘页来计算的，
+	通常每个页面是 8192 字节。缺省是 1000。
+
+       </P
+></DD
+><DT
+><A NAME="GUC-RANDOM-PAGE-COST" ><TT
+CLASS="VARNAME"
+>random_page_cost</TT
+> (<TT
+CLASS="TYPE"
+>floating point</TT
+>)</A
+></DT
+><DD
+><P
+>        设置规划器计算的一次非顺序磁盘页面抓取的开销。
+        这是以顺序磁盘页面抓取的开销的倍数计量的。
+        更高的数值令优化器更倾向于选择一次顺序扫描，低数值的时候则倾向于使用索引扫描。
+	缺省是四。
+       </P
+></DD
+><DT
+><A NAME="GUC-CPU-TUPLE-COST" ><TT
+CLASS="VARNAME"
+>cpu_tuple_cost</TT
+> (<TT
+CLASS="TYPE"
+>floating point</TT
+>)</A
+></DT
+><DD
+><P
+>        设置规划器预计在一次查询中处理一个数据行的开销。
+        这是以一次顺序页面抓取的开销的分数来计量的。
+	缺省是 0.01。
+       </P
+></DD
+><DT
+><A NAME="GUC-CPU-INDEX-TUPLE-COST" ><TT
+CLASS="VARNAME"
+>cpu_index_tuple_cost</TT
+> (<TT
+CLASS="TYPE"
+>floating point</TT
+>)</A
+></DT
+><DD
+><P
+>        设置在一次索引扫描中规划器计算出来的处理每条索引行的开销。
+        这是以一次顺序页面抓取的开销的分数来计量的。缺省是 0.001。
+       </P
+></DD
+><DT
+><A NAME="GUC-CPU-OPERATOR-COST" ><TT
+CLASS="VARNAME"
+>cpu_operator_cost</TT
+> (<TT
+CLASS="TYPE"
+>floating point</TT
+>)</A
+></DT
+><DD
+><P
+>        设置规划器计算出来的处理一条<TT
+CLASS="LITERAL"
+>WHERE</TT
+>子句中的每个操作符的开销。
+        这是以一次顺序页面抓取的开销的分数来计量的。缺省是 0.0025。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="RUNTIME-CONFIG-QUERY-GEQO" >17.6.3. 基因查询优化器</A
+></H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A NAME="GUC-GEQO" ><TT
+CLASS="VARNAME"
+>geqo</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>        允许或禁止基因查询优化，这是一种试图不通过穷举搜索来实现查询规划的算法。缺省是允许。
+	<TT
+CLASS="VARNAME"
+>geqo_threshold</TT
+> 变量提供了一种为特定类别的查询关闭 GEQO 的粒度更好的方法。
+       </P
+></DD
+><DT
+><A NAME="GUC-GEQO-THRESHOLD" ><TT
+CLASS="VARNAME"
+>geqo_threshold</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>        只有当涉及的<TT
+CLASS="LITERAL"
+>FROM</TT
+>关系数量至少有这么多个的时候，才使用基因查询优化。
+        （请注意一个外<TT
+CLASS="LITERAL"
+>JOIN</TT
+>构造只算做一个<TT
+CLASS="LITERAL"
+>FROM</TT
+>项。）
+        缺省是 12，对于数量小于此数的查询，也许使用判定性的穷举搜索更有效。
+        但是对于有许多表的查询，规划器做判断要花很多时间。
+       </P
+></DD
+><DT
+><A NAME="GUC-GEQO-EFFORT" ><TT
+CLASS="VARNAME"
+>geqo_effort</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	控制 GEQO 里规划时间和查询规划的有效性之间的平衡。
+	这个变量必须事一个范围从 1 到 10 的整数。缺省值是 5。
+	大的数值增加花在进行查询规划上面的时间，但是也很可能会提高选中更有效的查询规划的几率。
+       </P
+><P
+>	<TT
+CLASS="VARNAME"
+>geqo_effort</TT
+> 实际上并没有直接干什么事情；
+	只是用于计算其它那些影响 GEQO 行为的变量的缺省值（在下面描述）。
+	如果你愿意，你可以手工设置其它参数。
+       </P
+></DD
+><DT
+><A NAME="GUC-GEQO-POOL-SIZE" ><TT
+CLASS="VARNAME"
+>geqo_pool_size</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	控制 GEQ0 使用的池大小。池大小是一个全体中的个体的数量。
+	它必须至少是二，并且有用的数值通常在 100 和 1000 之间。
+	如果把它设置为零（缺省设置），那么就会基于 <TT
+CLASS="VARNAME"
+>geqo_effort</TT
+> 和查询中表的数量选取一个合适的缺省。
+       </P
+></DD
+><DT
+><A NAME="GUC-GEQO-GENERATIONS" ><TT
+CLASS="VARNAME"
+>geqo_generations</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	控制 GEQO 使用的子代的数目。子代声明算法的迭代的数目。
+	它必须至少是一，有用的值范围和池的大小相同。如果设置为零（缺省），那么将基于 <TT
+CLASS="VARNAME"
+>geqo_pool_size</TT
+>
+	选取合适的缺省。
+       </P
+></DD
+><DT
+><A NAME="GUC-GEQO-SELECTION-BIAS" ><TT
+CLASS="VARNAME"
+>geqo_selection_bias</TT
+> (<TT
+CLASS="TYPE"
+>floating point</TT
+>)</A
+></DT
+><DD
+><P
+>	控制 GEQO 使用的选择性偏好。选择性偏好是在一个种群中的选择性压力。
+	数值可以是 1.5 到 2.0 之间；后者是缺省。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="RUNTIME-CONFIG-QUERY-OTHER" >17.6.4. 其它规划器选项</A
+></H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A NAME="GUC-DEFAULT-STATISTICS-TARGET" ><TT
+CLASS="VARNAME"
+>default_statistics_target</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>        为没有用 <TT
+CLASS="COMMAND"
+>ALTER TABLE SET STATISTICS</TT
+> 设置字段相关目标的表中其它字段设置缺省统计目标。
+	更大的数值增加了 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 所需要的时间，但是可能会改善规划器的估计质量。缺省值是 10。
+	有关 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的查询规划器使用的统计的更多信息，请参考 <A HREF="planner-stats.html" >Section 13.2</A
+>。
+       </P
+></DD
+><DT
+><A NAME="GUC-CONSTRAINT-EXCLUSION" ><TT
+CLASS="VARNAME"
+>constraint_exclusion</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	打开或者关闭查询规划器使用表约束限制表访问的特性。缺省是<TT
+CLASS="LITERAL"
+>off</TT
+>。
+       </P
+><P
+>	如果这个参数是 <TT
+CLASS="LITERAL"
+>on</TT
+>，那么规划器用查询条件和 CHECK 约束进行比较，
+	并且在条件和约束冲突的情况下，忽略对表的扫描。（目前，在继承扫描的时候，这些事情只是为子表进行处理。）
+	比如：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE parent(key integer, ...);
+CREATE TABLE child1000(check (key between 1000 and 1999)) INHERITS(parent);
+CREATE TABLE child2000(check (key between 2000 and 2999)) INHERITS(parent);
+...
+SELECT * FROM parent WHERE key = 2400;</PRE
+><P>
+
+	在打开约束排除的时候，这个 SELECT 将完全不会扫描 <TT
+CLASS="STRUCTNAME"
+>child1000</TT
+>。
+	这样可以在使用继承制作分区表的时候提高性能。
+       </P
+><P
+>	目前，<TT
+CLASS="VARNAME"
+>constraint_exclusion</TT
+> 缺省是 <TT
+CLASS="LITERAL"
+>off</TT
+>，
+	因为如果查询规划被缓冲了，那么就会有不正确的结果的风险 &mdash; 如果一个表约束改变或者删除了，
+	那么前面生成的查询计划现在就可能是错的了，而又没有内置的机制强制重新规划。
+	（这个缺点可能会在将来的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本得到修改。）
+	另外一个把它关闭的原因是约束检查相对来说开销还是比较大的，
+	在很多环境下它并不能节约开销。只是在你实际上使用了从设计上就利用这个特性的优点的表分区的场合下，
+	我们才推荐打开它。
+       </P
+><P
+>	参考 <A HREF="ddl-partitioning.html" >Section 5.9</A
+> 获取有关使用约束排除和分区的更多信息。
+       </P
+></DD
+><DT
+><A NAME="GUC-FROM-COLLAPSE-LIMIT" ><TT
+CLASS="VARNAME"
+>from_collapse_limit</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>        如果生成的 <TT
+CLASS="LITERAL"
+>FROM</TT
+> 列表不超过这个限制的项数，规划器将把子查询融合到上层查询。
+        小的数值降低规划的时间，但是可能会生成差些的查询计划。
+	缺省是 8。通常，把它限制在小于 <A HREF="runtime-config-query.html#GUC-GEQO-THRESHOLD" >geqo_threshold</A
+> 的数值是比较明智的。
+       </P
+></DD
+><DT
+><A NAME="GUC-JOIN-COLLAPSE-LIMIT" ><TT
+CLASS="VARNAME"
+>join_collapse_limit</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>        如果得出的列表不超过这个数目的项，那么规划器将把明确的内 <TT
+CLASS="LITERAL"
+>JOIN</TT
+> 构造抹平到 <TT
+CLASS="LITERAL"
+>FROM</TT
+> 列表项中。
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 7.4 以前，通过 <TT
+CLASS="LITERAL"
+>JOIN</TT
+> 构造声明的连接绝对不会被查询规划期重排。
+	现在的查询规划器已经改进过了，这样，用这种形式写出来的内层连接就可以重排了；
+	这个配置参数控制这种重排的程度。
+        </P><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	  目前，用 <TT
+CLASS="LITERAL"
+>JOIN</TT
+> 构造声明的外联接的顺序从来不会查询规划器被调整；
+	  因此，<TT
+CLASS="VARNAME"
+>join_collapse_limit</TT
+> 在这个行为上没有效果。
+	  在未来的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本里，规划器可能会改进某些外联接类型的重排。
+         </P
+></BLOCKQUOTE
+></DIV
+><P>
+       </P
+><P
+>        缺省时，这个值设置为和 <TT
+CLASS="VARNAME"
+>from_collapse_limit</TT
+> 相同，
+	这个值适合大多数场合。把它设置为 1 则避免任何内 <TT
+CLASS="LITERAL"
+>JOIN</TT
+> 的融合，就可以使用明确的 <TT
+CLASS="LITERAL"
+>JOIN</TT
+>
+        语法来控制连接顺序。查询优化器并不是总能选取最优的联接顺序；高级用户可以选择暂时把这个变量设置为 1，
+	然后明确地声明他们需要的联接顺序。把这个变量设置为 1 的另外一个后果是查询规划器会表现得更像
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>  7.3 查询规划器，可能对一些用户做向下兼容很有用。
+       </P
+><P
+>	把这个数值设置为 1 和 <TT
+CLASS="VARNAME"
+>from_collapse_limit</TT
+> 之间可能对于在规划时间和选取的规划的质量之间有个平衡
+	（越高的数值生成越好的规划）。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="runtime-config-wal.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="runtime-config-logging.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >预写式日志</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="runtime-config.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >错误报告和日志</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

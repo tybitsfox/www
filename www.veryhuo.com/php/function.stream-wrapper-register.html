@@ -1,0 +1,183 @@
+<HTML><HEAD><TITLE>stream_wrapper_register</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Stream Functions" HREF="ref.stream.html"><LINK REL="PREVIOUS" TITLE="stream_socket_server" HREF="function.stream-socket-server.html"><LINK REL="NEXT" TITLE="字符串处理函数库" HREF="ref.strings.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.stream-socket-server.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="ref.strings.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.stream-wrapper-register"></A>stream_wrapper_register</H1><DIV CLASS="refnamediv"><A NAME="AEN107188"></A><P> (PHP 4 &#62;= 4.3.2)</P>stream_wrapper_register&nbsp;--&nbsp;Register a URL wrapper implemented as a PHP class</DIV><DIV CLASS="refsect1"><A NAME="AEN107191"></A><H2>Description</H2>bool <B CLASS="methodname">stream_wrapper_register</B> ( string protocol, string classname)<BR></BR><P>&#13; <B CLASS="function">stream_wrapper_register()</B> allows you to implement
+your own protocol handlers and streams for use with all the other
+filesystem functions (such as <A HREF="function.fopen.html"><B CLASS="function">fopen()</B></A>,
+<A HREF="function.fread.html"><B CLASS="function">fread()</B></A> etc.).
+</P><P>&#13; To implement a wrapper, you need to define a class with a number of
+member functions, as defined below. When someone fopens your stream,
+PHP will create an instance of <TT CLASS="parameter"><I>classname</I></TT> and
+then call methods on that instance. You must implement the methods
+exactly as described below - doing otherwise will lead to undefined
+behaviour.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+As of <TT CLASS="literal">PHP 5.0.0</TT> the instance of
+<TT CLASS="parameter"><I>classname</I></TT> will be populated with a
+<TT CLASS="parameter"><I>context</I></TT> property referencing a
+<TT CLASS="literal">Context Resource</TT> which may be accessed
+with <A HREF="function.stream-context-get-options.html"><B CLASS="function">stream_context_get_options()</B></A>.
+If no context was passed to the stream creation function,
+<TT CLASS="parameter"><I>context</I></TT> will be set to <TT CLASS="constant"><B>NULL</B></TT>.
+</P></BLOCKQUOTE></DIV><P>&#13; <B CLASS="function">stream_wrapper_register()</B> will return <TT CLASS="constant"><B>FALSE</B></TT> if the
+<TT CLASS="parameter"><I>protocol</I></TT> already has a handler.
+</P>bool <B CLASS="methodname">stream_open</B> ( string path, string mode, int options, string opened_path)<BR></BR><P>&#13; This method is called immediately after your stream object is
+created. <TT CLASS="parameter"><I>path</I></TT> specifies the URL that was
+passed to <A HREF="function.fopen.html"><B CLASS="function">fopen()</B></A> and that this object is
+expected to retrieve. You can use <A HREF="function.parse-url.html"><B CLASS="function">parse_url()</B></A>
+to break it apart.
+</P><P>&#13; <TT CLASS="parameter"><I>mode</I></TT> is the mode used to open the file,
+as detailed for <A HREF="function.fopen.html"><B CLASS="function">fopen()</B></A>. You are responsible
+for checking that <TT CLASS="parameter"><I>mode</I></TT> is valid for the
+<TT CLASS="parameter"><I>path</I></TT> requested.
+</P><P>&#13; <TT CLASS="parameter"><I>options</I></TT> holds additional flags set
+by the streams API. It can hold one or more of the following
+values OR'd together.
+<DIV CLASS="informaltable"><A NAME="AEN107247"></A><P></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">Flag</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Description</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">STREAM_USE_PATH</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">If <TT CLASS="parameter"><I>path</I></TT> is relative, search
+for the resource using the include_path.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">STREAM_REPORT_ERRORS</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">If this flag is set, you are responsible for raising
+errors using <A HREF="function.trigger-error.html"><B CLASS="function">trigger_error()</B></A> during
+opening of the stream. If this flag is not set, you
+should not raise any errors.
+</TD></TR></TBODY></TABLE><P></P></DIV>
+</P><P>&#13; If the <TT CLASS="parameter"><I>path</I></TT> is opened successfully,
+and STREAM_USE_PATH is set in <TT CLASS="parameter"><I>options</I></TT>,
+you should set <TT CLASS="parameter"><I>opened_path</I></TT> to the full
+path of the file/resource that was actually opened.
+</P><P>&#13; If the requested resource was opened successfully, you should
+return <TT CLASS="constant"><B>TRUE</B></TT>, otherwise you should return <TT CLASS="constant"><B>FALSE</B></TT>
+</P>void <B CLASS="methodname">stream_close</B> ( void )<BR></BR><P>&#13; This method is called when the stream is closed, using
+<A HREF="function.fclose.html"><B CLASS="function">fclose()</B></A>. You must release any resources
+that were locked or allocated by the stream.
+</P>string <B CLASS="methodname">stream_read</B> ( int count)<BR></BR><P>&#13; This method is called in response to <A HREF="function.fread.html"><B CLASS="function">fread()</B></A>
+and <A HREF="function.fgets.html"><B CLASS="function">fgets()</B></A> calls on the stream. You
+must return up-to <TT CLASS="parameter"><I>count</I></TT> bytes of data
+from the current read/write position as a string.
+If there are less than <TT CLASS="parameter"><I>count</I></TT>
+bytes available, return as many as are available. If no
+more data is available, return either <TT CLASS="constant"><B>FALSE</B></TT> or an
+empty string.
+You must also update the read/write position of the stream
+by the number of bytes that were successfully read.
+</P>int <B CLASS="methodname">stream_write</B> ( string data)<BR></BR><P>&#13; This method is called in response to <A HREF="function.fwrite.html"><B CLASS="function">fwrite()</B></A>
+calls on the stream. You should store <TT CLASS="parameter"><I>data</I></TT>
+into the underlying storage used by your stream. If there is not
+enough room, try to store as many bytes as possible.
+You should return the number of bytes that were successfully
+stored in the stream, or 0 if none could be stored.
+You must also update the read/write position of the stream
+by the number of bytes that were successfully written.
+</P>bool <B CLASS="methodname">stream_eof</B> ( void )<BR></BR><P>&#13; This method is called in response to <A HREF="function.feof.html"><B CLASS="function">feof()</B></A>
+calls on the stream. You should return <TT CLASS="constant"><B>TRUE</B></TT> if the read/write
+position is at the end of the stream and if no more data is available
+to be read, or <TT CLASS="constant"><B>FALSE</B></TT> otherwise.
+</P>int <B CLASS="methodname">stream_tell</B> ( void )<BR></BR><P>&#13; This method is called in response to <A HREF="function.ftell.html"><B CLASS="function">ftell()</B></A>
+calls on the stream. You should return the current read/write
+position of the stream.
+</P>bool <B CLASS="methodname">stream_seek</B> ( int offset, int whence)<BR></BR><P>&#13; This method is called in response to <A HREF="function.fseek.html"><B CLASS="function">fseek()</B></A>
+calls on the stream. You should update the read/write position
+of the stream according to <TT CLASS="parameter"><I>offset</I></TT> and
+<TT CLASS="parameter"><I>whence</I></TT>. See <A HREF="function.fseek.html"><B CLASS="function">fseek()</B></A>
+for more information about these parameters.
+Return <TT CLASS="constant"><B>TRUE</B></TT> if the position was updated, <TT CLASS="constant"><B>FALSE</B></TT> otherwise.
+</P>bool <B CLASS="methodname">stream_flush</B> ( void )<BR></BR><P>&#13; This method is called in response to <A HREF="function.fflush.html"><B CLASS="function">fflush()</B></A>
+calls on the stream. If you have cached data in your stream
+but not yet stored it into the underlying storage, you should
+do so now.
+Return <TT CLASS="constant"><B>TRUE</B></TT> if the cached data was successfully stored (or
+if there was no data to store), or <TT CLASS="constant"><B>FALSE</B></TT> if the data could
+not be stored.
+</P>array <B CLASS="methodname">stream_stat</B> ( void )<BR></BR><P>&#13; This method is called in response to <A HREF="function.fstat.html"><B CLASS="function">fstat()</B></A>
+calls on the stream and should return an array containing the same
+values as appropriate for the stream.
+</P>bool <B CLASS="methodname">unlink</B> ( string path)<BR></BR><P>&#13; This method is called in response to <A HREF="function.unlink.html"><B CLASS="function">unlink()</B></A>
+calls on URL paths associated with the wrapper and should attempt
+to delete the item specified by <TT CLASS="parameter"><I>path</I></TT>.
+It should return <TT CLASS="constant"><B>TRUE</B></TT> on success or <TT CLASS="constant"><B>FALSE</B></TT> on failure.
+In order for the appropriate error message to be returned,
+do not define this method if your wrapper does not support unlinking.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Userspace wrapper unlink method is not supported prior to
+<TT CLASS="literal">PHP 5.0.0</TT>.
+</P></BLOCKQUOTE></DIV>bool <B CLASS="methodname">rename</B> ( string path_from, string path_to)<BR></BR><P>&#13; This method is called in response to <A HREF="function.rename.html"><B CLASS="function">rename()</B></A>
+calls on URL paths associated with the wrapper and should attempt
+to rename the item specified by <TT CLASS="parameter"><I>path_from</I></TT>
+to the specification given by <TT CLASS="parameter"><I>path_to</I></TT>.
+It should return <TT CLASS="constant"><B>TRUE</B></TT> on success or <TT CLASS="constant"><B>FALSE</B></TT> on failure.
+In order for the appropriate error message to be returned,
+do not define this method if your wrapper does not support renaming.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Userspace wrapper rename method is not supported prior to
+<TT CLASS="literal">PHP 5.0.0</TT>.
+</P></BLOCKQUOTE></DIV>bool <B CLASS="methodname">mkdir</B> ( string path, int mode, int options)<BR></BR><P>&#13; This method is called in response to <A HREF="function.mkdir.html"><B CLASS="function">mkdir()</B></A>
+calls on URL paths associated with the wrapper and should attempt
+to create the directory specified by <TT CLASS="parameter"><I>path</I></TT>.
+It should return <TT CLASS="constant"><B>TRUE</B></TT> on success or <TT CLASS="constant"><B>FALSE</B></TT> on failure.
+In order for the appropriate error message to be returned,
+do not define this method if your wrapper does not support
+creating directories. Posible values for <TT CLASS="parameter"><I>options</I></TT>
+include <TT CLASS="constant"><B>STREAM_REPORT_ERRORS</B></TT> and
+<TT CLASS="constant"><B>STREAM_MKDIR_RECURSIVE</B></TT>.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Userspace wrapper mkdir method is not supported prior to
+<TT CLASS="literal">PHP 5.0.0</TT>.
+</P></BLOCKQUOTE></DIV>bool <B CLASS="methodname">rmdir</B> ( string path, int options)<BR></BR><P>&#13; This method is called in response to <A HREF="function.rmdir.html"><B CLASS="function">rmdir()</B></A>
+calls on URL paths associated with the wrapper and should attempt
+to remove the directory specified by <TT CLASS="parameter"><I>path</I></TT>.
+It should return <TT CLASS="constant"><B>TRUE</B></TT> on success or <TT CLASS="constant"><B>FALSE</B></TT> on failure.
+In order for the appropriate error message to be returned,
+do not define this method if your wrapper does not support
+removing directories. Possible values for <TT CLASS="parameter"><I>options</I></TT>
+include <TT CLASS="constant"><B>STREAM_REPORT_ERRORS</B></TT>.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Userspace wrapper rmdir method is not supported prior to
+<TT CLASS="literal">PHP 5.0.0</TT>.
+</P></BLOCKQUOTE></DIV>bool <B CLASS="methodname">dir_opendir</B> ( string path, int options)<BR></BR><P>&#13; This method is called immediately when your stream object is created for
+examining directory contents with <A HREF="function.opendir.html"><B CLASS="function">opendir()</B></A>.
+<TT CLASS="parameter"><I>path</I></TT> specifies the URL that was
+passed to <A HREF="function.opendir.html"><B CLASS="function">opendir()</B></A> and that this object is
+expected to explore. You can use <A HREF="function.parse-url.html"><B CLASS="function">parse_url()</B></A>
+to break it apart.
+</P>array <B CLASS="methodname">url_stat</B> ( string path, int flags)<BR></BR><P>&#13; This method is called in response to <A HREF="function.stat.html"><B CLASS="function">stat()</B></A>
+calls on the URL paths associated with the wrapper and should
+return as many elements in common with the system function as
+possible. Unknown or unavailable values should be set to a
+rational value (usually <TT CLASS="constant"><B>0</B></TT>).
+</P><P>&#13; <TT CLASS="parameter"><I>flags</I></TT> holds additional flags set
+by the streams API. It can hold one or more of the following
+values OR'd together.
+<DIV CLASS="informaltable"><A NAME="AEN107442"></A><P></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">Flag</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Description</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">STREAM_URL_STAT_LINK</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; For resources with the ability to link to other resource
+(such as an HTTP Location: forward, or a filesystem
+symlink). This flag specified that only information
+about the link itself should be returned. Not the
+resource pointed to by the link. This flag is set in
+response to calls to <A HREF="function.lstat.html"><B CLASS="function">lstat()</B></A>,
+<A HREF="function.is-link.html"><B CLASS="function">is_link()</B></A>, or <A HREF="function.filetype.html"><B CLASS="function">filetype()</B></A>.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">STREAM_URL_STAT_QUIET</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">If this flag is set, your wrapper should not raise any
+errors. If this flag is not set, you are responsible for
+reporting errors using the <A HREF="function.trigger-error.html"><B CLASS="function">trigger_error()</B></A>
+function during stating of the path.
+</TD></TR></TBODY></TABLE><P></P></DIV>
+</P>string <B CLASS="methodname">dir_readdir</B> ( void )<BR></BR><P>&#13; This method is called in response to <A HREF="function.readdir.html"><B CLASS="function">readdir()</B></A>
+and should return a string representing the next filename in the
+location opened by <B CLASS="function">dir_opendir()</B>.
+</P>bool <B CLASS="methodname">dir_rewinddir</B> ( void )<BR></BR><P>&#13; This method is called in response to <A HREF="function.rewinddir.html"><B CLASS="function">rewinddir()</B></A>
+and should reset the output generated by <B CLASS="function">dir_readdir()</B>.
+i.e.: The next call to <B CLASS="function">dir_readdir()</B> should return
+the first entry in the location returned by <B CLASS="function">dir_opendir()</B>.
+</P>bool <B CLASS="methodname">dir_closedir</B> ( void )<BR></BR><P>&#13; This method is called in response to <A HREF="function.closedir.html"><B CLASS="function">closedir()</B></A>.
+You should release any resources which were locked or allocated during
+the opening and use of the directory stream.
+</P><P>&#13; The example below implements a var:// protocol handler that
+allows read/write access to a named global variable using
+standard filesystem stream functions such as <A HREF="function.fread.html"><B CLASS="function">fread()</B></A>.
+The var:// protocol implemented below, given the URL
+"var://foo" will read/write data to/from $GLOBALS["foo"].
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN107483"></A><P><B>例子 1. A Stream for reading/writing global variables</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /><br /></font><font color="#007700">class </font><font color="#0000BB">VariableStream </font><font color="#007700">{<br />&nbsp;&nbsp;&nbsp;&nbsp;var </font><font color="#0000BB">$position</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;var </font><font color="#0000BB">$varname</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;<br />&nbsp;&nbsp;&nbsp;&nbsp;function </font><font color="#0000BB">stream_open</font><font color="#007700">(</font><font color="#0000BB">$path</font><font color="#007700">, </font><font color="#0000BB">$mode</font><font color="#007700">, </font><font color="#0000BB">$options</font><font color="#007700">, &amp;</font><font color="#0000BB">$opened_path</font><font color="#007700">) <br />&nbsp;&nbsp;&nbsp;&nbsp;{<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$url </font><font color="#007700">= </font><font color="#0000BB">parse_url</font><font color="#007700">(</font><font color="#0000BB">$path</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">varname </font><font color="#007700">= </font><font color="#0000BB">$url</font><font color="#007700">[</font><font color="#DD0000">"host"</font><font color="#007700">];<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">position </font><font color="#007700">= </font><font color="#0000BB">0</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">true</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;function </font><font color="#0000BB">stream_read</font><font color="#007700">(</font><font color="#0000BB">$count</font><font color="#007700">) <br />&nbsp;&nbsp;&nbsp;&nbsp;{<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$ret </font><font color="#007700">= </font><font color="#0000BB">substr</font><font color="#007700">(</font><font color="#0000BB">$GLOBALS</font><font color="#007700">[</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">varname</font><font color="#007700">], </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">position</font><font color="#007700">, </font><font color="#0000BB">$count</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">position </font><font color="#007700">+= </font><font color="#0000BB">strlen</font><font color="#007700">(</font><font color="#0000BB">$ret</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">$ret</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;function </font><font color="#0000BB">stream_write</font><font color="#007700">(</font><font color="#0000BB">$data</font><font color="#007700">) <br />&nbsp;&nbsp;&nbsp;&nbsp;{<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$left </font><font color="#007700">= </font><font color="#0000BB">substr</font><font color="#007700">(</font><font color="#0000BB">$GLOBALS</font><font color="#007700">[</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">varname</font><font color="#007700">], </font><font color="#0000BB">0</font><font color="#007700">, </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">position</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$right </font><font color="#007700">= </font><font color="#0000BB">substr</font><font color="#007700">(</font><font color="#0000BB">$GLOBALS</font><font color="#007700">[</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">varname</font><font color="#007700">], </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">position </font><font color="#007700">+ </font><font color="#0000BB">strlen</font><font color="#007700">(</font><font color="#0000BB">$data</font><font color="#007700">));<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$GLOBALS</font><font color="#007700">[</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">varname</font><font color="#007700">] = </font><font color="#0000BB">$left </font><font color="#007700">. </font><font color="#0000BB">$data </font><font color="#007700">. </font><font color="#0000BB">$right</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">position </font><font color="#007700">+= </font><font color="#0000BB">strlen</font><font color="#007700">(</font><font color="#0000BB">$data</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">strlen</font><font color="#007700">(</font><font color="#0000BB">$data</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;function </font><font color="#0000BB">stream_tell</font><font color="#007700">() <br />&nbsp;&nbsp;&nbsp;&nbsp;{<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">position</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;function </font><font color="#0000BB">stream_eof</font><font color="#007700">() <br />&nbsp;&nbsp;&nbsp;&nbsp;{<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">position </font><font color="#007700">&gt;= </font><font color="#0000BB">strlen</font><font color="#007700">(</font><font color="#0000BB">$GLOBALS</font><font color="#007700">[</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">varname</font><font color="#007700">]);<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;function </font><font color="#0000BB">stream_seek</font><font color="#007700">(</font><font color="#0000BB">$offset</font><font color="#007700">, </font><font color="#0000BB">$whence</font><font color="#007700">) <br />&nbsp;&nbsp;&nbsp;&nbsp;{<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;switch (</font><font color="#0000BB">$whence</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case </font><font color="#0000BB">SEEK_SET</font><font color="#007700">:<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (</font><font color="#0000BB">$offset </font><font color="#007700">&lt; </font><font color="#0000BB">strlen</font><font color="#007700">(</font><font color="#0000BB">$GLOBALS</font><font color="#007700">[</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">varname</font><font color="#007700">]) &amp;&amp; </font><font color="#0000BB">$offset </font><font color="#007700">&gt;= </font><font color="#0000BB">0</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">position </font><font color="#007700">= </font><font color="#0000BB">$offset</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">true</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} else {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">false</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case </font><font color="#0000BB">SEEK_CUR</font><font color="#007700">:<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (</font><font color="#0000BB">$offset </font><font color="#007700">&gt;= </font><font color="#0000BB">0</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">position </font><font color="#007700">+= </font><font color="#0000BB">$offset</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">true</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} else {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">false</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case </font><font color="#0000BB">SEEK_END</font><font color="#007700">:<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (</font><font color="#0000BB">strlen</font><font color="#007700">(</font><font color="#0000BB">$GLOBALS</font><font color="#007700">[</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">varname</font><font color="#007700">]) + </font><font color="#0000BB">$offset </font><font color="#007700">&gt;= </font><font color="#0000BB">0</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">position </font><font color="#007700">= </font><font color="#0000BB">strlen</font><font color="#007700">(</font><font color="#0000BB">$GLOBALS</font><font color="#007700">[</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">varname</font><font color="#007700">]) + </font><font color="#0000BB">$offset</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">true</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} else {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">false</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default:<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">false</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />}<br /><br /></font><font color="#0000BB">stream_wrapper_register</font><font color="#007700">(</font><font color="#DD0000">"var"</font><font color="#007700">, </font><font color="#DD0000">"VariableStream"</font><font color="#007700">)<br />&nbsp;&nbsp;&nbsp;&nbsp;or die(</font><font color="#DD0000">"Failed to register protocol"</font><font color="#007700">);<br /><br /></font><font color="#0000BB">$myvar </font><font color="#007700">= </font><font color="#DD0000">""</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;<br /></font><font color="#0000BB">$fp </font><font color="#007700">= </font><font color="#0000BB">fopen</font><font color="#007700">(</font><font color="#DD0000">"var://myvar"</font><font color="#007700">, </font><font color="#DD0000">"r+"</font><font color="#007700">);<br /><br /></font><font color="#0000BB">fwrite</font><font color="#007700">(</font><font color="#0000BB">$fp</font><font color="#007700">, </font><font color="#DD0000">"line1\n"</font><font color="#007700">);<br /></font><font color="#0000BB">fwrite</font><font color="#007700">(</font><font color="#0000BB">$fp</font><font color="#007700">, </font><font color="#DD0000">"line2\n"</font><font color="#007700">);<br /></font><font color="#0000BB">fwrite</font><font color="#007700">(</font><font color="#0000BB">$fp</font><font color="#007700">, </font><font color="#DD0000">"line3\n"</font><font color="#007700">);<br /><br /></font><font color="#0000BB">rewind</font><font color="#007700">(</font><font color="#0000BB">$fp</font><font color="#007700">);<br />while (!</font><font color="#0000BB">feof</font><font color="#007700">(</font><font color="#0000BB">$fp</font><font color="#007700">)) {<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#0000BB">fgets</font><font color="#007700">(</font><font color="#0000BB">$fp</font><font color="#007700">);<br />}<br /></font><font color="#0000BB">fclose</font><font color="#007700">(</font><font color="#0000BB">$fp</font><font color="#007700">);<br /></font><font color="#0000BB">var_dump</font><font color="#007700">(</font><font color="#0000BB">$myvar</font><font color="#007700">);<br /><br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.stream-socket-server.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="ref.strings.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">stream_socket_server</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.stream.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">字符串处理函数库</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

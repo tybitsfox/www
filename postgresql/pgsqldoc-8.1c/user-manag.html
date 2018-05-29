@@ -1,0 +1,404 @@
+<HTML
+><HEAD
+><TITLE
+>数据库角色和权限</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="服务器管理"
+HREF="admin.html"><LINK
+REL="PREVIOUS"
+TITLE="短选项"
+HREF="runtime-config-short.html"><LINK
+REL="NEXT"
+TITLE="角色属性"
+HREF="role-attributes.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="runtime-config-short.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="runtime-config.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="managing-databases.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="role-attributes.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="USER-MANAG"
+>Chapter 18. 数据库角色和权限</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>18.1. <A
+HREF="user-manag.html#DATABASE-ROLES"
+>数据库角色</A
+></DT
+><DT
+>18.2. <A
+HREF="role-attributes.html"
+>角色属性</A
+></DT
+><DT
+>18.3. <A
+HREF="privileges.html"
+>权限</A
+></DT
+><DT
+>18.4. <A
+HREF="role-membership.html"
+>角色成员</A
+></DT
+><DT
+>18.5. <A
+HREF="perm-functions.html"
+>函数和触发器</A
+></DT
+></DL
+></DIV
+><P
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 使用<I
+CLASS="FIRSTTERM"
+>角色</I
+>的概念管理数据库访问权限。
+	根据角色自身的设置不同，一个角色可以看做是一个数据库用户，或者一组数据库用户。
+	角色可以拥有数据库对象（比如，表）以及可以把这些对象上的权限赋予其它角色，
+	以控制谁拥有访问哪些对象的权限。另外，我们也可以把一个角色的<I
+CLASS="FIRSTTERM"
+>成员</I
+>
+	（membership）权限赋予其它角色，这样就允许成员角色使用它被赋予成员权限的角色之权限。
+ </P
+><P
+>	角色的概念替换了<SPAN
+CLASS="QUOTE"
+>"用户"</SPAN
+>和<SPAN
+CLASS="QUOTE"
+>"组"</SPAN
+>。
+	在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本 8.1 之前，用户和组是独立类型的记录，
+	但现在它们只是角色。任何角色都可以是一个用户，一个组，或者两者皆可。
+ </P
+><P
+>&#13;  本章描述如何创建和管理角色，以及介绍权限系统。
+  更多各种各样数据库对象和其权限效果的信息可以在 <A
+HREF="ddl.html"
+>Chapter 5</A
+> 找到。
+ </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="DATABASE-ROLES"
+>18.1. 数据库角色</A
+></H1
+><A
+NAME="AEN20953"
+></A
+><A
+NAME="AEN20955"
+></A
+><A
+NAME="AEN20957"
+></A
+><A
+NAME="AEN20959"
+></A
+><P
+>	数据库角色从概念上与操作系统用户是完全无关的。
+	在实际使用中把它们对应起来可能比较方便，但不是必须的。
+	数据库角色在整个数据库集群中是全局的（而不是每个库不同）。
+	要创建一个角色，使用 SQL 命令 <A
+HREF="sql-createrole.html"
+><I
+>CREATE ROLE</I
+></A
+>：
+</P><PRE
+CLASS="SYNOPSIS"
+>CREATE ROLE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>;</PRE
+><P>
+   <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> 遵循 SQL 标识的规则：
+        要么完全没有特殊字符，要么用双引号包围（实际上你通常会给命令增加额外的选项，比如 <TT
+CLASS="LITERAL"
+>LOGIN</TT
+>）。
+        要删除一个现有角色，使用类似的命令
+	<A
+HREF="sql-droprole.html"
+><I
+>DROP ROLE</I
+></A
+>：
+</P><PRE
+CLASS="SYNOPSIS"
+>DROP ROLE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>;</PRE
+><P>
+  </P
+><A
+NAME="AEN20970"
+></A
+><A
+NAME="AEN20972"
+></A
+><P
+>	为了方便，程序 <A
+HREF="app-createuser.html"
+><SPAN
+CLASS="APPLICATION"
+>createuser</SPAN
+></A
+> 和
+	<A
+HREF="app-dropuser.html"
+><SPAN
+CLASS="APPLICATION"
+>dropuser</SPAN
+></A
+> 提供了对了这些 SQL 命令的封装。
+	我们可以在 shell 命令上直接调用它们：
+</P><PRE
+CLASS="SYNOPSIS"
+>createuser <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>
+dropuser <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+></PRE
+><P>
+  </P
+><P
+>   要判断一套现有用户，检查 <TT
+CLASS="STRUCTNAME"
+>pg_role</TT
+> 系统表，比如
+</P><PRE
+CLASS="SYNOPSIS"
+>SELECT usename FROM pg_role;</PRE
+><P>
+   <A
+HREF="app-psql.html"
+><SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+></A
+> 的元命令 <TT
+CLASS="LITERAL"
+>\du</TT
+> 也可以用于列出现有角色。
+  </P
+><P
+>	为了能初创数据库系统，新建立的数据库总是包含一个预定义的角色。
+	这个角色将总是<SPAN
+CLASS="QUOTE"
+>"超级用户"</SPAN
+>，
+	并且缺省时（除非在运行 <TT
+CLASS="COMMAND"
+>initdb</TT
+> 时更改过）他将和初始化该数据库集群的用户有相同的名称。
+	通常，这个角色叫<TT
+CLASS="LITERAL"
+>postgres</TT
+>。
+	为了创建更多角色，你必须首先以这个初始用户角色联接。
+  </P
+><P
+>	每一个和数据库的连接都必须由一个角色身份进行，
+	这个角色决定在该连接上发出的命令的初始权限。
+	和特定数据库联接的角色名是由初始化联接请求的应用以相关的方式声明的，
+	比如，<TT
+CLASS="COMMAND"
+>psql</TT
+>
+	程序使用<TT
+CLASS="OPTION"
+>-U</TT
+>命令行选项声明它代表的进行联接的角色。
+	许多应用以当前操作系统的用户名为缺省（这样的应用包括
+	<TT
+CLASS="COMMAND"
+>createuser</TT
+> 和 <TT
+CLASS="COMMAND"
+>psql</TT
+>）。
+	所以，在系统用户和数据库角色之间有某种命名关系会让我们工作方便很多。
+  </P
+><P
+>	一个客户端联接可以用来联接的数据库角色集合是由客户认证设置决定的，
+	在 <A
+HREF="client-authentication.html"
+>Chapter 20</A
+> 里面有解释。
+	（因此，一个客户端并不局限于以它的操作系统用户同名的角色进行联接，
+	就象你登录系统的名称不一定要是你的真实姓名一样。）
+	因为角色的身份决定了一个已连接地客户端可用的权限，
+	所以在多用户环境里仔细配置这些内容是非常重要的。
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="runtime-config-short.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="role-attributes.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>短选项</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="admin.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>角色属性</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

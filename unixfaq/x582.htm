@@ -1,0 +1,252 @@
+<html><head><title>什么是在程序中发送电子邮件的最好方法？</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="编程杂技" href="./c565.htm"><link rel="PREVIOUS" title="编程杂技" href="./c565.htm"><link rel="NEXT" title="工具的使用" href="./c619.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./c565.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 5. 编程杂技</td><td align="right" valign="bottom" width="10%"><a href="./c619.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN582">5.2. 什么是在程序中发送电子邮件的最好方法？</a></h1><p>有好几种从Unix程序发电子邮件的方法。根据不同情况最好的选择有所不同，
+所以我将提供两个方法。还有第三种方法，这里没有说道，是连接本地主机的SMTP
+(译者注：SMTP：Simple Mail Transfer Protocol简单邮件传输协议)端口并直接使
+用SMTP协议，参见RFC 821(译者注：RFC：Request For Comments)。
+    </p><div class="SECT2"><h2 class="SECT2"><a name="AEN585">5.2.1. 简单方法：/bin/mail</a></h2><p>对于简单应用，执行‘mail’程序已经是足够了(通常是‘/bin/mail’，但一些系统
+上有可能是‘/usr/bin/mail’)。
+      </p><p>*警告：*UCB Mail程序的一些版本甚至在非交互模式下也会执行在消息体(message
+body)中以‘~！’或‘~|’打头的行所表示的命令。这可能有安全上的风险。
+      </p><p>象这样执行：‘mail -s '标题' 收件人地址 ...’，程序将把标准输入作为消息体，
+并提供缺省得消息头(其中包括已设定的标题)，然后传递整个消息给‘sendmail’
+进行投递。
+      </p><p>这个范例程序在本地主机上发送一封测试消息给‘root’：
+      </p><pre class="PROGRAMLISTING">     #include &lt;stdio.h&gt;
+
+     #define MAILPROG "/bin/mail"
+
+     int main()
+     {
+         FILE *mail = popen(MAILPROG " -s 'Test Message' root", "w");
+         if (!mail)
+         {
+             perror("popen");
+             exit(1);
+         }
+
+         fprintf(mail, "This is a test.\n");
+
+         if (pclose(mail))
+         {
+             fprintf(stderr, "mail failed!\n");
+             exit(1);
+         }
+     }
+      </pre><p>如果要发送的正文已经保存在一个文件中，那么可以这样做：
+      </p><pre class="PROGRAMLISTING">         system(MAILPROG " -s 'file contents' root &lt;/tmp/filename");
+
+      </pre><p>这个方法可以扩展到更复杂的情况，但是得当心很多潜在的危险(pitfalls)：
+      </p><p></p><ul><li><p>    如果使用system()或popen()，你必须非常当心将参数括起来从而保护它们不被
+     错误的进行文件名匹配替换或单词分割。
+          </p></li><li><p>    基于用户设置数据来构造命令行是缓冲区越界错误和其它安全漏洞的普遍原因。
+          </p></li><li><p>    这种方法不允许设定CC：(译者注：CC：Carbon Copy 抄送)或 BCC：(译者注：
+     BCC：Blind Carbon Copy：盲送，指投递地址不在消息中出现的抄送)的收件人。
+     (一些/bin/mail程序的版本允许，其它则不允许)
+          </p></li></ul></div><div class="SECT2"><h2 class="SECT2"><a name="AEN602">5.2.2. 直接启动邮件传输代理：/usr/bin/sendmail</a></h2><p>‘mail’程序是“邮件用户代理”(Mail User Agent)的一个例子，它旨在供用户
+执行以收发电子邮件，但它并不负责实际的传输。一个用来传输邮件的程序被
+称为“邮件传输代理”(MTA)，而在Unix系统普遍能找到的邮件传输代理被称为
+‘sendmail’。也有其它在使用的邮件传输代理，比如‘MMDF’，但这些程序
+通常包括一个程序来模拟‘sendmail’的普通做法。
+      </p><p>历史上，‘sendmail’通常在‘/usr/lib’里找到，但现在的趋势是将应用库程序从
+‘/usr/lib’挪出，并挪入比如‘/usr/sbin’或‘/usr/libexec’等目录。结果是，一般
+总是以绝对路径启动‘sendmail’程序，而路径是由系统决定的。
+      </p><p>为了了解‘sendmail’程序怎样工作，通常需要了解一下“信封”(envelope)的概
+念。这非常类似书面信件；信封上定义这个消息投递给谁，并注明由谁发出(
+为了报告错误的目的)。在信封中包含的是“消息头”和“消息体”，之间由一个
+空行隔开。消息头的格式主要在RFC 822中提供；并且参见MIME 的RFC文档。(
+译者注：MIME的文档包括：RFC1521，RFC1652)
+      </p><p>有两种主要的方法使用‘sendmail’程序以生成一个消息：要么信封的收件人能
+被显式的提供，要么‘sendmail’程序可被指示从消息头中推理出它们。两种方
+法都有优缺点。
+      </p><div class="SECT3"><h3 class="SECT3"><a name="AEN608">5.2.2.1. 显式提供信封内容</a></h3><p>消息的信封内容可在命令行上简单的设定。它的缺点在于邮件地址可能包含的
+字符会造成‘system()’和‘popen() ’程序可观的以外出错(grief)，比如单引号，
+被括起的字符串等等。传递这些指令给shell程序并成功解释可以预见潜在的危
+险。(可以将命令中任何一个单引号替换成单引号、反斜杠、单引号、单引号的
+顺序组合，然后再将整个地址括上单引号。可怕，呃？)
+        </p><p>以上的一些不愉快可以通过避开使用‘system()’或‘popen()’函数并求助于‘
+fork()’和‘exec()’函数而避免。这有时不管怎样也是需要的；比如，用户
+自定义的对于SIGCHLD信号的处理函数通常会打断‘pclose()’函数从而影响到
+或大或小的范围。
+        </p><p>这里是一个范例程序：
+        </p><pre class="PROGRAMLISTING">     #include &lt;sys/types.h&gt;
+     #include &lt;sys/wait.h&gt;
+     #include &lt;unistd.h&gt;
+     #include &lt;stdlib.h&gt;
+     #include &lt;fcntl.h&gt;
+     #include &lt;sysexits.h&gt;
+     /* #include &lt;paths.h&gt; 如果你有的话 */
+
+     #ifndef _PATH_SENDMAIL
+     #define _PATH_SENDMAIL "/usr/lib/sendmail"
+     #endif
+
+     /* -oi 意味着 "不要视‘ .’为消息的终止符"
+      * 删除这个选项 ,"--" 如果使用sendmail 8版以前的版本 (并希望没有人
+      * 曾经使用过一个以减号开头的收件人地址)
+      * 你也许希望加 -oem (report errors by mail，以邮件方式报告错误)
+      */
+
+     #define SENDMAIL_OPTS "-oi","--"
+
+     /* 下面是一个返回数组中的成员数的宏 */
+
+     #define countof(a) ((sizeof(a))/sizeof((a)[0]))
+
+     /* 发送由FD所包含以读操作打开的文件之内容至设定的收件人；前提是这
+      * 个文件中包含RFC822定义的消息头和消息体，收件人列表由NULL指针
+      * 标志结束；如果发现错误则返回-1，否则返回sendmail的返回值(它使用
+      * &lt;sysexits.h&gt;中提供的有意义的返回代码)
+      */
+
+     int send_message(int fd, const char **recipients)
+     {
+         static const char *argv_init[] = { _PATH_SENDMAIL, SENDMAIL_OPTS };
+         const char **argvec = NULL;
+         int num_recip = 0;
+         pid_t pid;
+         int rc;
+         int status;
+
+         /* 计算收件人数目 */
+
+         while (recipients[num_recip])
+             ++num_recip;
+
+         if (!num_recip)
+             return 0;    /* 视无收件人为成功 */
+
+         /* 分配空间给参数矢量 */
+
+         argvec = malloc((sizeof char*) * (num_recip+countof(argv_init)+1));
+         if (!argvec)
+             return -1;
+
+         /* 初始化参数矢量 */
+
+         memcpy(argvec, argv_init, sizeof(argv_init));
+         memcpy(argvec+countof(argv_init),
+                recipients, num_recip*sizeof(char*));
+         argvec[num_recip + countof(argv_init)] = NULL;
+
+         /* 需要在此增加一些信号阻塞 */
+
+         /* 产生子进程 */
+
+         switch (pid = fork())
+         {
+         case 0:   /* 子进程 */
+
+             /* 建立管道 */
+             if (fd != STDIN_FILENO)
+                 dup2(fd, STDIN_FILENO);
+
+             /* 其它地方已定义 -- 关闭所有&gt;=参数的文件描述符对应的参数 */
+             closeall(3);
+
+             /* 发送: */
+             execv(_PATH_SENDMAIL, argvec);
+             _exit(EX_OSFILE);
+
+         default:  /* 父进程 */
+
+             free(argvec);
+             rc = waitpid(pid, &amp;status, 0);
+             if (rc &lt; 0)
+                 return -1;
+             if (WIFEXITED(status))
+                 return WEXITSTATUS(status);
+             return -1;
+
+         case -1:  /* 错误 */
+             free(argvec);
+             return -1;
+         }
+     }
+        </pre></div><div class="SECT3"><h3 class="SECT3"><a name="AEN614">5.2.2.2. 允许sendmail程序推理出收件人</a></h3><p>‘sendmail’的‘-t’选项指令‘sendmail’程序处理消息的头信息，并使用所有
+包含收件人(即：‘To:’，‘Cc:’和‘Bcc:’)的头信息建立收件人列表。它的优
+点在于简化了‘sendmail’的命令行，但也使得设置在消息头信息中所列以外的
+收件人成为不可能。(这通常不是一个问题)
+        </p><p>作为一个范例，以下这个程序将标准输入作为一个文件以MIME附件方式发送给
+设定的收件人。为简洁起见略去了一些错误检查。这个程序需要调用‘metamail’
+分发程序包的‘mimecode’程序。
+        </p><pre class="PROGRAMLISTING">     #include &lt;stdio.h&gt;
+     #include &lt;unistd.h&gt;
+     #include &lt;fcntl.h&gt;
+     /* #include &lt;paths.h&gt; 如果你有的话 */
+
+     #ifndef _PATH_SENDMAIL
+     #define _PATH_SENDMAIL "/usr/lib/sendmail"
+     #endif
+
+     #define SENDMAIL_OPTS "-oi"
+     #define countof(a) ((sizeof(a))/sizeof((a)[0]))
+
+     char tfilename[L_tmpnam];
+     char command[128+L_tmpnam];
+
+     void cleanup(void)
+     {
+         unlink(tfilename);
+     }
+
+     int main(int argc, char **argv)
+     {
+         FILE *msg;
+         int i;
+
+         if (argc &lt; 2)
+         {
+             fprintf(stderr, "usage: %s recipients...\n", argv[0]);
+             exit(2);
+         }
+
+         if (tmpnam(tfilename) == NULL
+             || (msg = fopen(tfilename,"w")) == NULL)
+             exit(2);
+
+         atexit(cleanup);
+
+         fclose(msg);
+         msg = fopen(tfilename,"a");
+         if (!msg)
+             exit(2);
+
+         /* 建立收件人列表 */
+
+         fprintf(msg, "To: %s", argv[1]);
+         for (i = 2; i &lt; argc; i++)
+             fprintf(msg, ",\n\t%s", argv[i]);
+         fputc('\n',msg);
+
+         /* 标题 */
+
+         fprintf(msg, "Subject: file sent by mail\n");
+
+         /* sendmail程序会自动添加 From:, Date:, Message-ID: 等消息头信息 */
+
+         /* MIME的处理 */
+
+         fprintf(msg, "MIME-Version: 1.0\n");
+         fprintf(msg, "Content-Type: application/octet-stream\n");
+         fprintf(msg, "Content-Transfer-Encoding: base64\n");
+
+         /* 消息头结束，加一个空行 */
+
+         fputc('\n',msg);
+         fclose(msg);
+
+         /* 执行编码程序 */
+
+         sprintf(command, "mimencode -b &gt;&gt;%s", tfilename);
+         if (system(command))
+             exit(1);
+
+         /* 执行信使程序 */
+
+         sprintf(command, "%s %s -t &lt;%s",
+                 _PATH_SENDMAIL, SENDMAIL_OPTS, tfilename);
+         if (system(command))
+             exit(1);
+
+         return 0;
+     }
+       </pre></div></div></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./c565.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./c619.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">编程杂技</td><td align="center" valign="top" width="34%"><a href="./c565.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">工具的使用</td></tr></tbody></table></div></body></html>

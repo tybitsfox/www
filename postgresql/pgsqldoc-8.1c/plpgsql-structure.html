@@ -1,0 +1,330 @@
+<HTML
+><HEAD
+><TITLE
+>PL/pgSQL的结构</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="PL/pgSQL - SQL 过程语言"
+HREF="plpgsql.html"><LINK
+REL="PREVIOUS"
+TITLE="开发 PL/pgSQL 的一些提示"
+HREF="plpgsql-development-tips.html"><LINK
+REL="NEXT"
+TITLE="声明"
+HREF="plpgsql-declarations.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plpgsql-development-tips.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plpgsql.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 36. <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> - <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 过程语言</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plpgsql.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plpgsql-declarations.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="PLPGSQL-STRUCTURE"
+>36.3. <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>的结构</A
+></H1
+><P
+>	<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>是一种块结构的语言。
+	函数定义的所有文本都必须是一个<I
+CLASS="FIRSTTERM"
+>块</I
+>。
+	一个块用下面的方法定义：
+
+</P><PRE
+CLASS="SYNOPSIS"
+>[<SPAN
+CLASS="OPTIONAL"
+> &lt;&lt;<TT
+CLASS="REPLACEABLE"
+><I
+>label</I
+></TT
+>&gt;&gt; </SPAN
+>]
+[<SPAN
+CLASS="OPTIONAL"
+> DECLARE
+    <TT
+CLASS="REPLACEABLE"
+><I
+>declarations</I
+></TT
+> </SPAN
+>]
+BEGIN
+    <TT
+CLASS="REPLACEABLE"
+><I
+>statements</I
+></TT
+>
+END [<SPAN
+CLASS="OPTIONAL"
+> <TT
+CLASS="REPLACEABLE"
+><I
+>label</I
+></TT
+> </SPAN
+>];</PRE
+><P>
+    </P
+><P
+>	块中的每个声明和每条语句都是用一个分号终止的，
+	如果一个子块在另外一个块里，那么 <TT
+CLASS="LITERAL"
+>END</TT
+> 后面必须有个分号，如上所述；
+	不过结束函数体的最后的 <TT
+CLASS="LITERAL"
+>END</TT
+> 可以不要这个分号。
+    </P
+><P
+>	所有关键字和标识符都可以用混和大小写的方式来写。标识符被隐含地转换成小写字符，除非被双引号包围。
+    </P
+><P
+>	在 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 里有两种类型地注释。一个双破折号（<TT
+CLASS="LITERAL"
+>--</TT
+>）
+	引出一个扩展到该行结尾的注释。一个 <TT
+CLASS="LITERAL"
+>/*</TT
+> 引出一个块注释，一直扩展到下一次 <TT
+CLASS="LITERAL"
+>*/</TT
+> 的出现。
+	块注释不能嵌套，但是双破折号注释可以包围在块注释里面，并且双破折号可以隐藏一个块注释分隔符 <TT
+CLASS="LITERAL"
+>/*</TT
+> 和 <TT
+CLASS="LITERAL"
+>*/</TT
+>。
+    </P
+><P
+>	在一个块的语句段里的任何语句都可以是一个<I
+CLASS="FIRSTTERM"
+>子块</I
+>。
+	子块可以用于逻辑分组或者把变量局部化为作用于一个比较小的语句组。
+    </P
+><P
+>        在语句块前面的声明段（declarations section）里定义的变量在每次进入语句块时都初始化为它们的缺省值，
+	而不是每次函数调用时初始化一次。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION somefunc() RETURNS integer AS $$
+DECLARE
+   quantity integer := 30;
+BEGIN
+   RAISE NOTICE 'Quantity here is %', quantity;  -- 在这里的数量是 30
+   quantity := 50;
+   --
+   -- 创建一个子块
+   --
+   DECLARE
+      quantity integer := 80;
+   BEGIN
+      RAISE NOTICE 'Quantity here is %', quantity;  -- 在这里的数量是 80
+   END;
+
+   RAISE NOTICE 'Quantity here is %', quantity;  -- 在这里的数量是 50
+
+   RETURN quantity;
+END;
+$$ LANGUAGE plpgsql;</PRE
+><P>
+    </P
+><P
+>	我们一定不要把<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>里用于语句分组的 <TT
+CLASS="COMMAND"
+>BEGIN</TT
+>/<TT
+CLASS="COMMAND"
+>END</TT
+>
+	和用于事务控制的数据库命令搞混了。
+	<SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>的 <TT
+CLASS="COMMAND"
+>BEGIN</TT
+>/<TT
+CLASS="COMMAND"
+>END</TT
+> 只是用于分组（译注∶象 C 里的 {}）；
+	它们不会开始和结束一个事务。
+	函数和触发器过程总是在一个由外层命令建立起来的事务里执行 &mdash;
+	它们无法开始或者提交事务，因为 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 没有嵌套事务。
+	不过，一个包含 <TT
+CLASS="LITERAL"
+>EXCEPTION</TT
+> 子句的块实际上形成一个子事务，它可以在不影响外层事务的情况下回滚。
+	更多相关信息请参阅 <A
+HREF="plpgsql-control-structures.html#PLPGSQL-ERROR-TRAPPING"
+>Section 36.7.5</A
+>。
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plpgsql-development-tips.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plpgsql-declarations.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>开发 <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> 的一些提示</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="plpgsql.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>声明</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

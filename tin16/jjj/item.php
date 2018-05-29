@@ -1,0 +1,376 @@
+<?php
+echo "<html><head>
+<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+<link href='./main.css' rel='stylesheet' type='text/css' />";
+echo "<style type='text/css'>
+body{ text-align:center} 
+#divcenter{margin:0 auto;width:800px}</style>
+</head><body>";
+echo "<STYLE>
+#liu table{width:750px; text-align:center; border:1px black solid; border-collapse:collapse; table-layout:fixed;}
+#liu td,th{ border:1px black solid;}
+</STYLE>
+<div id='liu'>
+<p>价钱的说明：价钱栏内，数字表示的是买入的价格，-表示是无法购买，无表示是无该道具。</p>
+<table align=center>
+  <tr>
+    <td colspan='4'>恢复类</td>
+  </tr>
+  <tr>
+    <td>中文名</td>
+    <td>M1价钱</td>
+    <td>M2价钱</td>
+    <td>作用</td>
+  </tr>
+  <tr>
+    <td>药草</td>
+    <td>8</td>
+    <td>10</td>
+    <td>我方单体HP回复30～40</td>
+  </tr>
+  <tr>
+    <td>阿莫尔之水</td>
+    <td>80</td>
+    <td>50</td>
+    <td>我方单体HP回复60～70</td>
+  </tr>
+  <tr>
+    <td>世界树之露</td>
+    <td>500</td>
+    <td>500</td>
+    <td>我方全员HP回复到最大值</td>
+  </tr>
+  <tr>
+    <td>魔法圣水</td>
+    <td>200</td>
+    <td>200</td>
+    <td>我方单体MP回复20～30</td>
+  </tr>
+  <tr>
+    <td>精灵之药</td>
+    <td>-</td>
+    <td>2000</td>
+    <td>我方单体MP回复到最大值</td>
+  </tr>
+  <tr>
+    <td>解毒草</td>
+    <td>10</td>
+    <td>4</td>
+    <td>治疗中毒状态</td>
+  </tr>
+  <tr>
+    <td>满月草</td>
+    <td>30</td>
+    <td>20</td>
+    <td>治疗麻痹状态</td>
+  </tr>
+  <tr>
+    <td>月桂树之叶</td>
+    <td>80</td>
+    <td>20</td>
+    <td>治疗诅咒状态</td>
+  </tr>
+  <tr>
+    <td>清醒粉</td>
+    <td>50</td>
+    <td>20</td>
+    <td>治疗睡眠状态</td>
+  </tr>
+  <tr>
+    <td>天使之铃</td>
+    <td>50</td>
+    <td>20</td>
+    <td>治疗混乱状态</td>
+  </tr>
+  <tr>
+    <td>贤者之石</td>
+    <td>1000</td>
+    <td>1500</td>
+    <td>我方全员HP回复60～70，一定几率损坏</td>
+  </tr>
+  <tr>
+    <td>世界树之叶</td>
+    <td>1000</td>
+    <td>1000</td>
+    <td>我方单体以HP全满状态复活</td>
+  </tr>
+</table>
+<br />
+<table align=center>
+  <tr>
+    <td colspan='4'>提升能力类</td>
+  </tr>
+  <tr>
+    <td>中文名</td>
+    <td>M1价钱</td>
+    <td>M2价钱</td>
+
+    <td>作用</td>
+  </tr>
+  <tr>
+    <td>力量种子</td>
+    <td>-</td>
+    <td>-</td>
+    <td>攻击力提高3</td>
+  </tr>
+  <tr>
+    <td>守护种子</td>
+    <td>-</td>
+    <td>-</td>
+    <td>防御力提高3</td>
+  </tr>
+  <tr>
+    <td>速度种子</td>
+    <td>-</td>
+    <td>-</td>
+    <td>速度提高3</td>
+  </tr>
+  <tr>
+    <td>智慧种子</td>
+    <td>-</td>
+    <td>-</td>
+    <td>智力提高3</td>
+  </tr>
+  <tr>
+    <td>生命树果</td>
+    <td>-</td>
+    <td>-</td>
+    <td>HP最大值提高5</td>
+  </tr>
+  <tr>
+    <td>不可思议树果</td>
+    <td>-</td>
+    <td>-</td>
+    <td>MP最大值提高5</td>
+  </tr>
+</table>
+<br />
+<table align=center>
+  <tr>
+    <td colspan='4'>书籍类</td>
+  </tr>
+  <tr>
+    <td>中文名</td>
+    <td>M1价钱</td>
+    <td>M2价钱</td>
+    <td>作用</td>
+  </tr>
+  <tr>
+    <td>冒险书</td>
+    <td>5000</td>
+    <td>10000</td>
+    <td>改变怪物性格，使其勇敢度上升</td>
+  </tr>
+  <tr>
+    <td>恐怖书</td>
+    <td>5000</td>
+    <td>10000</td>
+    <td>改变怪物性格，使其勇敢度下降</td>
+  </tr>
+  <tr>
+    <td>温柔书</td>
+    <td>5000</td>
+    <td>10000</td>
+    <td>改变怪物性格，使其温柔度上升</td>
+  </tr>
+  <tr>
+    <td>奸诈书</td>
+    <td>5000</td>
+    <td>10000</td>
+    <td>改变怪物性格，使其温柔度下降</td>
+  </tr>
+  <tr>
+    <td>清醒书</td>
+    <td>5000</td>
+    <td>10000</td>
+    <td>改变怪物性格，使其智慧度上升</td>
+  </tr>
+  <tr>
+    <td>幽默书</td>
+    <td>5000</td>
+    <td>10000</td>
+    <td>改变怪物性格，使其智慧度下降</td>
+  </tr>
+</table>
+<br />
+<table align=center>
+  <tr>
+    <td colspan='4'>肉食类</td>
+  </tr>
+  <tr>
+    <td>中文名</td>
+    <td>M1价钱</td>
+    <td>M2价钱</td>
+
+    <td>作用</td>
+  </tr>
+  <tr>
+    <td>怪兽诱饵</td>
+    <td>20</td>
+    <td>10</td>
+    <td>战斗中使用让怪物加入，作用低<br />
+平时对己方怪物使用，野性-5</td>
+  </tr>
+  <tr>
+    <td>熏肉</td>
+    <td>80</td>
+    <td>40</td>
+    <td>战斗中使用让怪物加入，作用中等<br />
+平时对己方怪物使用，野性-10</td>
+  </tr>
+  <tr>
+    <td>骨头肉</td>
+    <td>300</td>
+    <td>200</td>
+    <td>战斗中使用让怪物加入，作用较高<br />
+平时对己方怪物使用，野性-20</td>
+  </tr>
+  <tr>
+    <td>霜降肉</td>
+    <td>1000</td>
+    <td>1000</td>
+    <td>战斗中使用让怪物加入，作用最强<br />
+平时对己方怪物使用，野性-100</td>
+  </tr>
+  <tr>
+    <td>腐烂肉</td>
+    <td>-</td>
+    <td>-</td>
+    <td>对敌方或我方怪物使用，会导致中毒</td>
+  </tr>
+  <tr>
+    <td>星光宝珠</td>
+    <td>无</td>
+    <td>-</td>
+    <td>怪物一定加入</td>
+  </tr>
+</table>
+<br />
+<table align=center>
+  <tr>
+    <td colspan='4'>法杖类</td>
+  </tr>
+  <tr>
+    <td>中文名</td>
+    <td>M1价钱</td>
+    <td>M2价钱</td>
+
+    <td>作用</td>
+  </tr>
+  <tr>
+    <td>封魔杖</td>
+    <td>700</td>
+    <td>700</td>
+    <td>封住敌全体的魔法，一定几率损坏</td>
+  </tr>
+  <tr>
+    <td>友情杖</td>
+    <td>无</td>
+    <td>800</td>
+    <td>我方1人攻击力倍增，多次使用后会损坏</td>
+  </tr>
+  <tr>
+    <td>天罚杖</td>
+    <td>1500</td>
+    <td>1500</td>
+    <td>敌全8～24的伤害，一定几率损坏</td>
+  </tr>
+  <tr>
+    <td>雷杖</td>
+    <td>3000</td>
+    <td>3000</td>
+    <td>敌全35～50的伤害，一定几率损坏</td>
+  </tr>
+  <tr>
+    <td>风雪杖</td>
+    <td>4000</td>
+    <td>-</td>
+    <td>敌全80～110的伤害，一定几率损坏</td>
+  </tr>
+  <tr>
+    <td>火焰杖</td>
+    <td>5000</td>
+    <td>-</td>
+    <td>敌全140～170的伤害，一定几率损坏</td>
+  </tr>
+  <tr>
+    <td>鲁拉之杖</td>
+    <td>-</td>
+    <td>-</td>
+    <td>迷宫中，移动到本层往下一层的入口</td>
+  </tr>
+</table>
+<br />
+<table align=center>
+  <tr>
+    <td colspan='4'>其他</td>
+  </tr>
+  <tr>
+    <td>中文名</td>
+    <td>M1价钱</td>
+    <td>M2价钱</td>
+    <td>作用</td>
+  </tr>
+  <tr>
+    <td>奇美拉之翼</td>
+    <td>100</td>
+    <td>25</td>
+    <td>迷宫中飞回大树国/玛鲁国</td>
+  </tr>
+  <tr>
+    <td>回忆之铃</td>
+    <td>无</td>
+    <td>-</td>
+    <td>从迷宫、塔中脱出</td>
+  </tr>
+  <tr>
+    <td>旅行路标</td>
+    <td>100</td>
+    <td>50</td>
+    <td>可以在迷宫中记录，BOSS楼层不可用</td>
+  </tr>
+  <tr>
+    <td>小徽章</td>
+    <td>-</td>
+    <td>-</td>
+    <td>拿给徽章爷爷，收集到一定数量可以换得奖品</td>
+  </tr>
+  <tr>
+    <td>ＶＩＰ金卡</td>
+    <td>无</td>
+    <td>20000</td>
+    <td>可以用九折的价钱购物道具</td>
+  </tr>
+  <tr>
+    <td>玛露达之枝</td>
+    <td>无</td>
+    <td>50</td>
+    <td>在任何场所可使迷宫入口移动</td>
+  </tr>
+  <tr>
+    <td>鼯鼠尾</td>
+    <td>400</td>
+    <td>800</td>
+    <td>迷宫中，显示有出口的那间房间<br />
+战斗中查看敌方怪物是否已经得到过</td>
+  </tr>
+  <tr>
+    <td>圣水</td>
+    <td>200</td>
+    <td>100</td>
+    <td>迷宫中遇敌率降低</td>
+  </tr>
+  <tr>
+    <td>银竖琴</td>
+    <td>-</td>
+    <td>1200</td>
+    <td>召唤敌人进行战斗</td>
+  </tr>
+</table>
+</div>";
+echo "</body></html>";
+?>
+<?php
+include_once("/var/www/counter.php");
+upcounter(__FILE__)
+?>

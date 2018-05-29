@@ -1,0 +1,445 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>REVOKE PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="RESET" HREF="sql-reset.html"><LINK REL="NEXT" TITLE="ROLLBACK" HREF="sql-rollback.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-reset.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-reset.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-rollback.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-rollback.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-REVOKE" >REVOKE</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN47327" ></A
+><H2
+>Name</H2
+>REVOKE&nbsp;--&nbsp;删除访问权限</DIV
+><A NAME="AEN47330" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN47332" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>REVOKE [ GRANT OPTION FOR ]
+    { { SELECT | INSERT | UPDATE | DELETE | RULE | REFERENCES | TRIGGER }
+    [,...] | ALL [ PRIVILEGES ] }
+    ON [ TABLE ] <TT
+CLASS="REPLACEABLE"
+><I
+>tablename</I
+></TT
+> [, ...]
+    FROM { <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+> | GROUP <TT
+CLASS="REPLACEABLE"
+><I
+>groupname</I
+></TT
+> | PUBLIC } [, ...]
+    [ CASCADE | RESTRICT ]
+
+REVOKE [ GRANT OPTION FOR ]
+    { { CREATE | TEMPORARY | TEMP } [,...] | ALL [ PRIVILEGES ] }
+    ON DATABASE <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+> [, ...]
+    FROM { <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+> | GROUP <TT
+CLASS="REPLACEABLE"
+><I
+>groupname</I
+></TT
+> | PUBLIC } [, ...]
+    [ CASCADE | RESTRICT ]
+
+REVOKE [ GRANT OPTION FOR ]
+    { EXECUTE | ALL [ PRIVILEGES ] }
+    ON FUNCTION <TT
+CLASS="REPLACEABLE"
+><I
+>funcname</I
+></TT
+> ( [ [ <TT
+CLASS="REPLACEABLE"
+><I
+>argmode</I
+></TT
+> ] [ <TT
+CLASS="REPLACEABLE"
+><I
+>argname</I
+></TT
+> ] <TT
+CLASS="REPLACEABLE"
+><I
+>argtype</I
+></TT
+> [, ...] ] ) [, ...]
+    FROM { <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+> | GROUP <TT
+CLASS="REPLACEABLE"
+><I
+>groupname</I
+></TT
+> | PUBLIC } [, ...]
+    [ CASCADE | RESTRICT ]
+
+REVOKE [ GRANT OPTION FOR ]
+    { USAGE | ALL [ PRIVILEGES ] }
+    ON LANGUAGE <TT
+CLASS="REPLACEABLE"
+><I
+>langname</I
+></TT
+> [, ...]
+    FROM { <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+> | GROUP <TT
+CLASS="REPLACEABLE"
+><I
+>groupname</I
+></TT
+> | PUBLIC } [, ...]
+    [ CASCADE | RESTRICT ]
+
+REVOKE [ GRANT OPTION FOR ]
+    { { CREATE | USAGE } [,...] | ALL [ PRIVILEGES ] }
+    ON SCHEMA <TT
+CLASS="REPLACEABLE"
+><I
+>schemaname</I
+></TT
+> [, ...]
+    FROM { <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+> | GROUP <TT
+CLASS="REPLACEABLE"
+><I
+>groupname</I
+></TT
+> | PUBLIC } [, ...]
+    [ CASCADE | RESTRICT ]
+
+REVOKE [ GRANT OPTION FOR ]
+    { CREATE | ALL [ PRIVILEGES ] }
+    ON TABLESPACE <TT
+CLASS="REPLACEABLE"
+><I
+>tablespacename</I
+></TT
+> [, ...]
+    FROM { <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+> | GROUP <TT
+CLASS="REPLACEABLE"
+><I
+>groupname</I
+></TT
+> | PUBLIC } [, ...]
+    [ CASCADE | RESTRICT ]</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="SQL-REVOKE-DESCRIPTION" ></A
+><H2
+>描述</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>REVOKE</TT
+> 撤销以前赋予（别人）的权限，可以是撤销一个或多个用户或者一组用户的权限。
+	关键字 <TT
+CLASS="LITERAL"
+>PUBLIC</TT
+> 代表隐含定义的拥有所有用户的组。
+  </P
+><P
+>	请注意，任何特定的用户都将拥有直接赋予他/她的权限，加上他/她所处的任何组，
+	以及再加上赋予 <TT
+CLASS="LITERAL"
+>PUBLIC</TT
+> 的权限的总和。因此，举例来说，废止 <TT
+CLASS="LITERAL"
+>PUBLIC</TT
+>
+	的 <TT
+CLASS="LITERAL"
+>SELECT</TT
+> 权限并不意味着所有用户都失去了对该对象的 <TT
+CLASS="LITERAL"
+>SELECT</TT
+> 权限：
+	那些直接得到权限赋予的以及通过一个组得到权限的人仍然拥有该权限。
+  </P
+><P
+>	参阅 <A HREF="sql-grant.html" >GRANT</A
+> 命令的描述获取权限类型的含义。
+  </P
+><P
+>	如果声明了 <TT
+CLASS="LITERAL"
+>GRANT OPTION FOR</TT
+>，那么只是撤销对该权限的授权的权力，而不是撤销该权限本身。
+	否则，权限和授权选项都被撤销。
+  </P
+><P
+>	如果一个用户持有某项权限，并且还有授权的选项，并且还把这个权限赋予了其他用户，
+	那么那些其他用户持有的权限都叫做依赖性权限。
+	如果第一个用户持有的权限或者授权选项被撤销，而依赖性权限仍然存在，
+	那么如果我们声明了 <TT
+CLASS="LITERAL"
+>CASCADE</TT
+>，则所有依赖性权限都被撤销，
+	否则撤销动作就会失败。这个递规的撤销只影响那种通过一个用户链赋予的权限，
+	这个链条可以通过这条 <TT
+CLASS="LITERAL"
+>REVOKE</TT
+> 命令里面给出的用户追踪。
+	因此，如果权限本身是通过其他用户赋予的，
+	那么被影响的用户可以有效地保留这个权限。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="SQL-REVOKE-NOTES" ></A
+><H2
+>注意</H2
+><P
+>	使用 <A HREF="app-psql.html" ><SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+></A
+> 的 <TT
+CLASS="COMMAND"
+>\z</TT
+> 命令显示在一个现存对象上赋予的权限。
+	又见
+	<A HREF="sql-grant.html" ><I
+>GRANT</I
+></A
+> 获取关于格式的信息。
+  </P
+><P
+>	一个用户只能撤销由它自己直接赋予的权限。举例来说，如果用户 A
+	带着授权选项吧一个权限赋予了用户 B，然后用户 B 又赋予了用户 C，
+	那么用户 A 不能直接将 C 的权限撤销。但是，用户 A 可以撤销用户 B
+	的授权选项，并且使用 <TT
+CLASS="LITERAL"
+>CASCADE</TT
+> 选项，这样，
+	用户 C 的权限就会自动被撤销。
+	另外一个例子：如果 A 和 B 都赋予了 C 的同样的权限，
+	则 A 可以撤销他自己的授权选项，但是不能撤销 B 的，因此 C 仍然有效地拥有该权限。
+  </P
+><P
+>    如果一个对象的非所有者试图 <TT
+CLASS="COMMAND"
+>REVOKE</TT
+> 对象上的权限，
+    那么，如果这个用户没有该对象上的权限，则命令马上失败。
+    只要他有某些权限，则命令继续，但是它只撤销那些该用户有授权选项的权限。
+    如果没有在握的授权选项，那么 <TT
+CLASS="COMMAND"
+>REVOKE ALL PRIVILEGES</TT
+> 形式将发出一个错误信息，
+    而对于其它形式的命令而言，如果同样是命令中指定名字的权限没有在握的授权选项，那么该命令将发出一个警告。
+    （原则上这些语句也适用于对象所有者，但是因为所有者总是认为持有所有授权选项，
+    所以这种情况绝不会发生。
+   </P
+><P
+>    如果一个超级用户发出一个 <TT
+CLASS="COMMAND"
+>GRANT</TT
+> 或者 <TT
+CLASS="COMMAND"
+>REVOKE</TT
+> 命令，
+    那么命令是按照以被影响的对象的所有者执行的方式执行的。因为所有权限最终从对象所有者（可能间接通过赋权选项获取），
+    超级用户可以废除所有权限，但是这样就要求像上面说的那样使用 <TT
+CLASS="LITERAL"
+>CASCADE</TT
+>。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="SQL-REVOKE-EXAMPLES" ></A
+><H2
+>例子</H2
+><P
+>	撤销公众在表 <TT
+CLASS="LITERAL"
+>films</TT
+> 上的插入权限：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>REVOKE INSERT ON films FROM PUBLIC;</PRE
+><P>
+  </P
+><P
+>	废除用户 <TT
+CLASS="LITERAL"
+>manuel</TT
+> 对视图
+        <TT
+CLASS="LITERAL"
+>kinds</TT
+> 的所有权限：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>REVOKE ALL PRIVILEGES ON kinds FROM manuel;</PRE
+><P>
+   请注意这样实际上意味着<SPAN
+CLASS="QUOTE"
+>"撤销所有我赋予的权限"</SPAN
+>。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="SQL-REVOKE-COMPATIBILITY" ></A
+><H2
+>兼容性</H2
+><P
+>	<A HREF="sql-grant.html" >GRANT</A
+> 命令的兼容性信息基本上也适用于 <TT
+CLASS="COMMAND"
+>REVOKE</TT
+>。语法概要是：
+
+</P><PRE
+CLASS="SYNOPSIS"
+>REVOKE [ GRANT OPTION FOR ] <TT
+CLASS="REPLACEABLE"
+><I
+>privileges</I
+></TT
+>
+    ON <TT
+CLASS="REPLACEABLE"
+><I
+>object</I
+></TT
+> [ ( <TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> [, ...] ) ]
+    FROM { PUBLIC | <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+> [, ...] }
+    { RESTRICT | CASCADE }</PRE
+><P>
+	标准要求 <TT
+CLASS="LITERAL"
+>RESTRICT</TT
+> 或者 <TT
+CLASS="LITERAL"
+>CASCADE</TT
+> 之一必须出现，
+	但是 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 假设缺省是 <TT
+CLASS="LITERAL"
+>RESTRICT</TT
+>。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47411" ></A
+><H2
+>又见</H2
+><P
+>   <A HREF="sql-grant.html" ><I
+>GRANT</I
+></A
+>
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-reset.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-rollback.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >RESET</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >ROLLBACK</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

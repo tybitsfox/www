@@ -1,0 +1,181 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>文件系统级别的备份 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="备份和恢复" HREF="backup.html"><LINK REL="PREVIOUS" TITLE="备份和恢复" HREF="backup.html"><LINK REL="NEXT" TITLE="在线备份以及即时恢复(PITR)" HREF="backup-online.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="backup.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="backup.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 23. 备份和恢复</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="backup.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="backup-online.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="BACKUP-FILE" >23.2. 文件系统级别的备份</A
+></H1
+><P
+>	另一个备份的策略是直接拷贝<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>用于存放数据库数据的文件。
+	我们在 <A HREF="creating-cluster.html" >Section 16.2</A
+> 里解释了这些文件的位置，
+	不过如果你想用这个方法，你早就找到它们的位置。
+	你可以用自己喜欢的任何常用文件系统备份的方法，例如
+</P><PRE
+CLASS="PROGRAMLISTING"
+>tar -cf backup.tar /usr/local/pgsql/data</PRE
+><P>
+  </P
+><P
+>	不过，你要受到两个限制，令这个方法不那么实用，或者至少比 <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 的方法逊色一些：
+
+   <P
+></P
+></P><OL
+TYPE="1"
+><LI
+><P
+>	为了进行有效的备份，数据库服务器<I
+CLASS="EMPHASIS"
+>必须</I
+>被关闭。
+	象拒绝所有联接这样的折衷的方法是<I
+CLASS="EMPHASIS"
+>不行</I
+>的，因为总是有一些缓冲区数据存在。
+	（主要因为 <TT
+CLASS="COMMAND"
+>tar</TT
+> 和类似的工具在做备份的时候并不对文件系统的状态做原子快照）。
+	有关关闭服务器的信息可以在 <A HREF="postmaster-shutdown.html" >Section 16.5</A
+>里面找到。
+	不用说，你在恢复数据之前，必须关闭服务器。
+     </P
+></LI
+><LI
+><P
+>	如果你曾经深入了解了数据库在文件系统布局的细节，你可能试图从对应的文件或目录里备份几个表或者数据库。
+	这样做是<I
+CLASS="EMPHASIS"
+>没用</I
+>的，因为包含在这些文件里的信息只是部分信息。还有一半信息在提交日志文件
+	<TT
+CLASS="FILENAME"
+>pg_clog/*</TT
+>里面，它包含所有事务的提交状态。
+	只有拥有这些信息，表文件的信息才是可用的。当然，试图只恢复表和相关的
+	 <TT
+CLASS="FILENAME"
+>pg_clog</TT
+> 数据也是徒劳的，因为这样会把数据库集群里的所有其他没有用的表的信息都拿出来。
+	 所以文件系统的备份只适用于一个数据库集群的完整恢复。
+     </P
+></LI
+></OL
+><P>
+  </P
+><P
+>   另外一个文件系统备份的方法是给数据目录做一个<SPAN
+CLASS="QUOTE"
+>"一致的快照"</SPAN
+>，
+   条件是文件系统支持这个功能（并且你愿意相信它是实现正确的）。
+   典型的过程是制作一个包含数据库的卷的<SPAN
+CLASS="QUOTE"
+>"冻结快照"</SPAN
+>，
+   然后把整个数据库目录（不仅仅是部分，见上文）从快照拷贝到备份设备，
+   然后释放冻结快照。这样甚至在数据库服务器在运行的时候都可以运转。
+   不过，这样创建的备份会把数据库文件保存在一个没有恰当关闭数据库服务器的状态下；
+   因此，如果你在这个备份目录下启动数据库服务器，
+   它就会认为数据库服务器经历过崩溃并且重放 WAL 日志。这不是个问题，只要意识到它即可（并且确信在自己的备份中包含 WAL 文件）。
+  </P
+><P
+>   如果你的数据库分布在多个文件系统上，那么可能就没有任何方法获取所有卷上准确的同步冻结快照。
+   比如，你的数据文件和 WAL 日志在不同的磁盘上，或者表空间在不同的文件系统上，
+   这种情况下就不可能使用快照，因为快照必须是同时的。
+   在你信任这样的情况下的一致性快照的技术之前，仔细阅读你的文件系统文档。
+   最安全的方法是关闭数据库服务器足够长的时间，以建立所有冻结快照。
+  </P
+><P
+>   另外一个选择是使用 <SPAN
+CLASS="APPLICATION"
+>rsync</SPAN
+> 执行一次文件系统备份。
+   这是通过在数据库服务器正在运行的时候运行第一次 <SPAN
+CLASS="APPLICATION"
+>rsync</SPAN
+>，
+   然后关闭数据库服务器一段足够的时间长度，用于运行第二次 <SPAN
+CLASS="APPLICATION"
+>rsync</SPAN
+>。
+   第二次 <SPAN
+CLASS="APPLICATION"
+>rsync</SPAN
+> 会比第一次快很多，因为它要传输的数据相对较少，
+   并且最后的结果是一致的，因为服务器已经停止运行了。这个方法允许用很少的时间执行一次文件系统备份。
+  </P
+><P
+>	还要说明的是，文件系统备份不会比SQL转储小。恰恰相反，大多数情况下它要大。
+	（比如<SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 不用倒出索引，只是创建它们的命令。）
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="backup.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="backup-online.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >备份和恢复</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="backup.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >在线备份以及即时恢复(PITR)</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

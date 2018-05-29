@@ -1,0 +1,95 @@
+<html><head><title>进程控制</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="PREVIOUS" title="本中文HTML文档" href="./x39.htm"><link rel="NEXT" title="环境变量" href="./x124.htm"></head><body class="CHAPTER" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x39.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%"></td><td align="right" valign="bottom" width="10%"><a href="./x124.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="CHAPTER"><h1><a name="AEN46">Chapter 1. 进程控制</a></h1><div class="TOC"><dl><dt><b>Table of Contents</b></dt><dt>1.1. <a href="./c46.htm#AEN48">创建新进程：fork函数</a></dt><dt>1.2. <a href="./x124.htm">环境变量</a></dt><dt>1.3. <a href="./x152.htm">我怎样睡眠小于一秒？</a></dt><dt>1.4. <a href="./x166.htm">我怎样得到一个更细分时间单位的alarm函数版本？</a></dt><dt>1.5. <a href="./x172.htm">父子进程如何通信？</a></dt><dt>1.6. <a href="./x178.htm">我怎样去除僵死进程？</a></dt><dt>1.7. <a href="./x194.htm">我怎样使我的程序作为守护程序运行？</a></dt><dt>1.8. <a href="./x215.htm">我怎样象ps程序一样审视系统的进程？</a></dt><dt>1.9. <a href="./x221.htm">给定一个进程号，我怎样知道它是个正在运行的程序？</a></dt><dt>1.10. <a href="./x244.htm">system函数，pclose函数，waitpid函数的返回值是什么？</a></dt><dt>1.11. <a href="./x250.htm">我怎样找出一个进程的存储器使用情况？</a></dt><dt>1.12. <a href="./x253.htm">为什么进程的大小不缩减？</a></dt><dt>1.13. <a href="./x258.htm">我怎样改变我程序的名字(即“ps”看到的名字)？</a></dt><dt>1.14. <a href="./x264.htm">我怎样找到进程的相应可执行文件？</a></dt><dt>1.15. <a href="./x276.htm">为何父进程死时，我的进程未得到SIGHUP信号？</a></dt><dt>1.16. <a href="./x286.htm">我怎样杀死一个进程的所有派生进程？</a></dt></dl></div><div class="SECT1"><h1 class="SECT1"><a name="AEN48">1.1. 创建新进程：fork函数</a></h1><div class="SECT2"><h2 class="SECT2"><a name="AEN50">1.1.1. fork函数干什么？</a></h2><pre class="PROGRAMLISTING">     #include &lt;sys/types.h&gt;
+     #include &lt;unistd.h&gt;
+
+     pid_t fork(void);
+      </pre><p>‘fork()’函数用于从已存在进程中创建一个新进程。新进程称为子进程，而原进程称为
+父进程。你可以通过检查‘fork()’函数的返回值知道哪个是父进程，哪个是子进程。父
+进程得到的返回值是子进程的进程号，而子进程则返回0。以下这个范例程序说明它的基本
+功能：</p><pre class="PROGRAMLISTING">     pid_t pid;
+
+     switch (pid = fork())
+     {
+     case -1:
+         /* 这里pid为-1，fork函数失败 */
+         /* 一些可能的原因是 */
+         /* 进程数或虚拟内存用尽 */
+         perror("The fork failed!");
+         break;
+
+     case 0:
+         /* pid为0，子进程 */
+         /* 这里，我们是孩子，要做什么？ */
+         /* ... */
+         /* 但是做完后, 我们需要做类似下面： */
+         _exit(0);
+
+     default:
+         /* pid大于0，为父进程得到的子进程号 */
+         printf("Child's pid is %d\n",pid);
+     }
+      </pre><p>当然，有人可以用‘if() ... else ...’语句取代‘switch()’语句，但是上面的形式是
+一个有用的惯用方法。
+      </p><p>知道子进程自父进程继承什么或未继承什么将有助于我们。下面这个名单会因为
+不同Unix的实现而发生变化，所以或许准确性有了水份。请注意子进程得到的是
+这些东西的 *拷贝*，不是它们本身。
+      </p><p>由子进程自父进程继承到：
+      </p><p></p><ul><li><p>进程的资格(真实(real)/有效(effective)/已保存(saved)
+	  用户号(UIDs)和组号(GIDs))</p></li><li><p>环境(environment)</p></li><li><p>堆栈</p></li><li><p>内存</p></li><li><p>打开文件的描述符(注意对应的文件的位置由父子进程共享，
+	  这会引起含糊情况)</p></li><li><p>执行时关闭(close-on-exec) 标志 (译者注：close-on-exec标志可通过fnctl()对文件描
+     述符设置，POSIX.1要求所有目录流都必须在exec函数调用时关闭。更详细说明，
+     参见《UNIX环境高级编程》 W. R. Stevens, 1993, 
+     尤晋元等译(以下简称《高级编程》), 3.13节和8.9节)</p></li><li><p>信号(signal)控制设定</p></li><li><p>nice值
+	  (译者注：nice值由nice函数设定，该值表示进程的优先级，
+	  数值越小，优先级越高)</p></li><li><p>进程调度类别(scheduler class)
+	  (译者注：进程调度类别指进程在系统中被调度时所属的类别，不同类别有不同优先级，根据进程调度类别和nice值，进程调度程序可计算出每个进程的全局优先级(Global process prority)，优先级高的进程优先执行)</p></li><li><p>进程组号</p></li><li><p>对话期ID(Session ID) (译者注：译文取自《高级编程》，指：进程所属的对话期
+     (session)ID， 一个对话期包括一个或多个进程组， 更详细说明参见《高级编程》
+     9.5节)</p></li><li><p>当前工作目录</p></li><li><p>根目录
+	  (译者注：根目录不一定是“/”，它可由chroot函数改变)</p></li><li><p>文件方式创建屏蔽字(file mode creation mask (umask))
+	  (译者注：译文取自《高级编程》，指：创建新文件的缺省屏蔽字)</p></li><li><p>资源限制</p></li><li><p>控制终端</p></li></ul><p>子进程所独有：</p><p></p><ul><li><p>进程号</p></li><li><p>不同的父进程号(译者注：
+	  即子进程的父进程号与父进程的父进程号不同，
+	  父进程号可由getppid函数得到)</p></li><li><p>自己的文件描述符和目录流的拷贝(译者注：
+	  目录流由opendir函数创建，因其为顺序读取，顾称“目录流”)</p></li><li><p>子进程不继承父进程的进程，正文(text)，
+	  数据和其它锁定内存(memory locks)
+     (译者注：锁定内存指被锁定的虚拟内存页，锁定后，
+     不允许内核将其在必要时换出(page out)，
+     详细说明参见《The GNU C Library Reference Manual》 2.2版，
+     1999, 3.4.2节)</p></li><li><p>在tms结构中的系统时间(译者注：tms结构可由times函数获得，
+	  它保存四个数据用于记录进程使用中央处理器
+	  (CPU：Central Processing Unit)的时间，包括：用户时间，系统时间，
+	  用户各子进程合计时间，系统各子进程合计时间)</p></li><li><p>资源使用(resource utilizations)设定为0</p></li><li><p>阻塞信号集初始化为空集(译者注：原文此处不明确，
+	  译文根据fork函数手册页稍做修改)</p></li><li><p>不继承由timer_create函数创建的计时器</p></li><li><p>不继承异步输入和输出</p></li></ul></div><div class="SECT2"><h2 class="SECT2"><a name="AEN111">1.1.2. fork函数与vfork函数的区别在哪里？</a></h2><p>有些系统有一个系统调用‘vfork()’，它最初被设计成‘fork()’的较少额外支出
+(lower-overhead)版本。因为‘fork()’包括拷贝整个进程的地址空间，所以非常
+“昂贵”，这个‘vfork()’函数因此被引入。(在3.0BSD中)(译者注：BSD：
+Berkeley Software Distribution)
+      </p><p>*但是*，自从‘vfork()’被引入，‘fork()’的实现方法得到了很大改善，最值得
+注意的是“写操作时拷贝”(copy-on-write)的引入，它是通过允许父子进程可访问
+相同物理内存从而伪装(fake)了对进程地址空间的真实拷贝，直到有进程改变内
+存中数据时才拷贝。这个提高很大程度上抹杀了需要‘vfork()’的理由；事实上，
+一大部份系统完全丧失了‘vfork()’的原始功能。但为了兼容，它们仍然提供
+‘vfork()’函数调用，但它只是简单地调用‘fork()’，而不试图模拟所有‘vfork()’
+的语义(semantics， 译文取自《高级编程》，指定义的内容和做法)。
+      </p><p>结论是，试图使用任何‘fork()’和‘vfork()’的不同点是*很*不明智的。事实上，
+可能使用‘vfork()’根本就是不明智的，除非你确切知道你想*干什么*。
+      </p><p>两者的基本区别在于当使用‘vfork()’创建新进程时，父进程将被暂时阻塞，而
+子进程则可以借用父进程的地址空间。这个奇特状态将持续直到子进程要么退
+出，要么调用‘execve()’，至此父进程才继续执行。
+      </p><p>这意味着一个由‘vfork()’创建的子进程必须小心以免出乎意料地改变父进程的
+变量。特别的，子进程必须不从包含‘vfork()’调用的函数返回，而且必须不调
+用‘exit()’(如果它需要退出，它需要使用‘_exit()’；事实上，对于使用正常
+‘fork()’创建的子进程这也是正确的)(译者注：参见1.1.3)
+      </p></div><div class="SECT2"><h2 class="SECT2"><a name="AEN118">1.1.3. 为何在一个fork的子进程分支中使用_exit函数而不使用exit函数？</a></h2><p>‘exit()’与‘_exit()’有不少区别在使用‘fork()’，特别是‘vfork()’时变得很
+突出。
+      </p><p>‘exit()’与‘_exit()’的基本区别在于前一个调用实施与调用库里用户状态结构
+(user-mode constructs)有关的清除工作(clean-up)，而且调用用户自定义的清除程序
+(译者注：自定义清除程序由atexit函数定义，可定义多次，并以倒序执行)，相对
+应，后一个函数只为进程实施内核清除工作。
+      </p><p>在由‘fork()’创建的子进程分支里，正常情况下使用‘exit()’是不正确的，这是
+因为使用它会导致标准输入输出(译者注：stdio: Standard Input Output)的缓冲区被
+清空两次，而且临时文件被出乎意料的删除(译者注：临时文件由tmpfile函数创建
+在系统临时目录下，文件名由系统随机生成)。在C++程序中情况会更糟，因为静
+态目标(static objects)的析构函数(destructors)可以被错误地执行。(还有一些特殊情
+况，比如守护程序，它们的*父进程*需要调用‘_exit()’而不是子进程；适用于绝
+大多数情况的基本规则是，‘exit()’在每一次进入‘main’函数后只调用一次。)
+      </p><p>在由‘vfork()’创建的子进程分支里，‘exit()’的使用将更加危险，因为它将影响
+*父*进程的状态。
+      </p></div></div></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x39.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x124.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">本中文HTML文档</td><td align="center" valign="top" width="34%">&nbsp;</td><td align="right" valign="top" width="33%">环境变量</td></tr></tbody></table></div></body></html>

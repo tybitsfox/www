@@ -1,0 +1,526 @@
+<HTML
+><HEAD
+><TITLE
+>EXPLAIN</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="SQL 命令"
+HREF="sql-commands.html"><LINK
+REL="PREVIOUS"
+TITLE="EXECUTE"
+HREF="sql-execute.html"><LINK
+REL="NEXT"
+TITLE="FETCH"
+HREF="sql-fetch.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="REFENTRY"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sql-execute.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sql-execute.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sql-fetch.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sql-fetch.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SQL-EXPLAIN"
+>EXPLAIN</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN45938"
+></A
+><H2
+>Name</H2
+>EXPLAIN&nbsp;--&nbsp;显示语句执行规划</DIV
+><A
+NAME="AEN45941"
+></A
+><A
+NAME="AEN45943"
+></A
+><A
+NAME="AEN45946"
+></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN45949"
+></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>EXPLAIN [ ANALYZE ] [ VERBOSE ] <TT
+CLASS="REPLACEABLE"
+><I
+>statement</I
+></TT
+></PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN45952"
+></A
+><H2
+>描述</H2
+><P
+>	这条命令显示<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>规划器为所提供的语句生成的执行规划。
+	执行规划显示语句引用的表是如何被扫描的 &mdash; 是简单的顺序扫描，还是索引扫描等 &mdash; 并且如果引用了多个表，
+	采用了什么样的连接算法从每个输入的表中取出所需要的记录。
+  </P
+><P
+>        显示出来的最关键的部分是预计的语句执行开销，
+        这就是规划器对运行该语句所需时间的估计（以磁盘页面存取为单位计量）。
+        实际上显示了两个数字：返回第一行记录前的启动时间，
+        和返回所有记录的总时间。对于大多数查询而言，关心的是总时间，但是，
+        在某些环境下，比如一个 <TT
+CLASS="LITERAL"
+>EXISTS</TT
+> 子查询里，
+        规划器将选择最小启动时间而不是最小总时间（因为执行器在获取一条记录后总是要停下来）。
+	同样，如果你用一条 <TT
+CLASS="LITERAL"
+>LIMIT</TT
+> 子句限制返回的记录数，
+        规划器会在最终的开销上做一个合理的插值以计算哪个规划开销最省。
+  </P
+><P
+>	<TT
+CLASS="LITERAL"
+>ANALYZE</TT
+> 选项导致查询被实际执行，而不仅仅是规划。
+	它在显示中增加了在每个规划节点内部花掉的总时间（以毫秒计）和它实际返回的行数。
+	这些数据对搜索该规划器的预期是否和现实相近很有帮助。
+  </P
+><DIV
+CLASS="IMPORTANT"
+><BLOCKQUOTE
+CLASS="IMPORTANT"
+><P
+><B
+>Important: </B
+>	要记住的是查询实际上在使用 <TT
+CLASS="LITERAL"
+>ANALYZE</TT
+> 的时候是执行的。
+	尽管 <TT
+CLASS="COMMAND"
+>EXPLAIN</TT
+> 会抛弃任何 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 会返回的输出，
+	但是其它查询的副作用还是一样会发生的。
+	如果你在 <TT
+CLASS="COMMAND"
+>INSERT</TT
+>，<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>，<TT
+CLASS="COMMAND"
+>DELETE</TT
+>，或者
+	<TT
+CLASS="COMMAND"
+>EXECUTE</TT
+> 语句里使用
+	<TT
+CLASS="COMMAND"
+>EXPLAIN ANALYZE</TT
+>，而且还不想让查询影响你的数据，
+	用下面的方法：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>BEGIN;
+EXPLAIN ANALYZE ...;
+ROLLBACK;</PRE
+><P>
+   </P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN45972"
+></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>ANALYZE</TT
+></DT
+><DD
+><P
+>      执行命令并显示实际运行时间。
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>VERBOSE</TT
+></DT
+><DD
+><P
+>      显示规划树完整的内部表现形式，而不仅仅是一个摘要。
+      通常，这个选项只是在特殊的调试过程的时候有用。
+      <TT
+CLASS="LITERAL"
+>VERBOSE</TT
+> 输出可能是打印得工整的，也可能不是，
+      具体取决于配置参数 <A
+HREF="runtime-config-client.html#GUC-EXPLAIN-PRETTY-PRINT"
+>explain_pretty_print</A
+>。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>语句</I
+></TT
+></DT
+><DD
+><P
+>        任何<TT
+CLASS="COMMAND"
+>SELECT</TT
+>，<TT
+CLASS="COMMAND"
+>INSERT</TT
+>，<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>，
+	<TT
+CLASS="COMMAND"
+>DELETE</TT
+>，<TT
+CLASS="COMMAND"
+>EXECUTE</TT
+>，或者 <TT
+CLASS="COMMAND"
+>DECLARE</TT
+> 语句。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN45998"
+></A
+><H2
+>注意</H2
+><P
+>   在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里只有很少的一些文档介绍有关优化器计算开销的问题。
+   参考 <A
+HREF="performance-tips.html#USING-EXPLAIN"
+>Section 13.1</A
+>
+   获取更多信息。
+  </P
+><P
+>   为了让 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 查询规划器在优化查询的时候做出合理的判断，
+   我们需要运行 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 语句以记录有关数据在表中的分布的统计信息。
+   如果你没做过这件事情（或者如果自上次 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 以来，
+   表中的数据统计分布发生了显著变化），那么计算出来的开销预计很可能与查询的实际属性并不对应，
+   因此很可能会选取一个比较差的查询规划。
+  </P
+><P
+>   在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 7.3 以前，查询规划是以 <TT
+CLASS="LITERAL"
+>NOTICE</TT
+> 消息的形式发出来的。
+   现在它的显示格式是一个查询结果（格式化成了类似一个有单个文本字段的表。）
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN46010"
+></A
+><H2
+>例子</H2
+><P
+>        显示一个对只有一个
+   <TT
+CLASS="TYPE"
+>int4</TT
+> 列和 10000 行的表的简单查询的查询规划：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXPLAIN SELECT * FROM foo;
+
+                       QUERY PLAN
+---------------------------------------------------------
+ Seq Scan on foo  (cost=0.00..155.00 rows=10000 width=4)
+(1 row)</PRE
+><P>
+  </P
+><P
+>	如果存在一个索引，并且我们使用一个可应用索引的 <TT
+CLASS="LITERAL"
+>WHERE</TT
+> 条件的查询，
+	<TT
+CLASS="COMMAND"
+>EXPLAIN</TT
+> 会显示不同的规划：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXPLAIN SELECT * FROM foo WHERE i = 4;
+
+                         QUERY PLAN
+--------------------------------------------------------------
+ Index Scan using fi on foo  (cost=0.00..5.98 rows=1 width=4)
+   Index Cond: (i = 4)
+(2 rows)</PRE
+><P>
+  </P
+><P
+>	下面是一个使用了聚集函数的查询的查询规划：
+
+   </P><PRE
+CLASS="PROGRAMLISTING"
+>EXPLAIN SELECT sum(i) FROM foo WHERE i &#60; 4;
+
+                             QUERY PLAN
+-------------------------------------------------------------------
+ Aggregate  (cost=23.93..23.93 rows=1 width=4)
+   -&gt;  Index Scan using fi on foo  (cost=0.00..23.92 rows=6 width=4)
+         Index Cond: (i &#60; 10)
+(3 rows)
+   </PRE
+><P>
+  </P
+><P
+>	下面是一个使用 <TT
+CLASS="COMMAND"
+>EXPLAIN EXECUTE</TT
+> 显示一个已准备好的查询规划的例子：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>PREPARE query(int, int) AS SELECT sum(bar) FROM test
+    WHERE id &gt; $1 AND id &lt; $2
+    GROUP BY foo;
+
+EXPLAIN ANALYZE EXECUTE query(100, 200);
+
+                                                       QUERY PLAN
+-------------------------------------------------------------------------------------------------------------------------
+ HashAggregate  (cost=39.53..39.53 rows=1 width=8) (actual time=0.66..0.67 rows=7 loops=1)
+   -&gt;  Index Scan using test_pkey on test  (cost=0.00..32.97 rows=1311 width=8) (actual time=0.05..0.39 rows=99 loops=1)
+         Index Cond: ((id &gt; $1) AND (id &lt; $2))
+ Total runtime: 0.85 msec
+(4 rows)
+   </PRE
+><P>
+  </P
+><P
+>	注意这里显示的数字，
+	甚至还有选择的查询策略都有可能在各个
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>版本之间不同--因为规划器在不断改进。
+	另外，<TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 命令使用随机的采样来估计数据统计；
+	因此，一次新的 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 运行之后开销估计可能会变化，
+	即使数据的实际分布没有改变也这样。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN46028"
+></A
+><H2
+>兼容性</H2
+><P
+>    在 SQL 标准中没有<TT
+CLASS="COMMAND"
+>EXPLAIN</TT
+> 语句。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN46032"
+></A
+><H2
+>又见</H2
+><A
+HREF="sql-analyze.html"
+><I
+>ANALYZE</I
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sql-execute.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sql-fetch.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>EXECUTE</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="sql-commands.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>FETCH</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

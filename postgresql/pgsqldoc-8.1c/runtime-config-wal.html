@@ -1,0 +1,631 @@
+<HTML
+><HEAD
+><TITLE
+>预写式日志</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="服务器配置"
+HREF="runtime-config.html"><LINK
+REL="PREVIOUS"
+TITLE="资源消耗"
+HREF="runtime-config-resource.html"><LINK
+REL="NEXT"
+TITLE="查询规划"
+HREF="runtime-config-query.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="runtime-config-resource.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="runtime-config.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 17. 服务器配置</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="runtime-config.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="runtime-config-query.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="RUNTIME-CONFIG-WAL"
+>17.5. 预写式日志</A
+></H1
+><P
+>    又见 <A
+HREF="wal-configuration.html"
+>Section 26.3</A
+> 获取 WAL 调节的细节。
+   </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="RUNTIME-CONFIG-WAL-SETTINGS"
+>17.5.1. 设置</A
+></H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A
+NAME="GUC-FSYNC"
+><TT
+CLASS="VARNAME"
+>fsync</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	如果这个选项是打开，那么 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	服务器将在好几个地方使用 <TT
+CLASS="FUNCTION"
+>fsync()</TT
+> 系统调用来确保更新已经物理上写到磁盘中。
+	这样就保证了数据库集群将在操作系统或者硬件崩溃的情况下恢复到一个一致的状态。
+       </P
+><P
+>	不过，使用 <TT
+CLASS="FUNCTION"
+>fsync()</TT
+> 会对性能有影响：
+	在事务提交的时候，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 必须等待操作系统吧预写日志刷新到磁盘上。
+	在关闭 <TT
+CLASS="VARNAME"
+>fsync</TT
+> 的时候，操作系统可以尽可能优化缓冲，排序和推迟写动作。
+	这样可以显著提高性能。不过，如果系统崩溃，最后提交的几个事务的结果可能部分或者全部丢失。
+	最糟糕的情况是可能出现不可恢复的崩溃。
+	（数据库服务器本身<I
+CLASS="EMPHASIS"
+>并不</I
+>是这里的风险因素。
+	只有一个操作系统级别的崩溃会导致毁坏数据的风险。）
+       </P
+><P
+>	因为涉及的风险太高，<TT
+CLASS="VARNAME"
+>fsync</TT
+> 的设置没有普适的原则。
+	有些管理员总是关闭 <TT
+CLASS="VARNAME"
+>fsync</TT
+>，而其它一些只是在批量装载的时候关闭它，
+	因为这个时候，如果出现了错误，那么就有个明确的重新开始的点，
+	而另外一些管理员总是打开 <TT
+CLASS="VARNAME"
+>fsync</TT
+>。
+	缺省是打开<TT
+CLASS="VARNAME"
+>fsync</TT
+>，目的是最大限度的可靠性。
+	如果你信任你的操作系统，你的硬件，以及你的工具公司（或者你的备份电池），
+	你可以考虑关闭 <TT
+CLASS="VARNAME"
+>fsync</TT
+>。
+       </P
+><P
+>	这个选项只能在服务器启动或者 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 文件里设置。
+	如果这个选项是 <TT
+CLASS="LITERAL"
+>off</TT
+>，那么考虑把
+        <TT
+CLASS="VARNAME"
+>guc-full-page-writes</TT
+> 也关闭了。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-WAL-SYNC-METHOD"
+><TT
+CLASS="VARNAME"
+>wal_sync_method</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>	用来向磁盘强制更新 WAL 数据的方法。
+	如果 <TT
+CLASS="VARNAME"
+>fsync</TT
+> 是关闭的，那么这个设置就是无关的，
+	因为所有更新都不会强制输出。
+	可能的值是：
+       </P
+><P
+></P
+><UL
+><LI
+><P
+>         <TT
+CLASS="LITERAL"
+>open_datasync</TT
+> （用带 <TT
+CLASS="SYMBOL"
+>O_DSYNC</TT
+> 选项的 <TT
+CLASS="FUNCTION"
+>open()</TT
+> 打开 WAL 文件）
+        </P
+></LI
+><LI
+><P
+>         <TT
+CLASS="LITERAL"
+>fdatasync</TT
+> （每次提交的时候都调用 <TT
+CLASS="FUNCTION"
+>fdatasync()</TT
+>），
+        </P
+></LI
+><LI
+><P
+>         <TT
+CLASS="LITERAL"
+>fsync_writethrough</TT
+> （每次提交的时候调用 <TT
+CLASS="FUNCTION"
+>fsync()</TT
+>，强制写出任何磁盘写缓冲区）
+        </P
+></LI
+><LI
+><P
+>         <TT
+CLASS="LITERAL"
+>fsync</TT
+> （每次提交的时候调用 <TT
+CLASS="FUNCTION"
+>fsync()</TT
+>）
+        </P
+></LI
+><LI
+><P
+>         <TT
+CLASS="LITERAL"
+>open_sync</TT
+> （用带 <TT
+CLASS="SYMBOL"
+>O_SYNC</TT
+> 选项的 <TT
+CLASS="FUNCTION"
+>open()</TT
+> 写 WAL 文件）
+        </P
+></LI
+></UL
+><P
+>	不是在所有系统上都能使用上面四种选项。
+	支持的最靠上的选项是缺省。
+	如果 <TT
+CLASS="VARNAME"
+>fsync</TT
+> 关闭，那么这个设置无关。
+	这个选项只能在服务器启动的时候和在<TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>文件里设置。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-FULL-PAGE-WRITES"
+><TT
+CLASS="VARNAME"
+>full_page_writes</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	在打开这个选项的时候，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	服务器在 checkpoint 之后在对页面的第一次写的时候将整个页面写到 WAL 里面。
+	这么做是因为在操作系统崩溃过程中的一次页面的写入可能会导致只有部分页面写入磁盘，
+	导致一个在盘的页面包含新旧数据的混合。在崩溃后的恢复期间，
+	在 WAL 里面存储的行变化信息不够完整，无法完全恢复该页。
+	把完整的页面影像保存下载就保证了可以正确存储页面，代价是增加了写入 WAL 的数据量。
+	（因为 WAL 重放总是从一个检查点开始的，所以在检查点后的每个页面之后的第一次改变的时候做 WAL 备份就足够了。
+	所以，一个减小全页面写的开销的方法是增加检查点 (checkpoint) 的间隔参数值。）
+       </P
+><P
+>	把这个选项关闭会加快正常操作的速度，但是可能导致系统崩溃或者掉电之后的数据库损坏，
+	它的危害比较小，但是类似 <TT
+CLASS="VARNAME"
+>fsync</TT
+>。
+	如果你有减小部分页面写入风险的硬件支持（比如电池供电的磁盘控制器），
+	或者文件系统软件支持（比如，Reiser4），并且他们可以把风险降低到一个可以接受的低范畴，
+	那么你可以关闭这个选项。
+       </P
+><P
+>	关闭这个选项并不影响即时恢复（PITR）的 WAL 使用（参阅 <A
+HREF="backup-online.html"
+>Section 23.3</A
+>）。
+       </P
+><P
+>	这个选项只能在服务器启动的时候设置，或者在 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 里设置。
+	缺省是 <TT
+CLASS="LITERAL"
+>on</TT
+>。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-WAL-BUFFERS"
+><TT
+CLASS="VARNAME"
+>wal_buffers</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	放在共享内存里用于 WAL 数据的磁盘页面缓冲区的数目。
+	这个设置只需要大到能保存下一次事务生成的 WAL 数据即可，
+	因为这些数据在每次事务提交都会写入磁盘。
+	这个选项只能在服务器启动的时候设置。
+       </P
+><P
+>	增大这个参数可能导致 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 要求更多的 <SPAN
+CLASS="SYSTEMITEM"
+>System V</SPAN
+>
+	共享内存，可能超过你的操作系统的缺省配置。必要时，参阅 <A
+HREF="kernel-resources.html#SYSVIPC"
+>Section 16.4.1</A
+> 获取如何调节这些参数的信息。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-COMMIT-DELAY"
+><TT
+CLASS="VARNAME"
+>commit_delay</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	向 WAL 缓冲区写入记录和将缓冲区刷新到磁盘上之间的时间延迟，以微秒计。
+	一个非零的延迟允许多个事务共用一个 <TT
+CLASS="FUNCTION"
+>fsync()</TT
+> 系统调用提交，
+	如果系统负载足够搞，那么在给出的间隔里，其它的事务可能已经准备好提交了。
+	但是如果没有其它事务准备提交，那么这个间隔就是在浪费时间。
+	因此，这个延迟只是在一个服务器进程写其提交日志时，至少
+	<TT
+CLASS="VARNAME"
+>commit_siblings</TT
+> 个其它事务在活跃的情况下执行。
+	缺省是零（无延迟）。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-COMMIT-SIBLINGS"
+><TT
+CLASS="VARNAME"
+>commit_siblings</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	在执行 <TT
+CLASS="VARNAME"
+>commit_delay</TT
+> 延迟的时候，要求的最少的打开的并发事务数目。
+	大一些的数值会导致在延迟期间另外一个事务准备好提交的可能性增大。缺省是五。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="RUNTIME-CONFIG-WAL-CHECKPOINTS"
+>17.5.2. 检查点</A
+></H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A
+NAME="GUC-CHECKPOINT-SEGMENTS"
+><TT
+CLASS="VARNAME"
+>checkpoint_segments</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	在自动的 WAL 检查点之间的最大距离，以日志文件段（每个段通常 16 兆大）计。
+	缺省是三。这个选项只能在服务器启动或者在 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 文件里设置。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-CHECKPOINT-TIMEOUT"
+><TT
+CLASS="VARNAME"
+>checkpoint_timeout</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	在自动 WAL 检查点之间的最长时间，以秒计。缺省是 300 秒。
+	这个选项只能在服务器启动的时候或者在 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 文件里设置。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-CHECKPOINT-WARNING"
+><TT
+CLASS="VARNAME"
+>checkpoint_warning</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	如果因为填充检查点段文件发生的检查点的间隔比这个数值表示的秒数更多，
+	那么向服务器日志发送一个消息。缺省是 30 秒。零则关闭警告。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="RUNTIME-CONFIG-WAL-ARCHIVING"
+>17.5.3. 归档</A
+></H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A
+NAME="GUC-ARCHIVE-COMMAND"
+><TT
+CLASS="VARNAME"
+>archive_command</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>      用来将一个完整的 WAL 文件序列归档执行的 shell 命令。
+      如果这是一个空字串（缺省），那么 WAL 归档就关闭。字串中任何 <TT
+CLASS="LITERAL"
+>%p</TT
+> 都被要归档的文件的绝对路径代替，
+      而任何 <TT
+CLASS="LITERAL"
+>%f</TT
+> 都只被该文件名代替。如果你需要在命令里嵌入真正的 <TT
+CLASS="LITERAL"
+>%</TT
+>，写 <TT
+CLASS="LITERAL"
+>%%</TT
+>。
+      有关更多的信息，参阅 <A
+HREF="backup-online.html#BACKUP-ARCHIVING-WAL"
+>Section 23.3.1</A
+>。
+      这个选项只能在服务器启动的时候在 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 文件里面设置。
+       </P
+><P
+>	有一点很重要：这个命令必须是当且仅当成功的时候才返回零。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>archive_command = 'cp "%p" /mnt/server/archivedir/"%f"'
+archive_command = 'copy "%p" /mnt/server/archivedir/"%f"'  # Windows</PRE
+><P>
+         </P
+></DD
+></DL
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="runtime-config-resource.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="runtime-config-query.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>资源消耗</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="runtime-config.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>查询规划</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

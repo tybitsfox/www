@@ -1,0 +1,38 @@
+<html><head><title>我怎样从终端读取单个字符？</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="终端输入/输出" href="./c432.htm"><link rel="PREVIOUS" title="终端输入/输出" href="./c432.htm"><link rel="NEXT" title="我怎样检查是否一个键被摁下？" href="./x447.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./c432.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 3. 终端输入/输出</td><td align="right" valign="bottom" width="10%"><a href="./x447.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN442">3.2. 我怎样从终端读取单个字符？</a></h1><p>     我怎样从终端读取单个字符？我的程序总是要等着用户按回车。
+    </p><p>终端通常在标准(canonical)模式，在此模式输入总是经编辑后以行读入。你可以
+设置终端为非标准(non-canonical)模式，而在此模式下你可以设置在输入传递给
+你的程序前读入多少字符。你也可以设定非标准模式的计时器为0，这个计时器
+根据设定的时间间隔清空你的缓冲区。这样做使你可以使用‘getc()’函数立即
+获得用户的按键输入。我们使用的‘tcgetattr()’函数和‘tcsetattr()’函数都
+是在POSIX中定义用来操纵‘termios’结构的。
+    </p><pre class="PROGRAMLISTING">     #include &lt;stdlib.h&gt;
+     #include &lt;stdio.h&gt;
+
+     #include &lt;termios.h&gt;
+     #include &lt;string.h&gt;
+
+     static struct termios stored_settings;
+
+     void set_keypress(void)
+     {
+         struct termios new_settings;
+
+         tcgetattr(0,&amp;stored_settings);
+
+         new_settings = stored_settings;
+
+         /* Disable canonical mode, and set buffer size to 1 byte */
+         new_settings.c_lflag &amp;= (~ICANON);
+         new_settings.c_cc[VTIME] = 0;
+         new_settings.c_cc[VMIN] = 1;
+
+         tcsetattr(0,TCSANOW,&amp;new_settings);
+         return;
+     }
+
+     void reset_keypress(void)
+     {
+         tcsetattr(0,TCSANOW,&amp;stored_settings);
+         return;
+     }
+    </pre></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./c432.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x447.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">终端输入/输出</td><td align="center" valign="top" width="34%"><a href="./c432.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">我怎样检查是否一个键被摁下？</td></tr></tbody></table></div></body></html>

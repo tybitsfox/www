@@ -1,0 +1,1108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+<!-- saved from url=(0056)http://www.gamedev.net/reference/articles/article290.asp --> 
+<HTML><HEAD><TITLE>Operating Systems Development Series</TITLE> 
+<META http-equiv=Content-Type content="text/html; charset=windows-1252"><LINK 
+href="Files/reference.css" 
+type=text/css rel=stylesheet> 
+<META content="MSHTML 6.00.6000.16441" name=GENERATOR></HEAD> 
+<BODY text=#000000 vLink=#666699 aLink=#000000 link=#666699 bgColor=#ffffff 
+leftMargin=0 
+background=Files/watermark.gif 
+topMargin=0 marginheight="0" marginwidth="0"> 
+
+<table border=0 cellpadding=0 cellspacing=0 width="100%"> 
+<tr> 
+     <td width="60%"> 
+	<a href="http://www.brokenthorn.com"><img src="site/5.png" border=0></a> 
+     </td> 
+     <td width="40%"> 
+        <div id="ad_main"> 
+
+        </div> 
+     </td> 
+  </tr> 
+
+</table> 
+
+<TABLE cellSpacing=0 cellPadding=3 width="100%" border=0> 
+  <TBODY> 
+  <TR> 
+    <TD class=tblhdr>Operating Systems Development Series</TD> 
+</TR> 
+  <TR> 
+ 
+    <TD align=middle colSpan=2></TD></TR></TBODY></TABLE> 
+<TABLE cellSpacing=0 cellPadding=5 width="100%" border=0> 
+  <TBODY> 
+  <TR> 
+    <TD> 
+ 
+ 
+<!-- Title --> 
+ 
+      <CENTER><SPAN class=title>Operating Systems Development - Portable Executable (PE)</SPAN> 
+ 
+<BR><SPAN class=author>by Mike, 2011</SPAN></CENTER> 
+ 
+      <P>This series is intended to demonstrate and teach operating system development from
+	the ground up.</p>
+
+<!-- note: Google translator causes page to mess up; need to look into!! -->
+
+      <H1>Introduction</H1> 
+	<p>
+	Welcome!
+	</p>
+	<p>
+	Yey, this is going to be a long one.
+	</p>
+	<p>
+	This chapter is going to cover an advanced topic - the PE executable file format. We will be looking
+	at covering PE resources, dynamic linking, and more. This chapter is also planned for an update to
+	include more information to make the information as complete as possible.
+	</p>
+
+	<p>
+	Most of what is included in this chapter is for information purposes only and are only included
+	both for completness and in case any of our readers would like to provide support for them. Also
+	please note that a lot of the information provided can also be found in the official PE specification.
+	</p>
+	<p>
+	After this chapter, we will have everything we need to develop a loader and support a single tasking environment.
+	</p>
+	<p>
+	<i>Lets get started!</i>
+	</p>
+
+	<h1>File Format</h1>
+
+	<h2>Abstract</h2>
+
+	<p>
+	The <b>Portable Executable (PE)</b> file format is the standard executable file format used
+	in several operating systems, including Windows and Windows-like OSs, such as ReactOS. It is also
+	the standard file format used with booting on <b>Extensable Firmware Interface (EFI)</b> machines.
+	</p>
+
+	<p>
+	The PE executable file format is a complex format, supporting relocations, symbol tables, resources,
+	dynamic binding, and more.
+	</p>
+
+	<h2>Terms</h2>
+
+	<h3>VA (Virtual Address)</h3>
+
+	<p>
+	A <b>Virtual Address (VA)</b> is a linear address in the <b>Virtual Address Space (VAS)</b> of
+	the current program. All addresses in the PE executable format are virtual addresses. These addresses
+	are 32 bit linear addresses.
+	</p>
+
+	<h3>RVA (Relative Virtual Address)</h3>
+
+	<p>
+	A <b>Relative Virtual Address (RVA)</b> is a VA that is relative to the <b>base address</b> of the
+	executable program. The PE executable format uses RVAs in a lot of areas, so it is important to know
+	what RVAs are and how to obtain linear addresses from them. RVAs are just offsets from the base address,
+	thats all. So to obtain its linear address, just add the RVA to the base:
+	</p>
+	<BLOCKQUOTE><PRE><DIV class=code>Linear address = Base address + RVA</DIV></PRE></BLOCKQUOTE>
+
+	<p>
+	This one is important as we will need to perform this calculation in a lot of areas when parsing.
+	</p>
+
+	<h3>Sections and the Section Table</h3>
+
+<p><b>Sections</b></p>
+<p>
+Advanced executable file formats typically use <b>program sections</b> to simplify the linking process
+and provide structure to the software.
+
+Sections simplifies the linking process by providing a standard method for instructions and data to be
+stored within the executable image or object file.
+</p>
+<p>
+A section typically has a name associated with what elements are inside of the section. For example, <b>.data</b>
+is a common section name that contains variable, uninitialized data. Other section names have historical
+backgrounds. For example, <b>.text</b> is a typical name of a section containing executable or object code.
+<b>.bss</b> is typically used for global, program-wide initialized data.
+</p>
+<p>
+Using the C++ toolchain, for an example, variables defined in the global namespace or as <b>static</b>
+are stored in <b>.bss</b>. The resulting bytecode generated after compilation is stored in <b>.text</b>.
+</p>
+<p>
+The PE executable file format typically includes one or more
+of the following section names:
+</p>
+<ul>
+
+<li>.text</li>
+<li>.data</li>
+<li>.bss</li>
+<li>.arch</li>
+<li>.edata</li>
+<li>.idata</li>
+<li>.pdata</li>
+<li>.rdata</li>
+<li>.reloc</li>
+
+<li>.rsrc</li>
+<li>.sbss</li>
+<li>.sdata</li>
+<li>.srdata</li>
+<li>.xdata</li>
+</ul>
+<p><b>Section Table</b></p>
+<p>
+Program files and object files contain multiple sections. The base location of each section,
+and the name of that section, is typically stored in a <b>section table</b>. In some implimentations,
+a section table can be a simple linked list of structures or a hash table - different implimentations exist.
+</p>
+
+	<h3>Symbols and the Symbol Table</h3>
+
+<p><b>Symbols</b></p>
+<p>
+	While programming in C++, you most likley have encountered the unfamous <b>Undefined symbol</b> linker
+errors (or in some implimentations of C, warnings. Thats right, fully compiling and linking without error *ahem* old MSVC). This happens do to calling a function or referencing a variable
+by name whose definition could not be resolved during the linking stage.
+</p>
+<p>
+Functions and variables are referred to as <b>symbols</b> by the linker. A <b>symbol</b> contains the name, and
+information about what it is: such as a data type and value, for example. During compiling, the compilier
+must keep track of these symbols to insure that the final program can be linked. If a symbol is used that is not
+defined in the current <b>translation unit</b>, but is an EXTERN symbol, the compilier will need to mark it
+as an EXTERN symbol when writing the symbols to the object file.
+</p>
+<p>
+	If, during the linking stage, a symbol marked EXTERN still has no value associated with it (the symbol
+has no definition), the linker issues the above error.
+</p>
+<p>
+	Symbols are what allows programmers to define variables or functions across modules, translation units,
+or libraries.
+</p>
+<p>
+	There can only be one symbol with the same name through the entire program, and any libraries that it links with.
+	Because of this, and the high probability of naming collisions with the use of high level languages, variable and
+	function names typically have <b>name mangling</b> applied. This, of course, does not apply to assembly language.
+	The name mangling applied depends on multiple factors, and differ between toolchains.
+</p>
+<p>
+	Lets take a look. Here are some C function declarations, and their mangled symbolic
+	name on the right. The number in the mangled name is the number of bytes for the paramaters.
+</p>
+<BLOCKQUOTE><PRE><DIV class=code>void _cdecl function (int i);   ->   _function
+void _stdcall function(int i);  ->   _function@4
+void _fastcall function(int i); ->   @function@4
+</DIV></PRE></BLOCKQUOTE>
+<p>
+	Notice that functions with the _cdecl call convention only have an underscore prepended. This allows
+C functions to be easily defined using assembly language, and allows C code to easily call those functions.
+</p>
+<p>
+	There isnt any standard for C++ name mangling. Some compiliers might produce a symbolic name
+like <b>?h@@YAXH@Z</b>, while others can produce <b>__7h__Fi</b> or <b>W?h$n(i)v</b> for the <b>same</b>
+function of <b>void h(int)</b>. This makes it impractical to use with assembly language. It is still possible,
+however.
+</p>
+
+<p><b>Symbol table</b></p>
+<p>
+	Simular to the section table there exists a <b>symbol table</b>. The symbol table allows a way for
+the software to look up symbolic names and information about the symbol, such as if its an exported symbol,
+its data type, properties, etc. Symbol tables are typically a linked list of information or implimented
+in hash tables.
+</p>
+
+	<h2>Structure</h2>
+
+	<h3>Abstract</h3>
+	<p>
+	We have taken a look at the structure of the PE executable format in our MSVC++ chapter.
+	When we load a PE executable in memory, that memory would contain an exact copy of
+	our loaded file. This means the first byte within the first structure of the PE
+	file format is actually located at the first byte from where the file was loaded in
+	memory.
+	</p>
+
+	<p>
+	For example, if we load a PE file to 1MB, the in-memory footprint might look like this:
+	</p>
+
+	<center><img src="http://www.brokenthorn.com/Resources/images/PEload.jpg"></center>
+
+	<p>
+	The above image should look famailier to our readers who have read the MSVC chapter. Looking at the above
+	image, if the PE file was loaded to 1MB, then the first on-disk structure, IMAGE_DOS_HEADER, begins at
+	that location in memory, followed by the rest of the structures in the file (including padding).
+	</p>
+	<p>
+	The above image is also an oversimplification - it does not, by any means, show the complete PE file format.
+	The structure of the PE file format is fairly large, composed of a lot of structures and tables.
+	</p>
+
+	<p>
+	Here is the complete format:
+	</p>
+
+	<ol>
+		<li>IMAGE_DOS_HEADER structure <b>(Important)</b></li>
+		<li>STUB program</li>
+		<li>IMAGE_FILE_HEADER structure [COFF Header] <b>(Important)</b></li>
+
+		<li>IMAGE_OPTIONAL_HEADER structure <b>(Important)</b></li>
+		<li>Segment Table</li>
+		<li>Resource Table</li>
+		<li>Resident Name Table</li>
+		<li>Module Reference Table</li>
+		<li>Imported Names Table</li>
+
+		<li>Entry Table</li>
+		<li>Non Resident Name Table</li>
+		<li>Segments</li>
+			<ol>
+			<li>Data</li>
+			<li>Info</li>
+
+			</ol>
+	</ol>
+	<p>
+	The above table lists the complete file format - from beginning to end. Items marked <b>important</b>
+	are required to know how to parse in order to just execute the program. All of the other information
+	if provided for information purposes only. The only important members in <b>IMAGE_OPTIONAL_HEADER</b>
+	structure are the member that contains the address of the entry point, and image base address.
+	</p>
+	<p>
+	We will cover parsing each section of this file in detail in the upcoming sections. We will also introduce the other structures
+	used when parsing tables and directories as well.
+	</p>
+
+	<h3>IMAGE_DOS_HEADER structure</h3>
+
+<p>
+<b>IMAGE_DOS_HEADER</b> is the first structure of the PE file. It contains global information
+about the program file and how to load it. Most of the information contained in this structure
+were more relivant to DOS software, and are only supported for backward compatability.
+</p>
+<p>
+The structure follows the format:
+</p>
+
+<BLOCKQUOTE><PRE><DIV class=code>typedef struct _IMAGE_DOS_HEADER {  // DOS .EXE header
+    uint16_t e_magic;		// must contain "MZ"
+    uint16_t e_cblp;		// number of bytes on the last page of the file
+    uint16_t e_cp;		// number of pages in file
+    uint16_t e_crlc;		// relocations
+    uint16_t e_cparhdr;		// size of the header in paragraphs
+    uint16_t e_minalloc;	// minimum and maximum paragraphs to allocate
+    uint16_t e_maxalloc;
+    uint16_t e_ss;		// initial SS:SP to set by Loader
+    uint16_t e_sp;
+    uint16_t e_csum;		// checksum
+    uint16_t e_ip;		// initial CS:IP
+    uint16_t e_cs;
+    uint16_t e_lfarlc;		// address of relocation table
+    uint16_t e_ovno;		// overlay number
+    uint16_t e_res[4];		// resevered
+    uint16_t e_oemid;		// OEM id
+    uint16_t e_oeminfo;		// OEM info
+    uint16_t e_res2[10];	// reserved
+    uint32_t   e_lfanew;	// address of new EXE header
+} IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;</DIV></PRE></BLOCKQUOTE>
+<p>
+Alright, a lot of interesting things in this structure. The initial CS:IP and initial SS:SP members should be
+ignored as the operating system normally allocates a stack space and code descriptor value for CS. These members
+were more prominent during the DOS area and software requiring v8086 mode.
+</p>
+
+	<h3>STUB Program</h3>
+<p>
+Okay then! Lets look back up at the PE file image structure again (The above picture.)
+Notice how a DOS stub program is right after the <b>IMAGE_DOS_HEADER</b> structure.
+This is a useful program, actually. This is the program that displays "This program cannot
+be run in DOS Mode", if you try to execute a Windows program from within DOS.
+</p>
+<p>
+We can change the stub program by using the <b>/STUB</b> linker option:
+</p>
+<BLOCKQUOTE><PRE><DIV class=code>/stub=myprog.exe</DIV></PRE></BLOCKQUOTE>
+<p>
+	When DOS attempts to load the executable, it will parse the IMAGE_DOS_HEADER structure and attempt
+to execute the DOS stub program because it is a valid DOS program. When running under the Win32 subsystem,
+the Windows loader will ignore the stub program.
+</p>
+
+	<h3>IMAGE_NT_HEADERS</h3>
+
+<p>
+	Following the STUB program is a structure, <b>IMAGE_NT_HEADERS</b> that contains the
+	format of the PE header structures. Here is the structure:
+</p>
+
+<BLOCKQUOTE><PRE><DIV class=code>typedef struct _IMAGE_NT_HEADERS {
+  DWORD                 Signature;
+  IMAGE_FILE_HEADER     FileHeader;
+  IMAGE_OPTIONAL_HEADER OptionalHeader;
+} IMAGE_NT_HEADERS, *PIMAGE_NT_HEADERS;</DIV></PRE></BLOCKQUOTE>
+
+<p>
+	The signiture must match with "PE\0\0", where \0\0 are null characaters. The <b>IMAGE_FILE_HEADER</b>
+
+	contains additional information used by the loader and the complete size of the <b>IMAGE_OPTIONAL_HEADER</b>
+	structure. The <b>IMAGE_OPTIONAL_HEADER</b> is the largest and most important structure in the file.
+	It also does not have a defined size.
+</p>
+<p>
+	In order to locate this structure, the OS loader must use the <b>e_lfanew</b> member of IMAGE_DOS_HEADER.
+	<b>e_lfanew</b> is an RVA to this structure in memory, so in order to locate this structure, the loader
+	needs to perform the following:
+</p>
+<BLOCKQUOTE><PRE><DIV class=code>IMAGE_DOS_HEADER* pFile = (IMAGE_DOS_HEADER*) imageBase;
+IMAGE_NT_HEADERS* pHeaders = (IMAGE_NT_HEADERS*) (pFile->e_lfanew + imageBase);</DIV></PRE></BLOCKQUOTE>
+<p>
+	This assumes <b>imageBase</b> referres to the location where the program file was loaded into
+	memory. Because older operating systems, such as DOS are not aware of this member of the header,
+	it will be ignored by these OSs.
+</p>
+<p>
+	This structure contains the format for the other two header structures. Lets look at the first of these structures.
+</p>
+
+	<h3>IMAGE_FILE_HEADER</h3>
+
+<p>
+	The <b>IMAGE_FILE_HEADER</b> is the <b>Common Object File Format (COFF)</b> header structure. It follows
+the following format:
+</p>
+<BLOCKQUOTE><PRE><DIV class=code>typedef struct _IMAGE_FILE_HEADER {
+    USHORT  Machine;
+    USHORT  NumberOfSections;			// Number of sections in section table
+    ULONG   TimeDateStamp;			// Date and time of program link
+    ULONG   PointerToSymbolTable;		// RVA of symbol table
+    ULONG   NumberOfSymbols;			// Number of symbols in table
+    USHORT  SizeOfOptionalHeader;		// Size of IMAGE_OPTIONAL_HEADER in bytes
+    USHORT  Characteristics;
+} IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;</DIV></PRE></BLOCKQUOTE>
+<p>
+	This structure isnt too complex. Most of the above is only useful for debuggers (symbol table parsing).
+<b>SizeOfOptionalHeader</b> is important - because IMAGE_OPTIONAL_HEADER does not have a defined size, this member
+lets you know the size of the structure.
+
+</p>
+<p>
+<b>Machine</b> can be one of the following values:
+<ul>
+<li>0x014c for x86 machines</li>
+<li>0x0200 for x64 machines</li>
+<li>0x8664 for AMD64 machines</li>
+</ul>
+</p>
+<p>
+In the usual case, it should be <b>0x014c</b> as we are developing for the x86 architecture.
+
+</p>
+<p>
+<b>Characteristics</b> is composed of bit flags that can be bitwise-ORd by the linker to let the loader
+know different properties of the type of executable image this is. Heres the format:
+</p>
+<ul>
+<li><b>Bit 0</b>: If set, image has no relocation information</li>
+<li><b>Bit 1</b>: If set, File is executable</li>
+<li><b>Bit 2</b>: If set, image has no COFF line numbers</li>
+<li><b>Bit 3</b>: If set, image has no COFF symbol table entries</li>
+
+<li><b>Bit 4</b>: If set, trim the working set for image. (Windows memory management specific. Obsolete)</li>
+<li><b>Bit 5</b>: If set, loader assumes executable can handle >2GB VAs</li>
+<li><b>Bit 6</b>: If set, loader assumes image supports 32 bit words</li>
+<li><b>Bit 7</b>: If set, image has no debug information</li>
+<li><b>Bit 8</b>: If set, image wont run directly from network drive (Windows specific)</li>
+<li><b>Bit 9</b>: If set, image is treated as a SYSTEM file</li>
+
+<li><b>Bit 10</b>: If set, image is treated as a DLL file</li>
+<li><b>Bit 11</b>: If set, image will only run on single-processor machines</li>
+<li><b>Bit 12</b>: If set, big-endian. obsolete flag</li>
+</ul>
+<p>
+	The Windows headers use defined constants, such as IMAGE_FILE_RELOCS_STRIPPED and
+IMAGE_FILE_EXECUTABLE_IMAGE that can be used when setting these flags.
+</p>
+<p>
+As you can see, most of this structure is for information only for the loader on how to load
+the image. But wait! What about resources, symbol tables, debug info ... where is this at? Ah,
+behold the reason why <b>IMAGE_OPTIONAL_HEADER</b> does not have a defined size. Lets take a look!
+
+</p>
+
+	<h3>IMAGE_OPTIONAL_HEADER</h3>
+<p>
+	Ugh, here we go. This is the most complex structure in the file. The good news is that you
+	probably have seen this structure before:
+</p>
+<BLOCKQUOTE><PRE><DIV class=code>struct _IMAGE_OPTIONAL_HEADER {
+
+    USHORT  Magic;				// not-so-magical number
+    UCHAR   MajorLinkerVersion;			// linker version
+    UCHAR   MinorLinkerVersion;
+    ULONG   SizeOfCode;				// size of .text in bytes
+    ULONG   SizeOfInitializedData;		// size of .bss (and others) in bytes
+    ULONG   SizeOfUninitializedData;		// size of .data,.sdata etc in bytes
+    ULONG   AddressOfEntryPoint;		// RVA of entry point
+    ULONG   BaseOfCode;				// base of .text
+    ULONG   BaseOfData;				// base of .data
+    ULONG   ImageBase;				// image base VA
+    ULONG   SectionAlignment;			// file section alignment
+    ULONG   FileAlignment;			// file alignment
+    USHORT  MajorOperatingSystemVersion;	// Windows specific. OS version required to run image
+    USHORT  MinorOperatingSystemVersion;
+    USHORT  MajorImageVersion;			// version of program
+    USHORT  MinorImageVersion;
+    USHORT  MajorSubsystemVersion;		// Windows specific. Version of SubSystem
+    USHORT  MinorSubsystemVersion;
+    ULONG   Reserved1;
+    ULONG   SizeOfImage;			// size of image in bytes
+    ULONG   SizeOfHeaders;			// size of headers (and stub program) in bytes
+    ULONG   CheckSum;				// checksum
+    USHORT  Subsystem;				// Windows specific. subsystem type
+    USHORT  DllCharacteristics;			// DLL properties
+    ULONG   SizeOfStackReserve;			// size of stack, in bytes
+    ULONG   SizeOfStackCommit;			// size of stack to commit
+    ULONG   SizeOfHeapReserve;			// size of heap, in bytes
+    ULONG   SizeOfHeapCommit;			// size of heap to commit
+    ULONG   LoaderFlags;			// no longer used
+    ULONG   NumberOfRvaAndSizes;		// number of DataDirectory entries
+    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+} IMAGE_OPTIONAL_HEADER, *PIMAGE_OPTIONAL_HEADER;</DIV></PRE></BLOCKQUOTE>
+<p>
+	First, take a look at that last member, <b>DataDirectory</b>. The constant, <b>IMAGE_NUMBEROF_DIRECTORY_ENTRIES</b>
+
+can, and has, changed through the years. This is that member that could change the size of this structure. We will
+look closer at that member a little later though as thats where all the fun stuff is at.
+</p>
+<p>
+You might be interested in why this is called an "optional" header even though its clearly not optional. This is
+due to it being optional for COFF object files. While its not optional for executable images, it is for object
+files :)
+</p>
+<p>
+<b>magic</b> can be one of the following:
+<ul>
+	<li>0x10b: 32bit executable image</li>
+	<li>0x20b: 64bit executable image</li>
+	<li>0x107: ROM image</li>
+
+</ul>
+In the usual case, it should be <b>0x10b</b>.
+</p>
+<p>
+A lot of the members in this structure really arent that complex.
+</p>
+<p>
+The <b>subsystem</b> member is Windows-specific. It tells Windows what subsystem the program requires
+in order to execute properly. It can be one of the following values (posted here for completness only)
+<ul>
+<li>0: Unknown</li>
+<li>1: Native SubSystem</li>
+
+<li>2: GUI SubSystem</li>
+<li>3: CUI SubSystem</li>
+<li>5: OS/2 CUI SubSystem</li>
+<li>7: POSIX CUI SubSystem</li>
+<li>9: Windows CE GUI SubSystem</li>
+<li>10: EFI</li>
+<li>11: EFI Boot Driver</li>
+<li>12: EFI Runtime Driver</li>
+<li>13: EFI ROM</li>
+
+<li>14: XBox</li>
+<li>16: Boot application</li>
+</ul>
+</p>
+<p>
+The <b>DllCharacteristics</b> member contains bit flags that gives the loader information about
+the DLL. It follows the following format:
+
+<ul>
+<li><b>Bit 0-3</b>: reserved</li>
+<li><b>Bit 4</b>: If set, DLL is relocatable</li>
+
+<li><b>Bit 5</b>: If set, force code integrity checks</li>
+<li><b>Bit 6</b>: If set, image is <b>Data Execution Prevention (DEP)</b> compatable</li>
+<li><b>Bit 7</b>: If set, image should not be isolated</li>
+<li><b>Bit 8</b>: If set, image does not use <b>Structured Exception Handling (SEH)</b></li>
+<li><b>Bit 9</b>: If set, image wont be binded</li>
+
+<li><b>Bit 10</b>: reserved</li>
+<li><b>Bit 11</b>: If set, image is a <b>Windows Driver Model (WDM)</b> driver</li>
+<li><b>Bit 12</b>: reserved</li>
+<li><b>Bit 13</b>: image is terminal server aware</li>
+</ul>
+</p>
+
+<p>
+<b>AddressOfEntryPoint</b> is an important one. This member contains the RVA of the entry point function of
+the image (for DLLs this can be null as DLLs dont need entry points.) This is what our bootloader uses to
+call our entry point function in our kernel.
+</p>
+
+<p>
+Thats about all there is to it. You might be interested in what those other members are - for <b>.text</b>,
+<b>.data</b>, <b>.bss</b> etc. There is also that nasty looking <b>DataDirectory</b> member that we havnt looked
+at.
+
+</p>
+<p>
+We will look at those members closly later on. For now, lets look at executing a program!
+</p>
+
+<h3>Executing a program</h3>
+
+<p>
+At this stage, <b>if all that you would like to do is execute a program</b>, all of the information has
+been provided. After loading a program, all that the loader needs to do is locate the <b>AddressOfEntryPoint</b>
+member from the optional header, and call that address. Remember that this is an RVA, meaning the loader needs
+to add this address to the <b>ImageBase</b> to obtain the linear address to the entry point function.
+
+</p>
+Here is an example:
+<BLOCKQUOTE><PRE><DIV class=code>//! loadedProgram is where the image was loaded to
+IMAGE_DOS_HEADER* pImage = (IMAGE_DOS_HEADER*) loadedProgram;
+
+//! go to NT HEADERS
+IMAGE_NT_HEADERS* pHeaders = (IMAGE_NT_HEADERS*)(loadedProgram + pImage->e_lfanew);
+
+//! get image base and entry point address from optional header
+int base = pHeaders->OptionalHeader.ImageBase;
+int entryPoint = pHeaders->OptionalHeader.AddressOfEntryPoint;
+
+//! entry point function is at base+entryPoint
+void (*entryFunction) () = (entryPoint + base);
+
+//! call program entry point
+entryFunction();</DIV></PRE></BLOCKQUOTE>
+<p>
+Thats all that is needed to execute a PE executable :)
+</p>
+
+<h2>Data Directories</h2>
+
+	<h3>Abstract</h3>
+
+	<p>
+	Resources, symbol tables, debugging information, import, export tables etc are accessable
+	from that nifty <b>DataDirectory</b> member of the optional header. This member is an array
+	of <b>IMAGE_DATA_DIRECTORY</b>'s that can be used to access other structures containing
+	this information. <b>IMAGE_DATA_DIRECTORY</b> has the format:
+	</p>
+<BLOCKQUOTE><PRE><DIV class=code>typedef struct _IMAGE_DATA_DIRECTORY {
+  DWORD VirtualAddress;		// RVA of table
+  DWORD Size;			// size of table
+} IMAGE_DATA_DIRECTORY, *PIMAGE_DATA_DIRECTORY;</DIV></PRE></BLOCKQUOTE>
+	<p>
+
+	Remember that <b>DataDirectory</b> is an <b>array</b> of <b>IMAGE_DATA_DIRECTORY</b>'s. Each entry
+in this array allows us to access the different data that we want to access.
+	</p>
+	<p>
+	Here are the index entries:
+	</p>
+	<ul>
+
+	<li>0: Export directory</li>
+	<li>1: Import directory</li>
+	<li>2: Resource directory</li>
+	<li>3: Exception directory</li>
+	<li>4: Security directory</li>
+	<li>5: Base relocation table</li>
+
+	<li>6: Debug directory</li>
+	<li>7: Description string</li>
+	<li>8: Machine value (MIPS GP)</li>
+	<li>9: TLS directory</li>
+	<li>10: Load configuation directory</li>
+	<li>14: COM+ data directory</li>
+
+	</ul>
+	<p>
+	For example, if you need to read the export table, reference <b>DataDirectory[0]</b>. If you
+	want to read a resource, reference <b>DataDirectory[2].VirtualAddress</b>:
+	</p>
+	<p>
+	Each of these sections contains their own structures that are required to parse the specific data.
+	Lets take a look at some of the more useful ones.
+	</p>
+
+	<h3>Reading the export table</h3>
+	<p>
+	The export table contains all functions exported from libraries or DLLs, including their function
+	addresses within that DLL, their names, and ordinal number. The Win32 API function <b>GetProcAddress()</b>
+	works by parsing the modules export table by ordinal number or name and returning the address from it.
+	This is one way reading the export table can be useful.
+	</p>
+	<p>
+	To parse the export table, you need to first get the export directory structure. This is done by
+	getting <b>DataDirectory[0]</b>.
+	</p>
+
+<BLOCKQUOTE><PRE><DIV class=code>PIMAGE_DATA_DIRECTORY DataDirectory = &OptionalHeader->DataDirectory [0];
+PIMAGE_EXPORT_DIRECTORY exportDirectory = (PIMAGE_EXPORT_DIRECTORY) (DataDirectory->VirtualAddress + ImageBase);
+</DIV></PRE></BLOCKQUOTE>
+
+<p>
+Remember that <b>VirtualAddress</b> in the <b>IMAGE_DATA_DIRECTORY</b> structure is an RVA, so must be added
+to the image base. Now <b>exportDirectory</b> points to this nice structure:
+</p>
+
+<BLOCKQUOTE><PRE><DIV class=code>typedef struct _IMAGE_EXPORT_DIRECTORY {
+  uint32_t Characteristics;
+  uint32_t TimeDateStamp;
+  uint16_t MajorVersion;
+  uint16_t MinorVersion;
+  uint32_t Name;
+  uint32_t Base;
+  uint32_t NumberOfFunctions;
+  uint32_t NumberOfNames;
+  uint32_t** AddressOfFunctions;
+  uint32_t** AddressOfNames;
+  uint16_t** AddressOfNameOrdinal;
+}IMAGE_EXPORT_DIRECTORY,*PIMAGE_EXPORT_DIRECTORY;</DIV></PRE></BLOCKQUOTE>
+<p>
+	This one is an easy one. <b>AddressOfFunctions</b> is an RVA that points to an array of function addresses.
+The function addresses, however are also RVAs. <b>AddressOfNames</b> is a pointer to a list of function names.
+All of these addresses are RVAs however so must be added to the image base in order to properly obtain the
+function name and address.
+</p>
+<p>
+<b>AddressOfNameOrdinal</b> is an RVA to a list of ordinals. The ordinals, being just numbers representing the
+exported functions and not addresses, arent RVAs.
+
+</p>
+<p>
+To properly parse the export table must be done in a loop. For example:
+</p>
+<BLOCKQUOTE><PRE><DIV class=code>PDWORD	FunctionNameAddressArray = ((DWORD)ExportDirectory->AddressOfNames) + ((PBYTE)imageBase);
+PWORD	FunctionOrdinalAddressArray = (DWORD)ExportDirectory->AddressOfNameOrdinal + (PBYTE)imageBase;
+PDWORD	FunctionAddressArray = (DWORD)ExportDirectory->AddressOfFunctions + (PBYTE)imageBase;
+
+//! search for function in exports table
+for ( i = 0; i < ExportDirectory->NumberOfFunctions; i++ )
+{
+	LPSTR	FunctionName = FunctionNameAddressArray [i] + (PBYTE)imageBase;
+
+	if (strcmp (FunctionName, funct) == 0) {
+
+		WORD Ordinal = FunctionOrdinalAddressArray [i];
+		DWORD FunctionAddress = FunctionAddressArray [Ordinal];
+		return (PBYTE) (FunctionAddress + (PBYTE)imageBase);
+	}
+}</DIV></PRE></BLOCKQUOTE>
+<p>
+	This can be used to impliment <b>GetProcAddress()</b> which can be useful in supporting DLLs.
+</p>
+
+	<h3>Reading the import table</h3>
+
+	<p>
+	So... reading the export table wasnt hard enough, huh? Reading the import table isnt too hard,
+	but is a little more involved then the export table. Ok, ok, whats the use for reading the
+	import table? Its not so much the reading, but the <b>writing</b>. By writing entries into
+	a programs inport table, you can allow function calls across libraries and DLLs without the
+	need of a GetProcAddress() call. Windows performs this with delayed loaded DLLs and system DLLs.
+	</p>
+	<p>
+	In order to read the import table, you need to locate the import directory structure. This is at <b>DataDirectory[1]</b>:
+
+
+<BLOCKQUOTE><PRE><DIV class=code>PIMAGE_DATA_DIRECTORY DataDirectory = &OptionalHeader->DataDirectory [1];
+PIMAGE_IMPORT_DESCRIPTOR importDirectory = (PIMAGE_IMPORT_DESCRIPTOR) (DataDirectory->VirtualAddress + ImageBase);
+</DIV></PRE></BLOCKQUOTE>
+
+	</p>
+<p>
+It is important to note that <b>importDirectory</b> points to an <b>array</b> of descriptor entries. Each of these
+entries represents a module that was imported, such as an import DLL. Lets take a look at this structure:
+</p>
+
+
+<BLOCKQUOTE><PRE><DIV class=code>typedef struct _IMAGE_IMPORT_DESCRIPTOR {
+    union {
+        uint32_t   Characteristics;		// 0 for terminating null import descriptor
+        uint32_t   OriginalFirstThunk;		// RVA to INT
+    };
+    uint32_t   TimeDateStamp;			// Time/Date of module, or other properties (see below)
+    uint32_t   ForwarderChain;			// Forwarder chain ID
+    uint32_t   Name;				// Module name
+    uint32_t   FirstThunk;			// RVA to IAT (if bound this IAT has actual addresses)
+} IMAGE_IMPORT_DESCRIPTOR;
+typedef IMAGE_IMPORT_DESCRIPTOR *PIMAGE_IMPORT_DESCRIPTOR;</DIV></PRE></BLOCKQUOTE>
+
+<p>
+
+Its important to note that <b>Name, OriginalFirstThunk</b> and <b>FirstThunk</b> are RVAs. This means you will
+need to add the addresses (these are pointers) to the image base in order to properly parse the data. <b>Name</b>
+is an RVA that points to the imported module name, such as <b>kernel32.dll</b>. It is null terminated.
+</p>
+<p>
+Remember that we are working with an array of import descriptors? How can we tell how many import descriptors
+that is in this array? The array ends with a null IMAGE_IMPORT_DESCRIPTOR, so an easy way to loop through
+each entry is this:
+</p>
+
+<BLOCKQUOTE><PRE><DIV class=code>IMAGE_IMPORT_DESCRIPTOR* lpImportDesc;
+while (! lpImportDesc->FirstThunk) {
+
+	//! work with lpImportDesc here
+
+	lpImportDesc++; // move to next entry
+}</DIV></PRE></BLOCKQUOTE>
+<p>
+<b>TimeDateStamp</b> can be either the proper time/date or one of the following values:
+<ul>
+<li>0: module not bound</li>
+<li>-1: image is bound. Real time/date stamp stored</li>
+</ul>
+</p>
+<p>
+<b>ForwarderChain</b> is only used when supporting <b>DLL Forward Referencing</b>, which allows calls
+across DLLs to be forwarded to other DLLs. For example, some calls in Windows <b>kernel32.dll</b> are forwarded
+to other DLLs.
+
+</p>
+<p>
+<b>FirstThunk</b>
+points to the IAT, <b>OriginalFirstThunk</b> points to an array of structures representing all imported functions.
+This is the <b>Import Name Table (INT)</b>. Both of these members are RVAs.
+</p>
+<p>
+<i>Thunk?</i> right, Im sure you know another structure is coming up. Lets take a look:
+</p>
+<BLOCKQUOTE><PRE><DIV class=code>typedef struct _IMAGE_THUNK_DATA {
+	union {
+		uint32_t* Function;				// address of imported function
+		uint32_t  Ordinal;				// ordinal value of function
+		PIMAGE_IMPORT_BY_NAME AddressOfData;		// RVA of imported name
+		DWORD ForwarderStringl				// RVA to forwarder string
+	} u1;
+} IMAGE_THUNK_DATA, *PIMAGE_THUNK_DATA;</DIV></PRE></BLOCKQUOTE>
+
+<p>
+<b>OriginalFirstThunk</b> are RVAs that point to an array of <b>IMAGE_THUNK_DATA</b> structures.
+</p>
+<p>
+Ugh, yey, another structure. This one is a small one though:
+</p>
+<BLOCKQUOTE><PRE><DIV class=code>typedef struct _IMAGE_IMPORT_BY_NAME {
+	uint16_t  Hint;		// Possible ordinal number to use
+	uint8_t   Name[1];	// Name of function, null terminated
+} IMAGE_IMPORT_BY_NAME, *PIMAGE_IMPORT_BY_NAME;</DIV></PRE></BLOCKQUOTE>
+<p>
+Thats all there is to it. The first paramater can be 0, but it just hints the loader what ordinal number
+the function might be using. <b>Name</b> is an array of characters representing the name of the function.
+
+</p>
+
+<p>
+Heres the deal: The IAT is just a list of addresses representing functions. What functions? The functions
+within this IMAGE_THUNK_DATA array. Look back at that IMAGE_THUNK_DATA structure and notice that its just an
+union representing a function name. This is the <b>Import Name Table (INT)</b>.
+</p>
+<p>
+For example, lets say we want to get the current address
+of the function thats in IMAGE_THUNK_DATA[3]. Its address will be the 3rd dword in the IAT, which
+can be read using <b>IMAGE_IMPORT_DESCRIPTOR->FirstThunk</b>.
+</p>
+<p>
+So, lets try to obtain the function name and address:
+</p>
+
+<BLOCKQUOTE><PRE><DIV class=code>unsigned int count=0;
+while (lpThunk->u1.Function) {
+
+	//! get the function name
+	char* lpFunctionName = (char*)((uint8_t*)imageBase + (uint32_t)lpThunk->u1.AddressOfData.Name);
+
+	//! go into the IAT to get this functions address
+	uint32_t* addr = (uint32_t*)((uint8_t*)imageBase + lpImportDesc->FirstThunk) + count;
+
+	// lpFunctionName now points to the null terminated function name
+	// addr now points to the address of this function
+
+	count++;
+	lpThunk++;
+}</DIV></PRE></BLOCKQUOTE>
+
+</p>
+<p><b>Image binding</b></p>
+<p>
+This is where things get interesting. The IAT can be filled with the addresses of the imported functions
+either during <b>runtime</b> or <b>building</b> time. A <b>bounded image</b> is an image that has its IAT
+bounded to the functions during build time. An <b>unbounded</b> image is an image whose IAT is filled in
+by the OS loader during loading time.
+
+</p>
+<p>
+If the image is bounded, you can do the following to call a function in an external DLL:
+</p>
+<BLOCKQUOTE><PRE><DIV class=code>__declspec (dllimport) void function ();
+function (); // calls myDll:function()</DIV></PRE></BLOCKQUOTE>
+<p>
+If the image is not bounded, the IAT contains junk. <b>It is then the responsbility of the OS loader
+to update the IAT</b> in order for the above code to work. This can be performed by reading the export table
+of the loaded DLL module (calling GetProcAddress(), and overwriting the IAT entry of that import function. Overwriting
+the IAT can be done by following the above - when you get the functions IAT entry, just overwrite it :)
+</p>
+<p>
+This method can also be useful for installing <b>hooks</b> in DLLs and other modules.
+
+</p>
+	<h3>Supporting resources</h3>
+
+	<p><b>Introduction</b></p>
+
+	<p>
+	Have you ever wondered how the Windows kernel can display an image and work with an XML configuation file
+	without loading anything from disk? Have you ever worked with adding resources but wondered if it was
+	possible to support them in an OS? The answer is a "yes, of course!"
+	</p>
+	<p>
+	Parsing resources is a bit more complex then the other directory types, however. Like the other sections,
+	there is a base <b>IMAGE_RESOURCE_DIRECTORY</b> structure that can be obtained from the <b>DataDirectory</b>
+
+	member of the optional header:
+	</p>
+<BLOCKQUOTE><PRE><DIV class=code>PIMAGE_DATA_DIRECTORY DataDirectory = &OptionalHeader->DataDirectory [2];
+PIMAGE_RESOURCE_DIRECTORY resourceDirectory = (PIMAGE_RESOURCE_DIRECTORY) (DataDirectory->VirtualAddress + ImageBase);</DIV></PRE></BLOCKQUOTE>
+<p>
+Notice the pattern with how to access these sections? Oh, right, onto the new structure:
+</p>
+<BLOCKQUOTE><PRE><DIV class=code>typedef struct _IMAGE_RESOURCE_DIRECTORY {
+    uint32_t                       Characteristics;
+    uint32_t                       TimeDateStamp;
+    uint16_t                       MajorVersion;
+    uint16_t                       MinorVersion;
+    uint16_t                       NumberOfNamedEntries;
+    uint16_t                       NumberOfIdEntries;
+    IMAGE_RESOURCE_DIRECTORY_ENTRY DirectoryEntries[1];
+} IMAGE_RESOURCE_DIRECTORY, *PIMAGE_RESOURCE_DIRECTORY;</DIV></PRE></BLOCKQUOTE>
+<p>
+This structure doesnt have much of any interesting fields, except the last three.
+</p>
+<p>
+If you have worked
+with Win32 resources, you might know that resources can be idenitified by ID or name. Two of the members
+in this structure will let us know the number of these entries, and the total amount of entries
+(NumberOfNamedEntries + NumberOfIdEntries), which is useful in looping through all of the entries.
+As you can probably guess, the entries are in the DirectoryEntries array. <b>DirectoryEntries</b>
+
+consists of an array of <b>IMAGE_RESOURCE_DIRECTORY_ENTRY</b> structures, which follow the format:
+</p>
+<BLOCKQUOTE><PRE><DIV class=code>typedef struct _IMAGE_RESOURCE_DIRECTORY_ENTRY {
+    union {
+        struct {
+            DWORD NameOffset:31;
+            DWORD NameIsString:1;
+        };
+        DWORD   Name;
+        WORD    Id;
+    };
+    union {
+        DWORD   OffsetToData;
+        struct {
+            DWORD   OffsetToDirectory:31;
+            DWORD   DataIsDirectory:1;
+        };
+    };
+} IMAGE_RESOURCE_DIRECTORY_ENTRY, *PIMAGE_RESOURCE_DIRECTORY_ENTRY;</DIV></PRE></BLOCKQUOTE>
+<p>
+Alright, this is an ugly structure. This structure represents a single resource, or resource directory.
+<p>
+	<p><b>Resource directory structure</b></p>
+<p>
+<i>resource or resource directory?</i> Lets stop for a moment. (*grabs a cup of coffee*) ok, it is important
+to know that resources are stored as a <b>tree</b>. This tree is structured like this:
+
+<ul>
+<li>Root directory</li>
+ <ul>
+  <li>Resource group 1 Directory</li>
+    <ul>
+      <li>Resource 1</li>
+      <li>Resource 2</li>
+    </ul>
+
+  <li>Resource group 2 Directory</li>
+    <ul>
+      <li>Resource 1</li>
+      <li>Resource 2</li>
+    </ul>
+  <li>Resource group 3 Directory</li>
+    <ul>
+
+      <li>Resource 1</li>
+      <li>Resource 2</li>
+    </ul>
+  <li>...etc...</li>
+ </ul>
+</ul>
+</p>
+<p>
+There are a number of different resource groups which let us know the type of resources are in this group.
+Here are the group IDs:
+
+<ul>
+<li>1 - Cursor</li>
+<li>2 - Bitmap</li>
+<li>3 - Icon</li>
+<li>4 - Menu</li>
+<li>5 - Dialog</li>
+<li>6 - String</li>
+<li>7 - Font directory</li>
+<li>8 - Font</li>
+
+<li>9 - Accelerator</li>
+<li>10 - RcData</li>
+<li>11 - Message table</li>
+<li>16 - Version</li>
+<li>17 - DlgInclude/li>
+<li>19 - Plug and Play</li>
+<li>20 - VXD</li>
+<li>21 - Animated Cursor</li>
+<li>22 - Animated Icon</li>
+
+<li>23 - HTML</li>
+<li>24 - Manifest</li>
+</ul>
+
+In order to locate a resource, you will need to traverse this tree. The good news is that this isnt hard if
+you assume there is only 3 layers in the tree.
+</p>
+<p>
+First, lets look at looping through all of the entries in a resource directory:
+</p>
+
+
+<BLOCKQUOTE><PRE><DIV class=code>//! get first entry in directory
+IMAGE_RESOURCE_DIRECTORY_ENTRY* lpResourceEntry = lpResourceDir->DirectoryEntries;
+
+//! loop through all entries
+int entries = lpResourceDir->NumberOfIdEntries + lpResourceDir->NumberOfNamedEntries;
+while (entries-- != 0) {
+
+	//! look for bitmap resource (id=2)
+	if (lpResourceEntry->Id == 2) {
+		//! see below
+	}
+	lpResourceEntry++;
+}</DIV></PRE></BLOCKQUOTE>
+<p>
+	This is simple enough, huh? The <b>Id</b> member of <b>IMAGE_RESOURCE_DIRECTORY_ENTRY</b>
+
+	is used to store the group ID. If we were looking for a bitmap, it would be in the bitmap
+	group of the root directory, so look for the entry with ID=2.
+</p>
+<p>
+	Because IMAGE_RESOURCE_DIRECTORY_ENTRY represents both resource entries and directories,
+	how can we tell what it is? Why, the <b>DataIsDirectory</b> member of course: If this member
+	is set, its a directory. Ah, but if its a directory, how can you read the directory? Lets take
+	a look:
+</p>
+<BLOCKQUOTE><PRE><DIV class=code>if (lpResourceEntry->DataIsDirectory) {
+	lpResourceEntry = lpResourceEntry->OffsetToDirectory;
+	lpResourceEntry += startOfResourceSection;
+}</DIV></PRE></BLOCKQUOTE>
+<p>
+	This one isnt to bad. If the entry is a directory, the above obtains the offset to the new directory
+from the <b>OffsetToDirectory</b> and adds it to .. what? the <i>startOfResourceSection</i>!? Thats right...
+this is an offset, but not an RVA. I know ... <i>Why Microsoft, Why!?</i>
+
+</p>
+<p>
+	The start of the resource section is actually the address of the first member of the IMAGE_RESOURCE_DIRECTORY_ENTRY array.
+So by adding this address to the offset obtained from <b>OffsetToDirectory</b> you can obtain the pointer to the
+<b>IMAGE_RESOURCE_DIRECTORY</b> structure for this directory. Yes, then the whole process of reading those directory
+entries begins :)
+</p>
+<p>
+	If you are in the process of parsing the directory for your specific resource, just loop through
+all of the resource entries in the directory. If the resourceEntry ID field matches that of the resource
+ID you are trying to find (program specific ID here), then you have found the resource data.
+</p>
+<p>
+The resource data is stored in a ... zomg! structure! It can be obtained from the <b>OffsetToData</b> member
+of the directory entry structure. Simular to the <b>OffsetToDirectory</b> member, this too is an offset
+from the start of the resource section.
+
+</p>
+<p>
+Once you obtained the pointer, you can extract the resource data. Lets take a look at that structure:
+</p>
+
+<BLOCKQUOTE><PRE><DIV class=code>typedef struct _IMAGE_RESOURCE_DATA_ENTRY {
+	uint32_t   OffsetToData;
+	uint32_t   Size;
+	uint32_t   CodePage;
+	uint32_t   Reserved;
+} IMAGE_RESOURCE_DATA_ENTRY, *PIMAGE_RESOURCE_DATA_ENTRY;</DIV></PRE></BLOCKQUOTE>
+<p>
+Thats it! <b>OffsetToData</b> is an RVA to the real resource data, and <b>Size</b> is the size
+of that data, in bytes. For example, if we were looking for a bitmap resource, <b>OffsetToData</b>
+
+would be the RVA pointing to the bitmaps <b>BITMAPINFOHEADER</b> structure, which can be handled by
+any bitmap loader.
+</p>
+
+	<h1>Conclusion</h1> 
+ 	<p>
+	Thats all for this chapter. There are some planned updates to including covering additional
+	sections (debug data and COMDATS) as well.
+	<p>
+	There is no demo for this chapter - it is primarily released for anyone that is interested
+	in the internal workings of the PE executable file format and working with it. For the main series,
+	we might only be loading and executing the program, so all of the other information is provided
+	for completeness only. All code provided in text for demenstration has been tested (slightly modified)
+	to work.
+	</p>
+	<p>
+
+	In the upcoming chapters, we will be using the PE executable file format and building
+	a loader for supporting user mode programs. After that, on to multitasking!
+	</p>
+	<p>
+	Until next time,
+	<p>
+	~Mike<br>
+	<i>BrokenThorn Entertainment. Currently developing DoE and the <a href="http://www.brokenthorn.com/mos/site2/">Neptune Operating System</a></i>
+
+	<br><br>
+
+	<i>Questions or comments? Feel free to <a href="mailto:neon6000@aol.com">Contact me</a>.</i>
+
+	<br><br>
+	Would you like to contribute and help improve the articles? If so, please <a href="mailto:neon6000@aol.com">let me know!</a>
+
+<br><br> 
+<table width=100% border=0> 
+<tr> 
+<td><p align=left> 
+
+<a class="anchor" href="OSDev23.html"> 
+<img src="images/left.jpg" border=0></a> 
+&nbsp;&nbsp;
+<a class="anchor" href="OSDev23.html"> 
+<font size=4>Chapter 23</font> 
+</a> 
+ 
+</p></td> 
+<td> 
+<p align=center> 
+<font size=4><a class="anchor" href="OSDevIndex.html">Home</a></font> 
+</p> 
+</td> 
+</tr> 
+</table> 
+ 
+</BODY></HTML> 
+

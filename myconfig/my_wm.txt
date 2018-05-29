@@ -1,0 +1,308 @@
+<font size=4>
+<font size=4 color=red>我所喜爱的几个WM</font>
+我选择wm的标准基本上就是：配置高度自由、操作简便、尽量全键盘操作、节省系统资源。
+<font size=4 color=red>一、fluxbox</font>
+fluxbox是我目前最为喜爱的一个窗口管理器，也是我最常使用的wm。他的特点在于可以放弃鼠标的全键盘操作，能高度制定
+适用于自己的快捷键，不管是启动各种常用应用还是窗口移动等操作，全部使用键盘操作实现。再配以vimperator＋firefox
+我可以整晚不去碰鼠标。因此这一高自由度配置的轻量级WM绝对是我的首选和最爱！
+1、配置文件，文件所在目录一般为：$HOME/.fluxbox/，下面一般有几个配置文件：apps,init,keys,menu,startup,windowmenu。
+其中常用修改的就是init,keys文件了。
+（1）init文件中主要修改界面、显示相关的，如:
+修改时钟显示格式:session.screen0.strftimeFormat
+修改工作区名称：session.screen0.workspaceNames
+修改背景图显示：session.screen0.rootCommand
+修改整个桌面的风格：session.styleFile    --这个可以在上下文菜单中选择。
+修改工具栏位置：session.screen0.toolbar.placement
+<a href="./myconfig/source.php#so05" target=_blank>点击查看init配置文件</a>
+（2）keys文件是设定各种快捷键的配置文件，这里是我修改最多的地方：
+这个文件在一开始使用的时候，如果不喜欢看man可以看看这个文件，里面的一些系统预设的快捷键还是需要掌握的。另外，
+个人喜欢的快捷键如打开不同的应用程序的快捷键，操作窗口移动，改变大小的快捷键都在这里设置。
+其余的一些配置文件一般不需要改变，如menu,windowmenu是修改菜单项设置的，如果有想随fluxbox一起启动的程序可放在
+startup文件中，比如：需要启动conky时：在该文件中添加：exec conky&
+<a href="./myconfig/source.php#so02" target=_blank>点击查看key配置文件</a>
+2、优点：可实现全键盘操作，稳定、灵活、简便，节省资源。
+   缺点：以alt为主的组合键设置让我在玩DiabloII时非常的懊恼，QQ屏闪，不过早就不用那玩意了。
+<font size=4 color=red>二、awesome</font>
+又是一款适合程序员使用的wm，这种平铺（或瓦片）式窗口管理器可以尽量的占据所有空间进行多窗口显示，其自由配置度也相当高，由
+于窗口摆放基本上是由管理器实现，所以随意移动的自由度不高，没有相应的窗口大小、移动的快捷键设置。但是确有一个根据程序分类
+指定显示在不同工作区的功能。与fluxbox相比虽然配置自由度不高，但是操作性丝毫不差。下面的设置适用于awesome3.4.6版。
+1、配置文件，其配置文件一般为：$HOME/.config/awesome/rc.lua 或者 /etc/xdg/awesome/rc.lua 如/xdg下的配置存在，则home下的配
+置无效。整个awesome就是一个配置文件，当然如果要修改一些窗口主题样式的话可以修改/usr/share/awesome/themes/default/theme.lua
+文件，比如默认的工具栏字体太糙，我改为：
+--theme.font          = "sans 8"     这是远来的字体设置
+theme.font          = "YaHei Consolas Hybrid 9"
+rc.lua的配置文件分为几大块，现分别说明如下:
+(1) 变量定义 Variable definitions
+在这里定义了使用的主题配置文件：theme.lua，使用的虚拟终端程序，定义的基本组合键(win键)以及窗口布局样式。
+--terminal = "x-terminal-emulator" 可以修改为你所使用的终端。我的设置为：
+terminal = "xterm -fa 'YaHei Consolas Hybrid:charwidth=7' -fs 8 -bg black -fg gray90"
+窗口的布局样式太多，一般只选择几个自己喜欢的即可：（lua的注释语句为--开头  ：）猜的）
+layouts =
+{
+    awful.layout.suit.floating,
+    awful.layout.suit.tile,
+  --  awful.layout.suit.tile.left,
+    awful.layout.suit.tile.bottom,
+    awful.layout.suit.tile.top,
+  --  awful.layout.suit.fair,
+  --  awful.layout.suit.fair.horizontal,
+  --  awful.layout.suit.spiral,
+  --  awful.layout.suit.spiral.dwindle,
+  --  awful.layout.suit.max,
+    awful.layout.suit.max.fullscreen,
+    awful.layout.suit.magnifier
+}
+(2) tag工作区设置，直接设置为中文名称：
+tags = {}
+for s = 1, screen.count() do
+    -- Each screen has its own tag table.
+    tags[s] = awful.tag({ "终端", "网络", "文档", "游戏", "视频" }, s, layouts[1])
+end
+(3) Menu菜单，没啥好设置的，鼠标都不用了，要菜单干啥？
+--一闪而过.....
+(4) Wibox 系统工具栏设置，这里主要设置时钟的显示方式，也可以设置字的颜色：
+mytextclock = awful.widget.textclock({ align = "right" },"<span color='#00d600'>20%y年%m月%d %H:%M</span>")
+另外可以在这里添加个textbox类型的widget,在通过awesome-client将一些系统信息显示在面板上：
+conkytext = widget({ type = textbox })
+然后将定义的这个widget添加到wibox中：
+    mywibox[s].widgets = { 
+        {   
+            mylauncher,
+            mytaglist[s],
+            mypromptbox[s],
+            layout = awful.widget.layout.horizontal.leftright
+        },  
+        mylayoutbox[s],
+        mytextclock,
+        s == 1 and mysystray or nil,
+        conkytext,
+        mytasklist[s],
+        layout = awful.widget.layout.horizontal.rightleft
+    }
+重启配置生效后，就可用下列命令测试了：
+echo "conkytext.text = \"hello world\""|awesome-client。
+ (5) Mouse 鼠标绑定.....一闪而过
+ (6) Key 快捷键设置，这里有的改了，不过设定你的快捷键之前先看下是否与默认的有冲突，很多方便的组合已经被默认占用了。
+ 下面是我的一些设置：<font size=2>
+ -- Standard program
+ --win+回车：打开小字体终端
+  awful.key({ modkey,           }, "Return", function () awful.util.spawn("xterm -fa 'YaHei Consolas Hybrid':charwidth=7 -fs 8 -bg black -fg gray90") end),
+ --win+z : 打开正常字体终端 
+  awful.key({ modkey,           }, "z", function () awful.util.spawn("xterm -fa 'YaHei Consolas Hybrid':charwidth=9 -fs 11 -bg black -fg gray90 -geometry 75x24") end),
+ --win+a : 打开firefox 
+  awful.key({ modkey,           }, "a", function () awful.util.spawn("firefox") end),
+ --win+s : 打开xpdf 
+  awful.key({ modkey,           }, "s", function () awful.util.spawn("xpdf -papercolor '#6c6c6c'") end),
+ --win+x : 打开大字体终端 
+    awful.key({ modkey,           }, "x", function () awful.util.spawn("xterm -fa 'YaHei Consolas Hybrid':charwidth=10 -fs 13 -bg black -fg gray90") end)
+	--win+x组合之前默认的占用了，为运行lua代码，对我没用，所以注释掉了下面的设置，用在了大字体终端上。如该行是设置的最后一行注意不要加后面的逗号。
+    --awful.key({ modkey }, "x",
+    --          function ()
+    --              awful.prompt.run({ prompt = "Run Lua code: " },
+    --              mypromptbox[mouse.screen].widget,
+    --              awful.util.eval, nil,
+    --              awful.util.getdir("cache") .. "/history_eval")
+    --          end)</font>
+如果想要熟练使用这个wm(当然，对所有的wm都一样)除了设置一些自己喜欢的快捷键外，熟记一些系统默认的快捷键设置是必须的，好好看看这
+里的这些设置吧，比如窗口大小的调整，铺放样式的切换，关掉当前窗口这些常用设置都应能熟练应用，不然操作起来还是会很痛苦的。
+(7) Rules 规则模块，在这里通过设置相应的规则，就能指定不同的程序在不同的工作区打开。
+awful.rules.rules = {
+    -- All clients will match this rule.
+    { rule = { },
+      properties = { border_width = beautiful.border_width,
+                     border_color = beautiful.border_normal,
+                     focus = true,
+                     keys = clientkeys,
+                     buttons = clientbuttons } },
+	--设置中class类名称的获取可用下面命令获得：
+	--xprop | grep --color=none "WM_WINDOW_ROLE\|WM_CLASS" | xmessage -file - -center
+	--设置mplayer在第五工作区(对应tag工作区的设置为'视频')打开，窗口类型为浮动
+    { rule = { class = "MPlayer" },
+      properties = { floating = true, tag = tags[1][5] } },
+	--设置xterm在第一工作区(对应tag工作区的设置为'终端')打开，窗口类型为平铺
+    { rule = { class = "XTerm" },
+      properties = { floating = false, tag = tags[1][1] } },
+    { rule = { class = "Firefox" },
+      properties = { tag = tags[1][2] } },
+    { rule = { class = "Xpdf" },
+      properties = { tag = tags[1][3] } },
+    { rule = { class = "Gens" },
+      properties = { floating = true, tag = tags[1][4] } },
+    { rule = { class = "fceu" },
+      properties = { floating = true, tag = tags[1][4] } },
+    { rule = { class = "xmame" },
+      properties = { floating = true, tag = tags[1][4] } },
+    { rule = { class = "Wine" },
+      properties = { floating = true, tag = tags[1][4] } },
+}
+(8) Signals 这里我没修改。
+(9) Autorun Programs 开机自动运行的设置，默认配置中没有该项，如果有需要随awesome一同启动的程序，加在这里。
+--{{{autorun programs 
+awful.util.spawn_with_shell("conky&")
+--}}}
+这里我把conky的启动放入，输入法在debian6下自动设置启动，毋需自己设置。这种写法有个坏处，就是当重启awesome时会重复加载，解决的
+方法很多，比如写个脚本或程序用于检查conky是否运行，没有运行才加载。然后将脚本或程序放到这里运行即可。
+2、优点：同fluxbox,这也是键盘控的绝佳选择，轻量、简洁、高效。
+3、缺点：有些游戏当切换成全屏时会不能正常运行，如FC模拟器fceu,世嘉模拟器gens。而xmame无压力。
+<a href="./myconfig/source.php#so04" target=_blank>点击查看rc.lua配置文件</a>
+<font size=4 color=red>三、TWM</font>
+这又是一款本人钟爱的WM，对我来说他的最大好处就是玩各种游戏无压力，不论是模拟器游戏还是DiabloII，当玩游戏碰到问题时，我都会切换
+到这里来试试。另外，本人原来一直对他存有误解，以为这款WM必须使用鼠标才能使某个窗口激活并切换至前台。其实在TWM下舍弃鼠标一样可
+以疯狂...
+1、配置文件，默认的配置文件为:$HOME/.twmrc，安装完后cp /etc/X11/twm/system.twmrc ~/.twmrc。然后对该配置文件进行修改。
+(1) 在配置文件开始处添加：RandomPlacement
+在twm下运行一个程序时，他并不是直接放置到屏幕的某个位置，而是需要鼠标指定摆放的位置，添加这个设置就可以直接将窗口摆放而无需用
+鼠标定位了。
+(2) AutoRaise{"XTerm"}这个设置可以将某个底层的终端在获得输入焦点时自动摆放到桌面顶层。
+(3) 下面设置不需要带标题栏的应用程序窗口
+NoTitle
+{
+    "Audacious"
+    "MPlayer"
+    "XTerm"
+    "Firefox"
+}
+(4) 自定义常用应用的快捷键:
+"a" = control : all : f.exec "xterm -fa 'YaHei Consolas Hybrid':charwidth=9 -fs 11 -bg black -fg gray90 -geometry 75x24 &"
+"p" = control : all : f.exec "firefox&"
+# 下面两个是系统默认设置的
+"m" = control : all : f.fullzoom
+"n" = control : all : f.iconify
+(5) NoTitleFocus 设置无需激活标题栏即可获取焦点和将窗口放置顶层
+NoTitleFocus 
+#F1窗口提升
+"F1" =      : all : f.raise
+#F2窗口下降
+"F2" =      : all : f.lower
+#F3窗口图标化
+"F3" =      : all : f.iconify
+#ctrl+q : 将最后启动的终端窗口提升至顶层
+"q"  = control      : all : f.warpto "xterm"
+#ctrl+w : 将最后启动的浏览器窗口提升至顶层
+"w"  = control      : all : f.warpto "Firefox"
+#ctrl+e : 将TWM 图标管理器的窗口提升至顶层
+"e"  = control      : all : f.warpto "TWM Icon Manager"
+#下面的四项是通过方向键在图标管理器中指定不同的窗口使其获取焦点
+"Up" =      : iconmgr : f.upiconmgr
+"Down" =    : iconmgr : f.downiconmgr
+"Left" =    : iconmgr : f.lefticonmgr
+"Right" =   : iconmgr : f.righticonmgr
+有了上面几项设置，你的TWM基本上就可以摆脱鼠标的控制了，很显然，这种键盘替代方式比较繁琐，但终归是个可行的方案。这里的操作需要
+注意，必须要先启动一个图标管理器，如果图标管理器没有摆放在桌面上，上面的操作无法实现。一般的操作顺序是：ctrl+e提升图标管理器至
+前台，使用方向键选择需要操作的窗口，使用F1或F2将其带到顶层。如果是xterm终端或者firefox或者是别的我们已经设置好快捷键的窗口，可
+直接使用ctrl+q、ctrl+w将其带到顶层。这里还有个问题，就是如果开启了几个xterm的话，ctrl+q只能将最新开启的直接带到顶层，其余的若
+想获得焦点并提升到顶层只能使用图标管理器配合F1,F2实现了。
+TWM主要的设置就这些了，其他的菜单配置我直接略过。虽然看起来这个操作非常繁琐，实际上如果熟练了这款WM的效率也是很高的。
+2、优点：几乎是最轻量的，而相对功能又比较齐全，可配置性也不错的一款窗口管理器。关键是对我所喜欢的游戏都能没有任何问题的运行。
+3、缺点：相对前两款WM可操控性上有些欠缺，另外我对他的使用相对少了很多，还有很多不了解的地方。如果使用频繁的话可能这些欠缺会有
+方法弥补的。
+<a href="./myconfig/source.php#so03" target=_blank>点击查看twmrc配置文件</a>
+<font size=4 color=red>四、DWM</font>
+又一款小巧精干的WM，小到源文件仅有两千余行，但是他却实现了平铺式窗口管理的基本功能，他应该是awesome和其他平铺式WM的鼻祖了。
+并且在编译生成后竟然连配置文件也没用，若想修改，只能修改源文件中的config.h并重新编译。而使用他的另一个好处就是可以在一天时间里
+仔细的看看他的源文件，从而学习编写个山寨的DWM了。因此，为了能够制定DWM只能下载源文件，修改编译了，在debian下apt-get source dwm
+1、配置文件，修改config.h(实际上应该是config.def.h,改完后拷贝至config.h),在配置文件里有两个方式可以启动快捷键命令，一种是通过
+execvp执行的，这种方式在配置文件中定义的非常蛋疼，那就是必须按照这个函数的要求将命令行参数一一定义：
+tatic const char *xterm[]      = { "xterm", "-e", "wicd-curses", NULL };
+然后使用 { MODKEY,                       XK_p,      spawn,          {.v = xterm } },调用。
+另一种方式简单，实际上是使用system函数调用，所以，不必在将所带参数一一定义，一个字符串即可解决：
+ #define SHCMD(cmd) { .v = (const char*[]){ "/bin/bash", "-c", cmd, NULL } }
+{ MODKEY,                       XK_Print,  spawn,          SHCMD("scrot %Y%m%d-%H.%M.%S.png -t 280x175 -e 'mv $f $m ~/tmp/'") },
+除了快捷键的调用，其他的设置如tags,rules和窗口摆放样式基本和awesome差不多。
+2、优点：与前几款wm比较没有特别突出的优点，可作为awesome的替代。
+3、缺点：实用性上与前几款相差不小，并且Dwm不支持xft字体，在其panel版面上不能显示完美显示中文。
+<font size=4 color=red>五、DWM-plus</font>
+这是一款DWM的增强版本，该版增加了支持xft字体，并且里面有个小配置的conky用于在面板上显示系统信息。其配置与DWM几乎无异，但比DWM多了
+一个配置目录：~/.dwm,主要存放启动conky的脚本和conky的配置文件。但是，这个版本在有些系统上不能正常启动。
+<a href="./myconfig/source.php#so01" target=_blank>点击查看dwm配置文件</a>
+<font color=red size=4>六、i3wm</font>
+i3wm
+这是一款类似与awesome和dwm的tiling平铺式窗口管理器，操作方便,配置简单仅仅一
+个配置文件：~/.i3/config。一些awesome下的使用操作i3都能够实现。并且i3一些特
+有的操作也非常实用。
+安装说明：
+debian下的i3版本较低，还不能支持xft字体，如果要使用高版本的i3只能下载源代码
+自行编译安装，一些所需的库文件：
+libx11-xcb-dev
+libxcb-keysyms1-dev
+libpango1.0-dev
+libxcb-util0-dev
+libxcb-icccm4-dev
+libyajl-dev
+libstartup-notification0-dev
+libxcb-randr0-dev
+libev-dev
+libxcursor-dev
+libxcb-xinerama0-dev
+另需说明一下，testing版本的依赖库能够顺利的完成编译，而stable版的debian由于
+libxcb和libev版本太低，很难正确的编译出来，我在编译的时候，libxcb中某些头文
+件我是手动添加到源文件的，而libev更是麻烦，我只能更换为testing的源才顺利编译
+完成。
+配置说明：
+1、一些基本的操作：
+关闭窗口 bindsym $mod+Shift+Q      
+启动菜单 bindsym $mod+d exec dmenu_run    我暂时没用
+重新加载配置文件  bindsym $mod+Shift+C  reload
+重启i3wm bindsym $mod+Shift+R	restart
+退出i3wm bindsym $mod+Shift+E	exit
+2、窗口焦点、大小调整、铺放样式的操作：
+水平铺放的窗口焦点的变换 bindsym $mod+j focus left (keyword focus left)
+						 bindsym $mod+semicolon(;) focus right
+纵向铺放的窗口焦点的变换 bindsym $mod+k focus down
+						 bindsym $mod+l focus up
+水平铺放的窗口的移动	 bindsym $mod+Shift+j move left (keyword move left)
+铺放样式的变化			 bindsym $mod+s layout stacking 层叠堆放
+(keyword layout)    	 bindsym $mod+w layout tabbed   标签式
+						 bindsym $mod+e layout default  平铺式
+横向、纵向平铺设定       bindsym $mod+h split h			横向平铺
+(keyword split h\v)		 bindsym $mod+v split v			纵向平铺
+浮动窗口 				 bindsym $mod+Shift+space floating toggle
+浮动模式下焦点切换       bindsym $mod+space focus mode_toggle
+3、工作区切换：
+工作区切换				 bindsym $mod+1(2、3、4..0) workspace 1(2、3、4..0)
+将焦点窗口移动至其他工作区 bindsym $mod+Shift+1 move container to workspace 1
+4、启动程序的快捷键设置：
+绑定启动程序的快捷键  bindsym $mod+x exec firefox (keyword exec)
+指定启动程序的浮动模式 for_window [class="Audacious"] floating enable
+指定启动程序放置在哪个工作区  assign [class="Firefox"] 9
+----------------------------以上为基本操作---------------------------------
+下面介绍下一些特有的操作：
+1、vim格式的标记、跳转：
+#mark current window
+bindsym $mod+m exec i3-input -F 'marks %s' -l 1 -P 'Mark: '
+#goto mark
+bindsym $mod+apostrophe exec i3-input -F '[con_mark="%s"] focus' -l 1 -P 'Go to: '
+2、mode的应用：
+mode的使用，可以将一些功能相似的操作作为一个集合放置到一个mode中，便于对这些操作管
+理和记忆。另外mode是以自定义字符串作为标记的，而这些字符串又可以用于操作的提示：
+mode "layout q w e r-floating" {
+		bindsym q layout stacking
+		bindsym w layout tabbed
+		bindsym e layout default
+		bindsym r floating toggle
+
+		bindsym Escape mode "default"     #退出mode的操作
+}
+bindsym $mod+p mode "layout q w e r-floating"
+在进入一个mode的时候需要使用类似于vim的操作，使用esc退出本次mode操作，如果想选择了
+某个操作直接退出mode的话可以按下列方式：
+ bindsym q mode "default" layout stacking
+3、ibar的应用：
+我喜欢这款wm的原因之一就是他可以像awesome一样将一些conky信息放置在状态栏上，做法为：
+bar {
+#		font pango:YaHei Consolas Hybrid 10
+#	        status_command bash -c "echo \"aaaaaa\""
+#	        status_command sh -c date
+			status_command i3bar.sh
+		colors{
+			background	#000000
+			statusline  #ffff00
+		}
+}
+在定义的这个bar里，可以指定使用的字体，颜色，可通过status_command 将执行的某一程序的
+结果显示出来。我可以利用这个功能将自定义的系统信息和天气信息显示在状态栏上。
+----------------------------------end-----------------------------------
+该wm还有个比awesome优秀的地方，就是各种全屏游戏无压力。
+<a href="./myconfig/source.php#so06" target=_blank>点击查看i3配置文件</a>&nbsp;<a href="https://github.com/tybitsfox/i3msg.git">相关资源下载</a>
+</font>
+

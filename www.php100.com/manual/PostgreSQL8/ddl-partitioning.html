@@ -1,0 +1,675 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>分区 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="数据定义" HREF="ddl.html"><LINK REL="PREVIOUS" TITLE="继承" HREF="ddl-inherit.html"><LINK REL="NEXT" TITLE="其它数据库对象" HREF="ddl-others.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="ddl-inherit.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="ddl.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 5. 数据定义</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="ddl.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="ddl-others.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="DDL-PARTITIONING" >5.9. 分区</A
+></H1
+><A NAME="AEN2667" ></A
+><A NAME="AEN2669" ></A
+><P
+>    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 支持基本的表分区功能。
+    本节描述为何需要表分区以及你如何在你的数据库设计里面实现表分区。
+   </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="DDL-PARTITIONING-OVERVIEW" >5.9.1. 概述</A
+></H2
+><P
+>    分区的意思是把逻辑上的一个大表分割成物理上的几块儿。
+    分区可以提供若干好处：
+   <P
+></P
+></P><UL
+><LI
+><P
+>      某些类型的查询性能可以得到极大提升。
+     </P
+></LI
+><LI
+><P
+>      更新的性能也可以得到提升，因为表的每块的索引要比在整个数据集上的索引要小。
+      如果索引不能全部放在内存里，那么在索引上的读和写都会产生更多的磁盘访问。
+     </P
+></LI
+><LI
+><P
+>      批量删除可以用简单地删除某个分区来实现 － 只要需求已经在分区设计是进行了规划。
+      <TT
+CLASS="COMMAND"
+>DROP TABLE</TT
+> 比批量 <TT
+CLASS="COMMAND"
+>DELETE</TT
+> 要快很多，
+      因为不需要有 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 的开销。
+     </P
+></LI
+><LI
+><P
+>      很少用的数据可以移动到便宜的、慢一些地存储介质上。
+     </P
+></LI
+></UL
+><P>
+
+    这种好处通常只有在表可能会变得非常大的情况下才有价值。
+    表在多大的情况下会从分区中收益取决于应用，不过有个基本的拇指规则就是表的大小超过了数据库服务器的物理内存大小。
+   </P
+><P
+>    目前，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 支持通过表继承进行分区。
+    每个分区必须做为单独一个父表的子表进行创建。父表自身通常是空的；
+    它的存在只是为了代表整个数据集。你在试图实现分区之前，应该先熟悉继承（参阅 <A HREF="ddl-inherit.html" >Section 5.8</A
+>）。
+   </P
+><P
+>    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里面可以实现下面形式的分区：
+
+    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>范围分区</DT
+><DD
+><P
+>	表被一个或者多个键字字段分区成<SPAN
+CLASS="QUOTE"
+>"范围"</SPAN
+>，
+	在这些范围之间没有重叠的数值分布到不同的分区里。
+	比如，我们可以为特定的商业对象根据数据范围分区，或者根据标识符范围分区。
+       </P
+></DD
+><DT
+>列表分区</DT
+><DD
+><P
+>	表是通过明确地列出每个分区里应该出现那些键字值实现的。
+       </P
+></DD
+></DL
+></DIV
+><P>
+
+    目前还不支持散列分区。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="DDL-PARTITIONING-IMPLEMENTATION" >5.9.2. 实现分区</A
+></H2
+><P
+>     要设置一个分区的表，做下面的步骤：
+     <P
+></P
+></P><OL
+COMPACT="COMPACT"
+TYPE="1"
+><LI
+><P
+>	创建<SPAN
+CLASS="QUOTE"
+>"主表"</SPAN
+>，所有分区都从它上面继承下去。
+       </P
+><P
+>	这个表将没有什么数据，不要在这个表上定义任何检查约束，
+	除非你希望约束同样也适用于所有分区。同时在其上定义任何索引或者唯一约束也没有意义。
+       </P
+></LI
+><LI
+><P
+>	创建几个<SPAN
+CLASS="QUOTE"
+>"子"</SPAN
+>表，每个都从主表上继承。
+	通常，这些表将不会对从主表继承过来集合增加任何字段。
+       </P
+><P
+>	我们将把子表称作分区，尽管它们就是普通的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 表。
+       </P
+></LI
+><LI
+><P
+>	给分区表增加约束，定义每个分区允许的健值。
+       </P
+><P
+>	典型的例子是：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CHECK ( x = 1 )
+CHECK ( county IN ( 'Oxfordshire', 'Buckinghamshire', 'Warwickshire' ))
+CHECK ( outletID &#62;= 100 AND outletID &#60; 200 )</PRE
+><P>
+	确信这些约束保证在不同的分区里不会有重叠的键字。一个常见的错误是设置下面这样的范围：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CHECK ( outletID BETWEEN 100 AND 200 )
+CHECK ( outletID BETWEEN 200 AND 300 )</PRE
+><P>
+	这样做是错误的，因为它没说清楚健值 200 属于那个范围。
+       </P
+><P
+>	请注意在范围和列表分区的语法方面没有什么区别；这些术语只是用于描述的。
+       </P
+></LI
+><LI
+><P
+>	对于每个分区，在键字字段上创建一个索引，以及其它你想创建的索引。
+	（键字索引并非严格要求的，但是在大多数情况下它是很有帮助的。
+	如果你希望键字值是唯一的，那么你应该总是给每个分区创建一个唯一或者主键约束。
+       </P
+></LI
+><LI
+><P
+>	另外，定义一个规则或者触发器，把对主表的修改重定向到合适的分区表。
+       </P
+></LI
+><LI
+><P
+>	确保 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 里的配置参数 <A HREF="runtime-config-query.html#GUC-CONSTRAINT-EXCLUSION" >constraint_exclusion</A
+> 是打开的。
+	没有这个参数，查询不会按照需要进行优化。
+       </P
+></LI
+></OL
+><P>
+    </P
+><P
+>     比如，假设我们为一个巨大的冰激凌公司构造数据库。
+     该公司每天都测量最高温度，以及每个地区的冰激凌销售。
+     概念上，我们需要一个这样的表：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE measurement (
+    city_id         int not null,
+    logdate         date not null,
+    peaktemp        int,
+    unitsales       int
+);</PRE
+><P>
+
+     我们知道大多数查询都只会访问最后一周，最后一个月或者最后一个季度的数据，
+     因为这个表的主要用途是为管理准备在线报告。
+     为了减少需要存储的旧数据，我们决定值保留最近三年的有用数据。
+     在每个月的开头，我们都会删除最旧的一个月的数据。
+    </P
+><P
+>     在这种情况下，我们可以使用分区来帮助我们实现所有我们对表的不同需求。
+     下面的步骤描述了上面的需求，分区可以这样设置：
+    </P
+><P
+>     <P
+></P
+></P><OL
+COMPACT="COMPACT"
+TYPE="1"
+><LI
+><P
+>	主表是 <TT
+CLASS="STRUCTNAME"
+>measurement</TT
+> 表，就像上面那样声明。
+       </P
+></LI
+><LI
+><P
+>	然后我们为每个月创建一个分区：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE measurement_yy04mm02 ( ) INHERITS (measurement);
+CREATE TABLE measurement_yy04mm03 ( ) INHERITS (measurement);
+...
+CREATE TABLE measurement_yy05mm11 ( ) INHERITS (measurement);
+CREATE TABLE measurement_yy05mm12 ( ) INHERITS (measurement);
+CREATE TABLE measurement_yy06mm01 ( ) INHERITS (measurement);</PRE
+><P>
+
+	每个分区都是拥有自己内容的完整的表，只是它们从 <TT
+CLASS="STRUCTNAME"
+>measurement</TT
+> 表继承定义。
+       </P
+><P
+>	这样就解决了我们的一个问题：删除旧数据。
+	每个月，我们需要做的只是在最旧的子表上执行一个 <TT
+CLASS="COMMAND"
+>DROP TABLE</TT
+>，
+	然后为新月份创建一个新的子表。
+       </P
+></LI
+><LI
+><P
+>	我们必须增加非重叠的表约束，所以我们的建表脚本就变成：
+
+ </P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE measurement_yy04mm02 (
+    CHECK ( logdate &#62;= DATE '2004-02-01' AND logdate &#60; DATE '2004-03-01' )
+) INHERITS (measurement);
+CREATE TABLE measurement_yy04mm03 (
+    CHECK ( logdate &#62;= DATE '2004-03-01' AND logdate &#60; DATE '2004-04-01' )
+) INHERITS (measurement);
+...
+CREATE TABLE measurement_yy05mm11 (
+    CHECK ( logdate &#62;= DATE '2005-11-01' AND logdate &#60; DATE '2005-12-01' )
+) INHERITS (measurement);
+CREATE TABLE measurement_yy05mm12 (
+    CHECK ( logdate &#62;= DATE '2005-12-01' AND logdate &#60; DATE '2006-01-01' )
+) INHERITS (measurement);
+CREATE TABLE measurement_yy06mm01 (
+    CHECK ( logdate &#62;= DATE '2006-01-01' AND logdate &#60; DATE '2006-02-01' )
+) INHERITS (measurement);</PRE
+><P>
+       </P
+></LI
+><LI
+><P
+>	我们可能还需要在键字字段上有索引：
+
+ </P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE INDEX measurement_yy04mm02_logdate ON measurement_yy04mm02 (logdate);
+CREATE INDEX measurement_yy04mm03_logdate ON measurement_yy04mm03 (logdate);
+...
+CREATE INDEX measurement_yy05mm11_logdate ON measurement_yy05mm11 (logdate);
+CREATE INDEX measurement_yy05mm12_logdate ON measurement_yy05mm12 (logdate);
+CREATE INDEX measurement_yy06mm01_logdate ON measurement_yy06mm01 (logdate);</PRE
+><P>
+
+	我们选择先不建立更多的索引。
+       </P
+></LI
+><LI
+><P
+>	如果数据只进入最新的分区，我们可以设置一个非常简单的规则来插入数据。
+	我们必须每个月都重新定义这个规则，这样它总是指向当前分区。
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE OR REPLACE RULE measurement_current_partition AS
+ON INSERT TO measurement
+DO INSTEAD
+    INSERT INTO measurement_yy06mm01 VALUES ( NEW.city_id,
+                                              NEW.logdate,
+                                              NEW.peaktemp,
+                                              NEW.unitsales );</PRE
+><P>
+
+	我们可能想插入数据并且想让服务器自动定位应该向哪个分区插入数据。
+	我们可以用像下面这样的更复杂的规则集来实现这个目标。
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE RULE measurement_insert_yy04mm02 AS
+ON INSERT TO measurement WHERE
+    ( logdate &#62;= DATE '2004-02-01' AND logdate &#60; DATE '2004-03-01' )
+DO INSTEAD
+    INSERT INTO measurement_yy04mm02 VALUES ( NEW.city_id,
+                                              NEW.logdate,
+                                              NEW.peaktemp,
+                                              NEW.unitsales );
+...
+CREATE RULE measurement_insert_yy05mm12 AS
+ON INSERT TO measurement WHERE
+    ( logdate &#62;= DATE '2005-12-01' AND logdate &#60; DATE '2006-01-01' )
+DO INSTEAD
+    INSERT INTO measurement_yy05mm12 VALUES ( NEW.city_id,
+                                              NEW.logdate,
+                                              NEW.peaktemp,
+                                              NEW.unitsales );
+CREATE RULE measurement_insert_yy06mm01 AS
+ON INSERT TO measurement WHERE
+    ( logdate &#62;= DATE '2006-01-01' AND logdate &#60; DATE '2006-02-01' )
+DO INSTEAD
+    INSERT INTO measurement_yy06mm01 VALUES ( NEW.city_id,
+                                              NEW.logdate,
+                                              NEW.peaktemp,
+                                              NEW.unitsales );</PRE
+><P>
+
+	请注意每个规则里面的 <TT
+CLASS="LITERAL"
+>WHERE</TT
+> 子句正好匹配其分区的 <TT
+CLASS="LITERAL"
+>CHECK</TT
+> 约束。
+       </P
+></LI
+></OL
+><P>
+    </P
+><P
+>     我们可以看出来，一个复杂的分区方案可能要求相当不少的 DDL。
+     在上面的例子里我们需要每个月创建一次新分区，因此写一个脚本自动生成需要的 DDL 是明智的。
+    </P
+><P
+>    还要注意下面的事项：
+   <P
+></P
+></P><UL
+><LI
+><P
+>      目前还没有什么办法校验所有 <TT
+CLASS="LITERAL"
+>CHECK</TT
+> 是相互排他的。
+      数据库设计者必须注意这一点。
+     </P
+></LI
+><LI
+><P
+>      目前还没有简单的办法声明数据行绝对不能插入主表。
+      主表上的一个 <TT
+CLASS="LITERAL"
+>CHECK (false)</TT
+> 约束将被所有子表继承，
+      因此不能这么用。一个可行的办法是在主表上设置一个 <TT
+CLASS="LITERAL"
+>ON INSERT</TT
+>
+      触发器，总是抛出错误。（另外，这样的触发器也可以用于重定向数据到合适的子表，
+      而不是用上面建议的那样一套规则。）
+     </P
+></LI
+></UL
+><P>
+   </P
+><P
+>    分区也可以使用一个 <TT
+CLASS="LITERAL"
+>UNION ALL</TT
+> 试图来安排：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE VIEW measurement AS
+          SELECT * FROM measurement_yy04mm02
+UNION ALL SELECT * FROM measurement_yy04mm03
+...
+UNION ALL SELECT * FROM measurement_yy05mm11
+UNION ALL SELECT * FROM measurement_yy05mm12
+UNION ALL SELECT * FROM measurement_yy06mm01;</PRE
+><P>
+
+    不过，约束排除目前还不支持用这种方式定义的分区。
+    还有，重建试图也给增加和删除数据集里面的独立分区增加了额外的步骤。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="DDL-PARTITIONING-CONSTRAINT-EXCLUSION" >5.9.3. 分区和约束排除</A
+></H2
+><A NAME="AEN2772" ></A
+><P
+>    <I
+CLASS="FIRSTTERM"
+>约束排除（Constraint exclusion）</I
+>是一种查询优化技巧，
+    它改进了用上面方法定义的表分区的性能。比如：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SET constraint_exclusion = on;
+SELECT count(*) FROM measurement WHERE logdate &#62;= DATE '2006-01-01';</PRE
+><P>
+
+    如果没有约束排除，上面的查询会扫描 <TT
+CLASS="STRUCTNAME"
+>measurement</TT
+> 表中的每一个分区。
+    打开了约束排除之后，规划器将检查每个分区的约束然后试图证明该分区不需要被扫描，
+    因为它不能包含任何符合 <TT
+CLASS="LITERAL"
+>WHERE</TT
+> 子句条件的数据行。
+    如果规划器可以证明这个，它就把该分区从查询规划里排除出去。
+   </P
+><P
+>    你可以使用 <TT
+CLASS="COMMAND"
+>EXPLAIN</TT
+> 命令显示一个规划在 <TT
+CLASS="VARNAME"
+>constraint_exclusion</TT
+>
+    打开和关闭情况下的不同。用上面方法设置的表的典型的缺省规划是：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SET constraint_exclusion = off;
+EXPLAIN SELECT count(*) FROM measurement WHERE logdate &#62;= DATE '2006-01-01';
+
+                                          QUERY PLAN
+-----------------------------------------------------------------------------------------------
+ Aggregate  (cost=158.66..158.68 rows=1 width=0)
+   -&#62;  Append  (cost=0.00..151.88 rows=2715 width=0)
+         -&#62;  Seq Scan on measurement  (cost=0.00..30.38 rows=543 width=0)
+               Filter: (logdate &#62;= '2006-01-01'::date)
+         -&#62;  Seq Scan on measurement_yy04mm02 measurement  (cost=0.00..30.38 rows=543 width=0)
+               Filter: (logdate &#62;= '2006-01-01'::date)
+         -&#62;  Seq Scan on measurement_yy04mm03 measurement  (cost=0.00..30.38 rows=543 width=0)
+               Filter: (logdate &#62;= '2006-01-01'::date)
+...
+         -&#62;  Seq Scan on measurement_yy05mm12 measurement  (cost=0.00..30.38 rows=543 width=0)
+               Filter: (logdate &#62;= '2006-01-01'::date)
+         -&#62;  Seq Scan on measurement_yy06mm01 measurement  (cost=0.00..30.38 rows=543 width=0)
+               Filter: (logdate &#62;= '2006-01-01'::date)</PRE
+><P>
+
+    部分或者全部分区可能会使用索引扫描而不是全表扫描，
+    不过这里要表达的意思是我们没有必要扫描旧的分区旧可以回答这个查询。
+    在我们打开约束排除之后，我们可以得到生成同样回答的明显节省的规划：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SET constraint_exclusion = on;
+EXPLAIN SELECT count(*) FROM measurement WHERE logdate &#62;= DATE '2006-01-01';
+                                          QUERY PLAN
+-----------------------------------------------------------------------------------------------
+ Aggregate  (cost=63.47..63.48 rows=1 width=0)
+   -&#62;  Append  (cost=0.00..60.75 rows=1086 width=0)
+         -&#62;  Seq Scan on measurement  (cost=0.00..30.38 rows=543 width=0)
+               Filter: (logdate &#62;= '2006-01-01'::date)
+         -&#62;  Seq Scan on measurement_yy06mm01 measurement  (cost=0.00..30.38 rows=543 width=0)
+               Filter: (logdate &#62;= '2006-01-01'::date)</PRE
+><P>
+   </P
+><P
+>    请注意，约束排除只由 <TT
+CLASS="LITERAL"
+>CHECK</TT
+> 约束驱动，而不会由索引驱动。
+    因此，在键字字段上定义索引是没有必要的。
+    在给出的分区上是否需要建立索引取决于那些扫描该分区的查询通常是扫描该分区的一大部分还是只是一小部分。
+    对于后者，索引通常都有帮助，对于前者则没有什么好处。
+   </P
+><P
+>    还有下面的注意：
+
+   <P
+></P
+></P><UL
+><LI
+><P
+>      约束排除只是在查询的 <TT
+CLASS="LITERAL"
+>WHERE</TT
+> 子句包含约束的时候才生效。
+      一个参数化的查询不会被优化，因为在运行时规划器不知道改参数会选择哪个分区。
+      由于某些原因，像 <TT
+CLASS="FUNCTION"
+>CURRENT_DATE</TT
+> 这样的<SPAN
+CLASS="QUOTE"
+>"稳定的（stable）"</SPAN
+>函数必须避免。
+      把分区键字和另外一个表的字段连接起来也不会得到优化。
+     </P
+></LI
+><LI
+><P
+>      在 <TT
+CLASS="LITERAL"
+>CHECK</TT
+> 约束里面避免跨数据类型的比较，
+      因为目前规划器会无法证明这样的条件为假。比如，下面的约束会在 <TT
+CLASS="VARNAME"
+>x</TT
+>
+      是整数字段的时候可用，但是在 <TT
+CLASS="VARNAME"
+>x</TT
+> 是一个 <TT
+CLASS="TYPE"
+>bigint</TT
+>
+      的时候不能用：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CHECK ( x = 1 )</PRE
+><P>
+      对于 <TT
+CLASS="TYPE"
+>bigint</TT
+> 字段，我们必须使用类似下面这样的约束：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CHECK ( x = 1::bigint )</PRE
+><P>
+      这个问题并不仅仅局限于 <TT
+CLASS="TYPE"
+>bigint</TT
+> 数据类型 &mdash;
+      它可能会发生在任何约束的缺省数据类型与其比较的字段的数据类型不匹配的场合。
+      在提交的查询里的跨数据类型的比较通常是 OK 的，只是不能在 <TT
+CLASS="LITERAL"
+>CHECK</TT
+> 条件里。
+     </P
+></LI
+><LI
+><P
+>      目前，在主表上的 <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> 和 <TT
+CLASS="COMMAND"
+>DELETE</TT
+>
+      命令并不执行约束排除。
+     </P
+></LI
+><LI
+><P
+>      主表的所有分区上面的所有约束都认为是约束排除了的，因此，大量的分区会显著增加查询规划的时间。
+     </P
+></LI
+><LI
+><P
+>      别忘记你仍然需要为每个分区独立运行 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+>。
+      类似下面的命令
+</P><PRE
+CLASS="PROGRAMLISTING"
+>ANALYZE measurement;</PRE
+><P>
+      是只会处理主表的。
+     </P
+></LI
+></UL
+><P>
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="ddl-inherit.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="ddl-others.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >继承</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="ddl.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >其它数据库对象</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

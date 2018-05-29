@@ -1,0 +1,189 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>SET SESSION AUTHORIZATION PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="SET ROLE" HREF="sql-set-role.html"><LINK REL="NEXT" TITLE="SET TRANSACTION" HREF="sql-set-transaction.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-set-role.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-set-role.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-set-transaction.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-set-transaction.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-SET-SESSION-AUTHORIZATION" >SET SESSION AUTHORIZATION</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN48635" ></A
+><H2
+>Name</H2
+>SET SESSION AUTHORIZATION&nbsp;--&nbsp;为当前会话设置会话用户标识符和当前用户标识符</DIV
+><A NAME="AEN48638" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN48640" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>SET [ SESSION | LOCAL ] SESSION AUTHORIZATION <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+>
+SET [ SESSION | LOCAL ] SESSION AUTHORIZATION DEFAULT
+RESET SESSION AUTHORIZATION</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN48643" ></A
+><H2
+>描述</H2
+><P
+>	这条命令把当前 SQL 会话环境里的会话用户标识和当前用户标识设置为
+	<TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+>。
+	这个用户名可以写成一个标识符或者一个字串文本。
+	使用这个命令，我们可以临时变成一个非特权用户，稍后再切换回超级用户。
+  </P
+><P
+>	会话用户标识符一开始设置为（可能经过认证的）客户端提供的用户名。
+	当前用户标识符通常等于会话用户标识符，
+	但是可能在 <SPAN
+CLASS="QUOTE"
+>"setuid"</SPAN
+> 的环境里或者类似的机制里临时改变。
+	当前用户标识符和权限检查相关。
+  </P
+><P
+>	只有在初始会话用户（<I
+CLASS="FIRSTTERM"
+>认证了的用户</I
+>）有超级用户权限的时候，会话用户标识符才能改变。
+	否则，只有在指定了被认证的用户名的情况下，系统才接受该命令。
+  </P
+><P
+>   <TT
+CLASS="LITERAL"
+>SESSION</TT
+> 和 <TT
+CLASS="LITERAL"
+>LOCAL</TT
+> 修饰词和普通 <A HREF="sql-set.html" ><I
+>SET</I
+></A
+>
+   命令里的作用相同。
+  </P
+><P
+>	<TT
+CLASS="LITERAL"
+>DEFAULT</TT
+> 和 <TT
+CLASS="LITERAL"
+>RESET</TT
+> 形式重置会话和当前用户标识符为初始认证的用户名。这些形式可以为任何用户执行。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN48658" ></A
+><H2
+>例子</H2
+><PRE
+CLASS="PROGRAMLISTING"
+>SELECT SESSION_USER, CURRENT_USER;
+
+ session_user | current_user
+--------------+--------------
+ peter        | peter
+
+SET SESSION AUTHORIZATION 'paul';
+
+SELECT SESSION_USER, CURRENT_USER;
+
+ session_user | current_user
+--------------+--------------
+ paul         | paul</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN48661" ></A
+><H2
+>兼容性</H2
+><P
+>	SQL 标准允许一些其它的表达式出现在文本 <TT
+CLASS="PARAMETER"
+>username</TT
+>
+	的位置上，不过这个东西实际上并不重要。
+	<SPAN
+CLASS="APPLICATION"
+>PostgreSQL</SPAN
+> 允许标识符语法
+	（<TT
+CLASS="LITERAL"
+>"username"</TT
+>），而 SQL 不允许。
+	SQL 不允许在一个事务的过程中用这条命令；
+	<SPAN
+CLASS="APPLICATION"
+>PostgreSQL</SPAN
+> 没有这个限制，因为没有什么理由不允许这样用。
+	标准中表示执行这条命令的权限要求是具体实现定义的。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-set-role.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-set-transaction.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >SET ROLE</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >SET TRANSACTION</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

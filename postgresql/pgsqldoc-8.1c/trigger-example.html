@@ -1,0 +1,359 @@
+<HTML
+><HEAD
+><TITLE
+>一个完整的例子</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="触发器"
+HREF="triggers.html"><LINK
+REL="PREVIOUS"
+TITLE="用 C 写触发器"
+HREF="trigger-interface.html"><LINK
+REL="NEXT"
+TITLE="规则系统"
+HREF="rules.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="trigger-interface.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="triggers.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 33. 触发器</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="triggers.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="rules.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="TRIGGER-EXAMPLE"
+>33.4. 一个完整的例子</A
+></H1
+><P
+>	这里是一个用 C 写的非常简单的触发器使用的例子。
+	函数<TT
+CLASS="FUNCTION"
+>trigf</TT
+>报告表 <TT
+CLASS="STRUCTNAME"
+>ttest</TT
+> 中行数量，
+	并且如果命令试图把空值插入到字段 <TT
+CLASS="STRUCTFIELD"
+>x</TT
+> 里（也就是说 －它做为一个非空约束但不退出事务的约束）时略过操作。
+   </P
+><P
+>    首先，表定义：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE ttest (
+    x integer
+);</PRE
+><P>
+   </P
+><P
+>   这里是触发器函数的源代码：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>#include "postgres.h"
+#include "executor/spi.h"	 /* 你用SPI的时候要用的头文件 */
+#include "commands/trigger.h"	 /* 用触发器时要用的头文件 */
+
+extern Datum trigf(PG_FUNCTION_ARGS);
+
+PG_FUNCTION_INFO_V1(trigf);
+
+Datum
+trigf(PG_FUNCTION_ARGS)
+{
+    TriggerData *trigdata = (TriggerData *) fcinfo-&gt;context;
+    TupleDesc   tupdesc;
+    HeapTuple   rettuple;
+    char       *when;
+    bool        checknull = false;
+    bool        isnull;
+    int         ret, i;
+
+    /* 确信自己是作为触发器触发的 */
+    if (!CALLED_AS_TRIGGER(fcinfo))
+        elog(ERROR, "trigf: not fired by trigger manager");
+
+    /* 返回给执行者的行 */
+    if (TRIGGER_FIRED_BY_UPDATE(trigdata-&gt;tg_event))
+        rettuple = trigdata-&gt;tg_newtuple;
+    else
+        rettuple = trigdata-&gt;tg_trigtuple;
+
+    /* 检查空值 */
+    if (!TRIGGER_FIRED_BY_DELETE(trigdata-&gt;tg_event)
+        &#38;&#38; TRIGGER_FIRED_BEFORE(trigdata-&gt;tg_event))
+        checknull = true;
+
+    if (TRIGGER_FIRED_BEFORE(trigdata-&gt;tg_event))
+        when = "before";
+    else
+        when = "after ";
+
+    tupdesc = trigdata-&gt;tg_relation-&gt;rd_att;
+
+    /* 与 SPI 管理器连接 */
+    if ((ret = SPI_connect()) &#60; 0)
+        elog(INFO, "trigf (fired %s): SPI_connect returned %d", when, ret);
+
+    /* 获取关系中的行数量 */
+    ret = SPI_exec("SELECT count(*) FROM ttest", 0);
+
+    if (ret &#60; 0)
+        elog(NOTICE, "trigf (fired %s): SPI_exec returned %d", when, ret);
+
+    /* count(*) 返回 int8，所以要小心转换 */
+    i = (int) DatumGetInt64(SPI_getbinval(SPI_tuptable-&gt;vals[0],
+                                          SPI_tuptable-&gt;tupdesc,
+                                          1,
+                                          &amp;isnull));
+
+    elog (NOTICE, "trigf (fired %s): there are %d tuples in ttest", when, i);
+
+    SPI_finish();
+
+    if (checknull)
+    {
+        (void) SPI_getbinval(rettuple, tupdesc, 1, &amp;isnull);
+        if (isnull)
+            rettuple = NULL;
+    }
+
+    return PointerGetDatum(rettuple);
+}</PRE
+><P>
+   </P
+><P
+>	编译完源代码后，声明函数并创建触发器：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION trigf() RETURNS trigger
+    AS '<TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>'
+    LANGUAGE C;
+
+CREATE TRIGGER tbefore BEFORE INSERT OR UPDATE OR DELETE ON ttest 
+    FOR EACH ROW EXECUTE PROCEDURE trigf();
+
+CREATE TRIGGER tafter AFTER INSERT OR UPDATE OR DELETE ON ttest 
+    FOR EACH ROW EXECUTE PROCEDURE trigf();</PRE
+><P>
+	</P
+><P
+>	现在你可以测试触发器的操作：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>vac=&gt; INSERT INTO ttest VALUES (NULL);
+INFO:trigf (fired before): there are 0 tuples in ttest
+INSERT 0 0
+
+-- 插入被忽略，AFTER 触发器没有触发
+
+vac=&gt; SELECT * FROM ttest;
+ x
+---
+(0 rows)
+
+vac=&gt; INSERT INTO ttest VALUES (1);
+INFO:trigf (fired before): there are 0 rows in ttest
+INFO:trigf (fired after ): there are 1 rows in ttest
+				       ^^^^^^^^
+			     回忆一下我们讲的有关可视性的东西。
+INSERT 167793 1
+vac=&gt; SELECT * FROM ttest;
+ x
+---
+ 1
+(1 row)
+
+vac=&gt; INSERT INTO ttest SELECT x * 2 FROM ttest;
+INFO:  trigf (fired before): there are 1 rows in ttest
+INFO:  trigf (fired after ): there are 2 rows in ttest
+				       ^^^^^^^^
+			     还记得我们讲过的关于可视性的原则吗
+INSERT 167794 1
+vac=&gt; SELECT * FROM ttest;
+ x
+---
+ 1
+ 2
+(2 rows)
+
+vac=&gt; UPDATE ttest SET x = NULL where x = 2;
+INFO:  trigf (fired before): there are 2 rows in ttest
+UPDATE 0
+vac=&gt; UPDATE ttest SET x = 4 where x = 2;
+INFO:  trigf (fired before): there are 2 rows in ttest
+INFO:  trigf (fired after ): there are 2 rows in ttest
+UPDATE 1
+vac=&gt; SELECT * FROM ttest;
+ x
+---
+ 1
+ 4
+(2 rows)
+
+vac=&gt; DELETE FROM ttest;
+INFO:  trigf (fired before): there are 2 rows in ttest
+INFO:  trigf (fired before): there are 1 rows in ttest
+INFO:  trigf (fired after ): there are 0 rows in ttest
+INFO:  trigf (fired after ): there are 0 rows in ttest
+				       ^^^^^^^^
+			     还记得我们讲过的关于可视性的原则吗
+DELETE 2
+vac=&gt; SELECT * FROM ttest;
+ x
+---
+(0 rows)</PRE
+><P>
+
+   </P
+><P
+>    在 <TT
+CLASS="FILENAME"
+>src/test/regress/regress.c</TT
+> 和
+    <TT
+CLASS="FILENAME"
+>contrib/spi</TT
+> 里还有更复杂的例子。
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="trigger-interface.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="rules.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>用 C 写触发器</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="triggers.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>规则系统</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

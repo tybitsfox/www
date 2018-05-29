@@ -1,0 +1,250 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>继承 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="高级特性" HREF="tutorial-advanced.html"><LINK REL="PREVIOUS" TITLE="事务" HREF="tutorial-transactions.html"><LINK REL="NEXT" TITLE="结论" HREF="tutorial-conclusion.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="tutorial-transactions.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="tutorial-advanced.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 3. 高级特性</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="tutorial-advanced.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="tutorial-conclusion.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="TUTORIAL-INHERITANCE" >3.5. 继承</A
+></H1
+><A NAME="AEN1032" ></A
+><P
+>	继承是面向对象的数据库的概念。它开启了数据库设计新的有趣的可能性大门。
+   </P
+><P
+>	让我们创建两个表：一个表 <TT
+CLASS="CLASSNAME"
+>cities</TT
+> 和一个表
+	<TT
+CLASS="CLASSNAME"
+>capitals</TT
+>。自然，首府（capital）也是城市（cities），
+	因此在列出所有城市时你想要某种方法隐含地显示首府。
+	如果你已经很高明了，那么你可能会创造类似下面这样的模式：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE capitals (
+    name            text,
+    population      real,
+    altitude        int,    -- (单位是英尺)
+    state           char(2)
+);
+
+CREATE TABLE non_capitals (
+    name            text,
+    population      real,
+    altitude        int     -- (单位是英尺)
+);
+
+CREATE VIEW cities AS
+    SELECT name, population, altitude FROM capitals
+        UNION
+    SELECT name, population, altitude FROM non_capitals;</PRE
+><P>
+
+	如果只是查询，那么这个方法运转得很好，比如如果你需要更新某几行，
+	那这个方法就很难看了。
+   </P
+><P
+>	一种更好的方法是：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE cities (
+    name            text,
+    population      real,
+    altitude        int     -- (单位是英尺)
+);
+
+CREATE TABLE capitals (
+    state           char(2)
+) INHERITS (cities);</PRE
+><P>
+    </P
+><P
+>	在这个例子里，<TT
+CLASS="CLASSNAME"
+>capitals</TT
+> 的一行<I
+CLASS="FIRSTTERM"
+>继承</I
+>所有来自它的<I
+CLASS="FIRSTTERM"
+>父表</I
+>，
+	<TT
+CLASS="CLASSNAME"
+>cities</TT
+> 的所有字段（<TT
+CLASS="STRUCTFIELD"
+>name</TT
+>，
+	<TT
+CLASS="STRUCTFIELD"
+>population</TT
+>，和 <TT
+CLASS="STRUCTFIELD"
+>altitude</TT
+>）。
+	字段 <TT
+CLASS="STRUCTFIELD"
+>name</TT
+> 的类型是 <TT
+CLASS="TYPE"
+>text</TT
+>，
+	是 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 用于变长字符串的固有类型。
+	州首府有一个额外的字段，州，显示所处的州。在
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里，一个表可以从零个或者更多其它表中继承过来。
+   </P
+><P
+>	比如，下面的查询找出所有海拔超过 500 英尺的城市的名字，
+	包括州首府：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT name, altitude
+    FROM cities
+    WHERE altitude &gt; 500;</PRE
+><P>
+
+    它返回：
+
+</P><PRE
+CLASS="SCREEN"
+>   name    | altitude
+-----------+----------
+ Las Vegas |     2174
+ Mariposa  |     1953
+ Madison   |      845
+(3 rows)</PRE
+><P>
+   </P
+><P
+>	另外一方面，下面的查询找出所有不是州首府并且位于海拔大于或等于 500 英尺的城市：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT name, altitude
+    FROM ONLY cities
+    WHERE altitude &gt; 500;</PRE
+><P>
+
+</P><PRE
+CLASS="SCREEN"
+>   name    | altitude
+-----------+----------
+ Las Vegas |     2174
+ Mariposa  |     1953
+(2 rows)</PRE
+><P>
+   </P
+><P
+>	这里的 <TT
+CLASS="LITERAL"
+>cities</TT
+> 前面的 <TT
+CLASS="LITERAL"
+>ONLY</TT
+>
+	指示系统只对 <TT
+CLASS="CLASSNAME"
+>cities</TT
+> 表运行查询，而不包括继承级别中低于 <TT
+CLASS="CLASSNAME"
+>cities</TT
+> 的表。
+	许多我们已经讨论过的命令 &mdash; <TT
+CLASS="COMMAND"
+>SELECT</TT
+>, <TT
+CLASS="COMMAND"
+>UPDATE</TT
+>
+	和 <TT
+CLASS="COMMAND"
+>DELETE</TT
+> &mdash; 支持这个 <TT
+CLASS="LITERAL"
+>ONLY</TT
+> 表示法。
+   </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>     尽管继承经常是有用的，但是它还没有集成唯一约束或者外键，因此制约了其实用性。
+     参阅 <A HREF="ddl-inherit.html" >Section 5.8</A
+> 获取更多细节。
+    </P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="tutorial-transactions.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="tutorial-conclusion.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >事务</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="tutorial-advanced.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >结论</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

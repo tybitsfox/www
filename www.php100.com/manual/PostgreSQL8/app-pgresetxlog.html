@@ -1,0 +1,381 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>pg_resetxlog PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="PostgreSQL 服务器应用" HREF="reference-server.html"><LINK REL="PREVIOUS" TITLE="pg_ctl" HREF="app-pg-ctl.html"><LINK REL="NEXT" TITLE="postgres" HREF="app-postgres.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="app-pg-ctl.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="app-pg-ctl.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="app-postgres.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="app-postgres.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="APP-PGRESETXLOG" ><SPAN
+CLASS="APPLICATION"
+>pg_resetxlog</SPAN
+></A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN54077" ></A
+><H2
+>Name</H2
+>pg_resetxlog&nbsp;--&nbsp;重置一个 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 数据库集群的预写日志以及其它控制内容</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN54081" ></A
+><H2
+>Synopsis</H2
+><P
+><TT
+CLASS="COMMAND"
+>pg_resetxlog</TT
+> [ -f ] [ -n ] [ -o <TT
+CLASS="REPLACEABLE"
+><I
+>oid</I
+></TT
+> ] [ -x <TT
+CLASS="REPLACEABLE"
+><I
+>xid</I
+></TT
+> ] [ -m <TT
+CLASS="REPLACEABLE"
+><I
+>mxid</I
+></TT
+> ] [ -O <TT
+CLASS="REPLACEABLE"
+><I
+>mxoff</I
+></TT
+> ] [ -l <TT
+CLASS="REPLACEABLE"
+><I
+>timelineid</I
+></TT
+>,<TT
+CLASS="REPLACEABLE"
+><I
+>fileid</I
+></TT
+>,<TT
+CLASS="REPLACEABLE"
+><I
+>seg</I
+></TT
+> ]  <TT
+CLASS="REPLACEABLE"
+><I
+>datadir</I
+></TT
+> </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="R1-APP-PGRESETXLOG-1" ></A
+><H2
+>描述</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>pg_resetxlog</TT
+>
+	清理预写日志（WAL）并且可以选择地重置其它一些存储在 <TT
+CLASS="FILENAME"
+>pg_control</TT
+> 文件中的控制信息。
+	有时候，如果这些文件崩溃了，我们需要这个功能。
+	我们一定只把它用作最后的方法，就是说只有因为这样的崩溃导致服务器无法启动的时候才使用。
+  </P
+><P
+>	在运行这个命令之后，我们可能可以启动服务器了，但是，
+	一定要记住数据库可能因为部分提交的事务而含有不完整的数据。
+	你应该马上转储你的数据，运行 <SPAN
+CLASS="APPLICATION"
+>initdb</SPAN
+>，然后重新装载。
+	在重新装载之后，检查不完整的部分然后根据需要进行修复。
+  </P
+><P
+>	这个命令只能由安装服务器的用户运行，因为它需要对数据目录的读写权限。
+	出于安全考虑，你必须在命令行上声明数据目录。
+	<TT
+CLASS="COMMAND"
+>pg_resetxlog</TT
+> 不使用环境变量 <TT
+CLASS="ENVAR"
+>PGDATA</TT
+>。
+  </P
+><P
+>	如果 <TT
+CLASS="COMMAND"
+>pg_resetxlog</TT
+> 抱怨说它无法判断用于
+	<TT
+CLASS="FILENAME"
+>pg_control</TT
+> 的有效数据，那么你可以强制它继续处理，
+	方法是声明 <TT
+CLASS="LITERAL"
+>-f</TT
+> （强制）开关。在这种情况下，那些丢失了的数据的值将用模糊的近似数值代替。
+	大多数字段都可以匹配上，但是下一个 OID，下一个事务 ID，下一个多事务 ID （两阶段提交的东西）和偏移量，
+	WAL 开始地址以及数据库区域字段可能需要手工帮助，
+	前面五个可以用下面讨论的开关设置。<TT
+CLASS="COMMAND"
+>pg_resetxlog</TT
+>
+	自己的环境是猜测区域字段的来源；看看 <TT
+CLASS="ENVAR"
+>LANG</TT
+> 等等东西，
+	它们应该和 <TT
+CLASS="COMMAND"
+>initdb</TT
+> 运行的环境相匹配。
+	如果你不能判断所有这些字段的正确数值，那么还是可以使用 <TT
+CLASS="LITERAL"
+>-f</TT
+>，
+	但是这样恢复过来的数据库更要怀疑有问题：立即转储和重置是必须的。
+	在转储之前<I
+CLASS="EMPHASIS"
+>不要</I
+>执行任何修改数据的操作，因为任何这样的动作都可能把事情搞得更糟糕。
+  </P
+><P
+>	<TT
+CLASS="LITERAL"
+>-o</TT
+>，<TT
+CLASS="LITERAL"
+>-x</TT
+>，<TT
+CLASS="LITERAL"
+>-m</TT
+>，<TT
+CLASS="LITERAL"
+>-O</TT
+> 和
+	<TT
+CLASS="LITERAL"
+>-l</TT
+> 开关允许我们手工设置下一个 OID，下一个事务 ID，下一个多事务 ID，
+	下一个多事务偏移量，以及 WAL 起始位置的数值。
+	只有在 <TT
+CLASS="COMMAND"
+>pg_resetxlog</TT
+> 无法通过读取 <TT
+CLASS="FILENAME"
+>pg_control</TT
+>
+	判断合适的数值的时候才需要它。安全的数值可以用下面方法判断：
+
+   <P
+></P
+></P><UL
+><LI
+><P
+>	对于下一个事务 ID 而言，一个安全的数值是看看数据目录里的 <TT
+CLASS="FILENAME"
+>/pg_clog</TT
+> 里数值最大的文件名，
+	然后加一，然后再乘上 1048576。
+	请注意那些文件名是十六进制的。通常我们也以十六进制的形式声明开关值是最简单的。
+	比如，如果 <TT
+CLASS="FILENAME"
+>0011</TT
+> 是 <TT
+CLASS="FILENAME"
+>pg_clog</TT
+> 里最大的记录，
+	<TT
+CLASS="LITERAL"
+>-x 0x1200000</TT
+> 就可以了（后面的五个零提供了合适的乘积）。
+     </P
+></LI
+><LI
+><P
+>      下一个多事务 ID （<TT
+CLASS="LITERAL"
+>-m</TT
+>）的安全值可以通过查看数据目录里 <TT
+CLASS="FILENAME"
+>pg_multixact/offsets</TT
+>
+      子目录里面的数字最大的文件名，加一，然后乘以 65536 得到。
+      和上面一样，文件名是十六进制的，因此最简单的方法是给开关声明一个十六进制的开关值，
+      然后在后面加四个零。
+     </P
+></LI
+><LI
+><P
+>      下一个多事务偏移量（<TT
+CLASS="LITERAL"
+>-O</TT
+>）的安全值可以通过检查数目目录里 <TT
+CLASS="FILENAME"
+>pg_multixact/members</TT
+>
+      子目录下的数字最大的文件名，加一，乘以 65536 得到。和上面一样，
+      文件名是十六进制的，因此最简单的方法是给开关声明一个十六进制的开关值，然后背后加四个零。
+     </P
+></LI
+><LI
+><P
+>	WAL 的起始位置（<TT
+CLASS="LITERAL"
+>-l</TT
+>）应该比目前存在于数据目录里得 <TT
+CLASS="FILENAME"
+>/pg_xlog</TT
+>
+	里面的任何文件号都大。它的文件名也是十六进制的，并且有三部分。
+	第一部分是<SPAN
+CLASS="QUOTE"
+>"时间线 ID"</SPAN
+>，通常应该保持相同。
+	第三部分不要选择大于 255（<TT
+CLASS="LITERAL"
+>0xFF</TT
+>）；
+	应该是在达到 255 的时候给第二部分增一然后重置第三部分为 0。
+	比如，如果 
+	<TT
+CLASS="FILENAME"
+>00000001000000320000004A</TT
+> 是 <TT
+CLASS="FILENAME"
+>pg_xlog</TT
+> 里最大的条目，
+	那么<TT
+CLASS="LITERAL"
+>-l 0x1,0x32,0x4B</TT
+> 就可以了；
+	但如果最大的条目是 <TT
+CLASS="FILENAME"
+>000000010000003A000000FF</TT
+>，
+	选择 <TT
+CLASS="LITERAL"
+>-l 0x1,0x3B,0x0</TT
+> 或更多。
+     </P
+></LI
+><LI
+><P
+>	我们没有很容易的办法来判断比数据库中最大的 OID 大一号的下一个 OID，
+	不过很走运的是获取正确的下一个 OID 并非非常关键的事情。
+     </P
+></LI
+></UL
+><P>
+  </P
+><P
+>	开关 <TT
+CLASS="LITERAL"
+>-n</TT
+> （无操作）指示 <TT
+CLASS="COMMAND"
+>pg_resetxlog</TT
+> 
+	打印从 <TT
+CLASS="FILENAME"
+>pg_control</TT
+> 重新构造的数值然后不修改任何值就退出。
+	这主要是一个调试工具，但是在 <TT
+CLASS="COMMAND"
+>pg_resetxlog</TT
+> 真正处理前进行的整洁性检查的时候可能会有用。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN54160" ></A
+><H2
+>注意</H2
+><P
+>	在 <SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+> 运行的时候一定不要运行这个命令。
+	如果发现在数据文件目录里有锁文件，那么 <TT
+CLASS="COMMAND"
+>pg_resetxlog</TT
+>
+	将拒绝启动。如果 <SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+> 崩溃，那么可能会剩下一个锁文件；
+	如果这样，你可以删除该锁文件以便允许 <TT
+CLASS="COMMAND"
+>pg_resetxlog</TT
+>
+	运行。但是在你这么做之前，一定要确信没有任何<TT
+CLASS="COMMAND"
+>postmaster</TT
+>或者后端服务器仍在运行。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="app-pg-ctl.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="app-postgres.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><SPAN
+CLASS="APPLICATION"
+>pg_ctl</SPAN
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="reference-server.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><SPAN
+CLASS="APPLICATION"
+>postgres</SPAN
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

@@ -1,0 +1,52 @@
+<HTML><HEAD><TITLE>Backward Incompatible Changes</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Migrating from PHP 4 to PHP 5" HREF="migration5.html"><LINK REL="PREVIOUS" TITLE="Migrating from PHP 4 to PHP 5" HREF="migration5.html"><LINK REL="NEXT" TITLE="CLI and CGI" HREF="migration5.cli-cgi.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="section" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="migration5.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">附录 B. Migrating from PHP 4 to PHP 5</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="migration5.cli-cgi.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="section"><H1 CLASS="section"><A NAME="migration5.incompatible"></A>Backward Incompatible Changes</H1><P>&#13; Although most existing PHP 4 code should work without changes, you should
+pay attention to this backward imcompatible changes:
+</P><P></P><UL><LI><P>&#13; <A HREF="function.strrpos.html"><B CLASS="function">strrpos()</B></A> and <A HREF="function.strripos.html"><B CLASS="function">strripos()</B></A> now use
+the entire string as a needle.
+</P></LI><LI><P>&#13; Ilegal use of string offsets causes <TT CLASS="constant"><B>E_ERROR</B></TT> instead
+of <TT CLASS="constant"><B>E_WARNING</B></TT>.
+</P></LI><LI><P>&#13; <A HREF="function.array-merge.html"><B CLASS="function">array_merge()</B></A> was changed to accept only arrays. If a
+non-array variable is passed, a <TT CLASS="constant"><B>E_WARNING</B></TT> will be
+thrown for every such parameter. Be careful because your code may start
+emitting <TT CLASS="constant"><B>E_WARNING</B></TT> out of the blue.
+</P></LI><LI><P>&#13; PATH_TRANSLATED server variable is no longer set implicitly under
+Apache2 SAPI in contrast to the situation in PHP 4, where it is set to
+the same value as the SCRIPT_FILENAME server variable when it is not
+populated by Apache. This change was made to comply with the <A HREF="http://hoohoo.ncsa.uiuc.edu/cgi/" TARGET="_top">CGI specification</A>. Please refer to <A HREF="http://bugs.php.net/23610" TARGET="_top">bug #23610</A> for further information.
+</P></LI><LI><P>&#13; The <TT CLASS="constant"><B>T_ML_CONSTANT</B></TT> constant is no longer defined by
+the <A HREF="ref.tokenizer.html">Tokenizer</A> extension. If
+error_reporting is set to <TT CLASS="constant"><B>E_ALL</B></TT>, PHP will generate a
+notice. Instead of <TT CLASS="constant"><B>T_ML_CONSTANT</B></TT> for /* */ the
+<TT CLASS="constant"><B>T_COMMENT</B></TT> constant is used, thus both // and /* */
+are resolved as the <TT CLASS="constant"><B>T_COMMENT</B></TT> constant. However the
+PHPDoc style comments /** */ ,which starting PHP5 are parsed by PHP, are
+recongnized as <TT CLASS="constant"><B>T_DOC_COMMENT</B></TT>.
+</P></LI><LI><P>&#13; $_SERVER should be populated with argc and argv if <A HREF="configuration.directives.html#ini.variables-order">variables_order</A> includes "S". If
+you have specifically configured your system to not create $_SERVER,
+then of course it shouldn't be there. The change was to always make argc
+and argv available in the CLI version regardless of the <A HREF="configuration.directives.html#ini.variables-order">variables_order</A> setting. As in,
+the CLI version will now always populate the global $argc and $argv
+variables.
+</P></LI><LI><P>&#13; An object with no properties is no longer considered "empty".
+</P></LI><LI><P>&#13; Classes must be declared before used.
+</P></LI></UL><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN126416"></A><P><B>例子 B-1. <A HREF="function.strrpos.html"><B CLASS="function">strrpos()</B></A> and <A HREF="function.strripos.html"><B CLASS="function">strripos()</B></A> now
+use the entire string as a needle</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />var_dump</font><font color="#007700">(</font><font color="#0000BB">strrpos</font><font color="#007700">(</font><font color="#DD0000">'ABCDEF'</font><font color="#007700">,</font><font color="#DD0000">'DEF'</font><font color="#007700">)); </font><font color="#FF8000">//int(3)<br /><br /></font><font color="#0000BB">var_dump</font><font color="#007700">(</font><font color="#0000BB">strrpos</font><font color="#007700">(</font><font color="#DD0000">'ABCDEF'</font><font color="#007700">,</font><font color="#DD0000">'DAF'</font><font color="#007700">)); </font><font color="#FF8000">//bool(false)<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN126422"></A><P><B>例子 B-2. An object with no properties is no longer considered "empty"</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#007700">class </font><font color="#0000BB">test </font><font color="#007700">{ }<br /></font><font color="#0000BB">$t </font><font color="#007700">= new </font><font color="#0000BB">test</font><font color="#007700">();<br /><br /></font><font color="#0000BB">var_dump</font><font color="#007700">(empty(</font><font color="#0000BB">$t</font><font color="#007700">)); </font><font color="#FF8000">// echo bool(false)<br /><br /></font><font color="#007700">if (!</font><font color="#0000BB">$t</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// Will be executed<br /></font><font color="#007700">}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; The following example was valid in PHP 4, although it will produce a fatal
+error in PHP 5.
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN126427"></A><P><B>例子 B-3. Classes must be declared before used</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$test </font><font color="#007700">= new </font><font color="#0000BB">fubar</font><font color="#007700">();<br /></font><font color="#0000BB">$test</font><font color="#007700">-&gt;</font><font color="#0000BB">barfu</font><font color="#007700">();<br /><br />class </font><font color="#0000BB">fubar </font><font color="#007700">{<br />&nbsp;&nbsp;&nbsp;&nbsp;function </font><font color="#0000BB">barfu</font><font color="#007700">() {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">'fubar'</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="migration5.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="migration5.cli-cgi.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Migrating from PHP 4 to PHP 5</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="migration5.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">CLI and CGI</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

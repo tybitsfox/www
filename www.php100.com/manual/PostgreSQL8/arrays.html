@@ -1,0 +1,935 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>数组 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="数据类型" HREF="datatype.html"><LINK REL="PREVIOUS" TITLE="位串类型" HREF="datatype-bit.html"><LINK REL="NEXT" TITLE="复合类型" HREF="rowtypes.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="datatype-bit.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="datatype.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 8. 数据类型</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="datatype.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="rowtypes.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="ARRAYS" >8.10. 数组</A
+></H1
+><A NAME="AEN5592" ></A
+><P
+>        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 允许记录的字段定义成定长或不定长的多维数组。
+	数组类型可以是任何基本类型或用户定义类型。（不过，复合类型和域的数组还不支持。）</P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN5596" >8.10.1. 数组类型的声明</A
+></H2
+><P
+>        为说明这些用法，我们先创建一个由基本类型数组构成的表：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE sal_emp (
+    name            text,
+    pay_by_quarter  integer[],
+    schedule        text[][]
+);</PRE
+><P>
+	如上所示，一个数组类型是通过在数组元素类型名后面附加方括弧（<TT
+CLASS="LITERAL"
+>[]</TT
+>）来命名的。
+	上面的命令将创建一个叫 <TT
+CLASS="STRUCTNAME"
+>sal_emp</TT
+> 的表，它的字段中有一个
+	<TT
+CLASS="TYPE"
+>text</TT
+> 类型字符串（<TT
+CLASS="STRUCTNAME"
+>name</TT
+>），
+	一个一维 <TT
+CLASS="TYPE"
+>integer</TT
+>型数组（<TT
+CLASS="STRUCTNAME"
+>pay_by_quarter</TT
+>），
+	代表雇员的季度薪水和一个两维 <TT
+CLASS="TYPE"
+>text</TT
+> 类型数组（<TT
+CLASS="STRUCTNAME"
+>schedule</TT
+>），
+	表示雇员的周计划。</P
+><P
+>  <TT
+CLASS="COMMAND"
+>CREATE TABLE</TT
+> 的语法允许声明数组的确切大小，比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE tictactoe (
+    squares   integer[3][3]
+);</PRE
+><P>
+
+  不过，目前的实现并不强制数组尺寸限制 &mdash; 其行为和用于未声明长度的 数组相同。
+ </P
+><P
+>  实际上，目前的声明也不强制数组维数。特定元素类型的数组都被认为是相同的类型，
+  不管他们的大小或者维数。因此，在 <TT
+CLASS="COMMAND"
+>CREATE TABLE</TT
+>
+  里定义数字或者维数都只是简单的文档，它并不影响运行时的行为。
+ </P
+><P
+>  另外还有一种语法，它遵循 SQL 标准，可以用于声明一维数组。
+  <TT
+CLASS="STRUCTFIELD"
+>pay_by_quarter</TT
+> 可以定义为：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>    pay_by_quarter  integer ARRAY[4],</PRE
+><P>
+  这个语法要求一个整数常量表示数组尺寸。不过，和以前一样，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+  并不强制这个尺寸限制。
+ </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN5617" >8.10.2. 数组值输入</A
+></H2
+><A NAME="AEN5619" ></A
+><P
+>	把一个数组数值写成一个文本值的时候，
+	我们用花括弧把数值括起来并且用逗号将它们分开。
+	（如果你懂 C，那么这与初始化一个结构很像。）
+	你可以在任何数组值周围放置双引号，如果这个值包含逗号或者花括弧，
+	那么你就必须加上双引号。（下面有更多细节。）因此，一个数组常量的常见格式如下：
+</P><PRE
+CLASS="SYNOPSIS"
+>'{ <TT
+CLASS="REPLACEABLE"
+><I
+>val1</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>delim</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>val2</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>delim</I
+></TT
+> ... }'</PRE
+><P>
+   这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>delim</I
+></TT
+> 是该类型的分隔符，
+   就是那个在它的 <TT
+CLASS="LITERAL"
+>pg_type</TT
+> 记录里指定的那个。
+   在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 发布提供的标准数据类型里，
+   类型 <TT
+CLASS="LITERAL"
+>box</TT
+> 使用分号（<TT
+CLASS="LITERAL"
+>;</TT
+>），但是所有其它类型都用逗号（<TT
+CLASS="LITERAL"
+>,</TT
+>）。
+   每个 <TT
+CLASS="REPLACEABLE"
+><I
+>val</I
+></TT
+>
+   要么是一个数组元素类型的常量，要么是一个子数组。一个数组常量的例子是
+</P><PRE
+CLASS="PROGRAMLISTING"
+>'{{1,2,3},{4,5,6},{7,8,9}}'</PRE
+><P>
+   这个常量是一个两维的，3乘3的数组，由三个整数子数组组成。
+ </P
+><P
+>   （这种数组常量实际上只是我们在 <A HREF="sql-syntax.html#SQL-SYNTAX-CONSTANTS-GENERIC" >Section 4.1.2.5</A
+>
+   里讨论过的一般类型常量的一种特例。常量最初是当作字串看待并且传递给数组输入转换过程。可能需要我们用明确的类型声明。）
+  </P
+><P
+>   现在我们可以显示一些 <TT
+CLASS="COMMAND"
+>INSERT</TT
+> 语句。
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT INTO sal_emp
+    VALUES ('Bill',
+    '{10000, 10000, 10000, 10000}',
+    '{{"meeting", "lunch"}, {"meeting"}}');
+ERROR:  multidimensional arrays must have array expressions with matching dimensions</PRE
+><P>
+
+  请注意多维数组必须匹配每个维的元素数。如果不匹配则导致错误发生。
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT INTO sal_emp
+    VALUES ('Bill',
+    '{10000, 10000, 10000, 10000}',
+    '{{"meeting", "lunch"}, {"training", "presentation"}}');
+
+INSERT INTO sal_emp
+    VALUES ('Carol',
+    '{20000, 25000, 25000, 25000}',
+    '{{"breakfast", "consulting"}, {"meeting", "lunch"}}');</PRE
+><P>
+  </P
+><P
+>   目前的数组实现的一个局限是一个数组的独立元素不能是 SQL 空值。
+   整个数组可以设置为空，但是你不能有这么一个数组，里面有些元素是空，
+   而有些不是。（这一点将来可能改变。）
+  </P
+><P
+>  前面的两个插入的结果看起来像这样：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM sal_emp;
+ name  |      pay_by_quarter       |                 schedule
+-------+---------------------------+-------------------------------------------
+ Bill  | {10000,10000,10000,10000} | {{meeting,lunch},{training,presentation}}
+ Carol | {20000,25000,25000,25000} | {{breakfast,consulting},{meeting,lunch}}
+(2 rows)</PRE
+><P>
+ </P
+><P
+>  我们还可以使用 <TT
+CLASS="LITERAL"
+>ARRAY</TT
+> 构造器语法：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT INTO sal_emp
+    VALUES ('Bill',
+    ARRAY[10000, 10000, 10000, 10000],
+    ARRAY[['meeting', 'lunch'], ['training', 'presentation']]);
+
+INSERT INTO sal_emp
+    VALUES ('Carol',
+    ARRAY[20000, 25000, 25000, 25000],
+    ARRAY[['breakfast', 'consulting'], ['meeting', 'lunch']]);</PRE
+><P>
+  请注意数组元素是普通的 SQL 常量或者表达式；比如，字串文本是用单引号包围的，
+  而不是像数组文本那样用双引号。<TT
+CLASS="LITERAL"
+>ARRAY</TT
+> 构造器语法在 <A HREF="sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS" >Section 4.2.10</A
+>
+  里有更详细的讨论。
+ </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN5650" >8.10.3. 访问数组</A
+></H2
+><P
+>	现在我们可以在这个表上运行一些查询。
+	首先，我们演示如何一次访问数组的一个元素。
+	这个查询检索在第二季度薪水变化的雇员名：
+     
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT name FROM sal_emp WHERE pay_by_quarter[1] &lt;&gt; pay_by_quarter[2];
+
+ name
+-------
+ Carol
+(1 row)</PRE
+><P>
+
+	数组的脚标数字是写在方括弧内的。
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 缺省使用以一为基的数组习惯，
+	也就是说，一个 <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> 元素的数组从<TT
+CLASS="LITERAL"
+>array[1]</TT
+>开始，
+	到 <TT
+CLASS="LITERAL"
+>array[<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>]</TT
+> 结束。</P
+><P
+>     这个查询检索所有雇员第三季度的薪水：
+     
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT pay_by_quarter[3] FROM sal_emp;
+
+ pay_by_quarter
+----------------
+          10000
+          25000
+(2 rows)</PRE
+><P>
+ </P
+><P
+>	我们还可以访问一个数组的任意长方形片断，或称子数组。
+	对于一维或更多维数组，一个数组的某一部分是用
+	<TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>脚标下界</I
+></TT
+></TT
+>：
+	<TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>脚标上界</I
+></TT
+></TT
+> 表示的。
+	比如，下面查询检索 Bill 该周头两天的第一件计划。
+     
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT schedule[1:2][1:1] FROM sal_emp WHERE name = 'Bill';
+
+        schedule
+------------------------
+ {{meeting},{training}}
+(1 row)</PRE
+><P>
+
+     我们还可以这样写
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT schedule[1:2][1] FROM sal_emp WHERE name = 'Bill';</PRE
+><P>
+
+	获取同样的结果。如果任何脚标写成
+	<TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>lower</I
+></TT
+>：
+	<TT
+CLASS="REPLACEABLE"
+><I
+>upper</I
+></TT
+></TT
+> 的形式，那么任何数组脚标操作总是当做一个数组片断对待。
+	如果只声明了一个数值，那么都是假设下界为 1，比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT schedule[1:2][2] FROM sal_emp WHERE name = 'Bill';
+
+                 schedule
+-------------------------------------------
+ {{meeting,lunch},{training,presentation}}
+(1 row)</PRE
+><P></P
+><P
+>  从一个数组的当前范围之外抓取数据生成一个 SQL 空值，而不是导致错误。
+  比如，如果 <TT
+CLASS="LITERAL"
+>schedule</TT
+> 目前的维是 <TT
+CLASS="LITERAL"
+>[1:3][1:2]</TT
+>，
+  然后我们抓取 <TT
+CLASS="LITERAL"
+>schedule[3][3]</TT
+> 会生成 NULL。类似的还有，
+  一个下标错误的数组引用生成空，而不是错误。还有就是抓取一个完全在数组的当前范围之外的数组片断，
+  也是生成一个空值数组；但是如果要求的片断部分覆盖数组的范围，那么它会自动缩减为抓取覆盖的范围。
+ </P
+><P
+>  任何数组的当前维数都可以用 <TT
+CLASS="FUNCTION"
+>array_dims</TT
+> 函数检索：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT array_dims(schedule) FROM sal_emp WHERE name = 'Carol';
+
+ array_dims
+------------
+ [1:2][1:1]
+(1 row)</PRE
+><P>
+
+  <TT
+CLASS="FUNCTION"
+>array_dims</TT
+> 生成一个 <TT
+CLASS="TYPE"
+>text</TT
+> 结果，
+  对于人类可能比较容易阅读，但是对于程序可能就不那么方便了。
+  我们也可以用 <TT
+CLASS="FUNCTION"
+>array_upper</TT
+> 和 <TT
+CLASS="FUNCTION"
+>array_lower</TT
+>
+  函数检索，它们分别返回指定数组维的上界和下界。
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT array_upper(schedule, 1) FROM sal_emp WHERE name = 'Carol';
+
+ array_upper
+-------------
+           2
+(1 row)</PRE
+><P>
+ </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN5684" >8.10.4. 修改数组</A
+></H2
+><P
+>     一个数组值可以完全被代替：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>UPDATE sal_emp SET pay_by_quarter = '{25000,25000,27000,27000}'
+    WHERE name = 'Carol';</PRE
+><P>
+
+  或者使用 <TT
+CLASS="LITERAL"
+>ARRAY</TT
+> 表达式语法：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>UPDATE sal_emp SET pay_by_quarter = ARRAY[25000,25000,27000,27000]
+    WHERE name = 'Carol';</PRE
+><P>
+
+     或者只是更新某一个元素：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>UPDATE sal_emp SET pay_by_quarter[4] = 15000
+    WHERE name = 'Bill';</PRE
+><P>
+
+     或者更新某个片断：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>UPDATE sal_emp SET pay_by_quarter[1:2] = '{27000,27000}'
+    WHERE name = 'Carol';</PRE
+><P>
+ </P
+><P
+>	我们可以通过给一个和已存在的元素相邻元素赋值的方法，
+	或者是向已存在的数据相邻或重叠的区域赋值的方法来扩大一个数组。
+	比如，如果一个数组 <TT
+CLASS="LITERAL"
+>myarray</TT
+> 当前有 4 个元素，那么如果我们给 <TT
+CLASS="LITERAL"
+>myarray[5]</TT
+>
+	赋值后，它就有五个元素。目前，这样的扩大只允许多一维数组进行，
+	不能对多维数组进行操作。</P
+><P
+>	数组片段赋值允许创建不使用一为基的下标的数组。
+	比如，我们可以给 <TT
+CLASS="LITERAL"
+>array[-2:7]</TT
+> 赋值，
+	创建一个脚标值在 -2 和 7 之间的数组。
+ </P
+><P
+>  新的数组值也可以用连接操作符 <TT
+CLASS="LITERAL"
+>||</TT
+> 构造。
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT ARRAY[1,2] || ARRAY[3,4];
+ ?column?
+-----------
+ {1,2,3,4}
+(1 row)
+
+SELECT ARRAY[5,6] || ARRAY[[1,2],[3,4]];
+      ?column?
+---------------------
+ {{5,6},{1,2},{3,4}}
+(1 row)</PRE
+><P>
+ </P
+><P
+>  连接操作符允许把一个元素压入一个一维数组的开头或者结尾。它还接受两个
+  <TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+> 维的数组，或者一个 <TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+> 维和一个 <TT
+CLASS="REPLACEABLE"
+><I
+>N+1</I
+></TT
+>
+  维的数组。
+ </P
+><P
+>  在向一个一维数组的开头压入一个元素后，结果是这样的一个数组：
+  它的低界下标等于右手边操作数的低界下标减一，如果向一个一维数组的结尾压入一个元素，
+  结果数组就是一个保持左手边操作数低界的数组。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT array_dims(1 || ARRAY[2,3]);
+ array_dims
+------------
+ [0:2]
+(1 row)
+
+SELECT array_dims(ARRAY[1,2] || 3);
+ array_dims
+------------
+ [1:3]
+(1 row)</PRE
+><P>
+ </P
+><P
+>  如果两个相同维数的数组连接在一起，结果保持左手边操作数的外层维数的低界下标。
+  结果是这样一个数组：它包含左手边操作数的每个元素，后面跟着右手边操作数的每个元素。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT array_dims(ARRAY[1,2] || ARRAY[3,4,5]);
+ array_dims
+------------
+ [1:5]
+(1 row)
+
+SELECT array_dims(ARRAY[[1,2],[3,4]] || ARRAY[[5,6],[7,8],[9,0]]);
+ array_dims
+------------
+ [1:5][1:2]
+(1 row)</PRE
+><P>
+ </P
+><P
+>  如果一个 <TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+> 维的数组压到一个 <TT
+CLASS="REPLACEABLE"
+><I
+>N+1</I
+></TT
+> 维数组的开头或者结尾，
+  结果和上面的数组元素的情况类似。每个 <TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+> 维的子数组实际上都是 <TT
+CLASS="REPLACEABLE"
+><I
+>N+1</I
+></TT
+> 维数组的外层维数。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT array_dims(ARRAY[1,2] || ARRAY[[3,4],[5,6]]);
+ array_dims
+------------
+ [0:2][1:2]
+(1 row)</PRE
+><P>
+ </P
+><P
+>  数组也可以用函数 <TT
+CLASS="FUNCTION"
+>array_prepend</TT
+>， 和 <TT
+CLASS="FUNCTION"
+>array_append</TT
+>，
+  以及 <TT
+CLASS="FUNCTION"
+>array_cat</TT
+> 构造。头两个只支持一维数组，
+  而 <TT
+CLASS="FUNCTION"
+>array_cat</TT
+> 支持多维数组。
+
+  请注意使用上面讨论的连接操作符要比直接使用这些函数好。实际上，
+  这些函数主要用于实现连接操作符。不过，在用户定义的创建函数里直接使用他们可能有必要。一些例子：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT array_prepend(1, ARRAY[2,3]);
+ array_prepend
+---------------
+ {1,2,3}
+(1 row)
+
+SELECT array_append(ARRAY[1,2], 3);
+ array_append
+--------------
+ {1,2,3}
+(1 row)
+
+SELECT array_cat(ARRAY[1,2], ARRAY[3,4]);
+ array_cat
+-----------
+ {1,2,3,4}
+(1 row)
+
+SELECT array_cat(ARRAY[[1,2],[3,4]], ARRAY[5,6]);
+      array_cat
+---------------------
+ {{1,2},{3,4},{5,6}}
+(1 row)
+
+SELECT array_cat(ARRAY[5,6], ARRAY[[1,2],[3,4]]);
+      array_cat
+---------------------
+ {{5,6},{1,2},{3,4}}</PRE
+><P>
+ </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN5720" >8.10.5. 在数组中检索</A
+></H2
+><P
+>	要搜索一个数组中的数值，你必须检查该数组的每一个值。
+	你可以手工处理（如果你知道数组尺寸）。比如：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM sal_emp WHERE pay_by_quarter[1] = 10000 OR
+                            pay_by_quarter[2] = 10000 OR
+                            pay_by_quarter[3] = 10000 OR
+                            pay_by_quarter[4] = 10000;</PRE
+><P>
+
+	不过，对于大数组而言，这个方法很快就会让人觉得无聊，并且如果你不知道数组尺寸，那就没什么用了。
+	另外一个方法在 <A HREF="functions-comparisons.html" >Section 9.17</A
+> 里描述。
+	上面的查询可以用下面的代替：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM sal_emp WHERE 10000 = ANY (pay_by_quarter);</PRE
+><P>
+
+	另外，你可以用下面的语句找出所有数组有值等于 10000 的行：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM sal_emp WHERE 10000 = ALL (pay_by_quarter);</PRE
+><P>
+ </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>        数组不是集合；象我们前面那些段落里描述的那样使用数组通常表明你的库设计有问题。
+	数组字段通常是可以分裂成独立的表。
+        很明显表要容易搜索得多。并且在元素数目非常庞大的时候也可以更好地伸展。
+  </P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN5730" >8.10.6. 数组输入和输出语法</A
+></H2
+><P
+>	一个数组值的外部表现形式由一些根据该数组元素类型的 I/O 转换规则分析的项组成，
+	再加上一些标明该数组结构的修饰。
+	这些修饰由围绕在数组值周围的花括弧（<TT
+CLASS="LITERAL"
+>{</TT
+> 和 <TT
+CLASS="LITERAL"
+>}</TT
+>），
+	加上相邻项之间的分隔字符组成。分隔字符通常是一个逗号（<TT
+CLASS="LITERAL"
+>,</TT
+>），
+	但也可以是其它的东西：它由该数组元素类型的 <TT
+CLASS="LITERAL"
+>typdelim</TT
+> 设置决定。
+	（在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本提供的标准数据类型里，
+	类型 <TT
+CLASS="LITERAL"
+>box</TT
+> 使用分号（<TT
+CLASS="LITERAL"
+>;</TT
+>），但所有其它的类型使用逗号。）
+	在多维数组里，每个维（行，面，体，等）有自己级别的花括弧，并且在同级相邻的花括弧项之间必须写分隔符。
+  </P
+><P
+>  如果数组元素值是空字串或者包含花括弧，分隔符，双引号，反斜杠或者空白，
+  那么数组输出过程将在这些值周围包围双引号。在元素值里包含的双引号和反斜杠将被反斜杠逃逸。
+  对于数值数据类型，你可以安全地假设数值没有双引号包围，但是对于文本类型，我们就需要准备好面对有双引号包围，
+  和没有双引号包围两种情况了。（这是对 7.2 以前的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本的行为的一个改变。）
+  </P
+><P
+>   缺省时，一个数组的某维的下标索引是设置为一的。如果一个数组的某维的下标不等于一，
+   那么就会在数组结构修饰域里面放置一个实际的维数。这个修饰由方括弧（<TT
+CLASS="LITERAL"
+>[]</TT
+>）
+   围绕在每个数组维的下界和上界索引，中间有一个冒号（<TT
+CLASS="LITERAL"
+>:</TT
+>）分隔的字串组成。
+   数组维数修饰后面跟着一个等号操作符（<TT
+CLASS="LITERAL"
+>=</TT
+>）。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT 1 || ARRAY[2,3] AS array;
+
+     array
+---------------
+ [0:2]={1,2,3}
+(1 row)
+
+SELECT ARRAY[1,2] || ARRAY[[3,4]] AS array;
+
+          array
+--------------------------
+ [0:1][1:2]={{1,2},{3,4}}
+(1 row)</PRE
+><P>
+  </P
+><P
+>   这个语法也可以用于在一个数组文本中声明非缺省数组脚标。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT f1[1][-2][3] AS e1, f1[1][-1][5] AS e2
+ FROM (SELECT '[1:1][-2:-1][3:5]={{{1,2,3},{4,5,6}}}'::int[] AS f1) AS ss;
+
+ e1 | e2
+----+----
+  1 |  6
+(1 row)</PRE
+><P>
+  </P
+><P
+>	如上所述，在书写一个数组的数值的时候你要用双引号包围任意独立的数组元素。
+	如果元素数值可能令数组数值分析器产生歧义，那么你<I
+CLASS="EMPHASIS"
+>必须</I
+>这么做。
+	比如，那些包含花括弧，逗号（或者任何其它的分隔字符），
+	双引号，反斜杠，或者前导的空白元素都必须加双引号。
+	要把双引号或者反斜杠放到数组元素值里，给它们加一个反斜杠前缀。
+	另外，你可以用反斜杠逃逸的方法保护所有那些可能被当做数组语法的字符。
+  </P
+><P
+>   你可以在左花括弧前面或者右花括弧后面写空白。你还可以在任意独立的项字串前面或者后面写空白。
+   所有这些情况下，这些空白都会被忽略。不过，在双引号包围的元素里面的空白，或者是元素里被两边非空白字符包围的空白，都不会被忽略。
+  </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	请记住你在 SQL 命令里写的任何东西都将首先解释成一个字串文本，
+	然后才是一个数组。这样就造成你所需要的反斜杠数量翻了翻。
+	比如，要插入一个包含反斜杠和双引号的 <TT
+CLASS="TYPE"
+>text</TT
+> 数组，
+	你需要这么写
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT ... VALUES ('{"\\\\","\\""}');</PRE
+><P>
+	字串文本处理器去掉第一层反斜杠，然后省下的东西到了数组数值分析器的时候看起来象 <TT
+CLASS="LITERAL"
+>{"\\","\""}</TT
+>。
+	接着，该字串传递给 <TT
+CLASS="TYPE"
+>text</TT
+> 数据类型的输入过程，分别变成 <TT
+CLASS="LITERAL"
+>\</TT
+> 和 <TT
+CLASS="LITERAL"
+>"</TT
+>。
+	（如果我们用的数据类型对反斜杠也有特殊待遇，比如 <TT
+CLASS="TYPE"
+>bytea</TT
+>，
+	那么我们可能需要在命令里放多达八个反斜杠才能在存储态的数组元素中得到一个反斜杠。）
+	我们也可以用美元符包围（参阅 <A HREF="sql-syntax.html#SQL-SYNTAX-DOLLAR-QUOTING" >Section 4.1.2.2</A
+>）来避免双份的反斜杠。
+  </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>   <TT
+CLASS="LITERAL"
+>ARRAY</TT
+> 构造器语法（参阅 <A HREF="sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS" >Section 4.2.10</A
+>）通常比数组文本语法好用些，尤其是在 SQL 命令里写数组值的时候。
+   在 <TT
+CLASS="LITERAL"
+>ARRAY</TT
+> 里，独立的元素值的写法和数组里没有元素时的写法一样。
+  </P
+></BLOCKQUOTE
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="datatype-bit.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="rowtypes.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >位串类型</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="datatype.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >复合类型</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

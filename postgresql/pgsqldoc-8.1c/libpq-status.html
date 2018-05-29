@@ -1,0 +1,852 @@
+<HTML
+><HEAD
+><TITLE
+>连接状态函数</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="libpq - C 库"
+HREF="libpq.html"><LINK
+REL="PREVIOUS"
+TITLE="libpq - C 库"
+HREF="libpq.html"><LINK
+REL="NEXT"
+TITLE="命令执行函数"
+HREF="libpq-exec.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="libpq.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="libpq.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 28. <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> - C 库</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="libpq.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="libpq-exec.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="LIBPQ-STATUS"
+>28.2. 连接状态函数</A
+></H1
+><P
+>   这些函数可以用于询问现存数据库连接对象的状态。
+  </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>Tip: </B
+><A
+NAME="AEN24803"
+></A
+>
+<A
+NAME="AEN24805"
+></A
+>
+<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>应用程序员应该仔细维护<TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+>结构。
+使用下面的访问函数来获取<TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+>的内容。
+避免直接引用<TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+>结构里的字段，
+因为这些字段在今后可能被改变。
+（从 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本 6.4 开始, 
+类型 <TT
+CLASS="TYPE"
+>struct</TT
+> <TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+> 后面的定义甚至都没有放在 <TT
+CLASS="FILENAME"
+>libpq-fe.h</TT
+>里。
+如果你有一些直接访问<TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+>数据域的旧代码，你可以通过包含  <TT
+CLASS="FILENAME"
+>libpq-int.h</TT
+> 来访问它们，但我们鼓励你赶快修改那些代码。）</P
+></BLOCKQUOTE
+></DIV
+><P
+>下面的函数返回连接建立时的参数。这些参数在 <TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+> 对象的生命期期间是固定的。
+
+<P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="FUNCTION"
+>PQdb</TT
+><A
+NAME="AEN24823"
+></A
+></DT
+><DD
+><P
+>	返回连接的数据库名。
+</P><PRE
+CLASS="SYNOPSIS"
+>char *PQdb(const PGconn *conn);</PRE
+><P></P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQuser</TT
+><A
+NAME="AEN24831"
+></A
+></DT
+><DD
+><P
+>	返回连接的用户名。
+</P><PRE
+CLASS="SYNOPSIS"
+>char *PQuser(const PGconn *conn);</PRE
+><P></P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQpass</TT
+><A
+NAME="AEN24839"
+></A
+></DT
+><DD
+><P
+>	返回连接的口令。
+</P><PRE
+CLASS="SYNOPSIS"
+>char *PQpass(const PGconn *conn);</PRE
+><P></P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQhost</TT
+><A
+NAME="AEN24847"
+></A
+></DT
+><DD
+><P
+>	返回连接的服务器主机名。
+</P><PRE
+CLASS="SYNOPSIS"
+>char *PQhost(const PGconn *conn);</PRE
+><P></P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQport</TT
+><A
+NAME="AEN24855"
+></A
+></DT
+><DD
+><P
+>	返回连接的端口号。
+</P><PRE
+CLASS="SYNOPSIS"
+>char *PQport(const PGconn *conn);</PRE
+><P></P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQtty</TT
+><A
+NAME="AEN24863"
+></A
+></DT
+><DD
+><P
+>	返回连接的调试控制台<SPAN
+CLASS="ACRONYM"
+>TTY</SPAN
+>。
+	（这个已经过时了，因为服务器不再注意 <SPAN
+CLASS="ACRONYM"
+>TTY</SPAN
+>
+	设置，这个函数存在是为了向下兼容。）
+</P><PRE
+CLASS="SYNOPSIS"
+>char *PQtty(const PGconn *conn);</PRE
+><P></P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQoptions</TT
+><A
+NAME="AEN24873"
+></A
+></DT
+><DD
+><P
+><TT
+CLASS="FUNCTION"
+>PQoptions</TT
+>
+	返回连接请求中传递的命令行选项。
+</P><PRE
+CLASS="SYNOPSIS"
+>char *PQoptions(const PGconn *conn);</PRE
+><P></P
+></DD
+></DL
+></DIV
+><P></P
+><P
+>下面的函数返回那些在对 <TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+> 对象进行操作的过程中可能变化的状态数据。
+
+<P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="FUNCTION"
+>PQstatus</TT
+><A
+NAME="AEN24885"
+></A
+></DT
+><DD
+><P
+>	返回连接的状态。
+</P><PRE
+CLASS="SYNOPSIS"
+>ConnStatusType PQstatus(const PGconn *conn);</PRE
+><P></P
+><P
+>	这个状态可以是一系列值之一。
+	不过，我们在一个异步连接过程外面只能看到其中的两个：
+	<TT
+CLASS="LITERAL"
+>CONNECTION_OK</TT
+> 或
+	<TT
+CLASS="LITERAL"
+>CONNECTION_BAD</TT
+>。一个与数据库的成功的连接返回状态
+	<TT
+CLASS="LITERAL"
+>CONNECTION_OK</TT
+>。
+	一次失败的企图用状态  <TT
+CLASS="LITERAL"
+>CONNECTION_BAD</TT
+> 标识。
+	通常，一个 OK 状态将保持到 <TT
+CLASS="FUNCTION"
+>PQfinish</TT
+>，但是一个通讯失败可能会导致状态过早地改变为
+	<TT
+CLASS="LITERAL"
+>CONNECTION_BAD</TT
+> 。这时应用可以试着调用 <TT
+CLASS="FUNCTION"
+>PQreset</TT
+> 来恢复。
+      </P
+><P
+>	参阅<TT
+CLASS="FUNCTION"
+>PQconnectStart</TT
+>和<TT
+CLASS="FUNCTION"
+>PQconnectPoll</TT
+>条目看看可能出现的其他的状态码。
+      </P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQtransactionStatus</TT
+><A
+NAME="AEN24904"
+></A
+></DT
+><DD
+><P
+>	 返回当前服务器的事务内状态。
+</P><PRE
+CLASS="SYNOPSIS"
+>PGTransactionStatusType PQtransactionStatus(const PGconn *conn);</PRE
+><P>
+
+状态可以是 <TT
+CLASS="LITERAL"
+>PQTRANS_IDLE</TT
+> （当前空闲），
+<TT
+CLASS="LITERAL"
+>PQTRANS_ACTIVE</TT
+> （正在处理一个命令），
+<TT
+CLASS="LITERAL"
+>PQTRANS_INTRANS</TT
+> （空闲，在一个合法的事务块内），
+或者 <TT
+CLASS="LITERAL"
+>PQTRANS_INERROR</TT
+> （空闲，在一个失败的事务块内）。
+如果连接有问题，则返回 <TT
+CLASS="LITERAL"
+>PQTRANS_UNKNOWN</TT
+>。
+只有在一个查询发送给了服务器并且还没有完成的时候才返回 <TT
+CLASS="LITERAL"
+>PQTRANS_ACTIVE</TT
+>。</P
+><DIV
+CLASS="CAUTION"
+><P
+></P
+><TABLE
+CLASS="CAUTION"
+BORDER="1"
+WIDTH="90%"
+><TR
+><TD
+ALIGN="CENTER"
+><B
+>Caution</B
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+><P
+>如果使用一个支持 <TT
+CLASS="LITERAL"
+>autocommit</TT
+> 参数，并且设置为关闭的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 7.3 版本的服务器，
+那么 <TT
+CLASS="FUNCTION"
+>PQtransactionStatus</TT
+> 将给出不正确的结果。服务器端的 autocommit （自动提交）特性已经废弃了，
+在将来的版本的服务器中不再存在。</P
+></TD
+></TR
+></TABLE
+></DIV
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQparameterStatus</TT
+><A
+NAME="AEN24923"
+></A
+></DT
+><DD
+><P
+>	 查找服务器的一个当前参数设置。
+</P><PRE
+CLASS="SYNOPSIS"
+>const char *PQparameterStatus(const PGconn *conn, const char *paramName);</PRE
+><P>
+
+有些参数在建立连接或者它们的值改变的时候会由服务器自动报告。
+<TT
+CLASS="FUNCTION"
+>PQparameterStatus</TT
+> 可以用于查询这些设置。
+如果它认识这些参数，那么它返回当前值，否则返回 <TT
+CLASS="SYMBOL"
+>NULL</TT
+>。</P
+><P
+>当前版本报告的参数有
+<TT
+CLASS="LITERAL"
+>server_version</TT
+>，
+<TT
+CLASS="LITERAL"
+>server_encoding</TT
+>，
+<TT
+CLASS="LITERAL"
+>client_encoding</TT
+>，
+<TT
+CLASS="LITERAL"
+>session_authorization</TT
+>，
+<TT
+CLASS="LITERAL"
+>DateStyle</TT
+>，
+<TT
+CLASS="LITERAL"
+>TimeZone</TT
+>，
+<TT
+CLASS="LITERAL"
+>integer_datetimes</TT
+> 和
+<TT
+CLASS="LITERAL"
+>standard_conforming_strings</TT
+>。
+（版本 8.0 之前没有报告 <TT
+CLASS="LITERAL"
+>server_encoding</TT
+>，<TT
+CLASS="LITERAL"
+>TimeZone</TT
+> 和 <TT
+CLASS="LITERAL"
+>integer_datetimes</TT
+>。
+<TT
+CLASS="LITERAL"
+>standard_conforming_strings</TT
+> 在版本 8.1 之前没有报告。）
+请注意
+<TT
+CLASS="LITERAL"
+>server_version</TT
+>，
+<TT
+CLASS="LITERAL"
+>server_encoding</TT
+>
+和
+<TT
+CLASS="LITERAL"
+>integer_datetimes</TT
+>
+不能在启动后修改。</P
+><P
+>协议版本 3.0 之前的服务器不会报告参数设置，但是 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 里包含一些逻辑用于获取
+<TT
+CLASS="LITERAL"
+>server_version</TT
+> 和 <TT
+CLASS="LITERAL"
+>client_encoding</TT
+> 的数值。
+我们鼓励应用里面使用 <TT
+CLASS="FUNCTION"
+>PQparameterStatus</TT
+>，而不是使用特殊的代码来检测这些值。
+（不过要注意，在 3.0 之前的连接协议里，启动后通过 <TT
+CLASS="COMMAND"
+>SET</TT
+> 改变了 <TT
+CLASS="LITERAL"
+>client_encoding</TT
+>
+将不会被 <TT
+CLASS="FUNCTION"
+>PQparameterStatus</TT
+> 反映出来。）
+对于 <TT
+CLASS="LITERAL"
+>server_version</TT
+>，又见 <TT
+CLASS="FUNCTION"
+>PQserverVersion</TT
+>，它返回数值形式，
+更容易进行比较。</P
+><P
+>如果没有为 <TT
+CLASS="LITERAL"
+>standard_conforming_strings</TT
+> 报告数值，
+应用可以假设它是 <TT
+CLASS="LITERAL"
+>false</TT
+>，也就是说，在字串文本里，
+把反斜扛当作逃逸。同样，如果出现了这个参数，就可以当作一个标志，
+表示接受逃逸字串（<TT
+CLASS="LITERAL"
+>E'...'</TT
+>）的语法。</P
+><P
+>尽管返回的指针声明为 <TT
+CLASS="LITERAL"
+>const</TT
+>，它实际上指向一个和 <TT
+CLASS="LITERAL"
+>PGconn</TT
+>
+结构关联的可变的存储区。因此假设这个指针跨查询保持有效是不明智的。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQprotocolVersion</TT
+><A
+NAME="AEN24966"
+></A
+></DT
+><DD
+><P
+>	 查询所使用的前/后端协议。
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQprotocolVersion(const PGconn *conn);</PRE
+><P>
+应用可能希望使用这个函数来判断某种特性是否被支持。
+目前，可能的数值是 2（2.0 版本的协议），3（3.0 版本的协议），或者零（连接错误）。
+在连接启动完成之后，这个数值将不会改变，但是在连接重置的过程中，理论上是可能改变的。
+3.0 协议通常将用于与 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 7.4 或者更新版本的服务器通讯；
+7.4 以前的版本只支持 2.0 版本的协议。（1.0 版本的协议已经过时了，不再被 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 支持。）</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQserverVersion</TT
+><A
+NAME="AEN24976"
+></A
+></DT
+><DD
+><P
+>         Returns an integer representing the backend version.
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQserverVersion(const PGconn *conn);</PRE
+><P>
+应用可以使用这个函数判断它们连接的数据库服务器的版本。
+数字是通过把主、次、以及发布版本好转换成两位十进制数并且把它们连接在一起组成的。
+比如，版本 7.4.2将转换为 70402，而 8.1 将转换为 80100（不显示前导的零）。
+如果连接失败，则返回零。</P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQerrorMessage</TT
+><A
+NAME="AEN24984"
+></A
+></DT
+><DD
+><P
+>	<A
+NAME="AEN24988"
+></A
+>
+	返回连接中操作产生的最近的错误信息。
+</P><PRE
+CLASS="SYNOPSIS"
+>char *PQerrorMessage(const PGconn *conn);</PRE
+><P>
+      </P
+><P
+>	几乎所有<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>函数在失败时都会为
+	<TT
+CLASS="FUNCTION"
+>PQerrorMessage</TT
+> 设置一个信息。
+	注意<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>的传统是，一个非空的<TT
+CLASS="FUNCTION"
+>PQerrorMessage</TT
+>
+	将在结尾包含一个新行。调用者不应该直接释放结果。结果的释放是在将 <TT
+CLASS="STRUCTNAME"
+>PGconn</TT
+> 句柄传递给
+	<TT
+CLASS="FUNCTION"
+>PQfinish</TT
+> 的时候自动进行的。
+	我们不能假设在不同的 <TT
+CLASS="LITERAL"
+>PGconn</TT
+> 结构操作中，结果字串都是一样的。
+      </P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQsocket</TT
+><A
+NAME="AEN25002"
+></A
+></DT
+><DD
+><P
+>	获取与服务器连接的套接字的文件描述符编号。
+	一个有效的描述符应该是大于或等于 0；结果为 -1 表示当前没有与服务器的连接打开。
+	（在正常的操作中，这个结果不会改变，但是可能在启动或者重置的过程中变化。）
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQsocket(const PGconn *conn);</PRE
+><P>
+      </P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQbackendPID</TT
+><A
+NAME="AEN25010"
+></A
+></DT
+><DD
+><P
+>       返回处理此连接的服务器服务器的进程号<SPAN
+CLASS="ACRONYM"
+>ID</SPAN
+>（PID）<A
+NAME="AEN25015"
+></A
+>。
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQbackendPID(const PGconn *conn);</PRE
+><P>
+      </P
+><P
+>       这个服务器<SPAN
+CLASS="ACRONYM"
+>PID</SPAN
+> 在调试和对比<TT
+CLASS="COMMAND"
+>NOTIFY</TT
+>信息
+       （包含发出通知的服务器进程的 <SPAN
+CLASS="ACRONYM"
+>PID</SPAN
+> ）时很有用。
+	注意该<SPAN
+CLASS="ACRONYM"
+>PID</SPAN
+> 属于运行数据库服务器的主机的进程，而不是本地主机！
+      </P
+></DD
+><DT
+><TT
+CLASS="FUNCTION"
+>PQgetssl</TT
+><A
+NAME="AEN25028"
+></A
+></DT
+><DD
+><P
+>	<A
+NAME="AEN25032"
+></A
+>
+	返回连接使用的 SSL 结构，或者如果没有使用 SSL 的话返回 NULL。
+</P><PRE
+CLASS="SYNOPSIS"
+>SSL *PQgetssl(const PGconn *conn);</PRE
+><P>
+      </P
+><P
+>	这个结构可以用于核实加密级别，检查服务器认证等信息。参考
+	<SPAN
+CLASS="PRODUCTNAME"
+>OpenSSL</SPAN
+> 文档获取关于这个结构的更多信息。
+      </P
+><P
+>	为了获取这个函数的正确原形，你必须定义 <TT
+CLASS="SYMBOL"
+>USE_SSL</TT
+>。
+	这样做会自动包含来自<SPAN
+CLASS="PRODUCTNAME"
+>OpenSSL</SPAN
+>的<TT
+CLASS="FILENAME"
+>ssl.h</TT
+>。
+      </P
+></DD
+></DL
+></DIV
+><P>
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="libpq.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="libpq-exec.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> - C 库</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="libpq.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>命令执行函数</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

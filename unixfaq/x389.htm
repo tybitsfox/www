@@ -1,0 +1,53 @@
+<html><head><title>我如何像shell里一样扩展在文件名里的'~'？</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="一般文件操作(包括管道和套接字)" href="./c300.htm"><link rel="PREVIOUS" title="我如何得到一个文件的长度？" href="./x383.htm"><link rel="NEXT" title="有名管道(FIFO)能做什么？" href="./x395.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x383.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 2. 一般文件操作(包括管道和套接字)</td><td align="right" valign="bottom" width="10%"><a href="./x395.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN389">2.9. 我如何像shell里一样扩展在文件名里的'~'？</a></h1><p>'~'的标准用法如下：如果单独使用或者后面跟一个'/'，那么'~'就被当作当前
+用户的home目录，[译者注：事实上'~'就被替换为$HOME环境变量]，如果'~'后
+直接跟一个用户名，则被替换的就是那个用户的home目录。如果没有合适的匹
+配，则shell不会做任何改动。
+    </p><p>请注意，有可能一些文件的确是以'~'打头的，不分青红皂白地将'~'替换会使你
+的程序无法打开这些文件。一般来说，从shell通过命令行或环境变量传递入程
+序的文件名不须要进行替换，因为shell已经替你做好，而程序自己生成的、用
+户输入的，或从配置文件中读取的却应该进行替换。
+    </p><p>这里是一段用标准string类的C++实现：
+    </p><pre class="PROGRAMLISTING">   string expand_path(const string&amp; path)
+   {
+       if (path.length() == 0 || path[0] != '~')
+         return path;
+  
+       const char *pfx = NULL;
+       string::size_type pos = path.find_first_of('/');
+  
+       if (path.length() == 1 || pos == 1)
+       {
+           pfx = getenv("HOME");
+           if (!pfx)
+           {
+               // 我们想替换"~/"，但$HOME却没有设置
+               struct passwd *pw = getpwuid(getuid());
+               if (pw)
+                 pfx = pw-&gt;pw_dir;
+           }
+       }
+       else
+       {
+           string user(path,1,(pos==string::npos) ? string::npos : pos-1);
+           struct passwd *pw = getpwnam(user.c_str());
+           if (pw)
+             pfx = pw-&gt;pw_dir;
+       }
+       // 如果我们不能找到能替换的选择，则将path返回
+  
+       if (!pfx)
+         return path;
+  
+       string result(pfx);
+  
+       if (pos == string::npos)
+         return result;
+  
+       if (result.length() == 0 || result[result.length()-1] != '/')
+         result += '/';
+  
+       result += path.substr(pos+1);
+  
+       return result;
+   }
+    </pre></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x383.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x395.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">我如何得到一个文件的长度？</td><td align="center" valign="top" width="34%"><a href="./c300.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">有名管道(FIFO)能做什么？</td></tr></tbody></table></div></body></html>

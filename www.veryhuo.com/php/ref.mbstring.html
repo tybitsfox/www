@@ -1,0 +1,440 @@
+<HTML><HEAD><TITLE>Multi-Byte String Functions</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="函数参考" HREF="funcref.html"><LINK REL="PREVIOUS" TITLE="tanh" HREF="function.tanh.html"><LINK REL="NEXT" TITLE="mb_convert_case" HREF="function.mb-convert-case.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="reference" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.tanh.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.mb-convert-case.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="reference"><A NAME="ref.mbstring"></A><DIV CLASS="TITLEPAGE"><H1 CLASS="title">LIII. Multi-Byte String Functions</H1><DIV CLASS="PARTINTRO"><A NAME="AEN50584"></A><DIV CLASS="section"><H1 CLASS="section"><A NAME="mbstring.intro"></A>介绍</H1><P>&#13; There are many languages in which all characters can be expressed
+by single byte. Multi-byte character codes are used to express
+many characters for many languages. <TT CLASS="literal">mbstring</TT>
+is developed to handle Japanese characters. However, many
+<TT CLASS="literal">mbstring</TT> functions are able to handle
+character encoding other than Japanese.
+</P><P>&#13; A multi-byte character encoding represents single character with
+consecutive bytes. Some character encoding has shift(escape)
+sequences to start/end multi-byte character strings. Therefore, a
+multi-byte character string may be destroyed when it is divided
+and/or counted unless multi-byte character encoding safe method
+is used. This module provides multi-byte character safe string
+functions and other utility functions such as conversion
+functions.
+</P><P>&#13; Since PHP is basically designed for ISO-8859-1, some multi-byte
+character encoding does not work well with PHP. Therefore, it is
+important to set
+<TT CLASS="literal">mbstring.language</TT> to appropriate language
+(i.e. "Japanese" for Japanese) and
+<TT CLASS="literal">mbstring.internal_encoding</TT> to a character
+encoding that works with PHP.
+</P><P>&#13; PHP 4 Character Encoding Requirements
+</P><P>&#13; <P></P><UL><LI><P>&#13; Per byte encoding
+</P></LI><LI><P>&#13; Single byte characters in range of <TT CLASS="literal">00h-7fh</TT>
+which is compatible with <TT CLASS="literal">ASCII</TT>
+</P></LI><LI><P>&#13; Multi-byte characters without <TT CLASS="literal">00h-7fh</TT>
+</P></LI></UL>
+</P><P>&#13; These are examples of internal character encoding that works with
+PHP and does NOT work with PHP.
+<DIV CLASS="informalexample"><A NAME="AEN50607"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">Character encodings work with PHP: 
+ISO-8859-*, EUC-JP, UTF-8
+
+Character encodings do NOT work with PHP:
+JIS, SJIS</PRE></TD></TR></TABLE><P></P></DIV>
+</P><P>&#13; Character encoding, that does not work with PHP, may be converted
+with <TT CLASS="literal">mbstring</TT>'s HTTP input/output conversion
+feature/function.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+SJIS should not be used for internal encoding unless the reader
+is familiar with parser/compiler, character encoding and
+character encoding issues.
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+If you use databases with PHP, it is recommended that you use the
+same character encoding for both database and <TT CLASS="literal">internal
+encoding</TT> for ease of use and better performance.
+</P><P>&#13; If you are using PostgreSQL, it supports character
+encoding that is different from backend character encoding. See
+the PostgreSQL manual for details.
+</P></BLOCKQUOTE></DIV></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="mbstring.installation"></A>安装</H1><P>&#13; <TT CLASS="literal">mbstring</TT> is an extended module. You must
+enable the module with the <TT CLASS="literal">configure</TT> script.
+Refer to the <A HREF="installation.html">Install</A> section for
+details.
+</P><P>&#13; The following configure options are related to the
+<TT CLASS="literal">mbstring</TT> module.
+</P><P>&#13; <P></P><UL><LI><P>&#13; <TT CLASS="option">--enable-mbstring=LANG</TT>: Enable
+<TT CLASS="literal">mbstring</TT> functions. This option is
+required to use <TT CLASS="literal">mbstring</TT> functions.
+</P><P>&#13; As of PHP 4.3.0, <TT CLASS="literal">mbstring</TT> extension provides
+enhanced support for Simplified Chinese, Traditional Chinese,
+Korean, and Russian in addition to Japanese.
+To enable that feature, you will have to supply either one of the
+following options to the <TT CLASS="literal">LANG</TT> parameter;
+<TT CLASS="option">--enable-mbstring=cn</TT> for Simplified Chinese support,
+<TT CLASS="option">--enable-mbstring=tw</TT> for Traditional Chinese support,
+<TT CLASS="option">--enable-mbstring=kr</TT> for Korean support,
+<TT CLASS="option">--enable-mbstring=ru</TT> for Russian support, and
+<TT CLASS="option">--enable-mbstring=ja</TT> for Japanese support.
+</P><P>&#13; Also <TT CLASS="option">--enable-mbstring=all</TT> is
+convenient for you to enable all the supported languages listed above.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Japanese language support is also enabled by
+<TT CLASS="option">--enable-mbstring</TT> without any options
+for the sake of backwards compatibility.
+</P></BLOCKQUOTE></DIV></LI><LI><P>&#13; <TT CLASS="option">--enable-mbstr-enc-trans</TT> :
+Enable HTTP input character encoding conversion using
+<TT CLASS="literal">mbstring</TT> conversion engine. If this
+feature is enabled, HTTP input character encoding may be
+converted to <TT CLASS="literal">mbstring.internal_encoding</TT>
+automatically.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+As of PHP 4.3.0, the option
+<TT CLASS="option">--enable-mbstr-enc-trans</TT>
+will be eliminated and replaced with
+<TT CLASS="literal">mbstring.encoding_translation</TT>.
+HTTP input character encoding conversion is enabled
+when this is set to <TT CLASS="literal">On</TT>
+(the default is <TT CLASS="literal">Off</TT>).
+</P></BLOCKQUOTE></DIV></LI><LI><P>&#13; <TT CLASS="option">--enable-mbregex</TT>: Enable
+regular expression functions with multibyte character support.
+</P></LI></UL>
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="mbstring.configuration"></A>运行时配置</H1><P>这些函数的行为受到全局<A HREF="configuration.html#configuration.file">配置文件</A> <TT CLASS="filename">php.ini</TT> 的影响。</P><P>&#13; <DIV CLASS="table"><A NAME="AEN50665"></A><P><B>表格 1. Multi-Byte String configuration options</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">Name</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Default</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Changeable</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">mbstring.language</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">"neutral"</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_SYSTEM | PHP_INI_PERDIR</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">mbstring.detect_order</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">NULL</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_ALL</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">mbstring.http_input</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">"pass"</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_ALL</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">mbstring.http_output</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">"pass"</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_ALL</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">mbstring.internal_encoding</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">NULL</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_ALL</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">mbstring.script_encoding</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">NULL</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_ALL</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">mbstring.substitute_character</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">NULL</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_ALL</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">mbstring.func_overload</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">"0"</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_SYSTEM | PHP_INI_PERDIR</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">mbstring.encoding_translation</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">"0"</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_SYSTEM | PHP_INI_PERDIR</TD></TR></TBODY></TABLE></DIV>
+For further details and definition of the PHP_INI_* constants see
+<A HREF="function.ini-set.html"><B CLASS="function">ini_set()</B></A>.
+</P><P>以下是该配置选项的简要解释。</P><P>&#13; <P></P><UL><LI><A NAME="ini.mbstring.language"></A><P>&#13; <TT CLASS="literal">mbstring.language</TT> defines
+default language used in mbstring.
+Note that this option defines
+<TT CLASS="literal">mbstring.internal_encoding</TT>
+and <TT CLASS="literal">mbstring.internal_encoding</TT>
+should be placed after <TT CLASS="literal">mbstring.language</TT>
+in <TT CLASS="filename">php.ini</TT>
+</P></LI><LI><A NAME="ini.mbstring.encoding-translation"></A><P>&#13; <TT CLASS="literal">mbstring.encoding_translation</TT> enables
+HTTP input character encoding detection and translation into
+internal character encoding.
+</P></LI><LI><A NAME="ini.mbstring.internal-encoding"></A><P>&#13; <TT CLASS="literal">mbstring.internal_encoding</TT> defines default
+internal character encoding.
+</P></LI><LI><A NAME="ini.mbstring.http-input"></A><P>&#13; <TT CLASS="literal">mbstring.http_input</TT> defines default HTTP
+input character encoding.
+</P></LI><LI><A NAME="ini.mbstring.http-output"></A><P>&#13; <TT CLASS="literal">mbstring.http_output</TT> defines default HTTP
+output character encoding.
+</P></LI><LI><A NAME="ini.mbstring.detect-order"></A><P>&#13; <TT CLASS="literal">mbstring.detect_order</TT> defines default
+character code detection order. See also
+<A HREF="function.mb-detect-order.html"><B CLASS="function">mb_detect_order()</B></A>.
+</P></LI><LI><A NAME="ini.mbstring.substitute-character"></A><P>&#13; <TT CLASS="literal">mbstring.substitute_character</TT> defines
+character to substitute for invalid character encoding.
+</P></LI><LI><A NAME="ini.mbstring.func-overload"></A><P>&#13; <TT CLASS="literal">mbstring.func_overload</TT>overload(replace) single byte
+functions by mbstring functions. <A HREF="function.mail.html"><B CLASS="function">mail()</B></A>,
+<A HREF="function.ereg.html"><B CLASS="function">ereg()</B></A>, etc. are overloaded by
+<A HREF="function.mb-send-mail.html"><B CLASS="function">mb_send_mail()</B></A>, <A HREF="function.mb-ereg.html"><B CLASS="function">mb_ereg()</B></A>, etc.
+Possible values are 0, 1, 2, 4 or a combination of them.
+For example, 7 for overload everything.
+0: No overload, 1: Overload <A HREF="function.mail.html"><B CLASS="function">mail()</B></A> function,
+2: Overload str*() functions, 4: Overload ereg*() functions.
+</P></LI></UL>
+</P><P>&#13; Web Browsers are supposed to use the same character encoding
+when submitting form. However, browsers may not use the same
+character encoding. See <A HREF="function.mb-http-input.html"><B CLASS="function">mb_http_input()</B></A> to
+detect character encoding used by browsers.
+</P><P>&#13; If <TT CLASS="literal">enctype</TT> is set to
+<TT CLASS="literal">multipart/form-data</TT> in HTML forms,
+<TT CLASS="literal">mbstring</TT> does not convert character encoding
+in POST data. The user must convert them in the script, if
+conversion is needed.
+</P><P>&#13; Although, browsers are smart enough to detect character encoding
+in HTML. <TT CLASS="literal">charset</TT> is better to be set in HTTP
+header. Change <TT CLASS="literal">default_charset</TT> according to
+character encoding.
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN50758"></A><P><B>例子 1. <TT CLASS="filename">php.ini</TT> setting example</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">; Set default language
+mbstring.language        = Neutral; Set default language to Neutral(UTF-8) (default)
+mbstring.language        = English; Set default language to English 
+mbstring.language        = Japanese; Set default language to Japanese
+
+;; Set default internal encoding
+;; Note: Make sure to use character encoding works with PHP
+mbstring.internal_encoding    = UTF-8  ; Set internal encoding to UTF-8
+
+;; HTTP input encoding translation is enabled.
+mbstring.encoding_translation = On
+
+;; Set default HTTP input character encoding
+;; Note: Script cannot change http_input setting.
+mbstring.http_input           = pass    ; No conversion. 
+mbstring.http_input           = auto    ; Set HTTP input to auto
+                                ; "auto" is expanded to "ASCII,JIS,UTF-8,EUC-JP,SJIS"
+mbstring.http_input           = SJIS    ; Set HTTP2 input to  SJIS
+mbstring.http_input           = UTF-8,SJIS,EUC-JP ; Specify order
+
+;; Set default HTTP output character encoding 
+mbstring.http_output          = pass    ; No conversion
+mbstring.http_output          = UTF-8   ; Set HTTP output encoding to UTF-8
+
+;; Set default character encoding detection order
+mbstring.detect_order         = auto    ; Set detect order to auto
+mbstring.detect_order         = ASCII,JIS,UTF-8,SJIS,EUC-JP ; Specify order
+
+;; Set default substitute character
+mbstring.substitute_character = 12307   ; Specify Unicode value
+mbstring.substitute_character = none    ; Do not print character
+mbstring.substitute_character = long    ; Long Example: U+3000,JIS+7E7E</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN50763"></A><P><B>例子 2. <TT CLASS="filename">php.ini</TT> setting for <TT CLASS="literal">EUC-JP</TT> users</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">;; Disable Output Buffering
+output_buffering      = Off
+
+;; Set HTTP header charset
+default_charset       = EUC-JP    
+
+;; Set default language to Japanese
+mbstring.language = Japanese
+
+;; HTTP input encoding translation is enabled.
+mbstring.encoding_translation = On
+
+;; Set HTTP input encoding conversion to auto
+mbstring.http_input   = auto 
+
+;; Convert HTTP output to EUC-JP
+mbstring.http_output  = EUC-JP    
+
+;; Set internal encoding to EUC-JP
+mbstring.internal_encoding = EUC-JP    
+
+;; Do not print invalid characters
+mbstring.substitute_character = none</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN50769"></A><P><B>例子 3. <TT CLASS="filename">php.ini</TT> setting for <TT CLASS="literal">SJIS</TT> users</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">;; Enable Output Buffering
+output_buffering     = On
+
+;; Set mb_output_handler to enable output conversion
+output_handler       = mb_output_handler
+
+;; Set HTTP header charset
+default_charset      = Shift_JIS
+
+;; Set default language to Japanese
+mbstring.language = Japanese
+
+;; Set http input encoding conversion to auto
+mbstring.http_input  = auto 
+
+;; Convert to SJIS
+mbstring.http_output = SJIS    
+
+;; Set internal encoding to EUC-JP
+mbstring.internal_encoding = EUC-JP    
+
+;; Do not print invalid characters
+mbstring.substitute_character = none</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="mbstring.resources"></A>资源类型</H1><P>该扩展模块未定义任何资源类型。</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="mbstring.constants"></A>预定义常量</H1><P>&#13;由于这些常量是由该扩展模块定义的，因此只有在该扩展模块被编译到 PHP 中，或者在运行时被动态加载后，这些常量才有效。</P><P></P><DIV CLASS="variablelist"><DL><DT><TT CLASS="constant"><B>MB_OVERLOAD_MAIL</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>MB_OVERLOAD_STRING</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>MB_OVERLOAD_REGEX</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD></DL></DIV></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="mbstring.http"></A>HTTP Input and Output</H1><P>&#13; HTTP input/output character encoding conversion may convert
+binary data also. Users are supposed to control character
+encoding conversion if binary data is used for HTTP
+input/output.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+For PHP 4.3.2 or earlier,
+if <TT CLASS="literal">enctype</TT> for HTML form is set to
+<TT CLASS="literal">multipart/form-data</TT>,
+<TT CLASS="literal">mbstring</TT> does not convert character encoding
+in POST data. If it is the case, strings are needed to be
+converted to internal character encoding.
+</P></BLOCKQUOTE></DIV><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Since PHP 4.3.3,
+if <TT CLASS="literal">enctype</TT> for HTML form is set to
+<TT CLASS="literal">multipart/form-data</TT>, and,
+<TT CLASS="literal">mbstring.encoding_translation</TT> is set to
+On in <TT CLASS="filename">php.ini</TT>
+POST variables and uploaded filename will be converted to
+internal character encoding.
+But, characters specified in 'name' of HTML form will not be
+converted.
+</P></BLOCKQUOTE></DIV><P>&#13; <P></P><UL><LI><P>&#13; HTTP Input
+</P><P>
+There is no way to control HTTP input character
+conversion from PHP script. To disable HTTP input character
+conversion, it has to be done in <TT CLASS="filename">php.ini</TT>.
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN50819"></A><P><B>例子 4.
+Disable HTTP input conversion in <TT CLASS="filename">php.ini</TT>
+</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+;; Disable HTTP Input conversion<br />mbstring.http_input = pass<br />;; Disable HTTP Input conversion (PHP 4.3.0 or higher)<br />mbstring.encoding_translation = Off</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; When using PHP as an Apache module, it is possible to
+override PHP ini setting per Virtual Host in
+<TT CLASS="filename">httpd.conf</TT> or per directory with
+<TT CLASS="filename">.htaccess</TT>. Refer to the <A HREF="configuration.html">Configuration</A> section and
+Apache Manual for details.
+</P></LI><LI><P>&#13; HTTP Output
+</P><P>&#13; There are several ways to enable output character encoding
+conversion. One is using <TT CLASS="filename">php.ini</TT>, another
+is using <A HREF="function.ob-start.html"><B CLASS="function">ob_start()</B></A> with
+<A HREF="function.mb-output-handler.html"><B CLASS="function">mb_output_handler()</B></A> as
+<TT CLASS="literal">ob_start</TT> callback function.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+For PHP3-i18n users, <TT CLASS="literal">mbstring</TT>'s output
+conversion differs from PHP3-i18n. Character encoding is
+converted using output buffer.
+</P></BLOCKQUOTE></DIV></LI></UL>
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN50838"></A><P><B>例子 5. <TT CLASS="filename">php.ini</TT> setting example</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">;; Enable output character encoding conversion for all PHP pages
+
+;; Enable Output Buffering
+output_buffering    = On
+
+;; Set mb_output_handler to enable output conversion
+output_handler      = mb_output_handler</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN50843"></A><P><B>例子 6. Script example</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /><br /></font><font color="#FF8000">// Enable output character encoding conversion only for this page<br /><br />// Set HTTP output character encoding to SJIS<br /></font><font color="#0000BB">mb_http_output</font><font color="#007700">(</font><font color="#DD0000">'SJIS'</font><font color="#007700">);<br /><br /></font><font color="#FF8000">// Start buffering and specify "mb_output_handler" as<br />// callback function<br /></font><font color="#0000BB">ob_start</font><font color="#007700">(</font><font color="#DD0000">'mb_output_handler'</font><font color="#007700">);<br /><br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="mbstring.encodings"></A>Supported Character Encodings</H1><P>&#13; Currently, the following character encoding is supported by the
+<TT CLASS="literal">mbstring</TT> module. Character encoding may
+be specified for <TT CLASS="literal">mbstring</TT> functions'
+<TT CLASS="literal">encoding</TT> parameter.
+</P><P>&#13; The following character encoding is supported in this PHP
+extension:
+</P><P>&#13; <TT CLASS="literal">UCS-4</TT>, <TT CLASS="literal">UCS-4BE</TT>,
+<TT CLASS="literal">UCS-4LE</TT>, <TT CLASS="literal">UCS-2</TT>,
+<TT CLASS="literal">UCS-2BE</TT>, <TT CLASS="literal">UCS-2LE</TT>,
+<TT CLASS="literal">UTF-32</TT>, <TT CLASS="literal">UTF-32BE</TT>,
+<TT CLASS="literal">UTF-32LE</TT>, <TT CLASS="literal">UCS-2LE</TT>,
+<TT CLASS="literal">UTF-16</TT>, <TT CLASS="literal">UTF-16BE</TT>,
+<TT CLASS="literal">UTF-16LE</TT>, <TT CLASS="literal">UTF-8</TT>,
+<TT CLASS="literal">UTF-7</TT>, <TT CLASS="literal">ASCII</TT>,
+<TT CLASS="literal">EUC-JP</TT>, <TT CLASS="literal">SJIS</TT>,
+<TT CLASS="literal">eucJP-win</TT>, <TT CLASS="literal">SJIS-win</TT>,
+<TT CLASS="literal">ISO-2022-JP</TT>, <TT CLASS="literal">JIS</TT>,
+<TT CLASS="literal">ISO-8859-1</TT>, <TT CLASS="literal">ISO-8859-2</TT>,
+<TT CLASS="literal">ISO-8859-3</TT>, <TT CLASS="literal">ISO-8859-4</TT>,
+<TT CLASS="literal">ISO-8859-5</TT>, <TT CLASS="literal">ISO-8859-6</TT>,
+<TT CLASS="literal">ISO-8859-7</TT>, <TT CLASS="literal">ISO-8859-8</TT>,
+<TT CLASS="literal">ISO-8859-9</TT>, <TT CLASS="literal">ISO-8859-10</TT>,
+<TT CLASS="literal">ISO-8859-13</TT>, <TT CLASS="literal">ISO-8859-14</TT>,
+<TT CLASS="literal">ISO-8859-15</TT>, <TT CLASS="literal">byte2be</TT>,
+<TT CLASS="literal">byte2le</TT>, <TT CLASS="literal">byte4be</TT>,
+<TT CLASS="literal">byte4le</TT>, <TT CLASS="literal">BASE64</TT>,
+<TT CLASS="literal">7bit</TT>, <TT CLASS="literal">8bit</TT> and
+<TT CLASS="literal">UTF7-IMAP</TT>.
+</P><P>&#13; As of PHP 4.3.0, the following character encoding support will be added
+experimentally :
+<TT CLASS="literal">EUC-CN</TT>, <TT CLASS="literal">CP936</TT>, <TT CLASS="literal">HZ</TT>,
+<TT CLASS="literal">EUC-TW</TT>, <TT CLASS="literal">CP950</TT>, <TT CLASS="literal">BIG-5</TT>,
+<TT CLASS="literal">EUC-KR</TT>, <TT CLASS="literal">UHC</TT> (<TT CLASS="literal">CP949</TT>),
+<TT CLASS="literal">ISO-2022-KR</TT>,
+<TT CLASS="literal">Windows-1251</TT> (<TT CLASS="literal">CP1251</TT>),
+<TT CLASS="literal">Windows-1252</TT> (<TT CLASS="literal">CP1252</TT>),
+<TT CLASS="literal">CP866</TT>,
+<TT CLASS="literal">KOI8-R</TT>.
+</P><P>&#13; <TT CLASS="filename">php.ini</TT> entry, which accepts encoding name,
+accepts "<TT CLASS="literal">auto</TT>" and
+"<TT CLASS="literal">pass</TT>" also.
+<TT CLASS="literal">mbstring</TT> functions, which accepts encoding
+name, and accepts "<TT CLASS="literal">auto</TT>".
+</P><P>&#13; If "<TT CLASS="literal">pass</TT>" is set, no character
+encoding conversion is performed.
+</P><P>&#13; If "<TT CLASS="literal">auto</TT>" is set, it is expanded to
+"<TT CLASS="literal">ASCII,JIS,UTF-8,EUC-JP,SJIS</TT>".
+</P><P>&#13; See also <A HREF="function.mb-detect-order.html"><B CLASS="function">mb_detect_order()</B></A>
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+"Supported character encoding" does not mean that it
+works as internal character code.
+</P></BLOCKQUOTE></DIV></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="mbstring.overload"></A>Overloading PHP string functions with multi byte string functions</H1><P>&#13; Because almost PHP application written for language using
+single-byte character encoding, there are some difficulties for
+multibyte string handling including Japanese. Most PHP string
+functions such as <A HREF="function.substr.html"><B CLASS="function">substr()</B></A> do not support
+multibyte strings.
+</P><P>&#13; Multibyte extension (mbstring) has some PHP string functions
+with multibyte support (ex. <A HREF="function.substr.html"><B CLASS="function">substr()</B></A> supports
+<A HREF="function.mb-substr.html"><B CLASS="function">mb_substr()</B></A>).
+</P><P>&#13; Multibyte extension (mbstring) also supports 'function
+overloading' to add multibyte string functionality without
+code modification. Using function overloading, some PHP string
+functions will be overloaded multibyte string functions.
+For example, <A HREF="function.mb-substr.html"><B CLASS="function">mb_substr()</B></A> is called
+instead of <A HREF="function.substr.html"><B CLASS="function">substr()</B></A> if function overloading
+is enabled. Function overload makes easy to port application
+supporting only single-byte encoding for multibyte application.
+</P><P>&#13; <TT CLASS="literal">mbstring.func_overload</TT> in <TT CLASS="filename">php.ini</TT> should be
+set some positive value to use function overloading.
+The value should specify the category of overloading functions,
+should be set 1 to enable mail function overloading. 2 to enable
+string functions, 4 to regular expression functions. For
+example, if is set for 7, mail, strings, regex functions should
+be overloaded. The list of overloaded functions are shown in
+below.
+<DIV CLASS="table"><A NAME="AEN50942"></A><P><B>表格 2. Functions to be overloaded</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">value of mbstring.func_overload</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">original function</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">overloaded function</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">1</TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.mail.html"><B CLASS="function">mail()</B></A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.mb-send-mail.html"><B CLASS="function">mb_send_mail()</B></A></TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">2</TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.strlen.html"><B CLASS="function">strlen()</B></A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.mb-strlen.html"><B CLASS="function">mb_strlen()</B></A></TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">2</TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.strpos.html"><B CLASS="function">strpos()</B></A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.mb-strpos.html"><B CLASS="function">mb_strpos()</B></A></TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">2</TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.strrpos.html"><B CLASS="function">strrpos()</B></A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.mb-strrpos.html"><B CLASS="function">mb_strrpos()</B></A></TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">2</TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.substr.html"><B CLASS="function">substr()</B></A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.mb-substr.html"><B CLASS="function">mb_substr()</B></A></TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">2</TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.strtolower.html"><B CLASS="function">strtolower()</B></A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.mb-strtolower.html"><B CLASS="function">mb_strtolower()</B></A></TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">2</TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.strtoupper.html"><B CLASS="function">strtoupper()</B></A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.mb-strtoupper.html"><B CLASS="function">mb_strtoupper()</B></A></TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">2</TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.substr-count.html"><B CLASS="function">substr_count()</B></A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.mb-substr-count.html"><B CLASS="function">mb_substr_count()</B></A></TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">4</TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.ereg.html"><B CLASS="function">ereg()</B></A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.mb-ereg.html"><B CLASS="function">mb_ereg()</B></A></TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">4</TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.eregi.html"><B CLASS="function">eregi()</B></A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.mb-eregi.html"><B CLASS="function">mb_eregi()</B></A></TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">4</TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.ereg-replace.html"><B CLASS="function">ereg_replace()</B></A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.mb-ereg-replace.html"><B CLASS="function">mb_ereg_replace()</B></A></TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">4</TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.eregi-replace.html"><B CLASS="function">eregi_replace()</B></A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.mb-eregi-replace.html"><B CLASS="function">mb_eregi_replace()</B></A></TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">4</TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.split.html"><B CLASS="function">split()</B></A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="function.mb-split.html"><B CLASS="function">mb_split()</B></A></TD></TR></TBODY></TABLE></DIV>
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="mbstring.ja-basic"></A>Basics of Japanese multi-byte characters</H1><P>&#13; Most Japanese characters need more than 1 byte per character. In
+addition, several character encoding schemes are used under a
+Japanese environment. There are EUC-JP, Shift_JIS(SJIS) and
+ISO-2022-JP(JIS) character encoding. As Unicode becomes popular,
+UTF-8 is used also. To develop Web applications for a Japanese
+environment, it is important to use the character set for the
+task in hand, whether HTTP input/output, RDBMS and E-mail.
+</P><P>&#13; <P></P><UL><LI><P>Storage for a character can be up to six
+bytes</P></LI><LI><P>&#13; A multi-byte character is usually twice of the width compared
+to single-byte characters. Wider characters are called
+"zen-kaku" - meaning full width, narrower characters are
+called "han-kaku" - meaning half width. "zen-kaku" characters
+are usually fixed width.
+</P></LI><LI><P>&#13; Some character encoding defines shift(escape) sequence for
+entering/exiting multi-byte character strings.
+</P></LI><LI><P>&#13; ISO-2022-JP must be used for SMTP/NNTP.
+</P></LI><LI><P>&#13; "i-mode" web site is supposed to use SJIS.
+</P></LI></UL>
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="mbstring.ref"></A>References</H1><P>&#13; Multi-byte character encoding and its related issues are very
+complex. It is impossible to cover in sufficient detail
+here. Please refer to the following URLs and other resources for
+further readings.
+<P></P><UL><LI><P>&#13; Unicode/UTF/UCS/etc
+</P><P>&#13; <A HREF="http://www.unicode.org/" TARGET="_top">http://www.unicode.org/</A>
+</P></LI><LI><P>&#13; Japanese/Korean/Chinese character
+information
+</P><P>&#13; <TT CLASS="literal">&#13; ftp://ftp.ora.com/pub/examples/nutshell/ujip/doc/cjk.inf
+</TT>
+</P></LI></UL>
+</P></DIV></DIV><DIV CLASS="TOC"><DL><DT><B>目录</B></DT><DT><A HREF="function.mb-convert-case.html">mb_convert_case</A>&nbsp;--&nbsp;Perform case folding on a string</DT><DT><A HREF="function.mb-convert-encoding.html">mb_convert_encoding</A>&nbsp;--&nbsp;Convert character encoding</DT><DT><A HREF="function.mb-convert-kana.html">mb_convert_kana</A>&nbsp;--&nbsp;
+Convert "kana" one from another ("zen-kaku", "han-kaku" and more)
+</DT><DT><A HREF="function.mb-convert-variables.html">mb_convert_variables</A>&nbsp;--&nbsp;Convert character code in variable(s)</DT><DT><A HREF="function.mb-decode-mimeheader.html">mb_decode_mimeheader</A>&nbsp;--&nbsp;Decode string in MIME header field</DT><DT><A HREF="function.mb-decode-numericentity.html">mb_decode_numericentity</A>&nbsp;--&nbsp;
+Decode HTML numeric string reference to character
+</DT><DT><A HREF="function.mb-detect-encoding.html">mb_detect_encoding</A>&nbsp;--&nbsp;Detect character encoding</DT><DT><A HREF="function.mb-detect-order.html">mb_detect_order</A>&nbsp;--&nbsp;
+Set/Get character encoding detection order
+</DT><DT><A HREF="function.mb-encode-mimeheader.html">mb_encode_mimeheader</A>&nbsp;--&nbsp;Encode string for MIME header</DT><DT><A HREF="function.mb-encode-numericentity.html">mb_encode_numericentity</A>&nbsp;--&nbsp;
+Encode character to HTML numeric string reference
+</DT><DT><A HREF="function.mb-ereg-match.html">mb_ereg_match</A>&nbsp;--&nbsp;
+Regular expression match for multibyte string
+</DT><DT><A HREF="function.mb-ereg-replace.html">mb_ereg_replace</A>&nbsp;--&nbsp;Replace regular expression with multibyte support</DT><DT><A HREF="function.mb-ereg-search-getpos.html">mb_ereg_search_getpos</A>&nbsp;--&nbsp;
+Returns start point for next regular expression match
+</DT><DT><A HREF="function.mb-ereg-search-getregs.html">mb_ereg_search_getregs</A>&nbsp;--&nbsp;
+Retrieve the result from the last multibyte regular expression
+match
+</DT><DT><A HREF="function.mb-ereg-search-init.html">mb_ereg_search_init</A>&nbsp;--&nbsp;
+Setup string and regular expression for multibyte regular
+expression match
+</DT><DT><A HREF="function.mb-ereg-search-pos.html">mb_ereg_search_pos</A>&nbsp;--&nbsp;
+Return position and length of matched part of multibyte regular
+expression for predefined multibyte string
+</DT><DT><A HREF="function.mb-ereg-search-regs.html">mb_ereg_search_regs</A>&nbsp;--&nbsp;
+Returns the matched part of multibyte regular expression
+</DT><DT><A HREF="function.mb-ereg-search-setpos.html">mb_ereg_search_setpos</A>&nbsp;--&nbsp;
+Set start point of next regular expression match
+</DT><DT><A HREF="function.mb-ereg-search.html">mb_ereg_search</A>&nbsp;--&nbsp;
+Multibyte regular expression match for predefined multibyte string
+</DT><DT><A HREF="function.mb-ereg.html">mb_ereg</A>&nbsp;--&nbsp;Regular expression match with multibyte support</DT><DT><A HREF="function.mb-eregi-replace.html">mb_eregi_replace</A>&nbsp;--&nbsp;
+Replace regular expression with multibyte support
+ignoring case
+</DT><DT><A HREF="function.mb-eregi.html">mb_eregi</A>&nbsp;--&nbsp;
+Regular expression match ignoring case with multibyte support
+</DT><DT><A HREF="function.mb-get-info.html">mb_get_info</A>&nbsp;--&nbsp;Get internal settings of mbstring</DT><DT><A HREF="function.mb-http-input.html">mb_http_input</A>&nbsp;--&nbsp;Detect HTTP input character encoding</DT><DT><A HREF="function.mb-http-output.html">mb_http_output</A>&nbsp;--&nbsp;Set/Get HTTP output character encoding</DT><DT><A HREF="function.mb-internal-encoding.html">mb_internal_encoding</A>&nbsp;--&nbsp;
+Set/Get internal character encoding
+</DT><DT><A HREF="function.mb-language.html">mb_language</A>&nbsp;--&nbsp;
+Set/Get current language
+</DT><DT><A HREF="function.mb-output-handler.html">mb_output_handler</A>&nbsp;--&nbsp;
+Callback function converts character encoding in output buffer
+</DT><DT><A HREF="function.mb-parse-str.html">mb_parse_str</A>&nbsp;--&nbsp;
+Parse GET/POST/COOKIE data and set global variable
+</DT><DT><A HREF="function.mb-preferred-mime-name.html">mb_preferred_mime_name</A>&nbsp;--&nbsp;Get MIME charset string</DT><DT><A HREF="function.mb-regex-encoding.html">mb_regex_encoding</A>&nbsp;--&nbsp;
+Returns current encoding for multibyte regex as string
+</DT><DT><A HREF="function.mb-regex-set-options.html">mb_regex_set_options</A>&nbsp;--&nbsp;
+Set/Get the default options for mbregex functions
+</DT><DT><A HREF="function.mb-send-mail.html">mb_send_mail</A>&nbsp;--&nbsp;
+Send encoded mail.
+</DT><DT><A HREF="function.mb-split.html">mb_split</A>&nbsp;--&nbsp;Split multibyte string using regular expression</DT><DT><A HREF="function.mb-strcut.html">mb_strcut</A>&nbsp;--&nbsp;Get part of string</DT><DT><A HREF="function.mb-strimwidth.html">mb_strimwidth</A>&nbsp;--&nbsp;Get truncated string with specified width</DT><DT><A HREF="function.mb-strlen.html">mb_strlen</A>&nbsp;--&nbsp;Get string length</DT><DT><A HREF="function.mb-strpos.html">mb_strpos</A>&nbsp;--&nbsp;
+Find position of first occurrence of string in a string
+</DT><DT><A HREF="function.mb-strrpos.html">mb_strrpos</A>&nbsp;--&nbsp;
+Find position of last occurrence of a string in a string
+</DT><DT><A HREF="function.mb-strtolower.html">mb_strtolower</A>&nbsp;--&nbsp;Make a string lowercase</DT><DT><A HREF="function.mb-strtoupper.html">mb_strtoupper</A>&nbsp;--&nbsp;Make a string uppercase</DT><DT><A HREF="function.mb-strwidth.html">mb_strwidth</A>&nbsp;--&nbsp;Return width of string</DT><DT><A HREF="function.mb-substitute-character.html">mb_substitute_character</A>&nbsp;--&nbsp;Set/Get substitution character</DT><DT><A HREF="function.mb-substr-count.html">mb_substr_count</A>&nbsp;--&nbsp;Count the number of substring occurrences</DT><DT><A HREF="function.mb-substr.html">mb_substr</A>&nbsp;--&nbsp;Get part of string</DT></DL></DIV></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.tanh.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.mb-convert-case.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">tanh</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="funcref.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">mb_convert_case</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

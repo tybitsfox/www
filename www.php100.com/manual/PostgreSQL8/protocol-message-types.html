@@ -1,0 +1,208 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>消息数据类型 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="前/后端协议" HREF="protocol.html"><LINK REL="PREVIOUS" TITLE="消息流" HREF="protocol-flow.html"><LINK REL="NEXT" TITLE="消息格式" HREF="protocol-message-formats.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="protocol-flow.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="protocol.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 43. 前/后端协议</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="protocol.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="protocol-message-formats.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="PROTOCOL-MESSAGE-TYPES" >43.3. 消息数据类型</A
+></H1
+><P
+>本节描述消息里用到的基本数据类型。
+
+<P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>Int<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>i</I
+></TT
+>)</DT
+><DD
+><P
+>		一个网络字节序（译注：高位-&#62;高地址，底位-&#62;底地址）的
+		<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> 位整数。
+		如果声明了 <TT
+CLASS="REPLACEABLE"
+><I
+>i</I
+></TT
+>，
+		它就是将出现的确切值，否则这个数值就是一个变量。如 Int16，Int32(42)。</P
+></DD
+><DT
+>Int<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>[<TT
+CLASS="REPLACEABLE"
+><I
+>k</I
+></TT
+>]</DT
+><DD
+><P
+>		一个 <TT
+CLASS="REPLACEABLE"
+><I
+>k</I
+></TT
+> 个 <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> 位整数元素的数组，
+		每个都是以网络字节序存储的。数组长度 <TT
+CLASS="REPLACEABLE"
+><I
+>k</I
+></TT
+> 总是由消息前面的字段来判断的。比如，Int16[M]。</P
+></DD
+><DT
+>String(<TT
+CLASS="REPLACEABLE"
+><I
+>s</I
+></TT
+>)</DT
+><DD
+><P
+>		一个（C 风格的）空零结尾的字串。对字串没有特别的长度限制。
+		如果声明了 <TT
+CLASS="REPLACEABLE"
+><I
+>s</I
+></TT
+>，那么它是将出现的确切的数值，
+		否则这个数值就是一个变量。比如，String，String("user")。</P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>后端返回的字串的可能长度<I
+CLASS="EMPHASIS"
+>没有预定义的限制</I
+>。
+所以前端必须使用良好的编码策略，
+使用某种可扩展的缓冲区以便能接受任何能放进内存里的东西。
+如果那样做不可行，则读取全长的字串然后抛弃不能放进你的定长缓冲区的尾部字符。</P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+>Byte<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>c</I
+></TT
+>)</DT
+><DD
+><P
+>		精确的 <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> 字节。
+		如果字段宽度 <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> 不是一个常量，
+		那么我们总是可以从消息中更早的字段中判断它。
+		如果声明了 <TT
+CLASS="REPLACEABLE"
+><I
+>c</I
+></TT
+>那么它是确切数值。
+		例如，Byte2, Byte1('\n')。</P
+></DD
+></DL
+></DIV
+><P></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="protocol-flow.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="protocol-message-formats.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >消息流</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="protocol.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >消息格式</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

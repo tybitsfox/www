@@ -1,0 +1,2739 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Chapter 6 MySQL Native Driver</title>
+<link rel="stylesheet" href="mvl.css" type="text/css" />
+<meta name="generator" content="DocBook XSL Stylesheets + chunker.py v1.9.2" />
+<link rel="start" href="index.html" title="{book-title}" />
+<link rel="up" href="" title="" />
+<link rel="prev" href="apis-php-mysql.html" title="Chapter 5 Original MySQL API" />
+<link rel="next" href="apis-php-mysqlnd-ms.html" title="Chapter 7 Mysqlnd replication and load balancing plugin" />
+<script language="javascript" type="text/javascript">
+  function addOnload(theFunc)
+  {
+    var previous = window.onload;
+    if (typeof window.onload != 'function')
+    {
+      window.onload = theFunc;
+    }
+    else
+    {
+      window.onload = function()
+      {
+        previous();
+        theFunc();
+      }
+    }
+  }
+
+  addOnload(function()
+  {
+    var base = new Date(1463505695*1000);
+    var now = new Date();
+    var diff = ((now-base)/1000)/(24*3600);
+
+    if (diff > 90) {
+      var nodes = document.getElementsByClassName('titlepage');
+      nodes[0].innerHTML = '<p style="border: 5px #ff0000 solid; padding: 5px; margin 5px">' +
+        'This copy of the manual is more than 90 days old. We encourage you to download a ' +
+        'new version from <a href="http://dev.mysql.com">dev.mysql.com/doc</a>.</p>' + nodes[0].innerHTML;
+    }
+  });
+</script>
+<noscript></noscript>
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<div class="navheader">
+<table width="100%" summary="Navigation header">
+<tr>
+<th colspan="3" align="center">Chapter 6 MySQL Native Driver</th>
+</tr>
+<tr>
+<td width="20%" align="left"><a accesskey="p" href="apis-php-mysql.html">Prev</a> </td>
+<th width="60%" align="center"></th>
+<td width="20%" align="right"> <a accesskey="n" href="apis-php-mysqlnd-ms.html">Next</a></td>
+</tr>
+</table>
+<hr>
+</div>
+<div class="chapter">
+<div class="titlepage">
+<div>
+<div>
+<h1 class="title"><a name="apis-php-mysqlnd"></a>Chapter 6 MySQL Native Driver</h1>
+
+</div>
+
+</div>
+
+</div>
+<div class="toc">
+<p><b>Table of Contents</b></p><dl class="toc"><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.overview">6.1 Overview</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.install">6.2 Installation</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.config">6.3 Runtime Configuration</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.incompatibilities">6.4 Incompatibilities</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.persist">6.5 Persistent Connections</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.stats">6.6 Statistics</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.notes">6.7 Notes</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.memory">6.8 Memory management</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.plugin">6.9 MySQL Native Driver Plugin API</a></span></dt><dd><dl><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.plugin.mysql-proxy">6.9.1 A comparison of mysqlnd plugins with MySQL Proxy</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.plugin.obtaining">6.9.2 Obtaining the mysqlnd plugin API</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.plugin.architecture">6.9.3 MySQL Native Driver Plugin Architecture</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.plugin.api">6.9.4 The mysqlnd plugin API</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.plugin.developing">6.9.5 Getting started building a mysqlnd plugin</a></span></dt></dl></dd></dl>
+</div>
+<p>
+    <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+    Documentation Group.</a>
+  </p><p>
+    MySQL Native Driver is a replacement for the MySQL Client Library
+    (libmysqlclient). MySQL Native Driver is part of the official PHP
+    sources as of PHP 5.3.0.
+  </p><p>
+    The MySQL database extensions MySQL extension,
+    <code class="literal">mysqli</code> and PDO MYSQL all communicate with the
+    MySQL server. In the past, this was done by the extension using the
+    services provided by the MySQL Client Library. The extensions were
+    compiled against the MySQL Client Library in order to use its
+    client-server protocol.
+  </p><p>
+    With MySQL Native Driver there is now an alternative, as the MySQL
+    database extensions can be compiled to use MySQL Native Driver
+    instead of the MySQL Client Library.
+  </p><p>
+    MySQL Native Driver is written in C as a PHP extension.
+</p>
+<div class="section">
+
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd.overview"></a>6.1 Overview</h2>
+</div>
+</div>
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      <span class="emphasis"><em>What it is not</em></span>
+    </p><p>
+      Although MySQL Native Driver is written as a PHP extension, it is
+      important to note that it does not provide a new API to the PHP
+      programmer. The programmer APIs for MySQL database connectivity
+      are provided by the MySQL extension, <code class="literal">mysqli</code> and
+      PDO MYSQL. These extensions can now use the services of MySQL
+      Native Driver to communicate with the MySQL Server. Therefore, you
+      should not think of MySQL Native Driver as an API.
+    </p><p>
+      <span class="emphasis"><em>Why use it?</em></span>
+    </p><p>
+      Using the MySQL Native Driver offers a number of advantages over
+      using the MySQL Client Library.
+    </p><p>
+      The older MySQL Client Library was written by MySQL AB (now Oracle
+      Corporation) and so was released under the MySQL license. This
+      ultimately led to MySQL support being disabled by default in PHP.
+      However, the MySQL Native Driver has been developed as part of the
+      PHP project, and is therefore released under the PHP license. This
+      removes licensing issues that have been problematic in the past.
+    </p><p>
+      Also, in the past, you needed to build the MySQL database
+      extensions against a copy of the MySQL Client Library. This
+      typically meant you needed to have MySQL installed on a machine
+      where you were building the PHP source code. Also, when your PHP
+      application was running, the MySQL database extensions would call
+      down to the MySQL Client library file at run time, so the file
+      needed to be installed on your system. With MySQL Native Driver
+      that is no longer the case as it is included as part of the
+      standard distribution. So you do not need MySQL installed in order
+      to build PHP or run PHP database applications.
+    </p><p>
+      Because MySQL Native Driver is written as a PHP extension, it is
+      tightly coupled to the workings of PHP. This leads to gains in
+      efficiency, especially when it comes to memory usage, as the
+      driver uses the PHP memory management system. It also supports the
+      PHP memory limit. Using MySQL Native Driver leads to comparable or
+      better performance than using MySQL Client Library, it always
+      ensures the most efficient use of memory. One example of the
+      memory efficiency is the fact that when using the MySQL Client
+      Library, each row is stored in memory twice, whereas with the
+      MySQL Native Driver each row is only stored once in memory.
+</p>
+<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+
+<div class="admon-title">
+Reporting memory usage
+</div>
+<p>
+        Because MySQL Native Driver uses the PHP memory management
+        system, its memory usage can be tracked with
+        <a class="ulink" href="http://www.php.net/memory_get_usage" target="_top"><code class="function">memory_get_usage</code></a>.
+        This is not possible with libmysqlclient because it uses the C
+        function malloc() instead.
+</p>
+</div>
+<p>
+      <span class="emphasis"><em>Special features</em></span>
+    </p><p>
+      MySQL Native Driver also provides some special features not
+      available when the MySQL database extensions use MySQL Client
+      Library. These special features are listed below:
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+          Improved persistent connections
+        </p></li><li class="listitem"><p>
+          The special function
+          <a class="link" href="apis-php-mysqli.html#apis-php-mysqli-result.fetch-all" title="3.11.3 mysqli_result::fetch_all, mysqli_fetch_all"><code class="function">mysqli_fetch_all</code></a>
+        </p></li><li class="listitem"><p>
+          Performance statistics calls:
+          <a class="link" href="apis-php-mysqli.html#apis-php-function.mysqli-get-cache-stats" title="3.15.12 mysqli_get_cache_stats"><code class="function">mysqli_get_cache_stats</code></a>,
+          <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.get-client-stats" title="3.9.21 mysqli_get_client_stats"><code class="function">mysqli_get_client_stats</code></a>,
+          <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.get-connection-stats" title="3.9.23 mysqli::get_connection_stats, mysqli_get_connection_stats"><code class="function">mysqli_get_connection_stats</code></a>
+</p></li></ul>
+</div>
+<p>
+      The performance statistics facility can prove to be very useful in
+      identifying performance bottlenecks.
+    </p><p>
+      MySQL Native Driver also allows for persistent connections when
+      used with the <code class="literal">mysqli</code> extension.
+    </p><p>
+      <span class="emphasis"><em>SSL Support</em></span>
+    </p><p>
+      MySQL Native Driver has supported SSL since PHP version 5.3.3
+    </p><p>
+      <span class="emphasis"><em>Compressed Protocol Support</em></span>
+    </p><p>
+      As of PHP 5.3.2 MySQL Native Driver supports the compressed client
+      server protocol. MySQL Native Driver did not support this in 5.3.0
+      and 5.3.1. Extensions such as <code class="literal">ext/mysql</code>,
+      <code class="literal">ext/mysqli</code>, that are configured to use MySQL
+      Native Driver, can also take advantage of this feature. Note that
+      <code class="literal">PDO_MYSQL</code> does <span class="emphasis"><em>NOT</em></span> support
+      compression when used together with mysqlnd.
+    </p><p>
+      <span class="emphasis"><em>Named Pipes Support</em></span>
+    </p><p>
+      Named pipes support for Windows was added in PHP version 5.4.0.
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd.install"></a>6.2 Installation</h2>
+
+</div>
+
+</div>
+
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      <span class="emphasis"><em>Changelog</em></span>
+</p>
+<div class="table">
+<a name="idm139660447302768"></a><p class="title"><b>Table 6.1 Changelog</b></p>
+<div class="table-contents">
+<table class="table" summary="Changelog" border="1"><colgroup><col><col></colgroup><thead><tr><th scope="col">Version</th><th scope="col">Description</th></tr></thead><tbody><tr><td scope="row">5.3.0</td><td>The MySQL Native Driver was added, with support for all MySQL extensions
+              (i.e., mysql, mysqli and PDO_MYSQL). Passing in
+              <code class="literal">mysqlnd</code> to the appropriate configure
+              switch enables this support.</td></tr><tr><td scope="row">5.4.0</td><td>The MySQL Native Driver is now the default for all MySQL extensions
+              (i.e., mysql, mysqli and PDO_MYSQL). Passing in
+<code class="literal">mysqlnd</code> to configure is now optional.</td></tr><tr><td scope="row">5.5.0</td><td>SHA-256 Authentication Plugin support was added</td></tr></tbody></table>
+</div>
+
+</div>
+<br class="table-break"><p>
+      <span class="emphasis"><em>Installation on Unix</em></span>
+    </p><p>
+      The MySQL database extensions must be configured to use the MySQL
+      Client Library. In order to use the MySQL Native Driver, PHP needs
+      to be built specifying that the MySQL database extensions are
+      compiled with MySQL Native Driver support. This is done through
+      configuration options prior to building the PHP source code.
+    </p><p>
+      For example, to build the MySQL extension,
+      <code class="literal">mysqli</code> and PDO MYSQL using the MySQL Native
+      Driver, the following command would be given:
+    </p><pre class="programlisting">
+
+ ./configure --with-mysql=mysqlnd \
+--with-mysqli=mysqlnd \
+--with-pdo-mysql=mysqlnd \
+[other options]
+
+</pre><p>
+      <span class="emphasis"><em>Installation on Windows</em></span>
+    </p><p>
+      In the official PHP Windows distributions from 5.3 onwards, MySQL
+      Native Driver is enabled by default, so no additional
+      configuration is required to use it. All MySQL database extensions
+      will use MySQL Native Driver in this case.
+    </p><p>
+      <span class="emphasis"><em>SHA-256 Authentication Plugin support</em></span>
+    </p><p>
+      The MySQL Native Driver requires the OpenSSL functionality of PHP
+      to be loaded and enabled to connect to MySQL through accounts that
+      use the MySQL SHA-256 Authentication Plugin. For example, PHP
+      could be configured using:
+    </p><pre class="programlisting">
+
+./configure --with-mysql=mysqlnd \
+--with-mysqli=mysqlnd \
+--with-pdo-mysql=mysqlnd \
+--with-openssl
+[other options]
+
+</pre>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd.config"></a>6.3 Runtime Configuration</h2>
+
+</div>
+
+</div>
+
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+The behaviour of these functions is affected by settings in <code class="filename">php.ini</code>.
+</p><p>
+</p>
+<div class="table">
+<a name="idm139660447281680"></a><p class="title"><b>Table 6.2 MySQL Native Driver Configuration Options</b></p>
+<div class="table-contents">
+<table class="table" summary="MySQL Native Driver Configuration Options" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th scope="col">Name</th><th scope="col">Default</th><th scope="col">Changeable</th><th scope="col">Changelog</th></tr></thead><tbody><tr><td scope="row"><a class="link" href="apis-php-mysqlnd.html#apis-php-ini.mysqlnd.collect-statistics">mysqlnd.collect_statistics</a></td><td>"1"</td><td>PHP_INI_SYSTEM</td><td>Available since PHP 5.3.0.</td></tr><tr><td scope="row"><a class="link" href="apis-php-mysqlnd.html#apis-php-ini.mysqlnd.collect-memory-statistics">mysqlnd.collect_memory_statistics</a></td><td>"0"</td><td>PHP_INI_SYSTEM</td><td>Available since PHP 5.3.0.</td></tr><tr><td scope="row"><a class="link" href="apis-php-mysqlnd.html#apis-php-ini.mysqlnd.debug">mysqlnd.debug</a></td><td>""</td><td>PHP_INI_SYSTEM</td><td>Available since PHP 5.3.0.</td></tr><tr><td scope="row"><a class="link" href="apis-php-mysqlnd.html#apis-php-ini.ini.mysqlnd.log-mask">mysqlnd.log_mask</a></td><td>0</td><td>PHP_INI_ALL</td><td>Available since PHP 5.3.0</td></tr><tr><td scope="row"><a class="link" href="apis-php-mysqlnd.html#apis-php-ini.ini.mysqlnd.mempool-default-size">mysqlnd.mempool_default_size</a></td><td>16000</td><td>PHP_INI_ALL</td><td>Available since PHP 5.3.3</td></tr><tr><td scope="row"><a class="link" href="apis-php-mysqlnd.html#apis-php-ini.mysqlnd.net-read-timeout">mysqlnd.net_read_timeout</a></td><td>"31536000"</td><td>PHP_INI_SYSTEM</td><td>Available since PHP 5.3.0.</td></tr><tr><td scope="row"><a class="link" href="apis-php-mysqlnd.html#apis-php-ini.mysqlnd.net-cmd-buffer-size">mysqlnd.net_cmd_buffer_size</a></td><td>5.3.0 - "2048", 5.3.1 - "4096"</td><td>PHP_INI_SYSTEM</td><td>Available since PHP 5.3.0.</td></tr><tr><td scope="row"><a class="link" href="apis-php-mysqlnd.html#apis-php-ini.mysqlnd.net-read-buffer-size">mysqlnd.net_read_buffer_size</a></td><td>"32768"</td><td>PHP_INI_SYSTEM</td><td>Available since PHP 5.3.0.</td></tr><tr><td scope="row"><a class="link" href="apis-php-mysqlnd.html#apis-php-ini.mysqlnd.sha256-server-public-key">mysqlnd.sha256_server_public_key</a></td><td>""</td><td>PHP_INI_PERDIR</td><td>Available since PHP 5.5.0.</td></tr><tr><td scope="row"><a class="link" href="apis-php-mysqlnd.html#apis-php-ini.mysqlnd.fetch_data_copy">mysqlnd.fetch_data_copy</a></td><td>0</td><td>PHP_INI_ALL</td><td>Available since PHP 5.6.0.</td></tr></tbody></table>
+</div>
+
+</div>
+<p><br class="table-break">
+
+      For further details and definitions of the PHP_INI_* modes, see
+      the
+      <a class="ulink" href="http://www.php.net/manual/en/configuration.changes.modes" target="_top">http://www.php.net/manual/en/configuration.changes.modes</a>.
+    </p><p>
+      Here's a short explanation of the configuration directives.
+    </p><p>
+</p>
+<div class="variablelist">
+<dl class="variablelist"><dt><a name="apis-php-ini.mysqlnd.collect-statistics"></a><span class="term">
+            <em class="parameter"><code>mysqlnd.collect_statistics</code></em>
+            <span class="type">boolean</span>
+          </span></dt><dd><p>
+              Enables the collection of various client statistics which
+              can be accessed through
+              <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.get-client-stats" title="3.9.21 mysqli_get_client_stats"><code class="function">mysqli_get_client_stats</code></a>,
+              <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.get-connection-stats" title="3.9.23 mysqli::get_connection_stats, mysqli_get_connection_stats"><code class="function">mysqli_get_connection_stats</code></a>,
+              <a class="link" href="apis-php-mysqli.html#apis-php-function.mysqli-get-cache-stats" title="3.15.12 mysqli_get_cache_stats"><code class="function">mysqli_get_cache_stats</code></a>
+              and are shown in <code class="literal">mysqlnd</code> section of the
+              output of the
+              <a class="ulink" href="http://www.php.net/phpinfo" target="_top"><code class="function">phpinfo</code></a>
+              function as well.
+            </p><p>
+              This configuration setting enables all
+              <a class="link" href="apis-php-mysqlnd.html#apis-php-mysqlnd.stats" title="6.6 Statistics">MySQL Native Driver
+              statistics</a> except those relating to memory
+              management.
+            </p></dd><dt><a name="apis-php-ini.mysqlnd.collect-memory-statistics"></a><span class="term">
+            <em class="parameter"><code>mysqlnd.collect_memory_statistics</code></em>
+            <span class="type">boolean</span>
+          </span></dt><dd><p>
+              Enable the collection of various memory statistics which
+              can be accessed through
+              <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.get-client-stats" title="3.9.21 mysqli_get_client_stats"><code class="function">mysqli_get_client_stats</code></a>,
+              <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.get-connection-stats" title="3.9.23 mysqli::get_connection_stats, mysqli_get_connection_stats"><code class="function">mysqli_get_connection_stats</code></a>,
+              <a class="link" href="apis-php-mysqli.html#apis-php-function.mysqli-get-cache-stats" title="3.15.12 mysqli_get_cache_stats"><code class="function">mysqli_get_cache_stats</code></a>
+              and are shown in <code class="literal">mysqlnd</code> section of the
+              output of the
+              <a class="ulink" href="http://www.php.net/phpinfo" target="_top"><code class="function">phpinfo</code></a>
+              function as well.
+            </p><p>
+              This configuration setting enables the memory management
+              statistics within the overall set of
+              <a class="link" href="apis-php-mysqlnd.html#apis-php-mysqlnd.stats" title="6.6 Statistics">MySQL Native Driver
+              statistics</a>.
+            </p></dd><dt><a name="apis-php-ini.mysqlnd.debug"></a><span class="term">
+            <em class="parameter"><code>mysqlnd.debug</code></em> <span class="type">string</span>
+          </span></dt><dd><p>
+              Records communication from all extensions using
+              <code class="literal">mysqlnd</code> to the specified log file.
+            </p><p>
+              The format of the directive is <code class="literal">mysqlnd.debug =
+              "option1[,parameter_option1][:option2[,parameter_option2]]"</code>.
+            </p><p>
+              The options for the format string are as follows:
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+                  A[,file] - Appends trace output to specified file.
+                  Also ensures that data is written after each write.
+                  This is done by closing and reopening the trace file
+                  (this is slow). It helps ensure a complete log file
+                  should the application crash.
+                </p></li><li class="listitem"><p>
+                  a[,file] - Appends trace output to the specified file.
+                </p></li><li class="listitem"><p>
+                  d - Enables output from DBUG_&lt;N&gt; macros for the
+                  current state. May be followed by a list of keywords
+                  which selects output only for the DBUG macros with
+                  that keyword. An empty list of keywords implies output
+                  for all macros.
+                </p></li><li class="listitem"><p>
+                  f[,functions] - Limits debugger actions to the
+                  specified list of functions. An empty list of
+                  functions implies that all functions are selected.
+                </p></li><li class="listitem"><p>
+                  F - Marks each debugger output line with the name of
+                  the source file containing the macro causing the
+                  output.
+                </p></li><li class="listitem"><p>
+                  i - Marks each debugger output line with the PID of
+                  the current process.
+                </p></li><li class="listitem"><p>
+                  L - Marks each debugger output line with the name of
+                  the source file line number of the macro causing the
+                  output.
+                </p></li><li class="listitem"><p>
+                  n - Marks each debugger output line with the current
+                  function nesting depth
+                </p></li><li class="listitem"><p>
+                  o[,file] - Similar to a[,file] but overwrites old
+                  file, and does not append.
+                </p></li><li class="listitem"><p>
+                  O[,file] - Similar to A[,file] but overwrites old
+                  file, and does not append.
+                </p></li><li class="listitem"><p>
+                  t[,N] - Enables function control flow tracing. The
+                  maximum nesting depth is specified by N, and defaults
+                  to 200.
+                </p></li><li class="listitem"><p>
+                  x - This option activates profiling.
+                </p></li><li class="listitem"><p>
+                  m - Trace memory allocation and deallocation related
+                  calls.
+</p></li></ul>
+</div>
+<p>
+              Example:
+            </p><pre class="programlisting">
+
+d:t:x:O,/tmp/mysqlnd.trace
+
+</pre>
+<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+
+<div class="admon-title">
+Note
+</div>
+<p>
+                This feature is only available with a debug build of
+                PHP. Works on Microsoft Windows if using a debug build
+                of PHP and PHP was built using Microsoft Visual C
+                version 9 and above.
+</p>
+</div>
+<p></p></dd><dt><a name="apis-php-ini.ini.mysqlnd.log-mask"></a><span class="term">
+            <em class="parameter"><code>mysqlnd.log_mask</code></em> <span class="type">integer</span>
+          </span></dt><dd><p>
+              Defines which queries will be logged. The default 0, which
+              disables logging. Define using an integer, and not with
+              PHP constants. For example, a value of 48 (16 + 32) will
+              log slow queries which either use 'no good
+              index' (SERVER_QUERY_NO_GOOD_INDEX_USED = 16) or no
+              index at all (SERVER_QUERY_NO_INDEX_USED = 32). A value of
+              2043 (1 + 2 + 8 + ... + 1024) will log all slow query
+              types.
+            </p><p>
+              The types are as follows: SERVER_STATUS_IN_TRANS=1,
+              SERVER_STATUS_AUTOCOMMIT=2, SERVER_MORE_RESULTS_EXISTS=8,
+              SERVER_QUERY_NO_GOOD_INDEX_USED=16,
+              SERVER_QUERY_NO_INDEX_USED=32,
+              SERVER_STATUS_CURSOR_EXISTS=64,
+              SERVER_STATUS_LAST_ROW_SENT=128,
+              SERVER_STATUS_DB_DROPPED=256,
+              SERVER_STATUS_NO_BACKSLASH_ESCAPES=512, and
+              SERVER_QUERY_WAS_SLOW=1024.
+            </p></dd><dt><a name="apis-php-ini.ini.mysqlnd.mempool-default-size"></a><span class="term">
+            <em class="parameter"><code>mysqlnd.mempool_default_size</code></em>
+            <span class="type">integer</span>
+          </span></dt><dd><p>
+              Default size of the mysqlnd memory pool, which is used by
+              result sets.
+            </p></dd><dt><a name="apis-php-ini.mysqlnd.net-read-timeout"></a><span class="term">
+            <em class="parameter"><code>mysqlnd.net_read_timeout</code></em>
+            <span class="type">integer</span>
+          </span></dt><dd><p>
+              <code class="literal">mysqlnd</code> and the MySQL Client Library,
+              <code class="literal">libmysqlclient</code> use different networking
+              APIs. <code class="literal">mysqlnd</code> uses PHP streams, whereas
+              <code class="literal">libmysqlclient</code> uses its own wrapper
+              around the operating level network calls. PHP, by default,
+              sets a read timeout of 60s for streams. This is set via
+              <code class="filename">php.ini</code>,
+              <code class="literal">default_socket_timeout</code>. This default
+              applies to all streams that set no other timeout value.
+              <code class="literal">mysqlnd</code> does not set any other value
+              and therefore connections of long running queries can be
+              disconnected after
+              <code class="literal">default_socket_timeout</code> seconds
+              resulting in an error message <span class="quote">“<span class="quote">2006 - MySQL Server
+              has gone away</span>”</span>. The MySQL Client Library sets a
+              default timeout of 365 * 24 * 3600 seconds (1 year) and
+              waits for other timeouts to occur, such as TCP/IP
+              timeouts. <code class="literal">mysqlnd</code> now uses the same
+              very long timeout. The value is configurable through a new
+              <code class="filename">php.ini</code> setting:
+              <code class="literal">mysqlnd.net_read_timeout</code>.
+              <code class="literal">mysqlnd.net_read_timeout</code> gets used by
+              any extension (<code class="literal">ext/mysql</code>,
+              <code class="literal">ext/mysqli</code>,
+              <code class="literal">PDO_MySQL</code>) that uses
+              <code class="literal">mysqlnd</code>. <code class="literal">mysqlnd</code>
+              tells PHP Streams to use
+              <code class="literal">mysqlnd.net_read_timeout</code>. Please note
+              that there may be subtle differences between
+              <code class="literal">MYSQL_OPT_READ_TIMEOUT</code> from the MySQL
+              Client Library and PHP Streams, for example
+              <code class="literal">MYSQL_OPT_READ_TIMEOUT</code> is documented to
+              work only for TCP/IP connections and, prior to MySQL
+              5.1.2, only for Windows. PHP streams may not have this
+              limitation. Please check the streams documentation, if in
+              doubt.
+            </p></dd><dt><a name="apis-php-ini.mysqlnd.net-cmd-buffer-size"></a><span class="term">
+            <em class="parameter"><code>mysqlnd.net_cmd_buffer_size</code></em>
+            <span class="type">long</span>
+          </span></dt><dd><p>
+              <code class="literal">mysqlnd</code> allocates an internal
+              command/network buffer of
+              <code class="literal">mysqlnd.net_cmd_buffer_size</code> (in
+              <code class="filename">php.ini</code>) bytes for every connection.
+              If a MySQL Client Server protocol command, for example,
+              <code class="literal">COM_QUERY</code> (<span class="quote">“<span class="quote">normal</span>”</span>
+              query), does not fit into the buffer,
+              <code class="literal">mysqlnd</code> will grow the buffer to the
+              size required for sending the command. Whenever the buffer
+              gets extended for one connection,
+              <code class="literal">command_buffer_too_small</code> will be
+              incremented by one.
+            </p><p>
+              If <code class="literal">mysqlnd</code> has to grow the buffer
+              beyond its initial size of
+              <code class="literal">mysqlnd.net_cmd_buffer_size</code> bytes for
+              almost every connection, you should consider increasing
+              the default size to avoid re-allocations.
+            </p><p>
+              The default buffer size is 2048 bytes in PHP 5.3.0. In
+              later versions the default is 4096 bytes.
+            </p><p>
+              It is recommended that the buffer size be set to no less
+              than 4096 bytes because <code class="literal">mysqlnd</code> also
+              uses it when reading certain communication packet from
+              MySQL. In PHP 5.3.0, <code class="literal">mysqlnd</code> will not
+              grow the buffer if MySQL sends a packet that is larger
+              than the current size of the buffer. As a consequence,
+              <code class="literal">mysqlnd</code> is unable to decode the packet
+              and the client application will get an error. There are
+              only two situations when the packet can be larger than the
+              2048 bytes default of
+              <code class="literal">mysqlnd.net_cmd_buffer_size</code> in PHP
+              5.3.0: the packet transports a very long error message, or
+              the packet holds column meta data from
+              <code class="literal">COM_LIST_FIELD</code>
+              (<code class="literal">mysql_list_fields()</code> and the meta data
+              come from a string column with a very long default value
+              (&gt;1900 bytes).
+            </p><p>
+              As of PHP 5.3.2 mysqlnd does not allow setting buffers
+              smaller than 4096 bytes.
+            </p><p>
+              The value can also be set using
+              <code class="literal">mysqli_options(link,
+              MYSQLI_OPT_NET_CMD_BUFFER_SIZE, size)</code>.
+            </p></dd><dt><a name="apis-php-ini.mysqlnd.net-read-buffer-size"></a><span class="term">
+            <em class="parameter"><code>mysqlnd.net_read_buffer_size</code></em>
+            <span class="type">long</span>
+          </span></dt><dd><p>
+              Maximum read chunk size in bytes when reading the body of
+              a MySQL command packet. The MySQL client server protocol
+              encapsulates all its commands in packets. The packets
+              consist of a small header and a body with the actual
+              payload. The size of the body is encoded in the header.
+              <code class="literal">mysqlnd</code> reads the body in chunks of
+              <code class="literal">MIN(header.size,
+              mysqlnd.net_read_buffer_size)</code> bytes. If a packet
+              body is larger than
+              <code class="literal">mysqlnd.net_read_buffer_size</code> bytes,
+              <code class="literal">mysqlnd</code> has to call
+              <code class="literal">read()</code> multiple times.
+            </p><p>
+              The value can also be set using
+              <code class="literal">mysqli_options(link,
+              MYSQLI_OPT_NET_READ_BUFFER_SIZE, size)</code>.
+            </p></dd><dt><a name="apis-php-ini.mysqlnd.sha256-server-public-key"></a><span class="term">
+            <em class="parameter"><code>mysqlnd.sha256_server_public_key</code></em>
+            <span class="type">string</span>
+          </span></dt><dd><p>
+              SHA-256 Authentication Plugin related. File with the MySQL
+              server public RSA key.
+            </p><p>
+              Clients can either omit setting a public RSA key, specify
+              the key through this PHP configuration setting or set the
+              key at runtime using
+              <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.options" title="3.9.36 mysqli::options, mysqli_options"><code class="function">mysqli_options</code></a>.
+              If not public RSA key file is given by the client, then
+              the key will be exchanged as part of the standard SHA-256
+              Authentication Plugin authentication procedure.
+            </p></dd><dt><a name="apis-php-ini.mysqlnd.fetch_data_copy"></a><span class="term">
+            <em class="parameter"><code>mysqlnd.fetch_data_copy</code></em>
+            <span class="type">long</span>
+          </span></dt><dd><p>
+              Enforce copying result sets from the internal result set
+              buffers into PHP variables instead of using the default
+              reference and copy-on-write logic. Please, see the
+              <a class="link" href="apis-php-mysqlnd.html#apis-php-mysqlnd.memory" title="6.8 Memory management">memory management
+              implementation notes</a> for further details.
+            </p><p>
+              Copying result sets instead of having PHP variables
+              reference them allows releasing the memory occupied for
+              the PHP variables earlier. Depending on the user API code,
+              the actual database quries and the size of their result
+              sets this may reduce the memory footprint of mysqlnd.
+            </p><p>
+              Do not set if using PDO_MySQL. PDO_MySQL has not yet been
+              updated to support the new fetch mode.
+</p></dd></dl>
+</div>
+<p>
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd.incompatibilities"></a>6.4 Incompatibilities</h2>
+
+</div>
+
+</div>
+
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      MySQL Native Driver is in most cases compatible with MySQL Client
+      Library (<code class="literal">libmysql</code>). This section documents
+      incompatibilities between these libraries.
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+          Values of <code class="literal">bit</code> data type are returned as
+          binary strings (e.g. "\0" or "\x1F") with
+          <code class="literal">libmysql</code> and as decimal strings (e.g.
+          "0" or "31") with
+          <code class="literal">mysqlnd</code>. If you want the code to be
+          compatible with both libraries then always return bit fields
+          as numbers from MySQL with a query like this: <code class="literal">SELECT
+          bit + 0 FROM table</code>.
+</p></li></ul>
+</div>
+
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd.persist"></a>6.5 Persistent Connections</h2>
+
+</div>
+
+</div>
+
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      <span class="emphasis"><em>Using Persistent Connections</em></span>
+    </p><p>
+      If <code class="literal">mysqli</code> is used with
+      <code class="literal">mysqlnd</code>, when a persistent connection is
+      created it generates a <code class="literal">COM_CHANGE_USER</code>
+      (<code class="literal">mysql_change_user()</code>) call on the server. This
+      ensures that re-authentication of the connection takes place.
+    </p><p>
+      As there is some overhead associated with the
+      <code class="literal">COM_CHANGE_USER</code> call, it is possible to switch
+      this off at compile time. Reusing a persistent connection will
+      then generate a <code class="literal">COM_PING</code>
+      (<code class="literal">mysql_ping</code>) call to simply test the connection
+      is reusable.
+    </p><p>
+      Generation of <code class="literal">COM_CHANGE_USER</code> can be switched
+      off with the compile flag
+      <code class="literal">MYSQLI_NO_CHANGE_USER_ON_PCONNECT</code>. For example:
+    </p><pre class="programlisting">
+
+shell# CFLAGS="-DMYSQLI_NO_CHANGE_USER_ON_PCONNECT" ./configure --with-mysql=/usr/local/mysql/ --with-mysqli=/usr/local/mysql/bin/mysql_config --with-pdo-mysql=/usr/local/mysql/bin/mysql_config --enable-debug &amp;&amp; make clean &amp;&amp; make -j6
+
+</pre><p>
+      Or alternatively:
+    </p><pre class="programlisting">
+
+shell# export CFLAGS="-DMYSQLI_NO_CHANGE_USER_ON_PCONNECT"
+shell# configure --whatever-option
+shell# make clean
+shell# make
+
+</pre><p>
+      Note that only <code class="literal">mysqli</code> on
+      <code class="literal">mysqlnd</code> uses
+      <code class="literal">COM_CHANGE_USER</code>. Other extension-driver
+      combinations use <code class="literal">COM_PING</code> on initial use of a
+      persistent connection.
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd.stats"></a>6.6 Statistics</h2>
+
+</div>
+
+</div>
+
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      <span class="emphasis"><em>Using Statistical Data</em></span>
+    </p><p>
+      MySQL Native Driver contains support for gathering statistics on
+      the communication between the client and the server. The
+      statistics gathered are of two main types:
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+          Client statistics
+        </p></li><li class="listitem"><p>
+          Connection statistics
+</p></li></ul>
+</div>
+<p>
+      If you are using the <code class="literal">mysqli</code> extension, these
+      statistics can be obtained through two API calls:
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+          <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.get-client-stats" title="3.9.21 mysqli_get_client_stats"><code class="function">mysqli_get_client_stats</code></a>
+        </p></li><li class="listitem"><p>
+          <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.get-connection-stats" title="3.9.23 mysqli::get_connection_stats, mysqli_get_connection_stats"><code class="function">mysqli_get_connection_stats</code></a>
+</p></li></ul>
+</div>
+<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<div class="admon-title">
+Note
+</div>
+<p>
+        Statistics are aggregated among all extensions that use MySQL
+        Native Driver. For example, when compiling both
+        <code class="literal">ext/mysql</code> and <code class="literal">ext/mysqli</code>
+        against MySQL Native Driver, both function calls of
+        <code class="literal">ext/mysql</code> and <code class="literal">ext/mysqli</code>
+        will change the statistics. There is no way to find out how much
+        a certain API call of any extension that has been compiled
+        against MySQL Native Driver has impacted a certain statistic.
+        You can configure the PDO MySQL Driver,
+        <code class="literal">ext/mysql</code> and <code class="literal">ext/mysqli</code>
+        to optionally use the MySQL Native Driver. When doing so, all
+        three extensions will change the statistics.
+</p>
+</div>
+<p>
+      <span class="emphasis"><em>Accessing Client Statistics</em></span>
+    </p><p>
+      To access client statistics, you need to call
+      <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.get-client-stats" title="3.9.21 mysqli_get_client_stats"><code class="function">mysqli_get_client_stats</code></a>.
+      The function call does not require any parameters.
+    </p><p>
+      The function returns an associative array that contains the name
+      of the statistic as the key and the statistical data as the value.
+    </p><p>
+      Client statistics can also be accessed by calling the
+      <a class="ulink" href="http://www.php.net/phpinfo" target="_top"><code class="function">phpinfo</code></a>
+      function.
+    </p><p>
+      <span class="emphasis"><em>Accessing Connection Statistics</em></span>
+    </p><p>
+      To access connection statistics call
+      <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.get-connection-stats" title="3.9.23 mysqli::get_connection_stats, mysqli_get_connection_stats"><code class="function">mysqli_get_connection_stats</code></a>.
+      This takes the database connection handle as the parameter.
+    </p><p>
+      The function returns an associative array that contains the name
+      of the statistic as the key and the statistical data as the value.
+    </p><p>
+      <span class="emphasis"><em>Buffered and Unbuffered Result Sets</em></span>
+    </p><p>
+      Result sets can be buffered or unbuffered. Using default settings,
+      <code class="literal">ext/mysql</code> and <code class="literal">ext/mysqli</code>
+      work with buffered result sets for normal (non prepared statement)
+      queries. Buffered result sets are cached on the client. After the
+      query execution all results are fetched from the MySQL Server and
+      stored in a cache on the client. The big advantage of buffered
+      result sets is that they allow the server to free all resources
+      allocated to a result set, once the results have been fetched by
+      the client.
+    </p><p>
+      Unbuffered result sets on the other hand are kept much longer on
+      the server. If you want to reduce memory consumption on the
+      client, but increase load on the server, use unbuffered results.
+      If you experience a high server load and the figures for
+      unbuffered result sets are high, you should consider moving the
+      load to the clients. Clients typically scale better than servers.
+      <span class="quote">“<span class="quote">Load</span>”</span> does not only refer to memory buffers - the
+      server also needs to keep other resources open, for example file
+      handles and threads, before a result set can be freed.
+    </p><p>
+      Prepared Statements use unbuffered result sets by default.
+      However, you can use
+      <a class="link" href="apis-php-mysqli.html#apis-php-mysqli-stmt.store-result" title="3.10.28 mysqli_stmt::store_result, mysqli_stmt_store_result"><code class="function">mysqli_stmt_store_result</code></a>
+      to enable buffered result sets.
+    </p><p>
+      <span class="emphasis"><em>Statistics returned by MySQL Native Driver</em></span>
+    </p><p>
+      The following tables show a list of statistics returned by the
+      <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.get-client-stats" title="3.9.21 mysqli_get_client_stats"><code class="function">mysqli_get_client_stats</code></a>
+      and
+      <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.get-connection-stats" title="3.9.23 mysqli::get_connection_stats, mysqli_get_connection_stats"><code class="function">mysqli_get_connection_stats</code></a>
+      functions.
+</p>
+<div class="table">
+<a name="idm139660447077968"></a><p class="title"><b>Table 6.3 Returned mysqlnd statistics: Network</b></p>
+<div class="table-contents">
+<table class="table" summary="Returned mysqlnd statistics: Network" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th scope="col">Statistic</th><th scope="col">Scope</th><th scope="col">Description</th><th scope="col">Notes</th></tr></thead><tbody><tr><td scope="row"><code class="literal">bytes_sent</code></td><td>Connection</td><td>Number of bytes sent from PHP to the MySQL server</td><td>Can be used to check the efficiency of the compression protocol</td></tr><tr><td scope="row"><code class="literal">bytes_received</code></td><td>Connection</td><td>Number of bytes received from MySQL server</td><td>Can be used to check the efficiency of the compression protocol</td></tr><tr><td scope="row"><code class="literal">packets_sent</code></td><td>Connection</td><td>Number of MySQL Client Server protocol packets sent</td><td>Used for debugging Client Server protocol implementation</td></tr><tr><td scope="row"><code class="literal">packets_received</code></td><td>Connection</td><td>Number of MySQL Client Server protocol packets received</td><td>Used for debugging Client Server protocol implementation</td></tr><tr><td scope="row"><code class="literal">protocol_overhead_in</code></td><td>Connection</td><td>MySQL Client Server protocol overhead in bytes for incoming traffic.
+              Currently only the Packet Header (4 bytes) is considered
+              as overhead. protocol_overhead_in = packets_received * 4</td><td>Used for debugging Client Server protocol implementation</td></tr><tr><td scope="row"><code class="literal">protocol_overhead_out</code></td><td>Connection</td><td>MySQL Client Server protocol overhead in bytes for outgoing traffic.
+              Currently only the Packet Header (4 bytes) is considered
+              as overhead. protocol_overhead_out = packets_sent * 4</td><td>Used for debugging Client Server protocol implementation</td></tr><tr><td scope="row"><code class="literal">bytes_received_ok_packet</code></td><td>Connection</td><td>Total size of bytes of MySQL Client Server protocol OK packets received.
+              OK packets can contain a status message. The length of the
+              status message can vary and thus the size of an OK packet
+              is not fixed.</td><td>Used for debugging CS protocol implementation. Note that the total size
+              in bytes includes the size of the header packet (4 bytes,
+              see protocol overhead).</td></tr><tr><td scope="row"><code class="literal">packets_received_ok</code></td><td>Connection</td><td>Number of MySQL Client Server protocol OK packets received.</td><td>Used for debugging CS protocol implementation. Note that the total size
+              in bytes includes the size of the header packet (4 bytes,
+              see protocol overhead).</td></tr><tr><td scope="row"><code class="literal">bytes_received_eof_packet</code></td><td>Connection</td><td>Total size in bytes of MySQL Client Server protocol EOF packets
+              received. EOF can vary in size depending on the server
+              version. Also, EOF can transport an error message.</td><td>Used for debugging CS protocol implementation. Note that the total size
+              in bytes includes the size of the header packet (4 bytes,
+              see protocol overhead).</td></tr><tr><td scope="row"><code class="literal">packets_received_eof</code></td><td>Connection</td><td>Number of MySQL Client Server protocol EOF packets. Like with other
+              packet statistics the number of packets will be increased
+              even if PHP does not receive the expected packet but, for
+              example, an error message.</td><td>Used for debugging CS protocol implementation. Note that the total size
+              in bytes includes the size of the header packet (4 bytes,
+              see protocol overhead).</td></tr><tr><td scope="row"><code class="literal">bytes_received_rset_header_packet</code></td><td>Connection</td><td>Total size in bytes of MySQL Client Server protocol result set header
+              packets. The size of the packets varies depending on the
+              payload (<code class="literal">LOAD LOCAL INFILE</code>,
+              <code class="literal">INSERT</code>, <code class="literal">UPDATE</code>,
+              <code class="literal">SELECT</code>, error message).</td><td>Used for debugging CS protocol implementation. Note that the total size
+              in bytes includes the size of the header packet (4 bytes,
+              see protocol overhead).</td></tr><tr><td scope="row"><code class="literal">packets_received_rset_header</code></td><td>Connection</td><td>Number of MySQL Client Server protocol result set header packets.</td><td>Used for debugging CS protocol implementation. Note that the total size
+              in bytes includes the size of the header packet (4 bytes,
+              see protocol overhead).</td></tr><tr><td scope="row"><code class="literal">bytes_received_rset_field_meta_packet</code></td><td>Connection</td><td>Total size in bytes of MySQL Client Server protocol result set meta data
+              (field information) packets. Of course the size varies
+              with the fields in the result set. The packet may also
+              transport an error or an EOF packet in case of
+              COM_LIST_FIELDS.</td><td>Only useful for debugging CS protocol implementation. Note that the
+              total size in bytes includes the size of the header packet
+              (4 bytes, see protocol overhead).</td></tr><tr><td scope="row"><code class="literal">packets_received_rset_field_meta</code></td><td>Connection</td><td>Number of MySQL Client Server protocol result set meta data (field
+              information) packets.</td><td>Only useful for debugging CS protocol implementation. Note that the
+              total size in bytes includes the size of the header packet
+              (4 bytes, see protocol overhead).</td></tr><tr><td scope="row"><code class="literal">bytes_received_rset_row_packet</code></td><td>Connection</td><td>Total size in bytes of MySQL Client Server protocol result set row data
+              packets. The packet may also transport an error or an EOF
+              packet. You can reverse engineer the number of error and
+              EOF packets by subtracting
+              <code class="literal">rows_fetched_from_server_normal</code> and
+              <code class="literal">rows_fetched_from_server_ps</code> from
+              <code class="literal">bytes_received_rset_row_packet</code>.</td><td>Only useful for debugging CS protocol implementation. Note that the
+              total size in bytes includes the size of the header packet
+              (4 bytes, see protocol overhead).</td></tr><tr><td scope="row"><code class="literal">packets_received_rset_row</code></td><td>Connection</td><td>Number of MySQL Client Server protocol result set row data packets and
+              their total size in bytes.</td><td>Only useful for debugging CS protocol implementation. Note that the
+              total size in bytes includes the size of the header packet
+              (4 bytes, see protocol overhead).</td></tr><tr><td scope="row"><code class="literal">bytes_received_prepare_response_packet</code></td><td>Connection</td><td>Total size in bytes of MySQL Client Server protocol OK for Prepared
+              Statement Initialization packets (prepared statement init
+              packets). The packet may also transport an error. The
+              packet size depends on the MySQL version: 9 bytes with
+              MySQL 4.1 and 12 bytes from MySQL 5.0 on. There is no safe
+              way to know how many errors happened. You may be able to
+              guess that an error has occurred if, for example, you
+              always connect to MySQL 5.0 or newer and,
+              <code class="literal">bytes_received_prepare_response_packet</code>
+              != <code class="literal">packets_received_prepare_response</code> *
+              12. See also
+              <code class="literal">ps_prepared_never_executed</code>,
+              <code class="literal">ps_prepared_once_executed</code>.</td><td>Only useful for debugging CS protocol implementation. Note that the
+              total size in bytes includes the size of the header packet
+              (4 bytes, see protocol overhead).</td></tr><tr><td scope="row"><code class="literal">packets_received_prepare_response</code></td><td>Connection</td><td>Number of MySQL Client Server protocol OK for Prepared Statement
+              Initialization packets (prepared statement init packets).</td><td>Only useful for debugging CS protocol implementation. Note that the
+              total size in bytes includes the size of the header packet
+              (4 bytes, see protocol overhead).</td></tr><tr><td scope="row"><code class="literal">bytes_received_change_user_packet</code></td><td>Connection</td><td>Total size in bytes of MySQL Client Server protocol COM_CHANGE_USER
+              packets. The packet may also transport an error or EOF.</td><td>Only useful for debugging CS protocol implementation. Note that the
+              total size in bytes includes the size of the header packet
+              (4 bytes, see protocol overhead).</td></tr><tr><td scope="row"><code class="literal">packets_received_change_user</code></td><td>Connection</td><td>Number of MySQL Client Server protocol COM_CHANGE_USER packets</td><td>Only useful for debugging CS protocol implementation. Note that the
+              total size in bytes includes the size of the header packet
+              (4 bytes, see protocol overhead).</td></tr><tr><td scope="row"><code class="literal">packets_sent_command</code></td><td>Connection</td><td>Number of MySQL Client Server protocol commands sent from PHP to MySQL.
+              There is no way to know which specific commands and how
+              many of them have been sent. At its best you can use it to
+              check if PHP has sent any commands to MySQL to know if you
+              can consider to disable MySQL support in your PHP binary.
+              There is also no way to reverse engineer the number of
+              errors that may have occurred while sending data to MySQL.
+              The only error that is recorded is
+              command_buffer_too_small (see below).</td><td>Only useful for debugging CS protocol implementation.</td></tr><tr><td scope="row"><code class="literal">bytes_received_real_data_normal</code></td><td>Connection</td><td>Number of bytes of payload fetched by the PHP client from
+              <code class="literal">mysqlnd</code> using the text protocol.</td><td>This is the size of the actual data contained in result sets that do not
+              originate from prepared statements and which have been
+              fetched by the PHP client. Note that although a full
+              result set may have been pulled from MySQL by
+              <code class="literal">mysqlnd</code>, this statistic only counts
+              actual data pulled from <code class="literal">mysqlnd</code> by the
+              PHP client. An example of a code sequence that will
+              increase the value is as follows:
+
+<pre class="programlisting">
+
+$mysqli = new mysqli();
+$res = $mysqli-&gt;query("SELECT 'abc'");
+$res-&gt;fetch_assoc();
+$res-&gt;close();
+
+</pre>
+
+              <p>
+                Every fetch operation will increase the value.
+              </p>
+
+
+
+              <p>
+                The statistic will not be increased if the result set is
+                only buffered on the client, but not fetched, such as in
+                the following example:
+              </p>
+
+<pre class="programlisting">
+
+$mysqli = new mysqli();
+$res = $mysqli-&gt;query("SELECT 'abc'");
+$res-&gt;close();
+
+</pre>
+
+              <p>
+                This statistic is available as of PHP version 5.3.4.
+              </p></td></tr><tr><td scope="row"><code class="literal">bytes_received_real_data_ps</code></td><td>Connection</td><td>Number of bytes of the payload fetched by the PHP client from
+              <code class="literal">mysqlnd</code> using the prepared statement
+              protocol.</td><td>This is the size of the actual data contained in result sets that
+              originate from prepared statements and which has been
+              fetched by the PHP client. The value will not be increased
+              if the result set is not subsequently read by the PHP
+              client. Note that although a full result set may have been
+              pulled from MySQL by <code class="literal">mysqlnd</code>, this
+              statistic only counts actual data pulled from
+              <code class="literal">mysqlnd</code> by the PHP client. See also
+              <code class="literal">bytes_received_real_data_normal</code>. This
+statistic is available as of PHP version 5.3.4.</td></tr></tbody></table>
+</div>
+
+</div>
+<br class="table-break"><p>
+      <span class="emphasis"><em>Result Set</em></span>
+</p>
+<div class="table">
+<a name="idm139660446990944"></a><p class="title"><b>Table 6.4 Returned mysqlnd statistics: Result Set</b></p>
+<div class="table-contents">
+<table class="table" summary="Returned mysqlnd statistics: Result Set" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th scope="col">Statistic</th><th scope="col">Scope</th><th scope="col">Description</th><th scope="col">Notes</th></tr></thead><tbody><tr><td scope="row"><code class="literal">result_set_queries</code></td><td>Connection</td><td>Number of queries that have generated a result set. Examples of queries
+              that generate a result set: <code class="literal">SELECT</code>,
+              <code class="literal">SHOW</code>. The statistic will not be
+              incremented if there is an error reading the result set
+              header packet from the line.</td><td>You may use it as an indirect measure for the number of queries PHP has
+              sent to MySQL, for example, to identify a client that
+              causes a high database load.</td></tr><tr><td scope="row"><code class="literal">non_result_set_queries</code></td><td>Connection</td><td>Number of queries that did not generate a result set. Examples of
+              queries that do not generate a result set:
+              <code class="literal">INSERT</code>, <code class="literal">UPDATE</code>,
+              <code class="literal">LOAD DATA</code>, <code class="literal">SHOW</code>. The
+              statistic will not be incremented if there is an error
+              reading the result set header packet from the line.</td><td>You may use it as an indirect measure for the number of queries PHP has
+              sent to MySQL, for example, to identify a client that
+              causes a high database load.</td></tr><tr><td scope="row"><code class="literal">no_index_used</code></td><td>Connection</td><td>Number of queries that have generated a result set but did not use an
+              index (see also mysqld start option
+              –log-queries-not-using-indexes). If you want these
+              queries to be reported you can use
+              mysqli_report(MYSQLI_REPORT_INDEX) to make ext/mysqli
+              throw an exception. If you prefer a warning instead of an
+              exception use mysqli_report(MYSQLI_REPORT_INDEX ^
+              MYSQLI_REPORT_STRICT).</td><td> </td></tr><tr><td scope="row"><code class="literal">bad_index_used</code></td><td>Connection</td><td>Number of queries that have generated a result set and did not use a
+              good index (see also mysqld start option
+              –log-slow-queries).</td><td>If you want these queries to be reported you can use
+              mysqli_report(MYSQLI_REPORT_INDEX) to make ext/mysqli
+              throw an exception. If you prefer a warning instead of an
+              exception use mysqli_report(MYSQLI_REPORT_INDEX ^
+              MYSQLI_REPORT_STRICT)</td></tr><tr><td scope="row"><code class="literal">slow_queries</code></td><td>Connection</td><td>SQL statements that took more than <code class="literal">long_query_time</code>
+              seconds to execute and required at least
+              <code class="literal">min_examined_row_limit</code> rows to be
+              examined.</td><td>Not reported through
+              <a class="link" href="apis-php-mysqli.html#apis-php-function.mysqli-report" title="3.15.17 mysqli_report"><code class="function">mysqli_report</code></a></td></tr><tr><td scope="row"><code class="literal">buffered_sets</code></td><td>Connection</td><td>Number of buffered result sets returned by <span class="quote">“<span class="quote">normal</span>”</span>
+              queries. <span class="quote">“<span class="quote">Normal</span>”</span> means <span class="quote">“<span class="quote">not prepared
+              statement</span>”</span> in the following notes.</td><td>Examples of API calls that will buffer result sets on the client:
+              <a class="link" href="apis-php-mysql.html#apis-php-function.mysql-query" title="5.5.40 mysql_query"><code class="function">mysql_query</code></a>,
+              <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.query" title="3.9.40 mysqli::query, mysqli_query"><code class="function">mysqli_query</code></a>,
+              <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.store-result" title="3.9.59 mysqli::store_result, mysqli_store_result"><code class="function">mysqli_store_result</code></a>,
+              <a class="link" href="apis-php-mysqli.html#apis-php-mysqli-stmt.get-result" title="3.10.16 mysqli_stmt::get_result, mysqli_stmt_get_result"><code class="function">mysqli_stmt_get_result</code></a>.
+              Buffering result sets on the client ensures that server
+              resources are freed as soon as possible and it makes
+              result set scrolling easier. The downside is the
+              additional memory consumption on the client for buffering
+              data. Note that mysqlnd (unlike the MySQL Client Library)
+              respects the PHP memory limit because it uses PHP internal
+              memory management functions to allocate memory. This is
+              also the reason why
+              <a class="ulink" href="http://www.php.net/memory_get_usage" target="_top"><code class="function">memory_get_usage</code></a>
+              reports a higher memory consumption when using mysqlnd
+              instead of the MySQL Client Library.
+              <a class="ulink" href="http://www.php.net/memory_get_usage" target="_top"><code class="function">memory_get_usage</code></a>
+              does not measure the memory consumption of the MySQL
+              Client Library at all because the MySQL Client Library
+              does not use PHP internal memory management functions
+              monitored by the function!</td></tr><tr><td scope="row"><code class="literal">unbuffered_sets</code></td><td>Connection</td><td>Number of unbuffered result sets returned by normal (non prepared
+              statement) queries.</td><td>Examples of API calls that will not buffer result sets on the client:
+              <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.use-result" title="3.9.62 mysqli::use_result, mysqli_use_result"><code class="function">mysqli_use_result</code></a></td></tr><tr><td scope="row"><code class="literal">ps_buffered_sets</code></td><td>Connection</td><td>Number of buffered result sets returned by prepared statements. By
+              default prepared statements are unbuffered.</td><td>Examples of API calls that will not buffer result sets on the client:
+              <code class="literal">mysqli_stmt_store_result</code></td></tr><tr><td scope="row"><code class="literal">ps_unbuffered_sets</code></td><td>Connection</td><td>Number of unbuffered result sets returned by prepared statements.</td><td>By default prepared statements are unbuffered.</td></tr><tr><td scope="row"><code class="literal">flushed_normal_sets</code></td><td>Connection</td><td>Number of result sets from normal (non prepared statement) queries with
+              unread data which have been flushed silently for you.
+              Flushing happens only with unbuffered result sets.</td><td>Unbuffered result sets must be fetched completely before a new query can
+              be run on the connection otherwise MySQL will throw an
+              error. If the application does not fetch all rows from an
+              unbuffered result set, mysqlnd does implicitly fetch the
+              result set to clear the line. See also
+              <code class="literal">rows_skipped_normal</code>,
+              <code class="literal">rows_skipped_ps</code>. Some possible causes
+              for an implicit flush:
+
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+                    Faulty client application
+                  </p></li><li class="listitem"><p>
+                    Client stopped reading after it found what it was
+                    looking for but has made MySQL calculate more
+                    records than needed
+                  </p></li><li class="listitem"><p>
+                    Client application has stopped unexpectedly
+</p></li></ul>
+</div>
+</td></tr><tr><td scope="row"><code class="literal">flushed_ps_sets</code></td><td>Connection</td><td>Number of result sets from prepared statements with unread data which
+              have been flushed silently for you. Flushing happens only
+              with unbuffered result sets.</td><td>Unbuffered result sets must be fetched completely before a new query can
+              be run on the connection otherwise MySQL will throw an
+              error. If the application does not fetch all rows from an
+              unbuffered result set, mysqlnd does implicitly fetch the
+              result set to clear the line. See also
+              <code class="literal">rows_skipped_normal</code>,
+              <code class="literal">rows_skipped_ps</code>. Some possible causes
+              for an implicit flush:
+
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+                    Faulty client application
+                  </p></li><li class="listitem"><p>
+                    Client stopped reading after it found what it was
+                    looking for but has made MySQL calculate more
+                    records than needed
+                  </p></li><li class="listitem"><p>
+                    Client application has stopped unexpectedly
+</p></li></ul>
+</div>
+</td></tr><tr><td scope="row"><code class="literal">ps_prepared_never_executed</code></td><td>Connection</td><td>Number of statements prepared but never executed.</td><td>Prepared statements occupy server resources. You should not prepare a
+              statement if you do not plan to execute it.</td></tr><tr><td scope="row"><code class="literal">ps_prepared_once_executed</code></td><td>Connection</td><td>Number of prepared statements executed only one.</td><td>One of the ideas behind prepared statements is that the same query gets
+              executed over and over again (with different parameters)
+              and some parsing and other preparation work can be saved,
+              if statement execution is split up in separate prepare and
+              execute stages. The idea is to prepare once and
+              <span class="quote">“<span class="quote">cache</span>”</span> results, for example, the parse tree
+              to be reused during multiple statement executions. If you
+              execute a prepared statement only once the two stage
+              processing can be inefficient compared to
+              <span class="quote">“<span class="quote">normal</span>”</span> queries because all the caching
+              means extra work and it takes (limited) server resources
+              to hold the cached information. Consequently, prepared
+              statements that are executed only once may cause
+              performance hurts.</td></tr><tr><td scope="row"><code class="literal">rows_fetched_from_server_normal</code>,
+              <code class="literal">rows_fetched_from_server_ps</code></td><td>Connection</td><td>Total number of result set rows successfully fetched from MySQL
+              regardless if the client application has consumed them or
+              not. Some of the rows may not have been fetched by the
+              client application but have been flushed implicitly.</td><td>See also <code class="literal">packets_received_rset_row</code></td></tr><tr><td scope="row"><code class="literal">rows_buffered_from_client_normal</code>,
+              <code class="literal">rows_buffered_from_client_ps</code></td><td>Connection</td><td>Total number of successfully buffered rows originating from a
+              "normal" query or a prepared statement. This is
+              the number of rows that have been fetched from MySQL and
+              buffered on client. Note that there are two distinct
+              statistics on rows that have been buffered (MySQL to
+              mysqlnd internal buffer) and buffered rows that have been
+              fetched by the client application (mysqlnd internal buffer
+              to client application). If the number of buffered rows is
+              higher than the number of fetched buffered rows it can
+              mean that the client application runs queries that cause
+              larger result sets than needed resulting in rows not read
+              by the client.</td><td>Examples of queries that will buffer results:
+              <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.query" title="3.9.40 mysqli::query, mysqli_query"><code class="function">mysqli_query</code></a>,
+              <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.store-result" title="3.9.59 mysqli::store_result, mysqli_store_result"><code class="function">mysqli_store_result</code></a></td></tr><tr><td scope="row"><code class="literal">rows_fetched_from_client_normal_buffered</code>,
+              <code class="literal">rows_fetched_from_client_ps_buffered</code></td><td>Connection</td><td>Total number of rows fetched by the client from a buffered result set
+              created by a normal query or a prepared statement.</td><td> </td></tr><tr><td scope="row"><code class="literal">rows_fetched_from_client_normal_unbuffered</code>,
+              <code class="literal">rows_fetched_from_client_ps_unbuffered</code></td><td>Connection</td><td>Total number of rows fetched by the client from a unbuffered result set
+              created by a "normal" query or a prepared
+              statement.</td><td> </td></tr><tr><td scope="row"><code class="literal">rows_fetched_from_client_ps_cursor</code></td><td>Connection</td><td>Total number of rows fetch by the client from a cursor created by a
+              prepared statement.</td><td> </td></tr><tr><td scope="row"><code class="literal">rows_skipped_normal</code>,
+              <code class="literal">rows_skipped_ps</code></td><td>Connection</td><td>Reserved for future use (currently not supported)</td><td> </td></tr><tr><td scope="row"><code class="literal">copy_on_write_saved</code>,
+              <code class="literal">copy_on_write_performed</code></td><td>Process</td><td>With mysqlnd, variables returned by the extensions point into mysqlnd
+              internal network result buffers. If you do not change the
+              variables, fetched data will be kept only once in memory.
+              If you change the variables, mysqlnd has to perform a
+              copy-on-write to protect the internal network result
+              buffers from being changed. With the MySQL Client Library
+              you always hold fetched data twice in memory. Once in the
+              internal MySQL Client Library buffers and once in the
+              variables returned by the extensions. In theory mysqlnd
+              can save up to 40% memory. However, note that the memory
+              saving cannot be measured using
+              <a class="ulink" href="http://www.php.net/memory_get_usage" target="_top"><code class="function">memory_get_usage</code></a>.</td><td> </td></tr><tr><td scope="row"><code class="literal">explicit_free_result</code>,
+              <code class="literal">implicit_free_result</code></td><td>Connection, Process (only during prepared statement cleanup)</td><td>Total number of freed result sets.</td><td>The free is always considered explicit but for result sets created by an
+              init command, for example,
+              <code class="literal">mysqli_options(MYSQLI_INIT_COMMAND ,
+              ...)</code></td></tr><tr><td scope="row"><code class="literal">proto_text_fetched_null</code>,
+              <code class="literal">proto_text_fetched_bit</code>,
+              <code class="literal">proto_text_fetched_tinyint</code>
+              <code class="literal">proto_text_fetched_short</code>,
+              <code class="literal">proto_text_fetched_int24</code>,
+              <code class="literal">proto_text_fetched_int</code>
+              <code class="literal">proto_text_fetched_bigint</code>,
+              <code class="literal">proto_text_fetched_decimal</code>,
+              <code class="literal">proto_text_fetched_float</code>
+              <code class="literal">proto_text_fetched_double</code>,
+              <code class="literal">proto_text_fetched_date</code>,
+              <code class="literal">proto_text_fetched_year</code>
+              <code class="literal">proto_text_fetched_time</code>,
+              <code class="literal">proto_text_fetched_datetime</code>,
+              <code class="literal">proto_text_fetched_timestamp</code>
+              <code class="literal">proto_text_fetched_string</code>,
+              <code class="literal">proto_text_fetched_blob</code>,
+              <code class="literal">proto_text_fetched_enum</code>
+              <code class="literal">proto_text_fetched_set</code>,
+              <code class="literal">proto_text_fetched_geometry</code>,
+              <code class="literal">proto_text_fetched_other</code></td><td>Connection</td><td>Total number of columns of a certain type fetched from a normal query
+              (MySQL text protocol).</td><td>Mapping from C API / MySQL meta data type to statistics name:
+
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_NULL</code> -
+                    proto_text_fetched_null
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_BIT</code> -
+                    proto_text_fetched_bit
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_TINY</code> -
+                    proto_text_fetched_tinyint
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_SHORT</code> -
+                    proto_text_fetched_short
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_INT24</code> -
+                    proto_text_fetched_int24
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_LONG</code> -
+                    proto_text_fetched_int
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_LONGLONG</code> -
+                    proto_text_fetched_bigint
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_DECIMAL</code>,
+                    <code class="literal">MYSQL_TYPE_NEWDECIMAL</code> -
+                    proto_text_fetched_decimal
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_FLOAT</code> -
+                    proto_text_fetched_float
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_DOUBLE</code> -
+                    proto_text_fetched_double
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_DATE</code>,
+                    <code class="literal">MYSQL_TYPE_NEWDATE</code> -
+                    proto_text_fetched_date
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_YEAR</code> -
+                    proto_text_fetched_year
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_TIME</code> -
+                    proto_text_fetched_time
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_DATETIME</code> -
+                    proto_text_fetched_datetime
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_TIMESTAMP</code> -
+                    proto_text_fetched_timestamp
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_STRING</code>,
+                    <code class="literal">MYSQL_TYPE_VARSTRING</code>,
+                    <code class="literal">MYSQL_TYPE_VARCHAR</code> -
+                    proto_text_fetched_string
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_TINY_BLOB</code>,
+                    <code class="literal">MYSQL_TYPE_MEDIUM_BLOB</code>,
+                    <code class="literal">MYSQL_TYPE_LONG_BLOB</code>,
+                    <code class="literal">MYSQL_TYPE_BLOB</code> -
+                    proto_text_fetched_blob
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_ENUM</code> -
+                    proto_text_fetched_enum
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_SET</code> -
+                    proto_text_fetched_set
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">MYSQL_TYPE_GEOMETRY</code> -
+                    proto_text_fetched_geometry
+                  </p></li><li class="listitem"><p>
+                    Any <code class="literal">MYSQL_TYPE_*</code> not listed
+                    before (there should be none) -
+                    proto_text_fetched_other
+</p></li></ul>
+</div>
+
+              <p>
+                Note that the MYSQL_*-type constants may not be
+                associated with the very same SQL column types in every
+                version of MySQL.
+              </p></td></tr><tr><td scope="row"><code class="literal">proto_binary_fetched_null</code>,
+              <code class="literal">proto_binary_fetched_bit</code>,
+              <code class="literal">proto_binary_fetched_tinyint</code>
+              <code class="literal">proto_binary_fetched_short</code>,
+              <code class="literal">proto_binary_fetched_int24</code>,
+              <code class="literal">proto_binary_fetched_int</code>,
+              <code class="literal">proto_binary_fetched_bigint</code>,
+              <code class="literal">proto_binary_fetched_decimal</code>,
+              <code class="literal">proto_binary_fetched_float</code>,
+              <code class="literal">proto_binary_fetched_double</code>,
+              <code class="literal">proto_binary_fetched_date</code>,
+              <code class="literal">proto_binary_fetched_year</code>,
+              <code class="literal">proto_binary_fetched_time</code>,
+              <code class="literal">proto_binary_fetched_datetime</code>,
+              <code class="literal">proto_binary_fetched_timestamp</code>,
+              <code class="literal">proto_binary_fetched_string</code>,
+              <code class="literal">proto_binary_fetched_blob</code>,
+              <code class="literal">proto_binary_fetched_enum</code>,
+              <code class="literal">proto_binary_fetched_set</code>,
+              <code class="literal">proto_binary_fetched_geometry</code>,
+              <code class="literal">proto_binary_fetched_other</code></td><td>Connection</td><td>Total number of columns of a certain type fetched from a prepared
+              statement (MySQL binary protocol).</td><td>For type mapping see <code class="literal">proto_text_*</code> described in the
+preceding text.</td></tr></tbody></table>
+</div>
+
+</div>
+<br class="table-break">
+<div class="table">
+<a name="idm139660446816080"></a><p class="title"><b>Table 6.5 Returned mysqlnd statistics: Connection</b></p>
+<div class="table-contents">
+<table class="table" summary="Returned mysqlnd statistics: Connection" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th scope="col">Statistic</th><th scope="col">Scope</th><th scope="col">Description</th><th scope="col">Notes</th></tr></thead><tbody><tr><td scope="row"><code class="literal">connect_success</code>, <code class="literal">connect_failure</code></td><td>Connection</td><td>Total number of successful / failed connection attempt.</td><td>Reused connections and all other kinds of connections are included.</td></tr><tr><td scope="row"><code class="literal">reconnect</code></td><td>Process</td><td>Total number of (real_)connect attempts made on an already opened
+              connection handle.</td><td>The code sequence <code class="literal">$link = new mysqli(...);
+              $link-&gt;real_connect(...)</code> will cause a
+              reconnect. But <code class="literal">$link = new mysqli(...);
+              $link-&gt;connect(...)</code> will not because
+              <code class="literal">$link-&gt;connect(...)</code> will explicitly
+              close the existing connection before a new connection is
+              established.</td></tr><tr><td scope="row"><code class="literal">pconnect_success</code></td><td>Connection</td><td>Total number of successful persistent connection attempts.</td><td>Note that <code class="literal">connect_success</code> holds the sum of successful
+              persistent and non-persistent connection attempts. The
+              number of successful non-persistent connection attempts is
+              <code class="literal">connect_success</code> -
+              <code class="literal">pconnect_success</code>.</td></tr><tr><td scope="row"><code class="literal">active_connections</code></td><td>Connection</td><td>Total number of active persistent and non-persistent connections.</td><td> </td></tr><tr><td scope="row"><code class="literal">active_persistent_connections</code></td><td>Connection</td><td>Total number of active persistent connections.</td><td>The total number of active non-persistent connections is
+              <code class="literal">active_connections</code> -
+              <code class="literal">active_persistent_connections</code>.</td></tr><tr><td scope="row"><code class="literal">explicit_close</code></td><td>Connection</td><td>Total number of explicitly closed connections (ext/mysqli only).</td><td>Examples of code snippets that cause an explicit close :
+
+<pre class="programlisting">
+
+$link = new mysqli(...); $link-&gt;close(...)
+$link = new mysqli(...); $link-&gt;connect(...)
+
+</pre></td></tr><tr><td scope="row"><code class="literal">implicit_close</code></td><td>Connection</td><td>Total number of implicitly closed connections (ext/mysqli only).</td><td>Examples of code snippets that cause an implicit close :
+
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+                    <code class="literal">$link = new mysqli(...);
+                    $link-&gt;real_connect(...)</code>
+                  </p></li><li class="listitem"><p>
+                    <code class="literal">unset($link)</code>
+                  </p></li><li class="listitem"><p>
+                    Persistent connection: pooled connection has been
+                    created with real_connect and there may be unknown
+                    options set - close implicitly to avoid returning a
+                    connection with unknown options
+                  </p></li><li class="listitem"><p>
+                    Persistent connection: ping/change_user fails and
+                    ext/mysqli closes the connection
+                  </p></li><li class="listitem"><p>
+                    end of script execution: close connections that have
+                    not been closed by the user
+</p></li></ul>
+</div>
+</td></tr><tr><td scope="row"><code class="literal">disconnect_close</code></td><td>Connection</td><td>Connection failures indicated by the C API call
+              <a class="ulink" href="http://www.php.net/mysql_real_connect" target="_top"><code class="function">mysql_real_connect</code></a>
+              during an attempt to establish a connection.</td><td>It is called <code class="literal">disconnect_close</code> because the connection
+              handle passed to the C API call will be closed.</td></tr><tr><td scope="row"><code class="literal">in_middle_of_command_close</code></td><td>Process</td><td>A connection has been closed in the middle of a command execution
+              (outstanding result sets not fetched, after sending a
+              query and before retrieving an answer, while fetching
+              data, while transferring data with LOAD DATA).</td><td>Unless you use asynchronous queries this should only happen if your
+              script stops unexpectedly and PHP shuts down the
+              connections for you.</td></tr><tr><td scope="row"><code class="literal">init_command_executed_count</code></td><td>Connection</td><td>Total number of init command executions, for example,
+              <code class="literal">mysqli_options(MYSQLI_INIT_COMMAND ,
+              ...)</code>.</td><td>The number of successful executions is
+              <code class="literal">init_command_executed_count</code> -
+<code class="literal">init_command_failed_count</code>.</td></tr><tr><td scope="row"><code class="literal">init_command_failed_count</code></td><td>Connection</td><td>Total number of failed init commands.</td><td> </td></tr></tbody></table>
+</div>
+
+</div>
+<br class="table-break">
+<div class="table">
+<a name="idm139660446764096"></a><p class="title"><b>Table 6.6 Returned mysqlnd statistics: COM_* Command</b></p>
+<div class="table-contents">
+<table class="table" summary="Returned mysqlnd statistics: COM_* Command" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th scope="col">Statistic</th><th scope="col">Scope</th><th scope="col">Description</th><th scope="col">Notes</th></tr></thead><tbody><tr><td scope="row"><code class="literal">com_quit</code>, <code class="literal">com_init_db</code>,
+              <code class="literal">com_query</code>,
+              <code class="literal">com_field_list</code>,
+              <code class="literal">com_create_db</code>,
+              <code class="literal">com_drop_db</code>,
+              <code class="literal">com_refresh</code>,
+              <code class="literal">com_shutdown</code>,
+              <code class="literal">com_statistics</code>,
+              <code class="literal">com_process_info</code>,
+              <code class="literal">com_connect</code>,
+              <code class="literal">com_process_kill</code>,
+              <code class="literal">com_debug</code>, <code class="literal">com_ping</code>,
+              <code class="literal">com_time</code>,
+              <code class="literal">com_delayed_insert</code>,
+              <code class="literal">com_change_user</code>,
+              <code class="literal">com_binlog_dump</code>,
+              <code class="literal">com_table_dump</code>,
+              <code class="literal">com_connect_out</code>,
+              <code class="literal">com_register_slave</code>,
+              <code class="literal">com_stmt_prepare</code>,
+              <code class="literal">com_stmt_execute</code>,
+              <code class="literal">com_stmt_send_long_data</code>,
+              <code class="literal">com_stmt_close</code>,
+              <code class="literal">com_stmt_reset</code>,
+              <code class="literal">com_stmt_set_option</code>,
+              <code class="literal">com_stmt_fetch</code>,
+              <code class="literal">com_daemon</code></td><td>Connection</td><td>Total number of attempts to send a certain COM_* command from PHP to
+              MySQL.</td><td><p>
+                The statistics are incremented after checking the line
+                and immediately before sending the corresponding MySQL
+                client server protocol packet. If mysqlnd fails to send
+                the packet over the wire the statistics will not be
+                decremented. In case of a failure mysqlnd emits a PHP
+                warning <span class="quote">“<span class="quote">Error while sending %s packet.
+                PID=%d.</span>”</span>
+              </p>
+
+
+
+              <p>
+                Usage examples:
+              </p>
+
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+                    Check if PHP sends certain commands to MySQL, for
+                    example, check if a client sends
+                    <code class="literal">COM_PROCESS_KILL</code>
+                  </p></li><li class="listitem"><p>
+                    Calculate the average number of prepared statement
+                    executions by comparing
+                    <code class="literal">COM_EXECUTE</code> with
+                    <code class="literal">COM_PREPARE</code>
+                  </p></li><li class="listitem"><p>
+                    Check if PHP has run any non-prepared SQL statements
+                    by checking if <code class="literal">COM_QUERY</code> is zero
+                  </p></li><li class="listitem"><p>
+                    Identify PHP scripts that run an excessive number of
+                    SQL statements by checking
+                    <code class="literal">COM_QUERY</code> and
+                    <code class="literal">COM_EXECUTE</code>
+</p></li></ul>
+</div>
+</td></tr></tbody></table>
+</div>
+
+</div>
+<br class="table-break"><p>
+      <span class="emphasis"><em>Miscellaneous</em></span>
+</p>
+<div class="table">
+<a name="idm139660446724688"></a><p class="title"><b>Table 6.7 Returned mysqlnd statistics: Miscellaneous</b></p>
+<div class="table-contents">
+<table class="table" summary="Returned mysqlnd statistics: Miscellaneous" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th scope="col">Statistic</th><th scope="col">Scope</th><th scope="col">Description</th><th scope="col">Notes</th></tr></thead><tbody><tr><td scope="row"><code class="literal">explicit_stmt_close</code>,
+              <code class="literal">implicit_stmt_close</code></td><td>Process</td><td>Total number of close prepared statements.</td><td>A close is always considered explicit but for a failed prepare.</td></tr><tr><td scope="row"><code class="literal">mem_emalloc_count</code>,
+              <code class="literal">mem_emalloc_ammount</code>,
+              <code class="literal">mem_ecalloc_count</code>,
+              <code class="literal">mem_ecalloc_ammount</code>,
+              <code class="literal">mem_erealloc_count</code>,
+              <code class="literal">mem_erealloc_ammount</code>,
+              <code class="literal">mem_efree_count</code>,
+              <code class="literal">mem_malloc_count</code>,
+              <code class="literal">mem_malloc_ammount</code>,
+              <code class="literal">mem_calloc_count</code>,
+              <code class="literal">mem_calloc_ammount</code>,
+              <code class="literal">mem_realloc_count</code>,
+              <code class="literal">mem_realloc_ammount</code>,
+              <code class="literal">mem_free_count</code></td><td>Process</td><td>Memory management calls.</td><td>Development only.</td></tr><tr><td scope="row"><code class="literal">command_buffer_too_small</code></td><td>Connection</td><td>Number of network command buffer extensions while sending commands from
+              PHP to MySQL.</td><td><p>
+                mysqlnd allocates an internal command/network buffer of
+                <code class="literal">mysqlnd.net_cmd_buffer_size</code>
+                (<code class="filename">php.ini</code>) bytes for every
+                connection. If a MySQL Client Server protocol command,
+                for example, <code class="literal">COM_QUERY</code> (normal
+                query), does not fit into the buffer, mysqlnd will grow
+                the buffer to what is needed for sending the command.
+                Whenever the buffer gets extended for one connection
+                <code class="literal">command_buffer_too_small</code> will be
+                incremented by one.
+              </p>
+
+
+
+              <p>
+                If mysqlnd has to grow the buffer beyond its initial
+                size of <code class="literal">mysqlnd.net_cmd_buffer_size</code>
+                (<code class="filename">php.ini</code>) bytes for almost every
+                connection, you should consider to increase the default
+                size to avoid re-allocations.
+              </p>
+
+
+
+              <p>
+                The default buffer size is 2048 bytes in PHP 5.3.0. In
+                future versions the default will be 4kB or larger. The
+                default can changed either through the
+                <code class="filename">php.ini</code> setting
+                <code class="literal">mysqlnd.net_cmd_buffer_size</code> or using
+                <code class="literal">mysqli_options(MYSQLI_OPT_NET_CMD_BUFFER_SIZE,
+                int size)</code>.
+              </p>
+
+
+
+              <p>
+                It is recommended to set the buffer size to no less than
+                4096 bytes because mysqlnd also uses it when reading
+                certain communication packet from MySQL. In PHP 5.3.0,
+                mysqlnd will not grow the buffer if MySQL sends a packet
+                that is larger than the current size of the buffer. As a
+                consequence mysqlnd is unable to decode the packet and
+                the client application will get an error. There are only
+                two situations when the packet can be larger than the
+                2048 bytes default of
+                <code class="literal">mysqlnd.net_cmd_buffer_size</code> in PHP
+                5.3.0: the packet transports a very long error message
+                or the packet holds column meta data from
+                <code class="literal">COM_LIST_FIELD</code>
+                (<a class="link" href="apis-php-mysql.html#apis-php-function.mysql-list-fields" title="5.5.33 mysql_list_fields"><code class="function">mysql_list_fields</code></a>)
+                and the meta data comes from a string column with a very
+                long default value (&gt;1900 bytes). No bug report on
+                this exists - it should happen rarely.
+              </p>
+
+
+
+              <p>
+                As of PHP 5.3.2 mysqlnd does not allow setting buffers
+                smaller than 4096 bytes.
+</p></td></tr><tr><td scope="row"><code class="literal">connection_reused</code></td><td> </td><td> </td><td> </td></tr></tbody></table>
+</div>
+
+</div>
+<br class="table-break">
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd.notes"></a>6.7 Notes</h2>
+
+</div>
+
+</div>
+
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      This section provides a collection of miscellaneous notes on MySQL
+      Native Driver usage.
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+          Using <code class="literal">mysqlnd</code> means using PHP streams for
+          underlying connectivity. For <code class="literal">mysqlnd</code>, the
+          PHP streams documentation
+          (<a class="ulink" href="http://www.php.net/manual/en/book.stream" target="_top">http://www.php.net/manual/en/book.stream</a>)
+          should be consulted on such details as timeout settings, not
+          the documentation for the MySQL Client Library.
+</p></li></ul>
+</div>
+
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd.memory"></a>6.8 Memory management</h2>
+
+</div>
+
+</div>
+
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      <span class="emphasis"><em>Introduction</em></span>
+    </p><p>
+      The MySQL Native Driver manages memory different than the MySQL
+      Client Library. The libraries differ in the way memory is
+      allocated and released, how memory is allocated in chunks while
+      reading results from MySQL, which debug and development options
+      exist, and how results read from MySQL are linked to PHP user
+      variables.
+    </p><p>
+      The following notes are intended as an introduction and summary to
+      users interested at understanding the MySQL Native Driver at the C
+      code level.
+    </p><p>
+      <span class="emphasis"><em>Memory management functions used</em></span>
+    </p><p>
+      All memory allocation and deallocation is done using the PHP
+      memory management functions. Therefore, the memory consumption of
+      mysqlnd can be tracked using PHP API calls, such as
+      <a class="ulink" href="http://www.php.net/memory_get_usage" target="_top"><code class="function">memory_get_usage</code></a>.
+      Because memory is allocated and released using the PHP memory
+      management, the changes may not immediately become visible at the
+      operating system level. The PHP memory management acts as a proxy
+      which may delay releasing memory towards the system. Due to this,
+      comparing the memory usage of the MySQL Native Driver and the
+      MySQL Client Library is difficult. The MySQL Client Library is
+      using the operating system memory management calls directly, hence
+      the effects can be observed immediately at the operating system
+      level.
+    </p><p>
+      Any memory limit enforced by PHP also affects the MySQL Native
+      Driver. This may cause out of memory errors when fetching large
+      result sets that exceed the size of the remaining memory made
+      available by PHP. Because the MySQL Client Library is not using
+      PHP memory management functions, it does not comply to any PHP
+      memory limit set. If using the MySQL Client Library, depending on
+      the deployment model, the memory footprint of the PHP process may
+      grow beyond the PHP memory limit. But also PHP scripts may be able
+      to process larger result sets as parts of the memory allocated to
+      hold the result sets are beyond the control of the PHP engine.
+    </p><p>
+      PHP memory management functions are invoked by the MySQL Native
+      Driver through a lightweight wrapper. Among others, the wrapper
+      makes debugging easier.
+    </p><p>
+      <span class="emphasis"><em>Handling of result sets</em></span>
+    </p><p>
+      The various MySQL Server and the various client APIs differentiate
+      between
+      <a class="link" href="apis-php-mysqli.html#apis-php-mysqli.quickstart.statements" title="3.2.3 Executing statements">buffered and
+      unbuffered</a> result sets. Unbuffered result sets are
+      transferred row-by-row from MySQL to the client as the client
+      iterates over the results. Buffered results are fetched in their
+      entirety by the client library before passing them on to the
+      client.
+    </p><p>
+      The MySQL Native Driver is using PHP Streams for the network
+      communication with the MySQL Server. Results sent by MySQL are
+      fetched from the PHP Streams network buffers into the result
+      buffer of mysqlnd. The result buffer is made of zvals. In a second
+      step the results are made available to the PHP script. This final
+      transfer from the result buffer into PHP variables impacts the
+      memory consumption and is mostly noticible when using buffered
+      result sets.
+    </p><p>
+      By default the MySQL Native Driver tries to avoid holding buffered
+      results twice in memory. Results are kept only once in the
+      internal result buffers and their zvals. When results are fetched
+      into PHP variables by the PHP script, the variables will reference
+      the internal result buffers. Database query results are not copied
+      and kept in memory only once. Should the user modify the contents
+      of a variable holding the database results a copy-on-write must be
+      performed to avoid changing the referenced internal result buffer.
+      The contents of the buffer must not be modified because the user
+      may decide to read the result set a second time. The copy-on-write
+      mechanism is implemented using an additional reference management
+      list and the use of standard zval reference counters.
+      Copy-on-write must also be done if the user reads a result set
+      into PHP variables and frees a result set before the variables are
+      unset.
+    </p><p>
+      Generally speaking, this pattern works well for scripts that read
+      a result set once and do not modify variables holding results. Its
+      major drawback is the memory overhead caused by the additional
+      reference management which comes primarily from the fact that user
+      variables holding results cannot be entirely released until the
+      mysqlnd reference management stops referencing them. The MySQL
+      Native driver removes the reference to the user variables when the
+      result set is freed or a copy-on-write is performed. An observer
+      will see the total memory consumption grow until the result set is
+      released. Use the
+      <a class="link" href="apis-php-mysqlnd.html#apis-php-mysqlnd.stats" title="6.6 Statistics">statistics</a> to check
+      whether a script does release result sets explicitly or the driver
+      is does implicit releases and thus memory is used for a time
+      longer than necessary. Statistics also help to see how many
+      copy-on-write operations happened.
+    </p><p>
+      A PHP script reading many small rows of a buffered result set
+      using a code snippet equal or equivalent to <code class="literal">while ($row =
+      $res-&gt;fetch_assoc()) { ... }</code> may optimize memory
+      consumption by requesting copies instead of references. Albeit
+      requesting copies means keeping results twice in memory, it allows
+      PHP to free the copy contained in <code class="literal">$row</code> as the
+      result set is being iterated and prior to releasing the result set
+      itself. On a loaded server optimizing peak memory usage may help
+      improving the overall system performace although for an individual
+      script the copy approach may be slower due to additional
+      allocations and memory copy operations.
+    </p><p>
+      The copy mode can be enforced by setting
+      <a class="link" href="apis-php-mysqlnd.html#apis-php-ini.mysqlnd.fetch_data_copy">mysqlnd.fetch_data_copy</a>=1.
+    </p><p>
+      <span class="emphasis"><em>Monitoring and debugging</em></span>
+    </p><p>
+      There are multiple ways of tracking the memory usage of the MySQL
+      Native Driver. If the goal is to get a quick high level overview
+      or to verify the memory efficiency of PHP scripts, then check the
+      <a class="link" href="apis-php-mysqlnd.html#apis-php-mysqlnd.stats" title="6.6 Statistics">statistics</a> collected
+      by the library. The statistics allow you, for example, to catch
+      SQL statements which generate more results than are processed by a
+      PHP script.
+    </p><p>
+      The <a class="link" href="apis-php-mysqlnd.html#apis-php-ini.mysqlnd.debug">debug</a> trace
+      log can be configured to record memory management calls. This
+      helps to see when memory is allocated or free'd. However, the
+      size of the requested memory chunks may not be listed.
+    </p><p>
+      Some, recent versions of the MySQL Native Driver feature the
+      emulation of random out of memory situations. This feature is
+      meant to be used by the C developers of the library or mysqlnd
+      <a class="link" href="apis-php-mysqlnd.html#apis-php-mysqlnd.plugin" title="6.9 MySQL Native Driver Plugin API">plugin</a> authors
+      only. Please, search the source code for corresponding PHP
+      configuration settings and further details. The feature is
+      considered private and may be modified at any time without prior
+      notice.
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-mysqlnd.plugin"></a>6.9 MySQL Native Driver Plugin API</h2>
+
+</div>
+
+</div>
+
+</div>
+<div class="toc">
+<dl class="toc"><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.plugin.mysql-proxy">6.9.1 A comparison of mysqlnd plugins with MySQL Proxy</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.plugin.obtaining">6.9.2 Obtaining the mysqlnd plugin API</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.plugin.architecture">6.9.3 MySQL Native Driver Plugin Architecture</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.plugin.api">6.9.4 The mysqlnd plugin API</a></span></dt><dt><span class="section"><a href="apis-php-mysqlnd.html#apis-php-mysqlnd.plugin.developing">6.9.5 Getting started building a mysqlnd plugin</a></span></dt></dl>
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+    </p><p>
+      The MySQL Native Driver Plugin API is a feature of MySQL Native
+      Driver, or <code class="literal">mysqlnd</code>. <code class="literal">Mysqlnd</code>
+      plugins operate in the layer between PHP applications and the
+      MySQL server. This is comparable to MySQL Proxy. MySQL Proxy
+      operates on a layer between any MySQL client application, for
+      example, a PHP application and, the MySQL server.
+      <code class="literal">Mysqlnd</code> plugins can undertake typical MySQL
+      Proxy tasks such as load balancing, monitoring and performance
+      optimizations. Due to the different architecture and location,
+      <code class="literal">mysqlnd</code> plugins do not have some of MySQL
+      Proxy's disadvantages. For example, with plugins, there is no
+      single point of failure, no dedicated proxy server to deploy, and
+      no new programming language to learn (Lua).
+    </p><p>
+      A <code class="literal">mysqlnd</code> plugin can be thought of as an
+      extension to <code class="literal">mysqlnd</code>. Plugins can intercept the
+      majority of <code class="literal">mysqlnd</code> functions. The
+      <code class="literal">mysqlnd</code> functions are called by the PHP MySQL
+      extensions such as <code class="literal">ext/mysql</code>,
+      <code class="literal">ext/mysqli</code>, and <code class="literal">PDO_MYSQL</code>.
+      As a result, it is possible for a <code class="literal">mysqlnd</code>
+      plugin to intercept all calls made to these extensions from the
+      client application.
+    </p><p>
+      Internal <code class="literal">mysqlnd</code> function calls can also be
+      intercepted, or replaced. There are no restrictions on
+      manipulating <code class="literal">mysqlnd</code> internal function tables.
+      It is possible to set things up so that when certain
+      <code class="literal">mysqlnd</code> functions are called by the extensions
+      that use <code class="literal">mysqlnd</code>, the call is directed to the
+      appropriate function in the <code class="literal">mysqlnd</code> plugin. The
+      ability to manipulate <code class="literal">mysqlnd</code> internal function
+      tables in this way allows maximum flexibility for plugins.
+    </p><p>
+      <code class="literal">Mysqlnd</code> plugins are in fact PHP Extensions,
+      written in C, that use the <code class="literal">mysqlnd</code> plugin API
+      (which is built into MySQL Native Driver,
+      <code class="literal">mysqlnd</code>). Plugins can be made 100% transparent
+      to PHP applications. No application changes are needed because
+      plugins operate on a different layer. The
+      <code class="literal">mysqlnd</code> plugin can be thought of as operating
+      in a layer below <code class="literal">mysqlnd</code>.
+    </p><p>
+      The following list represents some possible applications of
+      <code class="literal">mysqlnd</code> plugins.
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+          Load Balancing
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>
+              Read/Write Splitting. An example of this is the
+              PECL/mysqlnd_ms (Master Slave) extension. This extension
+              splits read/write queries for a replication setup.
+            </p></li><li class="listitem"><p>
+              Failover
+            </p></li><li class="listitem"><p>
+              Round-Robin, least loaded
+</p></li></ul>
+</div>
+</li><li class="listitem"><p>
+          Monitoring
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>
+              Query Logging
+            </p></li><li class="listitem"><p>
+              Query Analysis
+            </p></li><li class="listitem"><p>
+              Query Auditing. An example of this is the PECL/mysqlnd_sip
+              (SQL Injection Protection) extension. This extension
+              inspects queries and executes only those that are allowed
+              according to a ruleset.
+</p></li></ul>
+</div>
+</li><li class="listitem"><p>
+          Performance
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>
+              Caching. An example of this is the PECL/mysqlnd_qc (Query
+              Cache) extension.
+            </p></li><li class="listitem"><p>
+              Throttling
+            </p></li><li class="listitem"><p>
+              Sharding. An example of this is the PECL/mysqlnd_mc (Multi
+              Connect) extension. This extension will attempt to split a
+              SELECT statement into n-parts, using SELECT ... LIMIT
+              part_1, SELECT LIMIT part_n. It sends the queries to
+              distinct MySQL servers and merges the result at the
+              client.
+</p></li></ul>
+</div>
+</li></ul>
+</div>
+<p>
+      <span class="emphasis"><em>MySQL Native Driver Plugins Available</em></span>
+    </p><p>
+      There are a number of mysqlnd plugins already available. These
+      include:
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+          <span class="emphasis"><em>PECL/mysqlnd_mc</em></span> - Multi Connect plugin.
+        </p></li><li class="listitem"><p>
+          <span class="emphasis"><em>PECL/mysqlnd_ms</em></span> - Master Slave plugin.
+        </p></li><li class="listitem"><p>
+          <span class="emphasis"><em>PECL/mysqlnd_qc</em></span> - Query Cache plugin.
+        </p></li><li class="listitem"><p>
+          <span class="emphasis"><em>PECL/mysqlnd_pscache</em></span> - Prepared Statement
+          Handle Cache plugin.
+        </p></li><li class="listitem"><p>
+          <span class="emphasis"><em>PECL/mysqlnd_sip</em></span> - SQL Injection
+          Protection plugin.
+        </p></li><li class="listitem"><p>
+          <span class="emphasis"><em>PECL/mysqlnd_uh</em></span> - User Handler plugin.
+</p></li></ul>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd.plugin.mysql-proxy"></a>6.9.1 A comparison of mysqlnd plugins with MySQL Proxy</h3>
+
+</div>
+
+</div>
+
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+        <code class="literal">Mysqlnd</code> plugins and MySQL Proxy are different
+        technologies using different approaches. Both are valid tools
+        for solving a variety of common tasks such as load balancing,
+        monitoring, and performance enhancements. An important
+        difference is that MySQL Proxy works with all MySQL clients,
+        whereas <code class="literal">mysqlnd</code> plugins are specific to PHP
+        applications.
+      </p><p>
+        As a PHP Extension, a <code class="literal">mysqlnd</code> plugin gets
+        installed on the PHP application server, along with the rest of
+        PHP. MySQL Proxy can either be run on the PHP application server
+        or can be installed on a dedicated machine to handle multiple
+        PHP application servers.
+      </p><p>
+        Deploying MySQL Proxy on the application server has two
+        advantages:
+</p>
+<div class="orderedlist">
+<ol class="orderedlist" type="1"><li class="listitem"><p>
+            No single point of failure
+          </p></li><li class="listitem"><p>
+            Easy to scale out (horizontal scale out, scale by client)
+</p></li></ol>
+</div>
+<p>
+        MySQL Proxy (and <code class="literal">mysqlnd</code> plugins) can solve
+        problems easily which otherwise would have required changes to
+        existing applications.
+      </p><p>
+        However, MySQL Proxy does have some disadvantages:
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+            MySQL Proxy is a new component and technology to master and
+            deploy.
+          </p></li><li class="listitem"><p>
+            MySQL Proxy requires knowledge of the Lua scripting
+            language.
+</p></li></ul>
+</div>
+<p>
+        MySQL Proxy can be customized with C and Lua programming. Lua is
+        the preferred scripting language of MySQL Proxy. For most PHP
+        experts Lua is a new language to learn. A
+        <code class="literal">mysqlnd</code> plugin can be written in C. It is
+        also possible to write plugins in PHP using
+        <a class="ulink" href="http://pecl.php.net/package/mysqlnd_uh" target="_top">PECL/mysqlnd_uh</a>.
+      </p><p>
+        MySQL Proxy runs as a daemon - a background process. MySQL Proxy
+        can recall earlier decisions, as all state can be retained.
+        However, a <code class="literal">mysqlnd</code> plugin is bound to the
+        request-based lifecycle of PHP. MySQL Proxy can also share
+        one-time computed results among multiple application servers. A
+        <code class="literal">mysqlnd</code> plugin would need to store data in a
+        persistent medium to be able to do this. Another daemon would
+        need to be used for this purpose, such as Memcache. This gives
+        MySQL Proxy an advantage in this case.
+      </p><p>
+        MySQL Proxy works on top of the wire protocol. With MySQL Proxy
+        you have to parse and reverse engineer the MySQL Client Server
+        Protocol. Actions are limited to those that can be achieved by
+        manipulating the communication protocol. If the wire protocol
+        changes (which happens very rarely) MySQL Proxy scripts would
+        need to be changed as well.
+      </p><p>
+        <code class="literal">Mysqlnd</code> plugins work on top of the C API,
+        which mirrors the <code class="literal">libmysqlclient</code> client and
+        Connector/C APIs. This C API is basically a wrapper around the
+        MySQL Client Server protocol, or wire protocol, as it is
+        sometimes called. You can intercept all C API calls. PHP makes
+        use of the C API, therefore you can hook all PHP calls, without
+        the need to program at the level of the wire protocol.
+      </p><p>
+        <code class="literal">Mysqlnd</code> implements the wire protocol. Plugins
+        can therefore parse, reverse engineer, manipulate and even
+        replace the communication protocol. However, this is usually not
+        required.
+      </p><p>
+        As plugins allow you to create implementations that use two
+        levels (C API and wire protocol), they have greater flexibility
+        than MySQL Proxy. If a <code class="literal">mysqlnd</code> plugin is
+        implemented using the C API, any subsequent changes to the wire
+        protocol do not require changes to the plugin itself.
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd.plugin.obtaining"></a>6.9.2 Obtaining the mysqlnd plugin API</h3>
+
+</div>
+
+</div>
+
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+        The <code class="literal">mysqlnd</code> plugin API is simply part of the
+        MySQL Native Driver PHP extension,
+        <code class="literal">ext/mysqlnd</code>. Development started on the
+        <code class="literal">mysqlnd</code> plugin API in December 2009. It is
+        developed as part of the PHP source repository, and as such is
+        available to the public either via Git, or through source
+        snapshot downloads.
+      </p><p>
+        The following table shows PHP versions and the corresponding
+        <code class="literal">mysqlnd</code> version contained within.
+</p>
+<div class="table">
+<a name="idm139660446578016"></a><p class="title"><b>Table 6.8 The bundled mysqlnd version per PHP release</b></p>
+<div class="table-contents">
+<table class="table" summary="The bundled mysqlnd version per PHP release" border="1"><colgroup><col><col></colgroup><thead><tr><th scope="col">PHP Version</th><th scope="col">MySQL Native Driver version</th></tr></thead><tbody><tr><td scope="row">5.3.0</td><td>5.0.5</td></tr><tr><td scope="row">5.3.1</td><td>5.0.5</td></tr><tr><td scope="row">5.3.2</td><td>5.0.7</td></tr><tr><td scope="row">5.3.3</td><td>5.0.7</td></tr><tr><td scope="row">5.3.4</td><td>5.0.7</td></tr></tbody></table>
+</div>
+
+</div>
+<br class="table-break"><p>
+        Plugin developers can determine the <code class="literal">mysqlnd</code>
+        version through accessing <code class="literal">MYSQLND_VERSION</code>,
+        which is a string of the format <span class="quote">“<span class="quote">mysqlnd 5.0.7-dev -
+        091210 - $Revision: 300535</span>”</span>, or through
+        <code class="literal">MYSQLND_VERSION_ID</code>, which is an integer such
+        as 50007. Developers can calculate the version number as
+        follows:
+</p>
+<div class="table">
+<a name="idm139660446564256"></a><p class="title"><b>Table 6.9 MYSQLND_VERSION_ID calculation table</b></p>
+<div class="table-contents">
+<table class="table" summary="MYSQLND_VERSION_ID calculation table" border="1"><colgroup><col><col></colgroup><thead><tr><th scope="col">Version (part)</th><th scope="col">Example</th></tr></thead><tbody><tr><td scope="row">Major*10000</td><td>5*10000 = 50000</td></tr><tr><td scope="row">Minor*100</td><td>0*100 = 0</td></tr><tr><td scope="row">Patch</td><td>7 = 7</td></tr><tr><td scope="row">MYSQLND_VERSION_ID</td><td>50007</td></tr></tbody></table>
+</div>
+
+</div>
+<br class="table-break"><p>
+        During development, developers should refer to the
+        <code class="literal">mysqlnd</code> version number for compatibility and
+        version tests, as several iterations of
+        <code class="literal">mysqlnd</code> could occur during the lifetime of a
+        PHP development branch with a single PHP version number.
+</p>
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd.plugin.architecture"></a>6.9.3 MySQL Native Driver Plugin Architecture</h3>
+
+</div>
+
+</div>
+
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+        This section provides an overview of the
+        <code class="literal">mysqlnd</code> plugin architecture.
+      </p><p>
+        <span class="emphasis"><em> MySQL Native Driver Overview </em></span>
+      </p><p>
+        Before developing <code class="literal">mysqlnd</code> plugins, it is
+        useful to know a little of how <code class="literal">mysqlnd</code> itself
+        is organized. <code class="literal">Mysqlnd</code> consists of the
+        following modules:
+</p>
+<div class="table">
+<a name="idm139660446545648"></a><p class="title"><b>Table 6.10 The mysqlnd organization chart, per module</b></p>
+<div class="table-contents">
+<table class="table" summary="The mysqlnd organization chart, per module" border="1"><colgroup><col><col></colgroup><tbody><tr><td scope="row">Modules Statistics</td><td>mysqlnd_statistics.c</td></tr><tr><td scope="row">Connection</td><td>mysqlnd.c</td></tr><tr><td scope="row">Resultset</td><td>mysqlnd_result.c</td></tr><tr><td scope="row">Resultset Metadata</td><td>mysqlnd_result_meta.c</td></tr><tr><td scope="row">Statement</td><td>mysqlnd_ps.c</td></tr><tr><td scope="row">Network</td><td>mysqlnd_net.c</td></tr><tr><td scope="row">Wire protocol</td><td>mysqlnd_wireprotocol.c</td></tr></tbody></table>
+</div>
+
+</div>
+<br class="table-break"><p>
+        <span class="emphasis"><em>C Object Oriented Paradigm</em></span>
+      </p><p>
+        At the code level, <code class="literal">mysqlnd</code> uses a C pattern
+        for implementing object orientation.
+      </p><p>
+        In C you use a <code class="literal">struct</code> to represent an object.
+        Members of the struct represent object properties. Struct
+        members pointing to functions represent methods.
+      </p><p>
+        Unlike with other languages such as C++ or Java, there are no
+        fixed rules on inheritance in the C object oriented paradigm.
+        However, there are some conventions that need to be followed
+        that will be discussed later.
+      </p><p>
+        <span class="emphasis"><em>The PHP Life Cycle</em></span>
+      </p><p>
+        When considering the PHP life cycle there are two basic cycles:
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+            PHP engine startup and shutdown cycle
+          </p></li><li class="listitem"><p>
+            Request cycle
+</p></li></ul>
+</div>
+<p>
+        When the PHP engine starts up it will call the module
+        initialization (MINIT) function of each registered extension.
+        This allows each module to setup variables and allocate
+        resources that will exist for the lifetime of the PHP engine
+        process. When the PHP engine shuts down it will call the module
+        shutdown (MSHUTDOWN) function of each extension.
+      </p><p>
+        During the lifetime of the PHP engine it will receive a number
+        of requests. Each request constitutes another life cycle. On
+        each request the PHP engine will call the request initialization
+        function of each extension. The extension can perform any
+        variable setup and resource allocation required for request
+        processing. As the request cycle ends the engine calls the
+        request shutdown (RSHUTDOWN) function of each extension so the
+        extension can perform any cleanup required.
+      </p><p>
+        <span class="emphasis"><em>How a plugin works</em></span>
+      </p><p>
+        A <code class="literal">mysqlnd</code> plugin works by intercepting calls
+        made to <code class="literal">mysqlnd</code> by extensions that use
+        <code class="literal">mysqlnd</code>. This is achieved by obtaining the
+        <code class="literal">mysqlnd</code> function table, backing it up, and
+        replacing it by a custom function table, which calls the
+        functions of the plugin as required.
+      </p><p>
+        The following code shows how the <code class="literal">mysqlnd</code>
+        function table is replaced:
+      </p><pre class="programlisting">
+
+/* a place to store original function table */
+struct st_mysqlnd_conn_methods org_methods;
+
+void minit_register_hooks(TSRMLS_D) {
+  /* active function table */
+  struct st_mysqlnd_conn_methods * current_methods
+    = mysqlnd_conn_get_methods();
+
+  /* backup original function table */
+  memcpy(&amp;org_methods, current_methods,
+    sizeof(struct st_mysqlnd_conn_methods);
+
+  /* install new methods */
+  current_methods-&gt;query = MYSQLND_METHOD(my_conn_class, query);
+}
+
+</pre><p>
+        Connection function table manipulations must be done during
+        Module Initialization (MINIT). The function table is a global
+        shared resource. In an multi-threaded environment, with a TSRM
+        build, the manipulation of a global shared resource during the
+        request processing will almost certainly result in conflicts.
+</p>
+<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+
+<div class="admon-title">
+Note
+</div>
+<p>
+          Do not use any fixed-size logic when manipulating the
+          <code class="literal">mysqlnd</code> function table: new methods may be
+          added at the end of the function table. The function table may
+          change at any time in the future.
+</p>
+</div>
+<p>
+        <span class="emphasis"><em>Calling parent methods</em></span>
+      </p><p>
+        If the original function table entries are backed up, it is
+        still possible to call the original function table entries - the
+        parent methods.
+      </p><p>
+        In some cases, such as for
+        <code class="literal">Connection::stmt_init()</code>, it is vital to call
+        the parent method prior to any other activity in the derived
+        method.
+      </p><pre class="programlisting">
+
+MYSQLND_METHOD(my_conn_class, query)(MYSQLND *conn,
+  const char *query, unsigned int query_len TSRMLS_DC) {
+
+  php_printf("my_conn_class::query(query = %s)\n", query);
+
+  query = "SELECT 'query rewritten' FROM DUAL";
+  query_len = strlen(query);
+
+  return org_methods.query(conn, query, query_len); /* return with call to parent */
+}
+
+</pre><p>
+        <span class="emphasis"><em> Extending properties </em></span>
+      </p><p>
+        A <code class="literal">mysqlnd</code> object is represented by a C
+        struct. It is not possible to add a member to a C struct at run
+        time. Users of <code class="literal">mysqlnd</code> objects cannot simply
+        add properties to the objects.
+      </p><p>
+        Arbitrary data (properties) can be added to a
+        <code class="literal">mysqlnd</code> objects using an appropriate function
+        of the
+        <code class="literal">mysqlnd_plugin_get_plugin_&lt;object&gt;_data()</code>
+        family. When allocating an object <code class="literal">mysqlnd</code>
+        reserves space at the end of the object to hold a <code class="literal">void
+        *</code> pointer to arbitrary data.
+        <code class="literal">mysqlnd</code> reserves space for one <code class="literal">void
+        *</code> pointer per plugin.
+      </p><p>
+        The following table shows how to calculate the position of the
+        pointer for a specific plugin:
+</p>
+<div class="table">
+<a name="idm139660446503664"></a><p class="title"><b>Table 6.11 Pointer calculations for mysqlnd</b></p>
+<div class="table-contents">
+<table class="table" summary="Pointer calculations for mysqlnd" border="1"><colgroup><col><col></colgroup><tbody><tr><td scope="row">Memory address</td><td>Contents</td></tr><tr><td scope="row">0</td><td>Beginning of the mysqlnd object C struct</td></tr><tr><td scope="row">n</td><td>End of the mysqlnd object C struct</td></tr><tr><td scope="row">n + (m x sizeof(void*))</td><td>void* to object data of the m-th plugin</td></tr></tbody></table>
+</div>
+
+</div>
+<br class="table-break"><p>
+        If you plan to subclass any of the <code class="literal">mysqlnd</code>
+        object constructors, which is allowed, you must keep this in
+        mind!
+      </p><p>
+        The following code shows extending properties:
+      </p><pre class="programlisting">
+
+/* any data we want to associate */
+typedef struct my_conn_properties {
+  unsigned long query_counter;
+} MY_CONN_PROPERTIES;
+
+/* plugin id */
+unsigned int my_plugin_id;
+
+void minit_register_hooks(TSRMLS_D) {
+  /* obtain unique plugin ID */
+  my_plugin_id = mysqlnd_plugin_register();
+  /* snip - see Extending Connection: methods */
+}
+
+static MY_CONN_PROPERTIES** get_conn_properties(const MYSQLND *conn TSRMLS_DC) {
+  MY_CONN_PROPERTIES** props;
+  props = (MY_CONN_PROPERTIES**)mysqlnd_plugin_get_plugin_connection_data(
+    conn, my_plugin_id);
+  if (!props || !(*props)) {
+    *props = mnd_pecalloc(1, sizeof(MY_CONN_PROPERTIES), conn-&gt;persistent);
+    (*props)-&gt;query_counter = 0;
+  }
+  return props;
+}
+
+</pre><p>
+        The plugin developer is responsible for the management of plugin
+        data memory.
+      </p><p>
+        Use of the <code class="literal">mysqlnd</code> memory allocator is
+        recommended for plugin data. These functions are named using the
+        convention: <code class="literal">mnd_*loc()</code>. The
+        <code class="literal">mysqlnd</code> allocator has some useful features,
+        such as the ability to use a debug allocator in a non-debug
+        build.
+</p>
+<div class="table">
+<a name="idm139660446489040"></a><p class="title"><b>Table 6.12 When and how to subclass</b></p>
+<div class="table-contents">
+<table class="table" summary="When and how to subclass" border="1"><colgroup><col><col><col><col></colgroup><tbody><tr><td scope="row"> </td><td>When to subclass?</td><td>Each instance has its own private function table?</td><td>How to subclass?</td></tr><tr><td scope="row">Connection (MYSQLND)</td><td>MINIT</td><td>No</td><td>mysqlnd_conn_get_methods()</td></tr><tr><td scope="row">Resultset (MYSQLND_RES)</td><td>MINIT or later</td><td>Yes</td><td>mysqlnd_result_get_methods() or object method function table
+                manipulation</td></tr><tr><td scope="row">Resultset Meta (MYSQLND_RES_METADATA)</td><td>MINIT</td><td>No</td><td>mysqlnd_result_metadata_get_methods()</td></tr><tr><td scope="row">Statement (MYSQLND_STMT)</td><td>MINIT</td><td>No</td><td>mysqlnd_stmt_get_methods()</td></tr><tr><td scope="row">Network (MYSQLND_NET)</td><td>MINIT or later</td><td>Yes</td><td>mysqlnd_net_get_methods() or object method function table manipulation</td></tr><tr><td scope="row">Wire protocol (MYSQLND_PROTOCOL)</td><td>MINIT or later</td><td>Yes</td><td>mysqlnd_protocol_get_methods() or object method function table
+manipulation</td></tr></tbody></table>
+</div>
+
+</div>
+<br class="table-break"><p>
+        You must not manipulate function tables at any time later than
+        MINIT if it is not allowed according to the above table.
+      </p><p>
+        Some classes contain a pointer to the method function table. All
+        instances of such a class will share the same function table. To
+        avoid chaos, in particular in threaded environments, such
+        function tables must only be manipulated during MINIT.
+      </p><p>
+        Other classes use copies of a globally shared function table.
+        The class function table copy is created together with the
+        object. Each object uses its own function table. This gives you
+        two options: you can manipulate the default function table of an
+        object at MINIT, and you can additionally refine methods of an
+        object without impacting other instances of the same class.
+      </p><p>
+        The advantage of the shared function table approach is
+        performance. There is no need to copy a function table for each
+        and every object.
+</p>
+<div class="table">
+<a name="idm139660446468272"></a><p class="title"><b>Table 6.13 Constructor status</b></p>
+<div class="table-contents">
+<table class="table" summary="Constructor status" border="1"><colgroup><col><col><col><col></colgroup><tbody><tr><td scope="row"> </td><td>Allocation, construction, reset</td><td>Can be modified?</td><td>Caller</td></tr><tr><td scope="row">Connection (MYSQLND)</td><td>mysqlnd_init()</td><td>No</td><td>mysqlnd_connect()</td></tr><tr><td scope="row">Resultset(MYSQLND_RES)</td><td><p>
+                  Allocation:
+                </p>
+
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+                      Connection::result_init()
+</p></li></ul>
+</div>
+
+                <p>
+                  Reset and re-initialized during:
+                </p>
+
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+                      Result::use_result()
+                    </p></li><li class="listitem"><p>
+                      Result::store_result
+</p></li></ul>
+</div>
+</td><td>Yes, but call parent!</td><td>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+                      Connection::list_fields()
+                    </p></li><li class="listitem"><p>
+                      Statement::get_result()
+                    </p></li><li class="listitem"><p>
+                      Statement::prepare() (Metadata only)
+                    </p></li><li class="listitem"><p>
+                      Statement::resultMetaData()
+</p></li></ul>
+</div>
+</td></tr><tr><td scope="row">Resultset Meta (MYSQLND_RES_METADATA)</td><td>Connection::result_meta_init()</td><td>Yes, but call parent!</td><td>Result::read_result_metadata()</td></tr><tr><td scope="row">Statement (MYSQLND_STMT)</td><td>Connection::stmt_init()</td><td>Yes, but call parent!</td><td>Connection::stmt_init()</td></tr><tr><td scope="row">Network (MYSQLND_NET)</td><td>mysqlnd_net_init()</td><td>No</td><td>Connection::init()</td></tr><tr><td scope="row">Wire protocol (MYSQLND_PROTOCOL)</td><td>mysqlnd_protocol_init()</td><td>No</td><td>Connection::init()</td></tr></tbody></table>
+</div>
+
+</div>
+<br class="table-break"><p>
+        It is strongly recommended that you do not entirely replace a
+        constructor. The constructors perform memory allocations. The
+        memory allocations are vital for the <code class="literal">mysqlnd</code>
+        plugin API and the object logic of <code class="literal">mysqlnd</code>.
+        If you do not care about warnings and insist on hooking the
+        constructors, you should at least call the parent constructor
+        before doing anything in your constructor.
+      </p><p>
+        Regardless of all warnings, it can be useful to subclass
+        constructors. Constructors are the perfect place for modifying
+        the function tables of objects with non-shared object tables,
+        such as Resultset, Network, Wire Protocol.
+</p>
+<div class="table">
+<a name="idm139660446439952"></a><p class="title"><b>Table 6.14 Destruction status</b></p>
+<div class="table-contents">
+<table class="table" summary="Destruction status" border="1"><colgroup><col><col><col></colgroup><tbody><tr><td scope="row"> </td><td>Derived method must call parent?</td><td>Destructor</td></tr><tr><td scope="row">Connection</td><td>yes, after method execution</td><td>free_contents(), end_psession()</td></tr><tr><td scope="row">Resultset</td><td>yes, after method execution</td><td>free_result()</td></tr><tr><td scope="row">Resultset Meta</td><td>yes, after method execution</td><td>free()</td></tr><tr><td scope="row">Statement</td><td>yes, after method execution</td><td>dtor(), free_stmt_content()</td></tr><tr><td scope="row">Network</td><td>yes, after method execution</td><td>free()</td></tr><tr><td scope="row">Wire protocol</td><td>yes, after method execution</td><td>free()</td></tr></tbody></table>
+</div>
+
+</div>
+<br class="table-break"><p>
+        The destructors are the appropriate place to free properties,
+        <code class="literal">mysqlnd_plugin_get_plugin_<em class="replaceable"><code>&lt;object&gt;</code></em>_data()</code>.
+      </p><p>
+        The listed destructors may not be equivalent to the actual
+        <code class="literal">mysqlnd</code> method freeing the object itself.
+        However, they are the best possible place for you to hook in and
+        free your plugin data. As with constructors you may replace the
+        methods entirely but this is not recommended. If multiple
+        methods are listed in the above table you will need to hook all
+        of the listed methods and free your plugin data in whichever
+        method is called first by <code class="literal">mysqlnd</code>.
+      </p><p>
+        The recommended method for plugins is to simply hook the
+        methods, free your memory and call the parent implementation
+        immediately following this.
+</p>
+<div class="caution" style="margin-left: 0.5in; margin-right: 0.5in;">
+
+<div class="admon-title">
+Caution
+</div>
+<p>
+          Due to a bug in PHP versions 5.3.0 to 5.3.3, plugins do not
+          associate plugin data with a persistent connection. This is
+          because <code class="literal">ext/mysql</code> and
+          <code class="literal">ext/mysqli</code> do not trigger all the necessary
+          <code class="literal">mysqlnd</code> <code class="literal">end_psession()</code>
+          method calls and the plugin may therefore leak memory. This
+          has been fixed in PHP 5.3.4.
+</p>
+</div>
+
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd.plugin.api"></a>6.9.4 The mysqlnd plugin API</h3>
+
+</div>
+
+</div>
+
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+        The following is a list of functions provided in the
+        <code class="literal">mysqlnd</code> plugin API:
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+            mysqlnd_plugin_register()
+          </p></li><li class="listitem"><p>
+            mysqlnd_plugin_count()
+          </p></li><li class="listitem"><p>
+            mysqlnd_plugin_get_plugin_connection_data()
+          </p></li><li class="listitem"><p>
+            mysqlnd_plugin_get_plugin_result_data()
+          </p></li><li class="listitem"><p>
+            mysqlnd_plugin_get_plugin_stmt_data()
+          </p></li><li class="listitem"><p>
+            mysqlnd_plugin_get_plugin_net_data()
+          </p></li><li class="listitem"><p>
+            mysqlnd_plugin_get_plugin_protocol_data()
+          </p></li><li class="listitem"><p>
+            mysqlnd_conn_get_methods()
+          </p></li><li class="listitem"><p>
+            mysqlnd_result_get_methods()
+          </p></li><li class="listitem"><p>
+            mysqlnd_result_meta_get_methods()
+          </p></li><li class="listitem"><p>
+            mysqlnd_stmt_get_methods()
+          </p></li><li class="listitem"><p>
+            mysqlnd_net_get_methods()
+          </p></li><li class="listitem"><p>
+            mysqlnd_protocol_get_methods()
+</p></li></ul>
+</div>
+<p>
+        There is no formal definition of what a plugin is and how a
+        plugin mechanism works.
+      </p><p>
+        Components often found in plugins mechanisms are:
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+            A plugin manager
+          </p></li><li class="listitem"><p>
+            A plugin API
+          </p></li><li class="listitem"><p>
+            Application services (or modules)
+          </p></li><li class="listitem"><p>
+            Application service APIs (or module APIs)
+</p></li></ul>
+</div>
+<p>
+        The <code class="literal">mysqlnd</code> plugin concept employs these
+        features, and additionally enjoys an open architecture.
+      </p><p>
+        <span class="emphasis"><em> No Restrictions </em></span>
+      </p><p>
+        A plugin has full access to the inner workings of
+        <code class="literal">mysqlnd</code>. There are no security limits or
+        restrictions. Everything can be overwritten to implement
+        friendly or hostile algorithms. It is recommended you only
+        deploy plugins from a trusted source.
+      </p><p>
+        As discussed previously, plugins can use pointers freely. These
+        pointers are not restricted in any way, and can point into
+        another plugin's data. Simple offset arithmetic can be used
+        to read another plugin's data.
+      </p><p>
+        It is recommended that you write cooperative plugins, and that
+        you always call the parent method. The plugins should always
+        cooperate with <code class="literal">mysqlnd</code> itself.
+</p>
+<div class="table">
+<a name="idm139660446391760"></a><p class="title"><b>Table 6.15 Issues: an example of chaining and cooperation</b></p>
+<div class="table-contents">
+<table class="table" summary="Issues: an example of chaining and cooperation" border="1"><colgroup><col><col><col></colgroup><tbody><tr><td scope="row">Extension</td><td>mysqlnd.query() pointer</td><td>call stack if calling parent</td></tr><tr><td scope="row">ext/mysqlnd</td><td>mysqlnd.query()</td><td>mysqlnd.query</td></tr><tr><td scope="row">ext/mysqlnd_cache</td><td>mysqlnd_cache.query()</td><td>
+<div class="orderedlist">
+<ol class="orderedlist" type="1"><li class="listitem"><p>
+                      mysqlnd_cache.query()
+                    </p></li><li class="listitem"><p>
+                      mysqlnd.query
+</p></li></ol>
+</div>
+</td></tr><tr><td scope="row">ext/mysqlnd_monitor</td><td>mysqlnd_monitor.query()</td><td>
+<div class="orderedlist">
+<ol class="orderedlist" type="1"><li class="listitem"><p>
+                      mysqlnd_monitor.query()
+                    </p></li><li class="listitem"><p>
+                      mysqlnd_cache.query()
+                    </p></li><li class="listitem"><p>
+                      mysqlnd.query
+</p></li></ol>
+</div>
+</td></tr></tbody></table>
+</div>
+
+</div>
+<br class="table-break"><p>
+        In this scenario, a cache (<code class="literal">ext/mysqlnd_cache</code>)
+        and a monitor (<code class="literal">ext/mysqlnd_monitor</code>) plugin
+        are loaded. Both subclass
+        <code class="literal">Connection::query()</code>. Plugin registration
+        happens at <code class="literal">MINIT</code> using the logic shown
+        previously. PHP calls extensions in alphabetical order by
+        default. Plugins are not aware of each other and do not set
+        extension dependencies.
+      </p><p>
+        By default the plugins call the parent implementation of the
+        query method in their derived version of the method.
+      </p><p>
+        <span class="emphasis"><em> PHP Extension Recap </em></span>
+      </p><p>
+        This is a recap of what happens when using an example plugin,
+        <code class="literal">ext/mysqlnd_plugin</code>, which exposes the
+        <code class="literal">mysqlnd</code> C plugin API to PHP:
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+            Any PHP MySQL application tries to establish a connection to
+            192.168.2.29
+          </p></li><li class="listitem"><p>
+            The PHP application will either use
+            <code class="literal">ext/mysql</code>, <code class="literal">ext/mysqli</code>
+            or <code class="literal">PDO_MYSQL</code>. All three PHP MySQL
+            extensions use <code class="literal">mysqlnd</code> to establish the
+            connection to 192.168.2.29.
+          </p></li><li class="listitem"><p>
+            <code class="literal">Mysqlnd</code> calls its connect method, which
+            has been subclassed by
+            <code class="literal">ext/mysqlnd_plugin</code>.
+          </p></li><li class="listitem"><p>
+            <code class="literal">ext/mysqlnd_plugin</code> calls the userspace
+            hook <code class="literal">proxy::connect()</code> registered by the
+            user.
+          </p></li><li class="listitem"><p>
+            The userspace hook changes the connection host IP from
+            192.168.2.29 to 127.0.0.1 and returns the connection
+            established by <code class="literal">parent::connect()</code>.
+          </p></li><li class="listitem"><p>
+            <code class="literal">ext/mysqlnd_plugin</code> performs the
+            equivalent of <code class="literal">parent::connect(127.0.0.1)</code>
+            by calling the original <code class="literal">mysqlnd</code> method
+            for establishing a connection.
+          </p></li><li class="listitem"><p>
+            <code class="literal">ext/mysqlnd</code> establishes a connection and
+            returns to <code class="literal">ext/mysqlnd_plugin</code>.
+            <code class="literal">ext/mysqlnd_plugin</code> returns as well.
+          </p></li><li class="listitem"><p>
+            Whatever PHP MySQL extension had been used by the
+            application, it receives a connection to 127.0.0.1. The PHP
+            MySQL extension itself returns to the PHP application. The
+            circle is closed.
+</p></li></ul>
+</div>
+
+</div>
+<div class="section">
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title"><a name="apis-php-mysqlnd.plugin.developing"></a>6.9.5 Getting started building a mysqlnd plugin</h3>
+
+</div>
+
+</div>
+
+</div>
+<p>
+        <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+        Documentation Group.</a>
+      </p><p>
+        It is important to remember that a <code class="literal">mysqlnd</code>
+        plugin is itself a PHP extension.
+      </p><p>
+        The following code shows the basic structure of the MINIT
+        function that will be used in the typical
+        <code class="literal">mysqlnd</code> plugin:
+      </p><pre class="programlisting">
+
+/* my_php_mysqlnd_plugin.c */
+
+ static PHP_MINIT_FUNCTION(mysqlnd_plugin) {
+  /* globals, ini entries, resources, classes */
+
+  /* register mysqlnd plugin */
+  mysqlnd_plugin_id = mysqlnd_plugin_register();
+
+  conn_m = mysqlnd_get_conn_methods();
+  memcpy(org_conn_m, conn_m,
+    sizeof(struct st_mysqlnd_conn_methods));
+
+  conn_m-&gt;query = MYSQLND_METHOD(mysqlnd_plugin_conn, query);
+  conn_m-&gt;connect = MYSQLND_METHOD(mysqlnd_plugin_conn, connect);
+}
+
+</pre><pre class="programlisting">
+
+/* my_mysqlnd_plugin.c */
+
+ enum_func_status MYSQLND_METHOD(mysqlnd_plugin_conn, query)(/* ... */) {
+  /* ... */
+}
+enum_func_status MYSQLND_METHOD(mysqlnd_plugin_conn, connect)(/* ... */) {
+  /* ... */
+}
+
+</pre><p>
+        <span class="emphasis"><em>Task analysis: from C to userspace</em></span>
+      </p><pre class="programlisting">
+
+ class proxy extends mysqlnd_plugin_connection {
+  public function connect($host, ...) { .. }
+}
+mysqlnd_plugin_set_conn_proxy(new proxy());
+
+</pre><p>
+        Process:
+</p>
+<div class="orderedlist">
+<ol class="orderedlist" type="1"><li class="listitem"><p>
+            PHP: user registers plugin callback
+          </p></li><li class="listitem"><p>
+            PHP: user calls any PHP MySQL API to connect to MySQL
+          </p></li><li class="listitem"><p>
+            C: ext/*mysql* calls mysqlnd method
+          </p></li><li class="listitem"><p>
+            C: mysqlnd ends up in ext/mysqlnd_plugin
+          </p></li><li class="listitem"><p>
+            C: ext/mysqlnd_plugin
+
+</p>
+<div class="orderedlist">
+<ol class="orderedlist" type="a"><li class="listitem"><p>
+                  Calls userspace callback
+                </p></li><li class="listitem"><p>
+                  Or original <code class="literal">mysqlnd</code> method, if
+                  userspace callback not set
+</p></li></ol>
+</div>
+<p>
+</p></li></ol>
+</div>
+<p>
+        You need to carry out the following:
+</p>
+<div class="orderedlist">
+<ol class="orderedlist" type="1"><li class="listitem"><p>
+            Write a class "mysqlnd_plugin_connection" in C
+          </p></li><li class="listitem"><p>
+            Accept and register proxy object through
+            "mysqlnd_plugin_set_conn_proxy()"
+          </p></li><li class="listitem"><p>
+            Call userspace proxy methods from C (optimization -
+            zend_interfaces.h)
+</p></li></ol>
+</div>
+<p>
+        Userspace object methods can either be called using
+        <code class="literal">call_user_function()</code> or you can operate at a
+        level closer to the Zend Engine and use
+        <code class="literal">zend_call_method()</code>.
+      </p><p>
+        <span class="emphasis"><em> Optimization: calling methods from C using
+        zend_call_method </em></span>
+      </p><p>
+        The following code snippet shows the prototype for the
+        <code class="literal">zend_call_method</code> function, taken from
+        <code class="filename">zend_interfaces.h</code>.
+      </p><pre class="programlisting">
+
+ ZEND_API zval* zend_call_method(
+  zval **object_pp, zend_class_entry *obj_ce,
+  zend_function **fn_proxy, char *function_name,
+  int function_name_len, zval **retval_ptr_ptr,
+  int param_count, zval* arg1, zval* arg2 TSRMLS_DC
+);
+
+</pre><p>
+        Zend API supports only two arguments. You may need more, for
+        example:
+      </p><pre class="programlisting">
+
+ enum_func_status (*func_mysqlnd_conn__connect)(
+  MYSQLND *conn, const char *host,
+  const char * user, const char * passwd,
+  unsigned int passwd_len, const char * db,
+  unsigned int db_len, unsigned int port,
+  const char * socket, unsigned int mysql_flags TSRMLS_DC
+);
+
+</pre><p>
+        To get around this problem you will need to make a copy of
+        <code class="literal">zend_call_method()</code> and add a facility for
+        additional parameters. You can do this by creating a set of
+        <code class="literal">MY_ZEND_CALL_METHOD_WRAPPER</code> macros.
+      </p><p>
+        <span class="emphasis"><em> Calling PHP userspace</em></span>
+      </p><p>
+        This code snippet shows the optimized method for calling a
+        userspace function from C:
+      </p><pre class="programlisting">
+ 
+/* my_mysqlnd_plugin.c */
+
+MYSQLND_METHOD(my_conn_class,connect)(
+  MYSQLND *conn, const char *host /* ... */ TSRMLS_DC) {
+  enum_func_status ret = FAIL;
+  zval * global_user_conn_proxy = fetch_userspace_proxy();
+  if (global_user_conn_proxy) {
+    /* call userspace proxy */
+    ret = MY_ZEND_CALL_METHOD_WRAPPER(global_user_conn_proxy, host, /*...*/);
+  } else {
+    /* or original mysqlnd method = do nothing, be transparent */
+    ret = org_methods.connect(conn, host, user, passwd,
+          passwd_len, db, db_len, port,
+          socket, mysql_flags TSRMLS_CC);
+  }
+  return ret;
+}
+
+</pre><p>
+        <span class="emphasis"><em> Calling userspace: simple arguments </em></span>
+      </p><pre class="programlisting">
+
+/* my_mysqlnd_plugin.c */
+
+ MYSQLND_METHOD(my_conn_class,connect)(
+  /* ... */, const char *host, /* ...*/) {
+  /* ... */
+  if (global_user_conn_proxy) {
+    /* ... */
+    zval* zv_host;
+    MAKE_STD_ZVAL(zv_host);
+    ZVAL_STRING(zv_host, host, 1);
+    MY_ZEND_CALL_METHOD_WRAPPER(global_user_conn_proxy, zv_retval, zv_host /*, ...*/);
+    zval_ptr_dtor(&amp;zv_host);
+    /* ... */
+  }
+  /* ... */
+}
+
+</pre><p>
+        <span class="emphasis"><em> Calling userspace: structs as arguments </em></span>
+      </p><pre class="programlisting">
+
+/* my_mysqlnd_plugin.c */
+
+MYSQLND_METHOD(my_conn_class, connect)(
+  MYSQLND *conn, /* ...*/) {
+  /* ... */
+  if (global_user_conn_proxy) {
+    /* ... */
+    zval* zv_conn;
+    ZEND_REGISTER_RESOURCE(zv_conn, (void *)conn, le_mysqlnd_plugin_conn);
+    MY_ZEND_CALL_METHOD_WRAPPER(global_user_conn_proxy, zv_retval, zv_conn, zv_host /*, ...*/);
+    zval_ptr_dtor(&amp;zv_conn);
+    /* ... */
+  }
+  /* ... */
+}
+
+</pre><p>
+        The first argument of many <code class="literal">mysqlnd</code> methods is
+        a C "object". For example, the first argument of the
+        connect() method is a pointer to <code class="literal">MYSQLND</code>. The
+        struct MYSQLND represents a <code class="literal">mysqlnd</code>
+        connection object.
+      </p><p>
+        The <code class="literal">mysqlnd</code> connection object pointer can be
+        compared to a standard I/O file handle. Like a standard I/O file
+        handle a <code class="literal">mysqlnd</code> connection object shall be
+        linked to the userspace using the PHP resource variable type.
+      </p><p>
+        <span class="emphasis"><em> From C to userspace and back </em></span>
+      </p><pre class="programlisting">
+
+ class proxy extends mysqlnd_plugin_connection {
+  public function connect($conn, $host, ...) {
+    /* "pre" hook */
+    printf("Connecting to host = '%s'\n", $host);
+    debug_print_backtrace();
+    return parent::connect($conn);
+  }
+
+  public function query($conn, $query) {
+    /* "post" hook */
+    $ret = parent::query($conn, $query);
+    printf("Query = '%s'\n", $query);
+    return $ret;
+  }
+}
+mysqlnd_plugin_set_conn_proxy(new proxy());
+
+</pre><p>
+        PHP users must be able to call the parent implementation of an
+        overwritten method.
+      </p><p>
+        As a result of subclassing it is possible to refine only
+        selected methods and you can choose to have "pre" or
+        "post" hooks.
+      </p><p>
+        <span class="emphasis"><em> Buildin class: mysqlnd_plugin_connection::connect()
+        </em></span>
+      </p><pre class="programlisting">
+
+/*  my_mysqlnd_plugin_classes.c */
+
+ PHP_METHOD("mysqlnd_plugin_connection", connect) {
+  /* ... simplified! ... */
+  zval* mysqlnd_rsrc;
+  MYSQLND* conn;
+  char* host; int host_len;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+    &amp;mysqlnd_rsrc, &amp;host, &amp;host_len) == FAILURE) {
+    RETURN_NULL();
+  }
+  ZEND_FETCH_RESOURCE(conn, MYSQLND* conn, &amp;mysqlnd_rsrc, -1,
+    "Mysqlnd Connection", le_mysqlnd_plugin_conn);
+  if (PASS == org_methods.connect(conn, host, /* simplified! */ TSRMLS_CC))
+    RETVAL_TRUE;
+  else
+    RETVAL_FALSE;
+}
+
+</pre>
+</div>
+
+</div>
+
+</div>
+<div class="copyright-footer">
+
+</div>
+<div class="navfooter">
+<hr>
+<table width="100%" summary="Navigation footer">
+<tr>
+<td width="40%" align="left"><a accesskey="p" href="apis-php-mysql.html">Prev</a></td>
+<td width="20%" align="center"><a accesskey="u" href="">Up</a></td>
+<td width="40%" align="right"> <a accesskey="n" href="apis-php-mysqlnd-ms.html">Next</a></td>
+</tr>
+<tr>
+<td width="40%" align="left" valign="top">Chapter 5 Original MySQL API</td>
+<td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
+<td width="40%" align="right" valign="top">Chapter 7 Mysqlnd replication and load balancing plugin</td>
+</tr>
+</table>
+</div>
+</body>
+</html>

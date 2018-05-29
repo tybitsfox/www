@@ -1,0 +1,419 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>CREATE LANGUAGE PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="CREATE INDEX" HREF="sql-createindex.html"><LINK REL="NEXT" TITLE="CREATE OPERATOR" HREF="sql-createoperator.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-createindex.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-createindex.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-createoperator.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-createoperator.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-CREATELANGUAGE" >CREATE LANGUAGE</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN42175" ></A
+><H2
+>Name</H2
+>CREATE LANGUAGE&nbsp;--&nbsp;定义一种新的过程语言</DIV
+><A NAME="AEN42178" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN42180" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>CREATE [ TRUSTED ] [ PROCEDURAL ] LANGUAGE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>
+    HANDLER <TT
+CLASS="REPLACEABLE"
+><I
+>call_handler</I
+></TT
+> [ VALIDATOR <TT
+CLASS="REPLACEABLE"
+><I
+>valfunction</I
+></TT
+> ]</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="SQL-CREATELANGUAGE-DESCRIPTION" ></A
+><H2
+>描述</H2
+><P
+>	使用 <TT
+CLASS="COMMAND"
+>CREATE LANGUAGE</TT
+>，
+	一个<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 用户可以在
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>里注册一个新的语言。
+	因而，函数和触发器过程可以用这种新语言定义。要注册新语言用户必须具有
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 超级用户权限。
+  </P
+><P
+>	<TT
+CLASS="COMMAND"
+>CREATE LANGUAGE</TT
+> 将该语言的名字和一个调用句柄关联起来，而该调用句柄负责执行该语言书写的函数。
+	请参考 <A HREF="xplang.html" >Chapter 35</A
+> 获取有关语言调用句柄的更多信息。
+  </P
+><P
+>	请注意过程语言是对每个独立的数据库而言是自己的。
+	要让一种语言缺省时可以为所有数据库获得，那你应该把它安装到
+	<TT
+CLASS="LITERAL"
+>template1</TT
+> 数据库里。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="SQL-CREATELANGUAGE-PARAMETERS" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>TRUSTED</TT
+></DT
+><DD
+><P
+>	<TT
+CLASS="LITERAL"
+>TRUSTED</TT
+> 说明对该语言的调用句柄是安全的；
+	也就是说，它不会提供给非特权用户任何绕过访问限制的能力。
+	如果忽略这个关键字，只有具有
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	超级用户权限的人可以使用这个语言创建新的函数。
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>PROCEDURAL</TT
+></DT
+><DD
+><P
+>	这是个没有用的字。
+      </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+></DT
+><DD
+><P
+>	新的过程化语言的名称。语言名是大小写无关的。
+	这个名字应该在数据库的所有语言中唯一。
+      </P
+><P
+>	出于向下兼容的原因，这个名字可以用单引号包围。
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>HANDLER</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>call_handler</I
+></TT
+></DT
+><DD
+><P
+>	<TT
+CLASS="REPLACEABLE"
+><I
+>call_handler</I
+></TT
+>
+	是一个以前注册过的函数的名字，该函数将被调用来执行这门过程语言写的函数。
+	过程语言的调用句柄必须用一种编译语言书写，比如 C，调用风格必须是版本 1 的调用风格，
+	并且在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里注册为不接受参数并且返回 <TT
+CLASS="TYPE"
+>language_handler</TT
+> 类型的函数，
+	<TT
+CLASS="TYPE"
+>language_handler</TT
+> 是用于将函数声明为调用句柄的占位符。
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>VALIDATOR</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>valfunction</I
+></TT
+></DT
+><DD
+><P
+>	<TT
+CLASS="REPLACEABLE"
+><I
+>valfunction</I
+></TT
+> 是一个已经注册的函数的名字，
+	在用该语言创建新函数的时候将调用它来校验新函数。如果没有声明校验函数，那么建立新函数的时候就不会检查它。
+	校验函数必须接受一个类型为 <TT
+CLASS="TYPE"
+>oid</TT
+> 的参数，它是将要创建的函数的 OID，并且通常会返回 <TT
+CLASS="TYPE"
+>void</TT
+>。
+      </P
+><P
+>	校验函数通常会检查函数体，看看看有没有语法错误，但是它也可以查看函数的其它属性，
+	比如该语言是否不能处理某种参数类型。要发出一个错误，校验函数应该用 <TT
+CLASS="FUNCTION"
+>elog()</TT
+> 函数。
+	该函数的返回值将被忽略。
+      </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="SQL-CREATELANGUAGE-NOTES" ></A
+><H2
+>注意</H2
+><P
+>	这条命令通常不应该由用户直接执行。
+	对于 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本里提供的过程语言，
+	我们应该使用 <A HREF="app-createlang.html" ><SPAN
+CLASS="APPLICATION"
+>createlang</SPAN
+></A
+> 程序，
+	它将为我们安装正确的调用句柄。
+	（<TT
+CLASS="COMMAND"
+>createlang</TT
+> 也会在内部调用 <TT
+CLASS="COMMAND"
+>CREATE LANGUAGE</TT
+>。）
+  </P
+><P
+>	在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本 7.3 之前，
+	我们必须声明句柄函数返回占位类型 <TT
+CLASS="TYPE"
+>opaque</TT
+>，而不是 <TT
+CLASS="TYPE"
+>language_handler</TT
+>。
+	为了支持装载旧的转储文件，<TT
+CLASS="COMMAND"
+>CREATE LANGUAGE</TT
+> 还将接受声明为返回 <TT
+CLASS="TYPE"
+>opaque</TT
+> 的函数，
+	但是它会发出一条通知并且把函数声明返回类型改为 <TT
+CLASS="TYPE"
+>language_handler</TT
+>。
+  </P
+><P
+>	使用 <A HREF="sql-createfunction.html" ><I
+>CREATE FUNCTION</I
+></A
+> 命令创建新函数。
+  </P
+><P
+>	使用 <A HREF="sql-droplanguage.html" ><I
+>DROP LANGUAGE</I
+></A
+>，或者更好是
+	<A HREF="app-droplang.html" ><SPAN
+CLASS="APPLICATION"
+>droplang</SPAN
+></A
+> 程序删除一个过程语言。
+  </P
+><P
+>	系统表 <TT
+CLASS="CLASSNAME"
+>pg_language</TT
+> （参阅 <A HREF="catalog-pg-language.html" >Section 42.20</A
+>）
+	记录了更多有关当前安装的过程语言的信息。<TT
+CLASS="COMMAND"
+>createlang</TT
+> 也有一个选项列出已安装的语言。
+  </P
+><P
+>	要使用一种过程语言，用户必须被赋予 <TT
+CLASS="LITERAL"
+>USAGE</TT
+> 权限。
+	如果该语言已知是可信的，那么 <TT
+CLASS="COMMAND"
+>createlang</TT
+> 程序自动给每个人赋予权限。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="SQL-CREATELANGUAGE-EXAMPLES" ></A
+><H2
+>例子</H2
+><P
+>	下面两条顺序执行的命令将注册一门新的过程语言及其关联的调用句柄。
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION plsample_call_handler() RETURNS language_handler
+    AS '$libdir/plsample'
+    LANGUAGE C;
+CREATE LANGUAGE plsample
+    HANDLER plsample_call_handler;</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="SQL-CREATELANGUAGE-COMPAT" ></A
+><H2
+>兼容性</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>CREATE LANGUAGE</TT
+> 是
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 扩展。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42274" ></A
+><H2
+>又见</H2
+><P
+>   <A HREF="sql-alterlanguage.html" ><I
+>ALTER LANGUAGE</I
+></A
+>, <A HREF="sql-createfunction.html" ><I
+>CREATE FUNCTION</I
+></A
+>, <A HREF="sql-droplanguage.html" ><I
+>DROP LANGUAGE</I
+></A
+>, <A HREF="sql-grant.html" ><I
+>GRANT</I
+></A
+>, <A HREF="sql-revoke.html" ><I
+>REVOKE</I
+></A
+>, <A HREF="app-createlang.html" ><I
+><I
+>createlang</I
+></I
+></A
+>, <A HREF="app-droplang.html" ><I
+><I
+>droplang</I
+></I
+></A
+>
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-createindex.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-createoperator.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >CREATE INDEX</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >CREATE OPERATOR</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

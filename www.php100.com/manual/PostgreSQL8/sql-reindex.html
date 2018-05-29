@@ -1,0 +1,450 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>REINDEX PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="PREPARE TRANSACTION" HREF="sql-prepare-transaction.html"><LINK REL="NEXT" TITLE="RELEASE SAVEPOINT" HREF="sql-release-savepoint.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-prepare-transaction.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-prepare-transaction.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-release-savepoint.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-release-savepoint.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-REINDEX" >REINDEX</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN47096" ></A
+><H2
+>Name</H2
+>REINDEX&nbsp;--&nbsp;重建索引</DIV
+><A NAME="AEN47099" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN47101" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>REINDEX { INDEX | TABLE | DATABASE | SYSTEM } <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> [ FORCE ]</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47104" ></A
+><H2
+>描述</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>REINDEX</TT
+> 使用存储在索引的表上的数据重建索引，
+	替换旧的索引拷贝。使用 <TT
+CLASS="COMMAND"
+>REINDEX</TT
+> 有两个主要原因：
+
+   <P
+></P
+></P><UL
+><LI
+><P
+>	索引崩溃，并且不再包含有效的数据。尽管理论上这是不可能发生的，
+	但实际上索引会因为软件毛病或者硬件问题而崩溃。<TT
+CLASS="COMMAND"
+>REINDEX</TT
+> 
+	提供了一个恢复方法。
+     </P
+></LI
+><LI
+><P
+>	要处理的索引包含大量无用的索引页未被回收。在某些情况下，
+	这个问题会发生在 PostgreSQL 里面的 B-树索引上。<TT
+CLASS="COMMAND"
+>REINDEX</TT
+>
+	提供了一个缩小索引空间消耗的方法，它采用的方法是写一个不带无用索引页的新版本的索引。
+	参阅<A HREF="routine-reindex.html" >Section 22.2</A
+>获取更多信息。
+     </P
+></LI
+></UL
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47117" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>INDEX</TT
+></DT
+><DD
+><P
+>        重新建立声明了的索引。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>TABLE</TT
+></DT
+><DD
+><P
+>        重新建立声明的表的所有索引。如果表有个从属的<SPAN
+CLASS="QUOTE"
+>"TOAST"</SPAN
+>表，那么这个表也会重新索引。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>DATABASE</TT
+></DT
+><DD
+><P
+>	重建当前数据库里的所有索引。
+	除非在独立运行模式下，会忽略在共享系统表上的索引（见下文）。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>SYSTEM</TT
+></DT
+><DD
+><P
+>      在当前数据库上重建所有系统表上的索引。不会处理在用户表上的索引。
+      另外，除了是在单主机模式下，共享的系统表也会被忽略（见下文）。
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+></DT
+><DD
+><P
+>	需要重建索引的索引，表或者数据库的名称。
+	表和索引名可以有模式修饰。
+	目前，<TT
+CLASS="COMMAND"
+>REINDEX DATABASE</TT
+> 和 <TT
+CLASS="COMMAND"
+>REINDEX SYSTEM</TT
+> 只能重建当前数据库的索引，
+	因此其参数必须匹配当前数据库的名字。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>FORCE</TT
+></DT
+><DD
+><P
+>       这是一个废弃的选项，如果声明，会被忽略。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47153" ></A
+><H2
+>注意</H2
+><P
+>   如果你怀疑一个用户表上的索引崩溃了，你可以简单地重建该索引，
+   或者该表上地所有索引，使用 <TT
+CLASS="COMMAND"
+>REINDEX INDEX</TT
+> 或者 <TT
+CLASS="COMMAND"
+>REINDEX TABLE</TT
+>。
+  </P
+><P
+>   如果你从一个崩溃的系统表索引上恢复，事情会更棘手一些。
+   这种情况下，系统必须不能使用任何有疑问的索引。
+   （实际上，在这种情况下，你可能发现服务器进程在启动之后马上就崩溃了，
+   因为依赖于崩溃了的索引。）要想安全恢复，服务器必须带着 <TT
+CLASS="OPTION"
+>-P</TT
+> 选项启动，
+   它禁止服务器在查找系统表的时候使用索引。
+  </P
+><P
+>   这么做个一个办法事停止
+   postmaster 然后带着
+   <TT
+CLASS="OPTION"
+>-P</TT
+> 命令行选项启动一个独立的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器。
+   然后，根据你希望恢复的程度，可以发出
+   <TT
+CLASS="COMMAND"
+>REINDEX DATABASE</TT
+>，<TT
+CLASS="COMMAND"
+>REINDEX SYSTEM</TT
+>，
+   <TT
+CLASS="COMMAND"
+>REINDEX TABLE</TT
+>，或者 <TT
+CLASS="COMMAND"
+>REINDEX INDEX</TT
+>。
+   如果还有怀疑，使用 <TT
+CLASS="COMMAND"
+>REINDEX SYSTEM</TT
+> 选择重新构造数据库中全部的系统索引。
+   然后退出独立服务器会话并且重启普通的服务器。
+   参阅 <A HREF="app-postgres.html" ><SPAN
+CLASS="APPLICATION"
+>postgres</SPAN
+></A
+> 手册页获取有关如何与独立服务器交互的信息。
+  </P
+><P
+>   另外，一个普通的会话可以在其命令行选项里带着 <TT
+CLASS="OPTION"
+>-P</TT
+> 启动。
+   这么做的方法因不同的客户端而异，但是在所有基于 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> 的客户端上，
+   我们都可以通过在启动客户端之前设置 <TT
+CLASS="ENVAR"
+>PGOPTIONS</TT
+> 环境变量为 <TT
+CLASS="LITERAL"
+>-P</TT
+> 来实现。
+   请注意尽管这个方法并不要求锁住其它客户端，但是禁止其它客户端连接受损的数据库，
+   直到完成修补应该事一个明智的选择。
+  </P
+><P
+>   如果怀疑任何共享的系统表的索引损坏（(<TT
+CLASS="STRUCTNAME"
+>pg_database</TT
+>，
+   <TT
+CLASS="STRUCTNAME"
+>pg_group</TT
+>，<TT
+CLASS="STRUCTNAME"
+>pg_shadow</TT
+> 或者 <TT
+CLASS="STRUCTNAME"
+>pg_tablespace</TT
+>），
+   那么必须用独立服务器的方式来修复它。<TT
+CLASS="COMMAND"
+>REINDEX</TT
+> 不能在多用户环境下处理共享系统表。
+  </P
+><P
+>   除了共享系统表之外的所有索引，<TT
+CLASS="COMMAND"
+>REINDEX</TT
+> 是抗崩溃并且是事务安全的。
+   <TT
+CLASS="COMMAND"
+>REINDEX</TT
+> 对于共享的索引而言不是抗崩溃的，这就是为什么不允许在正常操作中这么使用的原因。
+   如果在重新对一个共享表进行索引的时候发生了崩溃，那么在纠正问题之前，就不可能重新启动普通的服务器。
+   （一个建立了一部分的共享索引的典型症状是<SPAN
+CLASS="QUOTE"
+>"index is not a btree/索引不是 btree 索引"</SPAN
+>错误。）
+  </P
+><P
+>   <TT
+CLASS="COMMAND"
+>REINDEX</TT
+> 类似与删除再重建索引，表现在它们都是从零开始重建。
+   不过，从锁的角度考虑，两者是有区别的。<TT
+CLASS="COMMAND"
+>REINDEX</TT
+> 锁住对索引的父表的写操作，
+   但是不会锁主读操作。并且它还在被处理的特定索引上保持一个排他锁，
+   这样它将阻止试图使用该索引的读操作。相比之下，<TT
+CLASS="COMMAND"
+>DROP INDEX</TT
+>
+   在父表上短暂的保持一个排他锁，锁住读和写操作。随后的 <TT
+CLASS="COMMAND"
+>CREATE INDEX</TT
+> 
+   锁住写操作但是不会锁住读操作；因为索引还不存在，所以不会有试图使用它的读操作，
+   意味着操作中不会有阻塞，只不过读操作会被迫只能使用顺序扫描。
+   另外一个重要的环节是删除/重建的方法让所有使用索引的缓冲的查询规划都失效，
+   而 <TT
+CLASS="COMMAND"
+>REINDEX</TT
+> 不会。
+  </P
+><P
+>   对一个索引或者表进行重建索引要求你是该索引或者表的所有这。
+   对一个数据库重建索引要求你是该数据库的所有者（请注意，这样这个所有者就可以重建其它用户拥有的索引）。
+   当然，超级用户总是可以重建所有东西的索引。
+  </P
+><P
+>   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 8.1 之前，<TT
+CLASS="COMMAND"
+>REINDEX DATABASE</TT
+>
+   只处理系统索引，而不是人们从名字猜测的那样，处理所有索引。这个行为现在已经改变了，以减少意外的因素。
+   旧的行为可以通过 <TT
+CLASS="COMMAND"
+>REINDEX SYSTEM</TT
+> 获得。
+  </P
+><P
+>   在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 7.4 之前，<TT
+CLASS="COMMAND"
+>REINDEX TABLE</TT
+> 并不自动处理
+   TOAST 表，因此这些表必须用独立的命令进行处理。这么做仍然可以，但是已经多余了。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47198" ></A
+><H2
+>例子</H2
+><P
+>	重建表 <TT
+CLASS="LITERAL"
+>mytable</TT
+> 上的索引：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>REINDEX TABLE mytable;</PRE
+><P>
+  </P
+><P
+>	重建单个索引：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>REINDEX INDEX my_index;</PRE
+><P>
+  </P
+><P
+>   重建一个数据库上的所有系统索引，不管系统索引是否已经有效：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>$ <TT
+CLASS="USERINPUT"
+><B
+>export PGOPTIONS="-P"</B
+></TT
+>
+$ <TT
+CLASS="USERINPUT"
+><B
+>psql broken_db</B
+></TT
+>
+...
+broken_db=&gt; REINDEX DATABASE broken_db;
+broken_db=&gt; \q</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN47209" ></A
+><H2
+>兼容性</H2
+><P
+>    在<SPAN
+CLASS="ACRONYM"
+>SQL92</SPAN
+>里没有 <TT
+CLASS="COMMAND"
+>REINDEX</TT
+>。
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-prepare-transaction.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-release-savepoint.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >PREPARE TRANSACTION</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >RELEASE SAVEPOINT</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

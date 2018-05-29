@@ -1,0 +1,56 @@
+<HTML><HEAD><TITLE>sqlite_create_aggregate</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="SQLite" HREF="ref.sqlite.html"><LINK REL="PREVIOUS" TITLE="sqlite_column" HREF="function.sqlite-column.html"><LINK REL="NEXT" TITLE="sqlite_create_function" HREF="function.sqlite-create-function.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.sqlite-column.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.sqlite-create-function.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.sqlite-create-aggregate"></A>sqlite_create_aggregate</H1><DIV CLASS="refnamediv"><A NAME="AEN101136"></A><P> (no version information, might be only in CVS)</P>sqlite_create_aggregate&nbsp;--&nbsp;Register an aggregating UDF for use in SQL statements.</DIV><DIV CLASS="refsect1"><A NAME="AEN101139"></A><H2>Description</H2>bool <B CLASS="methodname">sqlite_create_aggregate</B> ( resource dbhandle, string function_name, mixed step_func, mixed finalize_func [, int num_args])<BR></BR><P>&#13; <B CLASS="function">sqlite_create_aggregate()</B> is similar to
+<A HREF="function.sqlite-create-function.html"><B CLASS="function">sqlite_create_function()</B></A> except that it registers
+functions that can be used to calculate a result aggregated across all the
+rows of a query.
+</P><P>&#13; The key difference between this function and
+<A HREF="function.sqlite-create-function.html"><B CLASS="function">sqlite_create_function()</B></A> is that two functions are
+required to manage the aggregate; <TT CLASS="parameter"><I>step_func</I></TT> is
+called for each row of the result set. Your PHP function should
+accumulate the result and store it into the aggregation context.
+Once all the rows have been processed,
+<TT CLASS="parameter"><I>finalize_func</I></TT> will be called and it should then
+take the data from the aggregation context and return the result.
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN101167"></A><P><B>例子 1. max_length aggregation function example</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$data </font><font color="#007700">= array(<br />&nbsp;&nbsp;&nbsp;</font><font color="#DD0000">'one'</font><font color="#007700">,<br />&nbsp;&nbsp;&nbsp;</font><font color="#DD0000">'two'</font><font color="#007700">,<br />&nbsp;&nbsp;&nbsp;</font><font color="#DD0000">'three'</font><font color="#007700">,<br />&nbsp;&nbsp;&nbsp;</font><font color="#DD0000">'four'</font><font color="#007700">,<br />&nbsp;&nbsp;&nbsp;</font><font color="#DD0000">'five'</font><font color="#007700">,<br />&nbsp;&nbsp;&nbsp;</font><font color="#DD0000">'six'</font><font color="#007700">,<br />&nbsp;&nbsp;&nbsp;</font><font color="#DD0000">'seven'</font><font color="#007700">,<br />&nbsp;&nbsp;&nbsp;</font><font color="#DD0000">'eight'</font><font color="#007700">,<br />&nbsp;&nbsp;&nbsp;</font><font color="#DD0000">'nine'</font><font color="#007700">,<br />&nbsp;&nbsp;&nbsp;</font><font color="#DD0000">'ten'</font><font color="#007700">,<br />&nbsp;&nbsp;&nbsp;);<br /></font><font color="#0000BB">$dbhandle </font><font color="#007700">= </font><font color="#0000BB">sqlite_open</font><font color="#007700">(</font><font color="#DD0000">':memory:'</font><font color="#007700">);<br /></font><font color="#0000BB">sqlite_query</font><font color="#007700">(</font><font color="#0000BB">$dbhandle</font><font color="#007700">, </font><font color="#DD0000">"CREATE TABLE strings(a)"</font><font color="#007700">);<br />foreach (</font><font color="#0000BB">$data </font><font color="#007700">as </font><font color="#0000BB">$str</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$str </font><font color="#007700">= </font><font color="#0000BB">sqlite_escape_string</font><font color="#007700">(</font><font color="#0000BB">$str</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">sqlite_query</font><font color="#007700">(</font><font color="#0000BB">$dbhandle</font><font color="#007700">, </font><font color="#DD0000">"INSERT INTO strings VALUES ('$str')"</font><font color="#007700">);<br />}<br /><br />function </font><font color="#0000BB">max_len_step</font><font color="#007700">(&amp;</font><font color="#0000BB">$context</font><font color="#007700">, </font><font color="#0000BB">$string</font><font color="#007700">) <br />{<br />&nbsp;&nbsp;&nbsp;&nbsp;if (</font><font color="#0000BB">strlen</font><font color="#007700">(</font><font color="#0000BB">$string</font><font color="#007700">) &gt; </font><font color="#0000BB">$context</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$context </font><font color="#007700">= </font><font color="#0000BB">strlen</font><font color="#007700">(</font><font color="#0000BB">$string</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />}<br /><br />function </font><font color="#0000BB">max_len_finalize</font><font color="#007700">(&amp;</font><font color="#0000BB">$context</font><font color="#007700">) <br />{<br />&nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">$context</font><font color="#007700">;<br />}<br /><br /></font><font color="#0000BB">sqlite_create_aggregate</font><font color="#007700">(</font><font color="#0000BB">$dbhandle</font><font color="#007700">, </font><font color="#DD0000">'max_len'</font><font color="#007700">, </font><font color="#DD0000">'max_len_step'</font><font color="#007700">, </font><font color="#DD0000">'max_len_finalize'</font><font color="#007700">);<br /><br /></font><font color="#0000BB">var_dump</font><font color="#007700">(</font><font color="#0000BB">sqlite_array_query</font><font color="#007700">(</font><font color="#0000BB">$dbhandle</font><font color="#007700">, </font><font color="#DD0000">'SELECT max_len(a) from strings'</font><font color="#007700">));<br /><br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; In this example, we are creating an aggregating function that will
+calculate the length of the longest string in one of the columns of the
+table. For each row, the <TT CLASS="literal">max_len_step</TT> function is
+called and passed a <TT CLASS="parameter"><I>context</I></TT> parameter. The context
+parameter is just like any other PHP variable and be set to hold an array
+or even an object value. In this example, we are simply using it to hold
+the maximum length we have seen so far; if the
+<TT CLASS="parameter"><I>string</I></TT> has a length longer than the current
+maximum, we update the context to hold this new maximum length.
+</P><P>&#13; After all of the rows have been processed, SQLite calls the
+<TT CLASS="literal">max_len_finalize</TT> function to determine the aggregate
+result. Here, we could perform some kind of calculation based on the
+data found in the <TT CLASS="parameter"><I>context</I></TT>. In our simple example
+though, we have been calculating the result as the query progressed, so we
+simply need to return the context value.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+The example above will not work correctly if the column contains binary
+data. Take a look at the manual page for
+<A HREF="function.sqlite-udf-decode-binary.html"><B CLASS="function">sqlite_udf_decode_binary()</B></A> for an explanation of why
+this is so, and an example of how to make it respect the binary encoding.
+</P></BLOCKQUOTE></DIV><DIV CLASS="tip"><BLOCKQUOTE CLASS="tip"><P><B>提示: </B>
+It is NOT recommended for you to store a copy of the values in the context
+and then process them at the end, as you would cause SQLite to use a lot of
+memory to process the query - just think of how much memory you would need
+if a million rows were stored in memory, each containing a string 32 bytes
+in length.
+</P></BLOCKQUOTE></DIV><DIV CLASS="tip"><BLOCKQUOTE CLASS="tip"><P><B>提示: </B>
+You can use <A HREF="function.sqlite-create-function.html"><B CLASS="function">sqlite_create_function()</B></A> and
+<B CLASS="function">sqlite_create_aggregate()</B> to override SQLite native
+SQL functions.
+</P></BLOCKQUOTE></DIV><P>&#13; See also <A HREF="function.sqlite-create-function.html"><B CLASS="function">sqlite_create_function()</B></A>,
+<A HREF="function.sqlite-udf-encode-binary.html"><B CLASS="function">sqlite_udf_encode_binary()</B></A> and
+<A HREF="function.sqlite-udf-decode-binary.html"><B CLASS="function">sqlite_udf_decode_binary()</B></A>.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.sqlite-column.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.sqlite-create-function.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">sqlite_column</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.sqlite.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">sqlite_create_function</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

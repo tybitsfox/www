@@ -1,0 +1,36 @@
+<html><head><title>读取进程表 - SYSV 版</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="范例程序" href="./c665.htm"><link rel="PREVIOUS" title="读取进程表 - SUNOS 4 版" href="./x670.htm"><link rel="NEXT" title="读取进程表 - AIX 4.2 版" href="./x676.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x670.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 7. 范例程序</td><td align="right" valign="bottom" width="10%"><a href="./x676.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN673">读取进程表 - SYSV 版</a></h1><pre class="PROGRAMLISTING">     pid_t
+     getpidbyname(char *name,pid_t skipit)
+     {
+         DIR  *dp;
+         struct dirent *dirp;
+         prpsinfo_t retval;
+         int fd;
+         pid_t ourretval=-1;
+    
+         if((dp=opendir("/proc"))==NULL){
+             return -1;
+         }
+         chdir("/proc");
+         while((dirp=readdir(dp))!=NULL){
+             if(dirp-&gt;d_name[0]!='.'){
+                 if((fd=open(dirp-&gt;d_name,O_RDONLY))!=-1){
+                     if(ioctl(fd,PIOCPSINFO,&amp;retval)!=-1){
+                         if(!strcmp(retval.pr_fname,name)){
+                             ourretval=(pid_t)atoi(dirp-&gt;d_name);
+                             if(skipit!=-1 &amp;&amp; ourretval==skipit){
+                                 ourretval=-1;
+                             }
+                             else{
+                                 close(fd);
+                                 break;
+                             }
+                         }
+                     }
+                     close(fd);
+                 }
+             }
+         }
+         closedir(dp);
+         return ourretval;
+     }
+    </pre></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x670.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x676.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">读取进程表 - SUNOS 4 版</td><td align="center" valign="top" width="34%"><a href="./c665.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">读取进程表 - AIX 4.2 版</td></tr></tbody></table></div></body></html>

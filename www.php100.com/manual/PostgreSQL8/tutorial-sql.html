@@ -1,0 +1,257 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>SQL 语言 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="教程" HREF="tutorial.html"><LINK REL="PREVIOUS" TITLE="访问数据库" HREF="tutorial-accessdb.html"><LINK REL="NEXT" TITLE="概念" HREF="tutorial-concepts.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="CHAPTER" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="tutorial-accessdb.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="tutorial-start.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="tutorial-advanced.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="tutorial-concepts.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A NAME="TUTORIAL-SQL" >Chapter 2. <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 语言</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>2.1. <A HREF="tutorial-sql.html#TUTORIAL-SQL-INTRO" >介绍</A
+></DT
+><DT
+>2.2. <A HREF="tutorial-concepts.html" >概念</A
+></DT
+><DT
+>2.3. <A HREF="tutorial-table.html" >创建新表</A
+></DT
+><DT
+>2.4. <A HREF="tutorial-populate.html" >向表中添加行</A
+></DT
+><DT
+>2.5. <A HREF="tutorial-select.html" >查询一个表</A
+></DT
+><DT
+>2.6. <A HREF="tutorial-join.html" >在表之间连接</A
+></DT
+><DT
+>2.7. <A HREF="tutorial-agg.html" >聚集函数</A
+></DT
+><DT
+>2.8. <A HREF="tutorial-update.html" >更新</A
+></DT
+><DT
+>2.9. <A HREF="tutorial-delete.html" >删除</A
+></DT
+></DL
+></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="TUTORIAL-SQL-INTRO" >2.1. 介绍</A
+></H1
+><P
+>	本章提供一个如何使用 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 执行简单操作的概述。
+	本教程的目的只是给你一个介绍，并非完整的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>
+	教程。有许多关于 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 的书，包括 <A HREF="biblio.html#MELT93" ><I
+>Understanding the New <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+></I
+></A
+> 和 
+	<A HREF="biblio.html#DATE97" ><I
+>A Guide to the <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> Standard</I
+></A
+>。而且你还要知道有些
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>语言特性是对标准的扩展。
+   </P
+><P
+>	在随后的例子里，我们假设你已经创建了名为 <TT
+CLASS="LITERAL"
+>mydb</TT
+>
+	的数据库，就象在前面的章里面介绍的一样，并且已经启动了
+	<SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>。
+   </P
+><P
+>	本手册的例子也可以在<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	源代码发布里的目录
+	<TT
+CLASS="FILENAME"
+>src/tutorial/</TT
+> 中找到。
+	要使用这些文件，首先进入该目录然后运行 <SPAN
+CLASS="APPLICATION"
+>make</SPAN
+>：
+
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>cd <TT
+CLASS="REPLACEABLE"
+><I
+>....</I
+></TT
+>/src/tutorial</B
+></TT
+>
+<TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>make</B
+></TT
+></PRE
+><P>
+
+	这样就创建了那些脚本以及编译了包含用户定义函数和类型的 C 文件。
+	（你必须使用 GNU make 来做这件事情 &mdash; 它在你的系统上可能名字是其它什么东西，经常是 <SPAN
+CLASS="APPLICATION"
+>gmake</SPAN
+>。）
+	要开始这个教程，按照下面说的进行：
+
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>cd <TT
+CLASS="REPLACEABLE"
+><I
+>....</I
+></TT
+>/src/tutorial</B
+></TT
+>
+<TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>psql -s mydb</B
+></TT
+>
+<TT
+CLASS="COMPUTEROUTPUT"
+>...</TT
+>
+
+<TT
+CLASS="PROMPT"
+>mydb=&gt;</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>\i basics.sql</B
+></TT
+></PRE
+><P>
+
+	<TT
+CLASS="LITERAL"
+>\i</TT
+> 命令从指定的文件中读取命令。
+	<TT
+CLASS="LITERAL"
+>-s</TT
+> 选项把你置于单步模式，它在向服务器发送每个语句之前暂停。
+	在本节使用的命令都在文件 <TT
+CLASS="FILENAME"
+>basics.sql</TT
+> 中。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="tutorial-accessdb.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="tutorial-concepts.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >访问数据库</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="tutorial.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >概念</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

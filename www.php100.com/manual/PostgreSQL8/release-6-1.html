@@ -1,0 +1,245 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>版本 6.1 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="版本" HREF="release.html"><LINK REL="PREVIOUS" TITLE="版本 6.1.1" HREF="release-6-1-1.html"><LINK REL="NEXT" TITLE="版本 6.0" HREF="release-6-0.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="release-6-1-1.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="release.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Appendix E. 版本</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="release.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="release-6-0.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="RELEASE-6-1" >E.59. 版本 6.1</A
+></H1
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>发布日期: </B
+>1997-06-08</P
+></BLOCKQUOTE
+></DIV
+><P
+>蜕变测试为v6.1的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>版本做了大量的调整和修改．</P
+><P
+>增加了三种新的<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>内部数据类型 （datetime，timespan，和 circle）．固定了Points，boxes, paths, 和
+polygons 的输出格式．在 misc.out 中的 polygon （多边形）的输出只是相对原先的回归测试输出进行了错误检查．</P
+><P
+>  <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> v6.1 提供了一个可选的使用
+<I
+CLASS="FIRSTTERM"
+>基因</I
+>算法的优化器．
+这些算法在对包含多个侯选项或多个表（优化器需要对
+表达式值进行排序选择时）的查询输出进行排序时表现得更为随机．
+有好几个蜕变测试项目显式地修改了结果的
+排序，这样就对优化器选择不敏感了．
+有几个对数据类型的蜕变测试先天的时乱序的（如点和时间间隔），与这
+些类型相关的测试显式的置于
+  <TT
+CLASS="COMMAND"
+>set geqo to 'off'</TT
+> 和 <TT
+CLASS="COMMAND"
+>reset geqo</TT
+>
+范畴内．</P
+><P
+>对数组声明（包围在量化值周围的大括号）的解释看起来在最早的蜕变测试的过程中的
+        某个时候被改变了．
+  现在的
+   <TT
+CLASS="FILENAME"
+>./expected/*.out</TT
+> 文件反映了这个新的解释，
+但却有可能是错误的！</P
+><P
+>float8 的回归测试至少在某些平台上会失败．
+这是因为对 pow() 和 exp() 的不同的实现方法以及用于溢出和溢入
+（underflow）条件的信号机制的不同造成的．</P
+><P
+>在随机测试中的"随机"结果回导致"随机"测试"失败"，
+因为回归测试是简单的用 diff 进行比较的．不过，"随机"测
+试在我的机器上（Linux/gcc/i686）看起来好象并没有产生随机结果．</P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN78523" >E.59.1. 迁移到 v6.1</A
+></H2
+><P
+>对于6.0版本：需要对数据库进行完整的6.0版本的倾倒和6.1版本的恢复．</P
+><P
+>对于早于1.*的版本：首先要升级到1.09版本，
+因为在1.02版本中已经改善了 COPY 的输出格式．</P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN78527" >E.59.2. 修改列表</A
+></H2
+><P
+>     </P><PRE
+CLASS="PROGRAMLISTING"
+>修补
+---------
+packet length checking in library routines
+lock manager priority patch
+check for under/over flow of float8(Bruce)
+multitable join fix(Vadim)
+SIGPIPE crash fix(Darren)
+large object fixes(Sven)
+allow btree indexes to handle NULLs(Vadim)
+timezone fixes(D'Arcy)
+select SUM(x) can return NULL on no rows(Thomas)
+internal optimizer, executor bug fixes(Vadim)
+fix problem where inner loop in &#60; or &#60;= has no rows(Vadim)
+prevent re-commuting join index clauses(Vadim)
+fix join clauses for multiple tables(Vadim)
+fix hash, hashjoin for arrays(Vadim)
+fix btree for abstime type(Vadim)
+large object fixes(Raymond)
+fix buffer leak in hash indexes (Vadim)
+fix rtree for use in inner scan (Vadim)
+fix gist for use in inner scan, cleanups (Vadim, Andrea)
+avoid unnecessary local buffers allocation (Vadim, Massimo)
+fix local buffers leak in transaction aborts (Vadim)
+fix file manager memmory leaks, cleanups (Vadim, Massimo)
+fix storage manager memmory leaks (Vadim)
+fix btree duplicates handling (Vadim)
+fix deleted tuples re-incarnation caused by vacuum (Vadim)
+fix SELECT varchar()/char() INTO TABLE made zero-length fields(Bruce)
+many psql, pg_dump, and libpq memory leaks fixed using Purify (Igor)
+
+增强
+------------
+attribute optimization statistics(Bruce)
+much faster new btree bulk load code(Paul)
+BTREE UNIQUE added to bulk load code(Vadim) 
+new lock debug code(Massimo)
+massive changes to libpg++(Leo)
+new GEQO optimizer speeds table multitable optimization(Martin)
+new WARN message for non-unique insert into unique key(Marc)
+update x=-3, no spaces, now valid(Bruce)
+remove case-sensitive identifier handling(Bruce,Thomas,Dan)
+debug backend now pretty-prints tree(Darren)
+new Oracle character functions(Edmund)
+new plaintext password functions(Dan)
+no such class or insufficient privilege changed to distinct messages(Dan)
+new ANSI timestamp function(Dan)
+new ANSI Time and Date types (Thomas)
+move large chunks of data in backend(Martin)
+multicolumn btree indexes(Vadim)
+new SET var TO value command(Martin)
+update transaction status on reads(Dan)
+new locale settings for character types(Oleg)
+new SEQUENCE serial number generator(Vadim)
+GROUP BY function now possible(Vadim)
+re-organize regression test(Thomas,Marc)
+new optimizer operation weights(Vadim)
+new psql \z grant/permit option(Marc)
+new MONEY data type(D'Arcy,Thomas)
+tcp socket communication speed improved(Vadim)
+new VACUUM option for attribute statistics, and for certain columns (Vadim)
+many geometric type improvements(Thomas,Keith)
+additional regression tests(Thomas)
+new datestyle variable(Thomas,Vadim,Martin)
+more comparison operators for sorting types(Thomas)
+new conversion functions(Thomas)
+new more compact btree format(Vadim)
+allow pg_dumpall to preserve database ownership(Bruce)
+new SET GEQO=# and R_PLANS variable(Vadim)
+old (!GEQO) optimizer can use right-sided plans (Vadim)
+typechecking improvement in SQL parser(Bruce)
+new SET, SHOW, RESET commands(Thomas,Vadim)
+new \connect database USER option
+new destroydb -i option (Igor)
+new \dt and \di psql commands (Darren)
+SELECT "\n" now escapes newline (A. Duursma)
+new geometry conversion functions from old format (Thomas)
+
+源代码树修改
+-------------------
+new configuration script(Marc)
+readline configuration option added(Marc)
+OS-specific configuration options removed(Marc)
+new OS-specific template files(Marc)
+no more need to edit Makefile.global(Marc)
+re-arrange include files(Marc)
+nextstep patches (Gregor Hoffleit)
+removed WIN32-specific code(Bruce)
+removed postmaster -e option, now only postgres -e option (Bruce)
+merge duplicate library code in front/backends(Martin)
+now works with eBones, international Kerberos(Jun)
+more shared library support
+c++ include file cleanup(Bruce)
+warn about buggy flex(Bruce)
+DG/UX, Ultrix, Irix, AIX portability fixes</PRE
+><P></P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="release-6-1-1.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="release-6-0.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >版本 6.1.1</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="release.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >版本 6.0</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

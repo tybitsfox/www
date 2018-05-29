@@ -1,0 +1,15 @@
+<html><head><title>给定一个进程号，我怎样知道它是个正在运行的程序？</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="进程控制" href="./c46.htm"><link rel="PREVIOUS" title="我怎样象ps程序一样审视系统的进程？" href="./x215.htm"><link rel="NEXT" title="system函数，pclose函数，waitpid函数的返回值是什么？" href="./x244.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x215.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 1. 进程控制</td><td align="right" valign="bottom" width="10%"><a href="./x244.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN221">1.9. 给定一个进程号，我怎样知道它是个正在运行的程序？</a></h1><p>使用‘kill()’函数，而已0作为信号代码(signal number)。
+    </p><p>从这个函数返回有四种可能的结果：
+    </p><p></p><div class="VARIABLELIST"><dl><dt>‘kill()’返回0</dt><dd><p>	 这意味着一个给定此进程号的进程退出，系统允许你向它发送信号。该进
+         程是否可以是僵死进程与不同系统有关。
+	  </p></dd><dt>‘kill()’返回-1，‘errno == ESRCH’</dt><dd><p>         要么不存在给定进程号的进程，要么增强的安全机制导致系统否认它的存
+         在。(在一些系统上，这个进程有可能是僵死进程。)
+	  </p></dd><dt>‘kill()’返回-1，‘errno == EPERM’</dt><dd><p>         系统不允许你杀死(kill)这个特定进程。这意味着要么进程存在(它又可能是
+         僵死进程)，要么严格的增强安全机制起作用(比如你的进程不允许发送信号
+         给*任何人*)。
+	  </p></dd><dt>‘kill()’返回-1，伴以其它‘errno’值</dt><dd><p>         你有麻烦了！
+	  </p></dd></dl></div><p>用的最多的技巧是认为调用“成功”或伴以‘EPERM’的“失败”意味着进程存
+在，而其它错误意味着它不存在。
+    </p><p>如果你特别为提供‘/proc’文件系统的系统(或所有类似系统)写程序，一个替换
+方法存在：检查‘proc/进程号’是否存在是可行的。
+    </p></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x215.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x244.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">我怎样象ps程序一样审视系统的进程？</td><td align="center" valign="top" width="34%"><a href="./c46.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">system函数，pclose函数，waitpid函数的返回值是什么？</td></tr></tbody></table></div></body></html>

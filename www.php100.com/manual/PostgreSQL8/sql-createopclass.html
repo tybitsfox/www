@@ -1,0 +1,437 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>CREATE OPERATOR CLASS PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="CREATE OPERATOR" HREF="sql-createoperator.html"><LINK REL="NEXT" TITLE="CREATE ROLE" HREF="sql-createrole.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-createoperator.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-createoperator.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-createrole.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-createrole.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-CREATEOPCLASS" >CREATE OPERATOR CLASS</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN42464" ></A
+><H2
+>Name</H2
+>CREATE OPERATOR CLASS&nbsp;--&nbsp;定义一个新的操作符表</DIV
+><A NAME="AEN42467" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN42469" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>CREATE OPERATOR CLASS <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> [ DEFAULT ] FOR TYPE <TT
+CLASS="REPLACEABLE"
+><I
+>data_type</I
+></TT
+> USING <TT
+CLASS="REPLACEABLE"
+><I
+>index_method</I
+></TT
+> AS
+  {  OPERATOR <TT
+CLASS="REPLACEABLE"
+><I
+>strategy_number</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>operator_name</I
+></TT
+> [ ( <TT
+CLASS="REPLACEABLE"
+><I
+>op_type</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>op_type</I
+></TT
+> ) ] [ RECHECK ]
+   | FUNCTION <TT
+CLASS="REPLACEABLE"
+><I
+>support_number</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>funcname</I
+></TT
+> ( <TT
+CLASS="REPLACEABLE"
+><I
+>argument_type</I
+></TT
+> [, ...] )
+   | STORAGE <TT
+CLASS="REPLACEABLE"
+><I
+>storage_type</I
+></TT
+>
+  } [, ... ]</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42482" ></A
+><H2
+>描述</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>CREATE OPERATOR CLASS</TT
+> 定义一个新的操作符表。
+	一个操作符表定义一种特定的数据类型可以如何与一种索引一起使用。
+	操作符表声明特定的操作符可以为这种数据类型以及这种索引方法填充特定角色或者<SPAN
+CLASS="QUOTE"
+>"策略"</SPAN
+>。
+	操作符表还声明索引方法在为一个索引字段选定该操作符表的时候要使用的支持过程。
+	所有操作符表使用的函数和操作符都必须在创建操作符表之前定义。
+  </P
+><P
+>	如果给出了模式名字，那么操作符表就在指定的模式中创建。
+	否则就在当前模式中创建（在搜索路径前面的那个；参阅 <TT
+CLASS="LITERAL"
+>CURRENT_SCHEMA()</TT
+>）。
+	在同一个模式中的两个操作符表可以有同样的名字，但它们必须用于不同的索引方法。
+  </P
+><P
+>	定义操作符表的用户成为其所有者。目前，创造者必须是超级用户。
+	（作这样的限制是因为一个有问题的操作符表定义会让服务器困惑，甚至崩溃。）
+  </P
+><P
+>	目前 <TT
+CLASS="COMMAND"
+>CREATE OPERATOR CLASS</TT
+> 并不检查这个类定义是否包含所有索引方法需要操作符以及函数。
+	定义一个合法的操作符表是用户的责任。
+  </P
+><P
+>	参考 <A HREF="xindex.html" >Section 32.14</A
+> 获取更多信息。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42494" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+></DT
+><DD
+><P
+>	将要创建的操作符表的名字。名字可以用模式修饰。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>DEFAULT</TT
+></DT
+><DD
+><P
+>	如果出现了这个键字，那么该操作符表将成为它的数据类型的缺省操作符表。
+	对于某个数据类型和访问方式而言，最多可以有一个操作符表是缺省的。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>data_type</I
+></TT
+></DT
+><DD
+><P
+>	这个操作符表处理的字段数据类型。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>index_method</I
+></TT
+></DT
+><DD
+><P
+>	这个操作符表处理的索引访问方式的名字。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>strategy_number</I
+></TT
+></DT
+><DD
+><P
+>	一个操作符和这个操作符表关联的索引访问方式的策略数。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>operator_name</I
+></TT
+></DT
+><DD
+><P
+>	一个和该操作符表关联的操作符的名字（可以用模式修饰）。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>op_type</I
+></TT
+></DT
+><DD
+><P
+>	一个操作符的输入数据类型，或者是 <TT
+CLASS="LITERAL"
+>NONE</TT
+> 表示左目或者右目操作符。
+	通常情况下可以省略输入数据类型，因为这个时候它们和操作符表的数据类型相同。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>RECHECK</TT
+></DT
+><DD
+><P
+>	如果出现，那么索引对这个操作符是<SPAN
+CLASS="QUOTE"
+>"lossy"</SPAN
+>（有损耗的），
+	因此，使用这个索引检索的行必须重新检查，以保证它们真正满足和此操作符相关的条件子句。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>support_number</I
+></TT
+></DT
+><DD
+><P
+>	索引方法对一个与操作符表关联的函数的支持过程数。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>funcname</I
+></TT
+></DT
+><DD
+><P
+>	一个函数的名字（可以有模式修饰），这个函数是索引访问方式对此操作符表的支持过程。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>argument_types</I
+></TT
+></DT
+><DD
+><P
+>	函数的参数数据类型。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>storage_type</I
+></TT
+></DT
+><DD
+><P
+>	实际存储在索引里的数据类型。通常它和字段数据类型相同，
+	但是一些索引方法（到目前为止只有 GIST）允许它是不同的。
+	除非索引方法允许使用一种不同的类型，否则必须省略 <TT
+CLASS="LITERAL"
+>STORAGE</TT
+> 子句。
+       </P
+></DD
+></DL
+></DIV
+><P
+>	<TT
+CLASS="LITERAL"
+>OPERATOR</TT
+>，<TT
+CLASS="LITERAL"
+>FUNCTION</TT
+>，和 <TT
+CLASS="LITERAL"
+>STORAGE</TT
+>
+	子句可以按照任意顺序出现。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42564" ></A
+><H2
+>注意</H2
+><P
+>   操作符不应该用 SQL 函数定义。一个 SQL 函数很可能是内联到调用它的查询里面，
+   这样将阻止优化器识别这个查询是否可以使用索引。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42567" ></A
+><H2
+>例子</H2
+><P
+>	下面的例子命令为数据类型 <TT
+CLASS="LITERAL"
+>_int4</TT
+>（<TT
+CLASS="LITERAL"
+>int4</TT
+> 的数组）定义了一个 GiST 索引操作符表。
+	参阅 <TT
+CLASS="FILENAME"
+>contrib/intarray/</TT
+> 获取完整的例子。
+  </P
+><PRE
+CLASS="PROGRAMLISTING"
+>CREATE OPERATOR CLASS gist__int_ops
+    DEFAULT FOR TYPE _int4 USING gist AS
+        OPERATOR        3       &#38;&#38;,
+        OPERATOR        6       =       RECHECK,
+        OPERATOR        7       @,
+        OPERATOR        8       ~,
+        OPERATOR        20      @@ (_int4, query_int),
+        FUNCTION        1       g_int_consistent (internal, _int4, int4),
+        FUNCTION        2       g_int_union (bytea, internal),
+        FUNCTION        3       g_int_compress (internal),
+        FUNCTION        4       g_int_decompress (internal),
+        FUNCTION        5       g_int_penalty (internal, internal, internal),
+        FUNCTION        6       g_int_picksplit (internal, internal),
+        FUNCTION        7       g_int_same (_int4, _int4, internal);</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42574" ></A
+><H2
+>兼容性</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>CREATE OPERATOR CLASS</TT
+> 是一个
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 扩展。
+	在 SQL 标准中没有 <TT
+CLASS="COMMAND"
+>CREATE OPERATOR CLASS</TT
+>。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42580" ></A
+><H2
+>又见</H2
+><A HREF="sql-alteropclass.html" ><I
+>ALTER OPERATOR CLASS</I
+></A
+>, <A HREF="sql-dropopclass.html" ><I
+>DROP OPERATOR CLASS</I
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-createoperator.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-createrole.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >CREATE OPERATOR</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >CREATE ROLE</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

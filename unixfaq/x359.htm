@@ -1,0 +1,61 @@
+<html><head><title>我如何锁住一个文件？</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="一般文件操作(包括管道和套接字)" href="./c300.htm"><link rel="PREVIOUS" title="我如何才能知道一个文件被另外进程打开？" href="./x355.htm"><link rel="NEXT" title="我如何能发现一个文件已由另外一个进程更新？" href="./x374.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x355.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 2. 一般文件操作(包括管道和套接字)</td><td align="right" valign="bottom" width="10%"><a href="./x374.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN359">2.5. 我如何锁住一个文件？</a></h1><p>有三种不同的文件锁，这三种都是“咨询性”的，也就是说它们依靠程序之间的
+合作，所以一个项目中的所有程序封锁政策的一致是非常重要的，当你的程序需
+要和第三方软件共享文件时应该格外地小心。
+    </p><p>有些程序利用诸如 FIlENAME.lock 的文件锁文件，然后简单地测试此类文件是否
+存在。这种方法显然不太好，因为当产生文件的进程被杀后，锁文件依然存在，
+这样文件也许会被永久锁住。UUCP中把产生文件的进程号PID存入文件，但这样做
+仍然不保险，因为PID的利用是回收型的。
+    </p><p>这里是三个文件锁函数：
+    </p><pre class="PROGRAMLISTING">     flock();
+     lockf();
+     fcntl();
+    </pre><p>flock()是从BSD中衍生出来的，但目前在大多数UNIX系统上都能找到，在单个主
+机上flock()简单有效，但它不能在NFS上工作。Perl中也有一个有点让人迷惑的
+flock()函数，但却是在perl内部实现的。
+    </p><p>fcntl()是唯一的符合POSIX标准的文件锁实现，所以也是唯一可移植的。它也同
+时是最强大的文件锁――也是最难用的。在NFS文件系统上，fcntl()请求会被递
+交给叫rpc.lockd的守护进程，然后由它负责和主机端的lockd对话，和flock()
+不同，fcntl()可以实现记录层上的封锁。
+    </p><p>lockf()只是一个简化了的fcntl()文件锁接口。
+    </p><p>无论你使用哪一种文件锁，请一定记住在锁生效之前用sync来更新你所有的文件
+输入/输出。
+    </p><pre class="PROGRAMLISTING">      lock(fd);
+      write_to(some_function_of(fd));
+      flush_output_to(fd); /* 在去锁之前一定要冲洗输出 */
+      unlock(fd);
+      do_something_else;   /* 也许另外一个进程会更新它 */
+      lock(fd);
+      seek(fd, somewhere); /* 因为原来的文件指针已不安全 */
+      do_something_with(fd);
+      ...
+    </pre><p>一些有用的fcntl()封锁方法(为了简洁略去错误处理):
+    </p><pre class="PROGRAMLISTING">     #include &lt;fcntl.h&gt;
+     #include &lt;unistd.h&gt;
+    
+     read_lock(int fd)   /* 整个文件上的一个共享的文件锁 */
+     {
+         fcntl(fd, F_SETLKW, file_lock(F_RDLCK, SEEK_SET));
+     }
+    
+     write_lock(int fd)  /* 整个文件上的一个排外文件锁 */
+     {
+         fcntl(fd, F_SETLKW, file_lock(F_WRLCK, SEEK_SET));
+     }
+    
+     append_lock(int fd) /* 一个封锁文件结尾的锁，
+                            其他进程可以访问现有内容 */
+     {
+         fcntl(fd, F_SETLKW, file_lock(F_WRLCK, SEEK_END));
+     }
+    </pre><p>前面所用的file_lock函数如下：
+    </p><pre class="PROGRAMLISTING">     struct flock* file_lock(short type, short whence)
+     {
+         static struct flock ret ;
+         ret.l_type = type ;
+         ret.l_start = 0 ;
+         ret.l_whence = whence ;
+         ret.l_len = 0 ;
+         ret.l_pid = getpid() ;
+         return &amp;ret ;
+     }
+    </pre></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x355.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x374.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">我如何才能知道一个文件被另外进程打开？</td><td align="center" valign="top" width="34%"><a href="./c300.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">我如何能发现一个文件已由另外一个进程更新？</td></tr></tbody></table></div></body></html>

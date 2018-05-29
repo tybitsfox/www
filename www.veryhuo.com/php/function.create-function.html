@@ -1,0 +1,82 @@
+<HTML><HEAD><TITLE>create_function</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Function Handling Functions" HREF="ref.funchand.html"><LINK REL="PREVIOUS" TITLE="call_user_func" HREF="function.call-user-func.html"><LINK REL="NEXT" TITLE="func_get_arg" HREF="function.func-get-arg.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.call-user-func.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.func-get-arg.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.create-function"></A>create_function</H1><DIV CLASS="refnamediv"><A NAME="AEN32258"></A><P> (PHP 4 &#62;= 4.0.1)</P>create_function&nbsp;--&nbsp;Create an anonymous (lambda-style) function</DIV><DIV CLASS="refsect1"><A NAME="AEN32261"></A><H2>Description</H2>string <B CLASS="methodname">create_function</B> ( string args, string code)<BR></BR><P>&#13; Creates an anonymous function from the parameters passed, and
+returns a unique name for it. Usually the
+<TT CLASS="parameter"><I>args</I></TT> will be passed as a single quote
+delimited string, and this is also recommended for the
+<TT CLASS="parameter"><I>code</I></TT>. The reason for using single quoted
+strings, is to protect
+the variable names from parsing, otherwise, if you use double
+quotes there will be a need to escape the variable names, e.g.
+<TT CLASS="literal">\$avar</TT>.
+</P><P>&#13; You can use this function, to (for example) create a function
+from information gathered at run time:
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN32278"></A><P><B>例子 1.
+Creating an anonymous function with <B CLASS="function">create_function()</B>
+</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$newfunc </font><font color="#007700">= </font><font color="#0000BB">create_function</font><font color="#007700">(</font><font color="#DD0000">'$a,$b'</font><font color="#007700">, </font><font color="#DD0000">'return "ln($a) + ln($b) = " . log($a * $b);'</font><font color="#007700">);<br />echo </font><font color="#DD0000">"New anonymous function: $newfunc\n"</font><font color="#007700">;<br />echo </font><font color="#0000BB">$newfunc</font><font color="#007700">(</font><font color="#0000BB">2</font><font color="#007700">, </font><font color="#0000BB">M_E</font><font color="#007700">) . </font><font color="#DD0000">"\n"</font><font color="#007700">;<br /></font><font color="#FF8000">// outputs<br />// New anonymous function: lambda_1<br />// ln(2) + ln(2.718281828459) = 1.6931471805599<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; Or, perhaps to have general handler function that can apply a set
+of operations to a list of parameters:
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN32284"></A><P><B>例子 2.
+Making a general processing function with
+<B CLASS="function">create_function()</B>
+</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#007700">function </font><font color="#0000BB">process</font><font color="#007700">(</font><font color="#0000BB">$var1</font><font color="#007700">, </font><font color="#0000BB">$var2</font><font color="#007700">, </font><font color="#0000BB">$farr</font><font color="#007700">) <br />{<br />&nbsp;&nbsp;&nbsp;&nbsp;for (</font><font color="#0000BB">$f</font><font color="#007700">=</font><font color="#0000BB">0</font><font color="#007700">; </font><font color="#0000BB">$f </font><font color="#007700">&lt; </font><font color="#0000BB">count</font><font color="#007700">(</font><font color="#0000BB">$farr</font><font color="#007700">); </font><font color="#0000BB">$f</font><font color="#007700">++) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#0000BB">$farr</font><font color="#007700">[</font><font color="#0000BB">$f</font><font color="#007700">](</font><font color="#0000BB">$var1</font><font color="#007700">, </font><font color="#0000BB">$var2</font><font color="#007700">) . </font><font color="#DD0000">"\n"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />}<br /><br /></font><font color="#FF8000">// create a bunch of math functions<br /></font><font color="#0000BB">$f1 </font><font color="#007700">= </font><font color="#DD0000">'if ($a &gt;=0) {return "b*a^2 = ".$b*sqrt($a);} else {return false;}'</font><font color="#007700">;<br /></font><font color="#0000BB">$f2 </font><font color="#007700">= </font><font color="#DD0000">"return \"min(b^2+a, a^2,b) = \".min(\$a*\$a+\$b,\$b*\$b+\$a);"</font><font color="#007700">;<br /></font><font color="#0000BB">$f3 </font><font color="#007700">= </font><font color="#DD0000">'if ($a &gt; 0 &amp;&amp; $b != 0) {return "ln(a)/b = ".log($a)/$b; } else { return false; }'</font><font color="#007700">;<br /></font><font color="#0000BB">$farr </font><font color="#007700">= array(<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">create_function</font><font color="#007700">(</font><font color="#DD0000">'$x,$y'</font><font color="#007700">, </font><font color="#DD0000">'return "some trig: ".(sin($x) + $x*cos($y));'</font><font color="#007700">),<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">create_function</font><font color="#007700">(</font><font color="#DD0000">'$x,$y'</font><font color="#007700">, </font><font color="#DD0000">'return "a hypotenuse: ".sqrt($x*$x + $y*$y);'</font><font color="#007700">),<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">create_function</font><font color="#007700">(</font><font color="#DD0000">'$a,$b'</font><font color="#007700">, </font><font color="#0000BB">$f1</font><font color="#007700">),<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">create_function</font><font color="#007700">(</font><font color="#DD0000">'$a,$b'</font><font color="#007700">, </font><font color="#0000BB">$f2</font><font color="#007700">),<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">create_function</font><font color="#007700">(</font><font color="#DD0000">'$a,$b'</font><font color="#007700">, </font><font color="#0000BB">$f3</font><font color="#007700">)<br />&nbsp;&nbsp;&nbsp;&nbsp;);<br /><br />echo </font><font color="#DD0000">"\nUsing the first array of anonymous functions\n"</font><font color="#007700">;<br />echo </font><font color="#DD0000">"parameters: 2.3445, M_PI\n"</font><font color="#007700">;<br /></font><font color="#0000BB">process</font><font color="#007700">(</font><font color="#0000BB">2.3445</font><font color="#007700">, </font><font color="#0000BB">M_PI</font><font color="#007700">, </font><font color="#0000BB">$farr</font><font color="#007700">);<br /><br /></font><font color="#FF8000">// now make a bunch of string processing functions<br /></font><font color="#0000BB">$garr </font><font color="#007700">= array(<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">create_function</font><font color="#007700">(</font><font color="#DD0000">'$b,$a'</font><font color="#007700">, </font><font color="#DD0000">'if (strncmp($a, $b, 3) == 0) return "** \"$a\" '</font><font color="#007700">.<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#DD0000">'and \"$b\"\n** Look the same to me! (looking at the first 3 chars)";'</font><font color="#007700">),<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">create_function</font><font color="#007700">(</font><font color="#DD0000">'$a,$b'</font><font color="#007700">, </font><font color="#DD0000">'; return "CRCs: " . crc32($a) . " , ".crc32(b);'</font><font color="#007700">),<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">create_function</font><font color="#007700">(</font><font color="#DD0000">'$a,$b'</font><font color="#007700">, </font><font color="#DD0000">'; return "similar(a,b) = " . similar_text($a, $b, &amp;$p) . "($p%)";'</font><font color="#007700">)<br />&nbsp;&nbsp;&nbsp;&nbsp;);<br />echo </font><font color="#DD0000">"\nUsing the second array of anonymous functions\n"</font><font color="#007700">;<br /></font><font color="#0000BB">process</font><font color="#007700">(</font><font color="#DD0000">"Twas brilling and the slithy toves"</font><font color="#007700">, </font><font color="#DD0000">"Twas the night"</font><font color="#007700">, </font><font color="#0000BB">$garr</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P>&#13; and when you run the code above, the output will be:
+</P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">Using the first array of anonymous functions
+parameters: 2.3445, M_PI
+some trig: -1.6291725057799
+a hypotenuse: 3.9199852871011
+b*a^2 = 4.8103313314525
+min(b^2+a, a^2,b) = 8.6382729035898
+ln(a/b) = 0.27122299212594
+
+Using the second array of anonymous functions
+** "Twas the night" and "Twas brilling and the slithy toves"
+** Look the same to me! (looking at the first 3 chars)
+CRCs: -725381282 , 1908338681
+similar(a,b) = 11(45.833333333333%)</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; But perhaps the most common use for of lambda-style (anonymous) functions
+is to create callback functions, for example when using
+<A HREF="function.array-walk.html"><B CLASS="function">array_walk()</B></A> or <A HREF="function.usort.html"><B CLASS="function">usort()</B></A>
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN32294"></A><P><B>例子 3. Using anonymous functions as callback functions</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$av </font><font color="#007700">= array(</font><font color="#DD0000">"the "</font><font color="#007700">, </font><font color="#DD0000">"a "</font><font color="#007700">, </font><font color="#DD0000">"that "</font><font color="#007700">, </font><font color="#DD0000">"this "</font><font color="#007700">);<br /></font><font color="#0000BB">array_walk</font><font color="#007700">(</font><font color="#0000BB">$av</font><font color="#007700">, </font><font color="#0000BB">create_function</font><font color="#007700">(</font><font color="#DD0000">'&amp;$v,$k'</font><font color="#007700">, </font><font color="#DD0000">'$v = $v . "mango";'</font><font color="#007700">));<br /></font><font color="#0000BB">print_r</font><font color="#007700">(</font><font color="#0000BB">$av</font><font color="#007700">); <br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P>&#13; outputs:
+</P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">Array
+(
+  [0] =&#62; the mango
+  [1] =&#62; a mango
+  [2] =&#62; that mango
+  [3] =&#62; this mango
+)</PRE></TD></TR></TABLE><P>&#13; an array of strings ordered from shorter to longer
+</P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /><br />$sv </font><font color="#007700">= array(</font><font color="#DD0000">"small"</font><font color="#007700">, </font><font color="#DD0000">"larger"</font><font color="#007700">, </font><font color="#DD0000">"a big string"</font><font color="#007700">, </font><font color="#DD0000">"it is a string thing"</font><font color="#007700">);<br /></font><font color="#0000BB">print_r</font><font color="#007700">(</font><font color="#0000BB">$sv</font><font color="#007700">);<br /><br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P>&#13; outputs:
+</P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">Array
+(
+  [0] =&#62; small
+  [1] =&#62; larger
+  [2] =&#62; a big string
+  [3] =&#62; it is a string thing
+)</PRE></TD></TR></TABLE><P>&#13; sort it from longer to shorter
+</P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /><br />usort</font><font color="#007700">(</font><font color="#0000BB">$sv</font><font color="#007700">, </font><font color="#0000BB">create_function</font><font color="#007700">(</font><font color="#DD0000">'$a,$b'</font><font color="#007700">,</font><font color="#DD0000">'return strlen($b) - strlen($a);'</font><font color="#007700">));<br /></font><font color="#0000BB">print_r</font><font color="#007700">(</font><font color="#0000BB">$sv</font><font color="#007700">);<br /><br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P>&#13; outputs:
+</P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">Array
+(
+  [0] =&#62; it is a string thing
+  [1] =&#62; a big string
+  [2] =&#62; larger
+  [3] =&#62; small
+)</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.call-user-func.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.func-get-arg.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">call_user_func</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.funchand.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">func_get_arg</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

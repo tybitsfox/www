@@ -1,0 +1,221 @@
+<HTML
+><HEAD
+><TITLE
+>预写式日志（WAL）</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="可靠性和预写式日志"
+HREF="wal.html"><LINK
+REL="PREVIOUS"
+TITLE="可靠性和预写式日志"
+HREF="wal.html"><LINK
+REL="NEXT"
+TITLE="WAL 配置"
+HREF="wal-configuration.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="wal.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="wal.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 26. 可靠性和预写式日志</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="wal.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="wal-configuration.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="WAL-INTRO"
+>26.2. 预写式日志（<SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+>）</A
+></H1
+><A
+NAME="AEN24120"
+></A
+><A
+NAME="AEN24122"
+></A
+><P
+>	<I
+CLASS="FIRSTTERM"
+>预写式日志</I
+> （<SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+>）
+	是一种实现事务日志的标准方法。有关它的详细描述可以在大多数（如果不是全部的话）有关事务处理的书中找到。
+	简而言之，<SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+>
+	的中心思想是对数据文件的修改（它们是表和索引的载体）必须是只能发生在这些修改已经记录了日志之后，
+	也就是说，在描述这些变化的日志记录冲刷到永久存储器之后。
+	如果我们遵循这个过程，那么我们就不需要在每次事务提交的时候都把数据页冲刷到磁盘，因为我们知道在出现崩溃的情况下，
+	我们可以用日志来恢复数据库：任何尚未附加到数据页的记录都将先从日志记录中重做（这叫向前滚动恢复，也叫做 REDO）。
+  </P
+><P
+>	使用 <SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 的第一个主要的好处就是显著地减少了磁盘写的次数。
+	因为在日志提交的时候只有日志文件需要冲刷到磁盘；而不是事务修改的所有数据文件。
+	在多用户环境里，许多事务的提交可以用日志文件的一次
+	<TT
+CLASS="FUNCTION"
+>fsync</TT
+> 来完成。而且，日志文件是顺序写的，
+	因此同步日志的开销要远比同步数据页的开销要小。
+	这一点对于许多小事务修改数据存储的许多不同的位置更是如此。
+  </P
+><P
+>	<SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 还提供了数据库在线备份和恢复（backup and restore (<SPAN
+CLASS="ACRONYM"
+>BAR</SPAN
+>)）的可能，
+	就像 <A
+HREF="backup-online.html"
+>Section 23.3</A
+> 里描述的那样。
+	通过归档的 WAL 文件，我们可以支持恢复到手头的 WAL 文件包含的任意时刻：
+	我们只需要简单地安装以前的数据库的物理备份，然后重放 WAL 到自己希望的时间。
+	另外，物理备份还不必是数据库状态的一个即时快照 &mdash; 如果它是花了一段时间制作的话，
+	因为 WAL 日志的重放将修复任何内部的不一致。
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="wal.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="wal-configuration.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>可靠性和预写式日志</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="wal.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 配置</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

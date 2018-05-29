@@ -1,0 +1,397 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>索引访问方法函数 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="索引访问方法接口定义" HREF="indexam.html"><LINK REL="PREVIOUS" TITLE="索引访问方法接口定义" HREF="indexam.html"><LINK REL="NEXT" TITLE="索引扫描" HREF="index-scanning.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="indexam.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="indexam.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 48. 索引访问方法接口定义</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="indexam.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="index-scanning.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="INDEX-FUNCTIONS" >48.2. 索引访问方法函数</A
+></H1
+><P
+>   索引访问方法必须提供的索引构造和维护函数有：
+  </P
+><P
+></P><PRE
+CLASS="PROGRAMLISTING"
+>void
+ambuild (Relation heapRelation,
+         Relation indexRelation,
+         IndexInfo *indexInfo);</PRE
+><P>
+   创建一个新索引。索引关系已经物理上创建好了，但是是空的。
+   必须用索引访问方法要求的固定数据填充它，还有就是所有已经在表里的元组。
+   通常，<TT
+CLASS="FUNCTION"
+>ambuild</TT
+> 函数会调用 <TT
+CLASS="FUNCTION"
+>IndexBuildHeapScan()</TT
+>
+   扫描该表以获取现有元组并计算需要插入索引的键字。
+  </P
+><P
+></P><PRE
+CLASS="PROGRAMLISTING"
+>bool
+aminsert (Relation indexRelation,
+          Datum *values,
+          bool *isnull,
+          ItemPointer heap_tid,
+          Relation heapRelation,
+          bool check_uniqueness);</PRE
+><P>
+   向现有索引插入一个新元组。<TT
+CLASS="LITERAL"
+>values</TT
+> 和 <TT
+CLASS="LITERAL"
+>isnull</TT
+> 数组给出需要制作索引的键字值，
+   而 <TT
+CLASS="LITERAL"
+>heap_tid</TT
+> 是要被索引的 TID。
+   如果该访问方法支持唯一索引（它的 <TT
+CLASS="STRUCTNAME"
+>pg_am</TT
+>.<TT
+CLASS="STRUCTFIELD"
+>amcanunique</TT
+> 标志是真），
+   那么 <TT
+CLASS="LITERAL"
+>check_uniqueness</TT
+> 可以是真，在这种情况下，该索引访问方法必须校验表中不存在冲突的行；
+   通常这是该索引访问方法会需要 <TT
+CLASS="LITERAL"
+>heapRelation</TT
+> 参数的唯一的情况。
+   参阅 <A HREF="index-unique-checks.html" >Section 48.5</A
+> 获取细节。
+   如果插入了索引记录，则返回 TRUE，否则返回 FALSE。
+   （FALSE 结果并不表明发生了错误，只是用于类似一种索引访问方法（AM）拒绝给 NULL 建索引或者类似的场合。）
+  </P
+><P
+></P><PRE
+CLASS="PROGRAMLISTING"
+>IndexBulkDeleteResult *
+ambulkdelete (Relation indexRelation,
+              IndexBulkDeleteCallback callback,
+              void *callback_state);</PRE
+><P>
+   从索引中删除元组。这是一个<SPAN
+CLASS="QUOTE"
+>"大批删除"</SPAN
+>的操作，
+   通常都是通过扫描整个索引，检查每条记录，看看它是否需要被删除来实现的。
+   我们可以调用传递进来的 <TT
+CLASS="LITERAL"
+>callback</TT
+> 函数，调用风格是：
+   <TT
+CLASS="LITERAL"
+>callback(<TT
+CLASS="REPLACEABLE"
+><I
+>TID</I
+></TT
+>, callback_state) returns bool</TT
+>，
+   其作用是判断某个用其引用的 TID 标识的索引条目是否需要删除。
+   必须返回 NULL 或者是一个 palloc 出来的，包含删除操作之效果的统计的结构。
+  </P
+><P
+></P><PRE
+CLASS="PROGRAMLISTING"
+>IndexBulkDeleteResult *
+amvacuumcleanup (Relation indexRelation,
+                 IndexVacuumCleanupInfo *info,
+                 IndexBulkDeleteResult *stats);</PRE
+><P>
+   在一个 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 操作（一个或多个 <TT
+CLASS="FUNCTION"
+>ambulkdelete</TT
+> 调用）之后清理。
+   一个索引访问方法不一定非要提供这个函数（如果提供了，那么在 <TT
+CLASS="STRUCTNAME"
+>pg_am</TT
+> 里的记录必须为零）。
+   如果提供了这个函数，它通常用于批量清理，比如说回收空的索引页面。
+   <TT
+CLASS="LITERAL"
+>info</TT
+> 提供了一些额外的参数，比如用于统计报告的消息级别，
+   而 <TT
+CLASS="LITERAL"
+>stats</TT
+> 是最后的 <TT
+CLASS="FUNCTION"
+>ambulkdelete</TT
+> 调用返回的东西。
+   <TT
+CLASS="FUNCTION"
+>amvacuumcleanup</TT
+> 可以在返回这个结构之前替换或者修改它。
+   如果结果不是 NULL，那么它必须是一个 palloc 出来的结构。
+   如果给出了 <TT
+CLASS="LITERAL"
+>VERBOSE</TT
+>，那么其包含的统计信息将被 <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> 报告。
+  </P
+><P
+>   索引的目的当然是支持那些包含一个可以索引的 <TT
+CLASS="LITERAL"
+>WHERE</TT
+> 条件之元组的扫描，
+   这个条件通常叫<I
+CLASS="FIRSTTERM"
+>修饰词</I
+>或者<I
+CLASS="FIRSTTERM"
+>扫描键字</I
+>。
+   索引扫描的语义在下面的 <A HREF="index-scanning.html" >Section 48.3</A
+> 里面有更完整的描述。
+   一个索引访问方法必须提供的与扫描有关的函数有：
+  </P
+><P
+></P><PRE
+CLASS="PROGRAMLISTING"
+>IndexScanDesc
+ambeginscan (Relation indexRelation,
+             int nkeys,
+             ScanKey key);</PRE
+><P>
+   开始一个新的扫描。<TT
+CLASS="LITERAL"
+>key</TT
+> 数组（长度是 <TT
+CLASS="LITERAL"
+>nkeys</TT
+>）为该索引扫描描述索引键字（可能是多个）。
+   结果必须是一个 palloc 出来的结构。由于实现的原因，索引访问方法<I
+CLASS="EMPHASIS"
+>必须</I
+>通过调用
+   <TT
+CLASS="FUNCTION"
+>RelationGetIndexScan()</TT
+> 来创建这个结构。
+   在大多数情况下，<TT
+CLASS="FUNCTION"
+>ambeginscan</TT
+> 本身除了调用上面这个函数之外几乎不干别的事情；
+   索引扫描启动时的有趣部分在 <TT
+CLASS="FUNCTION"
+>amrescan</TT
+> 里。
+  </P
+><P
+></P><PRE
+CLASS="PROGRAMLISTING"
+>boolean
+amgettuple (IndexScanDesc scan,
+            ScanDirection direction);</PRE
+><P>
+   在给出的扫描里抓取下一个元组，向给出的方向移动（在索引里向前或者向后）。
+   如果抓取到了元组，则返回 TRUE，如果没有抓到匹配的元组，返回 FALSE。
+   在为 TRUE 的时候，该元组的 TID 存储在 <TT
+CLASS="LITERAL"
+>scan</TT
+> 结构里。
+   请注意<SPAN
+CLASS="QUOTE"
+>"成功"</SPAN
+>只是意味着索引包含一个匹配扫描键字的条目，
+   并不是说该元组仍然在堆中存在，或者是能够通过调用着的快照检查（译注：MVCC 快照，用于判断事务边界内的元组可视性）。
+  </P
+><P
+></P><PRE
+CLASS="PROGRAMLISTING"
+>boolean
+amgetmulti (IndexScanDesc scan,
+            ItemPointer tids,
+            int32 max_tids,
+            int32 *returned_tids);</PRE
+><P>
+   在给出的扫描里抓取多个元组。如果扫描需要继续，则返回 TRUE，如果没有剩下的匹配元组，返回 FALSE。
+   <TT
+CLASS="LITERAL"
+>tids</TT
+> 指向一个调用着提供的 <TT
+CLASS="LITERAL"
+>max_tids</TT
+> 条 <TT
+CLASS="STRUCTNAME"
+>ItemPointerData</TT
+> 记录的数组，
+   用于填充匹配元组的 TID。<TT
+CLASS="LITERAL"
+>*returned_tids</TT
+> 设置为实际返回的 TID 的数目。
+   这个数目可以小于 <TT
+CLASS="LITERAL"
+>max_tids</TT
+>，或者甚至是零，即使返回值是 TRUE 也如此。
+   （这样的设计就允许访问方法可以选择对其扫描的最高效的停止点，比如，在索引页的边界上。）
+   <TT
+CLASS="FUNCTION"
+>amgetmulti</TT
+> 和 <TT
+CLASS="FUNCTION"
+>amgettuple</TT
+> 不能在同义词索引扫描中使用；
+   在使用 <TT
+CLASS="FUNCTION"
+>amgetmulti</TT
+> 的时候还有其它限制，在 <A HREF="index-scanning.html" >Section 48.3</A
+> 里给出解释。
+  </P
+><P
+></P><PRE
+CLASS="PROGRAMLISTING"
+>void
+amrescan (IndexScanDesc scan,
+          ScanKey key);</PRE
+><P>
+   重启开始给出的扫描，可能使用的是一个新的扫描键字（要想继续使用原来的键字，
+   给 <TT
+CLASS="LITERAL"
+>key</TT
+> 传递一个 NULL）。请注意，我们不可能改变键字的个数。
+   实际上这个重新开始的特性是在一个嵌套循环连接选取了一个新的外层元组，因此需要一个新的键字比较值，
+   但扫描键字的结构仍然相同的时候使用的。
+   这个函数也被 <TT
+CLASS="FUNCTION"
+>RelationGetIndexScan()</TT
+> 调用，
+   因此这个函数既用于索引扫描的初始化设置，也用于重复扫描。
+  </P
+><P
+></P><PRE
+CLASS="PROGRAMLISTING"
+>void
+amendscan (IndexScanDesc scan);</PRE
+><P>
+   结束扫描并释放资源。不应该释放 <TT
+CLASS="LITERAL"
+>scan</TT
+> 本身，
+   但访问方法内部使用的任何锁或者销都应该释放。
+  </P
+><P
+></P><PRE
+CLASS="PROGRAMLISTING"
+>void
+ammarkpos (IndexScanDesc scan);</PRE
+><P>
+   标记当前扫描位置。访问方法只需要支持每次扫描里面有一个被记住的扫描位置。
+  </P
+><P
+></P><PRE
+CLASS="PROGRAMLISTING"
+>void
+amrestrpos (IndexScanDesc scan);</PRE
+><P>
+   把扫描恢复到最近标记的位置。
+  </P
+><P
+></P><PRE
+CLASS="PROGRAMLISTING"
+>void
+amcostestimate (PlannerInfo *root,
+                IndexOptInfo *index,
+                List *indexQuals,
+                Cost *indexStartupCost,
+                Cost *indexTotalCost,
+                Selectivity *indexSelectivity,
+                double *indexCorrelation);</PRE
+><P>
+   估计一个索引扫描的开销。这个函数在下面的 <A HREF="index-cost-estimation.html" >Section 48.6</A
+> 里详细描述。
+  </P
+><P
+>   通常，任何索引访问方法函数的 <TT
+CLASS="LITERAL"
+>pg_proc</TT
+> 记录都应该显示正确数目的参数，
+   只是把类型都声明为类型 <TT
+CLASS="TYPE"
+>internal</TT
+> （因为大多数参数的类型都是 SQL 不识别的类型，
+   并且我们不希望用户直接调用该函数）。返回类型根据具体情况声明为 <TT
+CLASS="TYPE"
+>void</TT
+>，
+   <TT
+CLASS="TYPE"
+>internal</TT
+>，或者 <TT
+CLASS="TYPE"
+>boolean</TT
+>。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="indexam.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="index-scanning.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >索引访问方法接口定义</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="indexam.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >索引扫描</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

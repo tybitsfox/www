@@ -1,0 +1,153 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>扩展性 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="GiST 索引" HREF="gist.html"><LINK REL="PREVIOUS" TITLE="GiST 索引" HREF="gist.html"><LINK REL="NEXT" TITLE="实现" HREF="gist-implementation.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="gist.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="gist.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 49. GiST 索引</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="gist.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="gist-implementation.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="GIST-EXTENSIBILITY" >49.2. 扩展性</A
+></H1
+><P
+>   通常，实现一种新的索引访问方法意味着大量的艰苦工作。我们必须理解数据库
+   的内部工作机制，比如锁的机制和预写日志。<SPAN
+CLASS="ACRONYM"
+>GiST</SPAN
+> 接口有
+   一个高层的抽象，只要求访问方法的实现者实现被访问的数据类型的语意。
+   <SPAN
+CLASS="ACRONYM"
+>GiST</SPAN
+> 层本身会处理并发，日志和搜索树结构的任务。
+ </P
+><P
+>   我们不要把这个扩展性和其它标准搜索树的扩展性混淆在一起，比如它们所能处理的
+   数据等方面。比如，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 支持可以扩展的
+   B+-trees 和 R-trees。这就意味着呢可以用 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+   在任意你需要的数据类型上建立 B+-tree 或者 R-tree。但是 B+-trees 只支持范围谓词
+   （(<TT
+CLASS="LITERAL"
+>&lt;</TT
+>，<TT
+CLASS="LITERAL"
+>=</TT
+>，<TT
+CLASS="LITERAL"
+>&gt;</TT
+>），
+   而 R-trees 只支持 n-D （n－维）范围查询（包含，被包含，相等）。
+ </P
+><P
+>   所以，如果你用 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> B+-tree 索引了一个图象
+   集，那么你就只能发出类似<SPAN
+CLASS="QUOTE"
+>"图象 x 和 图象 y 相等吗"</SPAN
+>，
+   <SPAN
+CLASS="QUOTE"
+>"图象 x 是不是比图象 y 小"</SPAN
+> 和 <SPAN
+CLASS="QUOTE"
+>"图象 x 是否大于图象 y"</SPAN
+>？这样的查询。
+   根据你在这个环境下定义的<SPAN
+CLASS="QUOTE"
+>"等于"</SPAN
+>，<SPAN
+CLASS="QUOTE"
+>"小于"</SPAN
+>，<SPAN
+CLASS="QUOTE"
+>"大于"</SPAN
+>
+   的含义，上面这些查询可能有意义。但是，使用一个基于 <SPAN
+CLASS="ACRONYM"
+>GiST</SPAN
+> 的索引，
+   你可以创建一些方法来发出和域相关的问题，比如<SPAN
+CLASS="QUOTE"
+>"找出所有马的图象"</SPAN
+>
+   或者<SPAN
+CLASS="QUOTE"
+>"找出所有曝光过头的图象"</SPAN
+>。
+ </P
+><P
+>   要让一种 <SPAN
+CLASS="ACRONYM"
+>GiST</SPAN
+> 访问模式跑起来的方法只是实现七个用户定义
+   的方法，这七个方法定义了树里面的键字的行为。当然，为了支持那些怪异的查询，这些方法
+   也会相当怪异，但是对于所有标准的查询（B+-trees，R-trees 等），他们是相当直接的。
+   简单说，<SPAN
+CLASS="ACRONYM"
+>GiST</SPAN
+> 组合了扩展性和通用性，以及代码复用和一个干净的界面。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="gist.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="gist-implementation.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >GiST 索引</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="gist.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >实现</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

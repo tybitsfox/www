@@ -1,0 +1,1291 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>管理内核资源 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="操作系统环境" HREF="runtime.html"><LINK REL="PREVIOUS" TITLE="启动数据库服务器" HREF="postmaster-start.html"><LINK REL="NEXT" TITLE="关闭服务器" HREF="postmaster-shutdown.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="postmaster-start.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="runtime.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 16. 操作系统环境</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="runtime.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="postmaster-shutdown.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="KERNEL-RESOURCES" >16.4. 管理内核资源</A
+></H1
+><P
+>        一次大型<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>安装会很容易耗尽各种操作系统的资源上限。
+	（在有些系统上，出厂设置低得你都不用一次<SPAN
+CLASS="QUOTE"
+>"大型"</SPAN
+>安装。）
+        如果你碰到这类问题，请继续阅读。
+  </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="SYSVIPC" >16.4.1. 共享内存和信号灯</A
+></H2
+><A NAME="AEN17647" ></A
+><A NAME="AEN17649" ></A
+><P
+>        共享内存和信号灯的正确叫法是<SPAN
+CLASS="QUOTE"
+>"<SPAN
+CLASS="SYSTEMITEM"
+>System V</SPAN
+><SPAN
+CLASS="ACRONYM"
+>IPC</SPAN
+>"</SPAN
+>
+	（还有消息队列，不过对于<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>而言没什么关系。）
+	尽管所有现代操作系统都提供这个特性，但并不是所有系统缺省都打开它或者有足够的资源，尤其是有 BSD 亲源的系统。
+        （对于 <SPAN
+CLASS="SYSTEMITEM"
+>Windows</SPAN
+>，<SPAN
+CLASS="SYSTEMITEM"
+>QNX</SPAN
+>
+	和 <SPAN
+CLASS="SYSTEMITEM"
+>BeOS</SPAN
+> 移植，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>自己提供这套机制的替换实现。）
+   </P
+><P
+>        完全缺少这些机制的表现通常是在服务器启动的时候的 <SPAN
+CLASS="ERRORNAME"
+>Illegal system call</SPAN
+>错误。
+	这时除了重新配置内核以外没什么可做的。
+        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 没它们干不了活。
+   </P
+><P
+>        如果 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 超出了这些<SPAN
+CLASS="ACRONYM"
+>IPC</SPAN
+>
+        资源的硬限制之一的时候就会拒绝启动并且留下一条相当有启发性的错误信息告诉你它碰到了什么问题以及需要为它做些什么。
+        （又见 <A HREF="postmaster-start.html#POSTMASTER-START-FAILURES" >Section 16.3.1</A
+>。）
+        相关的内核参数在不同系统之间有着相对固定的术语；<A HREF="kernel-resources.html#SYSVIPC-PARAMETERS" >Table 16-1</A
+> 是一个概况。
+	不过，设置它们的方法却多种多样。不过要注意的是，你可能最好重新启动你的机器，或者还要重新编译内核来修改这些设置。
+   </P
+><DIV
+CLASS="TABLE"
+><A NAME="SYSVIPC-PARAMETERS" ></A
+><P
+><B
+>Table 16-1. <SPAN
+CLASS="SYSTEMITEM"
+>System V</SPAN
+> <SPAN
+CLASS="ACRONYM"
+>IPC</SPAN
+>参数</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR ><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>名字</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>合理取值</TH
+></TR
+></THEAD
+><TBODY
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="VARNAME"
+>SHMMAX</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >最大共享内存段尺寸（字节）</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >最少若干兆（见文本）</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="VARNAME"
+>SHMMIN</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >最小共享内存段尺寸（字节）</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >1</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="VARNAME"
+>SHMALL</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >可用共享内存的总数量（字节或者页面）</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >如果是字节，就和 <TT
+CLASS="VARNAME"
+>SHMMAX</TT
+> 一样；如果是页面，<TT
+CLASS="LITERAL"
+>ceil(SHMMAX/PAGE_SIZE)</TT
+></TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="VARNAME"
+>SHMSEG</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >每进程最大共享内存段数量</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >只需要 1 个段，不过缺省比这高得多。</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="VARNAME"
+>SHMMNI</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >系统范围最大共享内存段数量</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >类似 <TT
+CLASS="VARNAME"
+>SHMSEG</TT
+> 加上用于其他应用的空间</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="VARNAME"
+>SEMMNI</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >信号灯标识符的最小数量（也就是说，套）</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >至少<TT
+CLASS="LITERAL"
+>ceil(max_connections / 16)</TT
+></TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="VARNAME"
+>SEMMNS</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >系统范围的最大信号灯数量</TD
+><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="LITERAL"
+>ceil(max_connections / 16) * 17</TT
+>加上用于其他应用的空间</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="VARNAME"
+>SEMMSL</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >每套信号灯最小信号灯数量</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >至少 17</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="VARNAME"
+>SEMMAP</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >信号灯映射里的记录数量</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >参阅文本</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><TT
+CLASS="VARNAME"
+>SEMVMX</TT
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >信号灯的最大值</TD
+><TD ALIGN="LEFT" VALIGN="TOP" >至少 1000 （缺省通常是32767，除非被迫，否则不要修改）</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>        <A NAME="AEN17735" ></A
+>
+        最重要的共享内存参数是 <TT
+CLASS="VARNAME"
+>SHMMAX</TT
+>，
+        以字节记的共享内存段可拥有的最大尺寸。
+        如果你收到来自<TT
+CLASS="FUNCTION"
+>shmget</TT
+>的类似<SPAN
+CLASS="ERRORNAME"
+>Invalid argument</SPAN
+>
+        这样的错误信息，那么很有可能是你超过限制了。
+        要求的共享内存段数量根若干个 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 配置参数相关，
+	如 <A HREF="kernel-resources.html#SHARED-MEMORY-PARAMETERS" >Table 16-2</A
+> 所示。
+        因此，作为一种临时的解决方法，你可以降低这些设置来绕过失败。
+        如果粗略地估计，你可以估计所需要的段尺寸是 500kB 加上表里面显示的变量要求的数量。
+        （任何你得到的错误信息都会包含分配失败的尺寸。）
+	尽管我们可以在 <TT
+CLASS="VARNAME"
+>SHMMAX</TT
+> 小到只有 1 MB 的情况下运行，
+	你还是需要至少 4MB 才能有起码的性能，而比较合理的设置是以数十兆计的。
+   </P
+><P
+>    有些系统对系统里面共享内存的总数（<TT
+CLASS="VARNAME"
+>SHMALL</TT
+>）还有限制。
+    请注意这个数值必须足够大，大到<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 加上其它使用共享内存段的应用的总和。
+    （注意：<TT
+CLASS="VARNAME"
+>SHMALL</TT
+> 在很多系统上是用页面数，而不是字节数来计算的。）
+   </P
+><P
+>        不太可能出问题的是共享内存段的最小尺寸（<TT
+CLASS="VARNAME"
+>SHMMIN</TT
+>），
+        对 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>来说大约是 500 kB 左右（通常只是 1），
+	而系统范围（<TT
+CLASS="VARNAME"
+>SHMMNI</TT
+>）或每进程（<TT
+CLASS="VARNAME"
+>SHMSEG</TT
+>）
+        最大共享内存段数量不应该会产生问题，除非你的系统把它们设成零。
+   </P
+><P
+>        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 每个允许的联接使用一个信号灯（<A HREF="runtime-config-connection.html#GUC-MAX-CONNECTIONS" >max_connections</A
+>），
+        以 16 个为一套。每套信号灯还包含第十七个信号灯，
+        它里面存储一个<SPAN
+CLASS="QUOTE"
+>"magic number（标志数字）"</SPAN
+>，
+        以检测和其他应用使用的信号灯集冲突。
+        系统里的最大信号灯数目是由<TT
+CLASS="VARNAME"
+>SEMMNS</TT
+>设置的，
+        因此这个值应该至少和 <TT
+CLASS="VARNAME"
+>max_connections</TT
+> 设置一样大，并且每十六个联接还要另外加一个。
+        （参阅<A HREF="kernel-resources.html#SYSVIPC-PARAMETERS" >Table 16-1</A
+> 里面的公式。）
+        参数<TT
+CLASS="VARNAME"
+>SEMMNI</TT
+>决定系统里一次可以存在的信号灯集的数目。
+	因此这个参数至少应该为 <TT
+CLASS="LITERAL"
+>ceil(max_connections % 16)</TT
+>。
+	降低允许的联接数目是一个临时的绕开失败的方法，这个启动失败通常被来自函数<TT
+CLASS="FUNCTION"
+>semget</TT
+> 的错误响应
+        <SPAN
+CLASS="ERRORNAME"
+>No space left on device</SPAN
+>
+        搞得很让人迷惑。
+   </P
+><P
+>        有时候还可能有必要增大<TT
+CLASS="VARNAME"
+>SEMMAP</TT
+>，使之至少按照 <TT
+CLASS="VARNAME"
+>SEMMNS</TT
+>配置。这个参数定义信号灯资源映射的尺寸，
+        可用的每个连续的信号灯块在这个映射中存放一条记录。
+        每当一套信号灯被释放，那么它要么会加入到该映射中一条相连的已释放的块的入口中，要么注册成一条新的入口。如果映射填满了碎片，
+        那么被释放的信号灯就丢失了（除非重起）。因此时间长信号灯空间的碎片了会导致可用的信号灯比应该有的信号灯少。
+   </P
+><P
+>        <TT
+CLASS="VARNAME"
+>SEMMSL</TT
+> 参数，决定一套信号灯里可以有多少信号灯，对于 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>而言应该至少是 17。
+   </P
+><P
+>    许多设置与 <SPAN
+CLASS="QUOTE"
+>"semaphore undo（信号灯恢复）"</SPAN
+>有关，比如 <TT
+CLASS="VARNAME"
+>SEMMNU</TT
+> 和 <TT
+CLASS="VARNAME"
+>SEMUME</TT
+>，这些与 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 无关。
+   </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><SPAN
+CLASS="SYSTEMITEM"
+>BSD/OS</SPAN
+></DT
+><DD
+><DIV
+CLASS="FORMALPARA"
+><P
+><B
+>共享内存. </B
+>        缺省时是只支持 4 MB 的共享内存。请记住共享内存是不能分页的；它是锁在 RAM 里面的。
+	要增加你的系统支持的共享缓冲区数目，向你的内核配置文件里增加下面的行：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>options "SHMALL=8192"
+options "SHMMAX=\(SHMALL*PAGE_SIZE\)"</PRE
+><P>
+	<TT
+CLASS="VARNAME"
+>SHMALL</TT
+> 以 4KB 页为单位计算，所以 1024 页面代表 4 M 共享内存。
+	所以上面的东西把共享内存区域增加到 32 MB。
+	 对于运行 4.3 或者更新版本的人，你可能需要增大 <TT
+CLASS="VARNAME"
+>KERNEL_VIRTUAL_MB</TT
+>，
+	 超过缺省的 <TT
+CLASS="LITERAL"
+>248</TT
+>。做完上面的修改之后，然后编译内核并重起。
+        </P
+></DIV
+><P
+>        对于运行 4.0 或者更早的版本的，
+	请用 <TT
+CLASS="COMMAND"
+>bpatch</TT
+> 找出当前内核的 <TT
+CLASS="VARNAME"
+>sysptsize</TT
+>值。它是启动的时候动态计算的。
+</P><PRE
+CLASS="SCREEN"
+>$ <TT
+CLASS="USERINPUT"
+><B
+>bpatch -r sysptsize</B
+></TT
+>
+<TT
+CLASS="COMPUTEROUTPUT"
+>0x9 = 9</TT
+></PRE
+><P>
+        然后，把 <TT
+CLASS="VARNAME"
+>SYSPTSIZE</TT
+>修改为在内核配置文件里的一个硬代码值。
+        用 <TT
+CLASS="COMMAND"
+>bpatch</TT
+> 算出来的值，并且为你需要的每个额外的 4 MB 共享内存再加 1。
+</P><PRE
+CLASS="PROGRAMLISTING"
+>options "SYSPTSIZE=16"</PRE
+><P>
+        <TT
+CLASS="VARNAME"
+>sysptsize</TT
+>不能用 <TT
+CLASS="COMMAND"
+>sysctl</TT
+> 修改。
+       </P
+><DIV
+CLASS="FORMALPARA"
+><P
+><B
+>信号灯. </B
+>        你可能还需要增加信号灯的数量；系统缺省的总数 60 只能允许大概
+	50 个 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 连接。
+        在内核配置文件里设置你需要的值，比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>options "SEMMNI=40"
+options "SEMMNS=240"</PRE
+><P>
+       </P
+></DIV
+></DD
+><DT
+><SPAN
+CLASS="SYSTEMITEM"
+>FreeBSD</SPAN
+></DT
+><DD
+><P
+>	缺省设置只适合于很小的安装（比如，缺省 <TT
+CLASS="VARNAME"
+>SHMMAX</TT
+> 是 32 MB）。
+	我们可以用 <TT
+CLASS="COMMAND"
+>sysctl</TT
+> 或者 <TT
+CLASS="COMMAND"
+>loader</TT
+> 接口来修改。
+	下面的参数可以用 <TT
+CLASS="COMMAND"
+>sysctl</TT
+> 设置：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>sysctl -w kern.ipc.shmall=32768</B
+></TT
+>
+<TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>sysctl -w kern.ipc.shmmax=134217728</B
+></TT
+>
+<TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>sysctl -w kern.ipc.semmap=256</B
+></TT
+></PRE
+><P>
+	要想让这些设置重启后有效，修改 <TT
+CLASS="FILENAME"
+>/etc/sysctl.conf</TT
+>。
+       </P
+><P
+>	如果用 <TT
+CLASS="COMMAND"
+>sysctl</TT
+>，那么剩下的信号灯设置是只读的，
+	但是信号灯可以在启动的时候，在 <TT
+CLASS="COMMAND"
+>loader</TT
+> 提示符下设置：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>(loader)</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>set kern.ipc.semmni=256</B
+></TT
+>
+<TT
+CLASS="PROMPT"
+>(loader)</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>set kern.ipc.semmns=512</B
+></TT
+>
+<TT
+CLASS="PROMPT"
+>(loader)</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>set kern.ipc.semmnu=256</B
+></TT
+></PRE
+><P>
+	类似的，这些东西可以在 <TT
+CLASS="FILENAME"
+>/boot/loader.conf</TT
+> 中保存，
+	以便重启之后依然有效。
+       </P
+><P
+>	你可能还想配置内核，让把共享内存装载到 RAM 里，避免他们被交换到交换分区中。
+	这些可以通过使用 <TT
+CLASS="COMMAND"
+>sysctl</TT
+> 设置 <TT
+CLASS="LITERAL"
+>kern.ipc.shm_use_phys</TT
+> 来实现。
+       </P
+><P
+>	在 4.0 之前的 <SPAN
+CLASS="SYSTEMITEM"
+>FreeBSD</SPAN
+> 版本类似 <SPAN
+CLASS="SYSTEMITEM"
+>NetBSD</SPAN
+> 
+	和 <SPAN
+CLASS="SYSTEMITEM"
+> OpenBSD</SPAN
+> （见下文）。
+       </P
+></DD
+><DT
+><SPAN
+CLASS="SYSTEMITEM"
+>NetBSD</SPAN
+><BR><SPAN
+CLASS="SYSTEMITEM"
+>OpenBSD</SPAN
+></DT
+><DD
+><P
+>        编译内核时需要把选项 <TT
+CLASS="VARNAME"
+>SYSVSHM</TT
+> 和 <TT
+CLASS="VARNAME"
+>SYSVSEM</TT
+>打开。
+        （缺省是打开的。）共享内存的最大尺寸是由选项<TT
+CLASS="VARNAME"
+>SHMMAXPGS</TT
+>（以页计）。
+        下面显示了一个如何设置这些参数的例子（<SPAN
+CLASS="SYSTEMITEM"
+>OpenBSD</SPAN
+> 使用的是 <TT
+CLASS="LITERAL"
+>option</TT
+>）：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>options         SYSVSHM
+options         SHMMAXPGS=4096
+options         SHMSEG=256
+
+options         SYSVSEM
+options         SEMMNI=256
+options         SEMMNS=512
+options         SEMMNU=256
+options         SEMMAP=256</PRE
+><P>
+       </P
+><P
+>        你可能原意使用 <TT
+CLASS="COMMAND"
+>sysctl</TT
+> 设置将共享内存锁在 RAM 中以避免它们被交换出去，
+	我们可以用 <TT
+CLASS="COMMAND"
+>sysctl</TT
+> 设置 <TT
+CLASS="LITERAL"
+>kern.ipc.shm_use_phys</TT
+> 来实现这个目的。
+       </P
+></DD
+><DT
+><SPAN
+CLASS="SYSTEMITEM"
+>HP-UX</SPAN
+></DT
+><DD
+><P
+>        缺省设置看来对普通安装是足够的了。
+        在 <SPAN
+CLASS="PRODUCTNAME"
+>HP-UX</SPAN
+> 10，<TT
+CLASS="VARNAME"
+>SEMMNS</TT
+>的出厂缺省是 128，
+        可能对大的数据库节点来说太小了。
+       </P
+><P
+>        <SPAN
+CLASS="ACRONYM"
+>IPC</SPAN
+>可以在 <SPAN
+CLASS="APPLICATION"
+>System Administration Manager（系统管理器）</SPAN
+>
+        （<SPAN
+CLASS="ACRONYM"
+>SAM</SPAN
+>）下面的 <SPAN
+CLASS="GUIMENU"
+>Kernel Configuration</SPAN
+>-&gt;<SPAN
+CLASS="GUIMENUITEM"
+>Configurable Parameters</SPAN
+>
+        配置。你配置完了以后敲 <SPAN
+CLASS="GUIBUTTON"
+>Create A New Kernel</SPAN
+>选项。
+       </P
+></DD
+><DT
+><SPAN
+CLASS="SYSTEMITEM"
+>Linux</SPAN
+></DT
+><DD
+><P
+>        缺省设置只适合小安装（缺省最大共享内存是 32 MB）。不过，其它的缺省值都相当大，
+	通常不需要改变。最大的共享内存段设置可以用 <TT
+CLASS="COMMAND"
+>sysctl</TT
+> 接口设置。
+        比如，要允许 128 MB，并且最大的总共享内存数为 2097152 页（缺省）：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>sysctl -w kernel.shmmax=134217728</B
+></TT
+>
+<TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>sysctl -w kernel.shmall=2097152</B
+></TT
+></PRE
+><P>
+        你可以把这些设置放到 <TT
+CLASS="FILENAME"
+>/etc/sysctl.conf</TT
+> 里，在重启后保持有效。
+       </P
+><P
+>	老版本里可能没有  <TT
+CLASS="COMMAND"
+>sysctl</TT
+> 程序，
+	但是同样的改变可以通过操作 <TT
+CLASS="FILENAME"
+>/proc</TT
+> 文件系统来做：
+</P><PRE
+CLASS="SCREEN"
+><TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>echo 134217728 &gt;/proc/sys/kernel/shmmax</B
+></TT
+>
+<TT
+CLASS="PROMPT"
+>$</TT
+> <TT
+CLASS="USERINPUT"
+><B
+>echo 2097152 &gt;/proc/sys/kernel/shmall</B
+></TT
+></PRE
+><P>
+       </P
+></DD
+><DT
+><SPAN
+CLASS="SYSTEMITEM"
+>MacOS X</SPAN
+></DT
+><DD
+><P
+>       在 OS X 10.2 以及更造版本里，
+        编辑文件 <TT
+CLASS="FILENAME"
+>/System/Library/StartupItems/SystemTuning/SystemTuning</TT
+>
+        并且用下列命令修改这些数值：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>sysctl -w kern.sysv.shmmax
+sysctl -w kern.sysv.shmmin
+sysctl -w kern.sysv.shmmni
+sysctl -w kern.sysv.shmseg
+sysctl -w kern.sysv.shmall</PRE
+><P>
+	在 OS X 10.3 及以后的版本里，这些命令移动到 <TT
+CLASS="FILENAME"
+>/etc/rc</TT
+> 里面去了，必须在那里编辑。
+	你需要重新启动才能让设置生效。请注意 <TT
+CLASS="FILENAME"
+>/etc/rc</TT
+> 通常会被 OS X 更新覆盖
+	（比如 10.3.6 到 10.3.7），所以每次更新后你可能都需要重新编辑。
+       </P
+><P
+>        在这个平台上，<TT
+CLASS="VARNAME"
+>SHMALL</TT
+> 是用 4KB 页来度量的。
+	还要注意有些版本的 OS X 将拒绝把 <TT
+CLASS="VARNAME"
+>SHMMAX</TT
+> 的数值数值为非 4096 的倍数。
+       </P
+></DD
+><DT
+><SPAN
+CLASS="SYSTEMITEM"
+>SCO OpenServer</SPAN
+></DT
+><DD
+><P
+>        缺省配置时，只允许每段 512KB 共享内存。
+	要增大设置，首先进入 <TT
+CLASS="FILENAME"
+>/etc/conf/cf.d</TT
+>目录。
+	要显示当前的以字节记的  <TT
+CLASS="VARNAME"
+>SHMMAX</TT
+>，运行
+</P><PRE
+CLASS="PROGRAMLISTING"
+>./configure -y SHMMAX</PRE
+><P>
+        设置 <TT
+CLASS="VARNAME"
+>SHMMAX</TT
+>的新值：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>./configure SHMMAX=<TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+></PRE
+><P>
+        这里 <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+> 是你想设置的以字节记的新值。
+        设置完了以后<TT
+CLASS="VARNAME"
+>SHMMAX</TT
+>重新制作内核
+</P><PRE
+CLASS="PROGRAMLISTING"
+>./link_unix</PRE
+><P>
+        然后重起。
+       </P
+></DD
+><DT
+><SPAN
+CLASS="SYSTEMITEM"
+>AIX</SPAN
+></DT
+><DD
+><P
+>	至少对于版本 5.1 而言，我们有必要为类似 <TT
+CLASS="VARNAME"
+>SHMMAX</TT
+> 这样的参数做特殊的配置，
+	因为这个参数可以配置为所有内容都当作共享内存使用。这就是类似 <SPAN
+CLASS="APPLICATION"
+>DB/2</SPAN
+>
+	这样的数据库常用的配置。
+	</P
+><P
+>       不过，我们可能有必要在 <TT
+CLASS="FILENAME"
+>/etc/security/limits</TT
+> 里面修改全局 <TT
+CLASS="COMMAND"
+>ulimit</TT
+>
+       <TT
+CLASS="COMMAND"
+>ulimit</TT
+> 信息，因为文件大小的缺省硬限制（<TT
+CLASS="VARNAME"
+>fsize</TT
+>）以及文件数（<TT
+CLASS="VARNAME"
+>nofiles</TT
+>）可能太低了。
+       </P
+></DD
+><DT
+><SPAN
+CLASS="SYSTEMITEM"
+>Solaris</SPAN
+></DT
+><DD
+><P
+>        至少到版本 2.6 为止，共享内存段的缺省最大设置对 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        来说是太低了。相关的设置可以在<TT
+CLASS="FILENAME"
+>/etc/system</TT
+>里面修改，
+        例如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>set shmsys:shminfo_shmmax=0x2000000
+set shmsys:shminfo_shmmin=1
+set shmsys:shminfo_shmmni=256
+set shmsys:shminfo_shmseg=256
+set semsys:seminfo_semmap=256
+set semsys:seminfo_semmni=512
+set semsys:seminfo_semmns=512
+set semsys:seminfo_semmsl=32</PRE
+><P>
+        你要重起系统令修改生效。
+       </P
+><P
+>        又见 <A HREF="../../../sunsite.uakom.sk/sunworldonline/swol-09-1997/swol-09-insidesolaris.html" TARGET="_top" >http://sunsite.uakom.sk/sunworldonline/swol-09-1997/swol-09-insidesolaris.html</A
+>
+        获取关于 <SPAN
+CLASS="PRODUCTNAME"
+>Solaris</SPAN
+> 里面的共享内存的信息。
+       </P
+></DD
+><DT
+><SPAN
+CLASS="SYSTEMITEM"
+>UnixWare</SPAN
+></DT
+><DD
+><P
+>        在 <SPAN
+CLASS="PRODUCTNAME"
+>UnixWare</SPAN
+> 7 上，缺省配置里的最大共享内存段是 512 kB。
+        要显示<TT
+CLASS="VARNAME"
+>SHMMAX</TT
+>的当前值，运行
+</P><PRE
+CLASS="PROGRAMLISTING"
+>/etc/conf/bin/idtune -g SHMMAX</PRE
+><P>
+        就会显示以字节记的当前的缺省的最小和最大值。
+        要给<TT
+CLASS="VARNAME"
+>SHMMAX</TT
+>设置一个新值，运行：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>/etc/conf/bin/idtune SHMMAX <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+></PRE
+><P>
+        这里 <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+>是你想设置的以字节记的新值。
+        设置完<TT
+CLASS="VARNAME"
+>SHMMAX</TT
+>后，重建内核
+</P><PRE
+CLASS="PROGRAMLISTING"
+>/etc/conf/bin/idbuild -B</PRE
+><P>
+        然后重起。
+       </P
+></DD
+></DL
+></DIV
+><DIV
+CLASS="TABLE"
+><A NAME="SHARED-MEMORY-PARAMETERS" ></A
+><P
+><B
+>Table 16-2. 影响 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的内存使用的配置参数</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR ><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>名称</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>近似倍率（每次增加的字节数）</TH
+></TR
+></THEAD
+><TBODY
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><A HREF="runtime-config-connection.html#GUC-MAX-CONNECTIONS" >max_connections</A
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >400 + 220 * <A HREF="runtime-config-locks.html#GUC-MAX-LOCKS-PER-TRANSACTION" >max_locks_per_transaction</A
+></TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><A HREF="runtime-config-resource.html#GUC-MAX-PREPARED-TRANSACTIONS" >max_prepared_transactions</A
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >600 + 220 * <A HREF="runtime-config-locks.html#GUC-MAX-LOCKS-PER-TRANSACTION" >max_locks_per_transaction</A
+></TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><A HREF="runtime-config-resource.html#GUC-SHARED-BUFFERS" >shared_buffers</A
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >8300 （假设 8K 的<TT
+CLASS="SYMBOL"
+>BLCKSZ</TT
+>）</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><A HREF="runtime-config-wal.html#GUC-WAL-BUFFERS" >wal_buffers</A
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >8200 （假设 8K 的<TT
+CLASS="SYMBOL"
+>BLCKSZ</TT
+>）</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><A HREF="runtime-config-resource.html#GUC-MAX-FSM-RELATIONS" >max_fsm_relations</A
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >70</TD
+></TR
+><TR ><TD ALIGN="LEFT" VALIGN="TOP" ><A HREF="runtime-config-resource.html#GUC-MAX-FSM-PAGES" >max_fsm_pages</A
+></TD
+><TD ALIGN="LEFT" VALIGN="TOP" >6</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN18023" >16.4.2. 资源限制</A
+></H2
+><P
+>        Unix 类系统强制了许多资源限制，这些限制可能干扰你的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器的运行。
+        这里尤其重要是对每个用户的进程数目的限制，每个进程打开文件数目，
+        以及每个进程可用的内存。
+        这些限制中每个都有一个<SPAN
+CLASS="QUOTE"
+>"硬"</SPAN
+>限制和一个<SPAN
+CLASS="QUOTE"
+>"软"</SPAN
+>限制。
+        软限制实际是管用的，但用户可以自己修改成最大为硬限制的数目。
+        而硬限制是只能由 root 用户修改的限制。
+        系统调用 <TT
+CLASS="FUNCTION"
+>setrlimit</TT
+> 负责设置这些参数。
+        shell 的内建命令 <TT
+CLASS="COMMAND"
+>ulimit</TT
+>（Bourne shells）
+        或<TT
+CLASS="COMMAND"
+>limit</TT
+> （<SPAN
+CLASS="APPLICATION"
+>csh</SPAN
+>）
+        就是用于在命令行上控制资源限制的。
+        在 BSD 衍生的系统上，文件<TT
+CLASS="FILENAME"
+>/etc/login.conf</TT
+>
+        控制在登录时对各种资源设置什么样的限制数值。参阅操作系统文档获取细节。
+        相关的参数是 <TT
+CLASS="VARNAME"
+>maxproc</TT
+>，
+        <TT
+CLASS="VARNAME"
+>openfiles</TT
+>，和 <TT
+CLASS="VARNAME"
+>datasize</TT
+>。
+        比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>default:\
+...
+        :datasize-cur=256M:\
+        :maxproc-cur=256:\
+        :openfiles-cur=256:\
+...</PRE
+><P>
+        （<TT
+CLASS="LITERAL"
+>-cur</TT
+> 是软限制，后面附加 <TT
+CLASS="LITERAL"
+>-max</TT
+> 就可以设置硬限制。）
+   </P
+><P
+>        内核通常也有一些系统范围的资源限制。
+    <P
+></P
+></P><UL
+><LI
+><P
+>        在 <SPAN
+CLASS="PRODUCTNAME"
+>Linux</SPAN
+> 上，
+        <TT
+CLASS="FILENAME"
+>/proc/sys/fs/file-max</TT
+> 决定内核可以支持的最大文件数。
+	你可以通过往该文件写入一个不同的数值修改此值，
+        或者在 <TT
+CLASS="FILENAME"
+>/etc/sysctl.conf</TT
+> 里增加一个赋值。
+        每个进程的最大打开文件限制是在编译内核的时候固定的； 参阅 <TT
+CLASS="FILENAME"
+>/usr/src/linux/Documentation/proc.txt</TT
+>
+        获取更多信息。
+      </P
+></LI
+></UL
+><P>
+   </P
+><P
+>        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器每个联接都使用一个进程，
+        所以你应该至少允许和联接数相同的进程数，再加上你的系统其它部分所需要的数目。
+	通常这个并不是什么问题，但如果你在一台机器上运行多个服务器，那你就要把事情理清楚。
+   </P
+><P
+>        打开文件数目的出厂缺省设置通常设置为<SPAN
+CLASS="QUOTE"
+>"社会友好"</SPAN
+>数值，就是说允许许多用户共存于一台机器，
+        而不会导致只使用系统资源的不当比例。如果你在一台机器上运行许多服务器，这也许就是你想要的，但是在特殊的服务器上，你可能需要提高这个限制。
+   </P
+><P
+>        问题的另外一边，一些系统允许独立的进程打开非常多的文件；如果有那么几个进程这么干，那系统范围的上限就很容易达到。
+        如果你发现这样的现象，并且不想修改系统范围的限制，
+        你就可以把 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的
+	<A HREF="runtime-config-resource.html#GUC-MAX-FILES-PER-PROCESS" >max_files_per_process</A
+> 配置参数来限制打开文件数的消耗。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN18055" >16.4.3. Linux 内存过提交</A
+></H2
+><P
+>    在 Linux 2.4 以及之后的版本里，缺省的虚拟内存的行为不是对 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 最优的。
+    原因事内核实现内存过提交的方法，如果其它进程的内存请求导致系统用光虚拟内存，
+    那么内核可能会终止 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器（<TT
+CLASS="FILENAME"
+>postmaster</TT
+>进程）。
+   </P
+><P
+>    如果发生了这样的事情，你会看到想下面这样的内核信息（参考你的系统文档和配置，看看在哪里能看到这样的信息）：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>Out of Memory: Killed process 12345 (postmaster).</PRE
+><P>
+    这就表明 <TT
+CLASS="FILENAME"
+>postmaster</TT
+> 因为内存压力而终止了。
+    尽管现有的数据连接将继续正常运转，但是新的连接将无法接受。
+    要想恢复，你应该重启 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>。
+   </P
+><P
+>    一个避免这个问题的方法是在一台你确信不会因为其它进程而耗尽内存的机器上运行 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>。
+   </P
+><P
+>    在 Linux 2.6 以及以后的版本里，一个更好的解决方法是修改内存的行为，
+    这样它就不会再<SPAN
+CLASS="QUOTE"
+>"过提交"</SPAN
+>内存。这是通过用 sysctl 选取一个严格的过提交模式实现的：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>sysctl -w vm.overcommit_memory=2</PRE
+><P>
+    或者在 <TT
+CLASS="FILENAME"
+>/etc/sysctl.conf</TT
+> 里放一个等效的条目。
+    你可能还希望修改相关的设置 <TT
+CLASS="LITERAL"
+>vm.overcommit_ratio</TT
+>。
+    详细信息请参阅内核文档文件 <TT
+CLASS="FILENAME"
+>Documentation/vm/overcommit-accounting</TT
+>。
+   </P
+><P
+>    有些供应商的 Linux 2.4 内核有着早期 2.6 过提交的 sysctl。
+    不过，在没有相关代码的内核里设置 <TT
+CLASS="LITERAL"
+>vm.overcommit_memory</TT
+> 为 2 只会让事情更糟，而不是更好。
+    我们建议你检查一下实际的内核源代码（参阅文件 <TT
+CLASS="FILENAME"
+>mm/mmap.c</TT
+> 里面的 <TT
+CLASS="FUNCTION"
+>vm_enough_memory</TT
+> 函数），
+    核实一下这个是在你的版本里存在的，然后再在 2.4 内核里使用这个特性。
+    文档文件 <TT
+CLASS="FILENAME"
+>overcommit-accounting</TT
+> 的存在<I
+CLASS="EMPHASIS"
+>不</I
+>能当作是这个特性存在的证明。
+    如果有问题，请询问你的内核供应商的专家。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="postmaster-start.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="postmaster-shutdown.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >启动数据库服务器</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="runtime.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >关闭服务器</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

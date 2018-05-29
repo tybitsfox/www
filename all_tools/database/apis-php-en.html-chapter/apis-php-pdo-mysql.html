@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Chapter 4 MySQL Functions (PDO_MYSQL)</title>
+<link rel="stylesheet" href="mvl.css" type="text/css" />
+<meta name="generator" content="DocBook XSL Stylesheets + chunker.py v1.9.2" />
+<link rel="start" href="index.html" title="{book-title}" />
+<link rel="up" href="" title="" />
+<link rel="prev" href="apis-php-mysqli.html" title="Chapter 3 MySQL Improved Extension" />
+<link rel="next" href="apis-php-mysql.html" title="Chapter 5 Original MySQL API" />
+<script language="javascript" type="text/javascript">
+  function addOnload(theFunc)
+  {
+    var previous = window.onload;
+    if (typeof window.onload != 'function')
+    {
+      window.onload = theFunc;
+    }
+    else
+    {
+      window.onload = function()
+      {
+        previous();
+        theFunc();
+      }
+    }
+  }
+
+  addOnload(function()
+  {
+    var base = new Date(1463505695*1000);
+    var now = new Date();
+    var diff = ((now-base)/1000)/(24*3600);
+
+    if (diff > 90) {
+      var nodes = document.getElementsByClassName('titlepage');
+      nodes[0].innerHTML = '<p style="border: 5px #ff0000 solid; padding: 5px; margin 5px">' +
+        'This copy of the manual is more than 90 days old. We encourage you to download a ' +
+        'new version from <a href="http://dev.mysql.com">dev.mysql.com/doc</a>.</p>' + nodes[0].innerHTML;
+    }
+  });
+</script>
+<noscript></noscript>
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<div class="navheader">
+<table width="100%" summary="Navigation header">
+<tr>
+<th colspan="3" align="center">Chapter 4 MySQL Functions (PDO_MYSQL)</th>
+</tr>
+<tr>
+<td width="20%" align="left"><a accesskey="p" href="apis-php-mysqli.html">Prev</a> </td>
+<th width="60%" align="center"></th>
+<td width="20%" align="right"> <a accesskey="n" href="apis-php-mysql.html">Next</a></td>
+</tr>
+</table>
+<hr>
+</div>
+<div class="chapter">
+<div class="titlepage">
+<div>
+<div>
+<h1 class="title"><a name="apis-php-pdo-mysql"></a>Chapter 4 MySQL Functions (PDO_MYSQL)</h1>
+
+</div>
+
+</div>
+
+</div>
+<div class="toc">
+<p><b>Table of Contents</b></p><dl class="toc"><dt><span class="section"><a href="apis-php-pdo-mysql.html#apis-php-ref.pdo-mysql.connection">4.1 <code class="literal">PDO_MYSQL DSN</code></a></span></dt></dl>
+</div>
+<p>
+    <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+    Documentation Group.</a>
+  </p><p><a name="apis-php-pdo-mysql.intro"></a></p><p>
+    PDO_MYSQL is a driver that implements the
+    <a class="ulink" href="http://www.php.net/manual/en/intro.pdo" target="_top">PHP Data Objects
+    (PDO) interface</a> to enable access from PHP to MySQL 3.x, 4.x
+    and 5.x databases.
+  </p><p>
+    PDO_MYSQL will take advantage of native prepared statement support
+    present in MySQL 4.1 and higher. If you're using an older
+    version of the mysql client libraries, PDO will emulate them for
+    you.
+</p>
+<div class="warning" style="margin-left: 0.5in; margin-right: 0.5in;">
+
+<div class="admon-title">
+Warning
+</div>
+<p>
+      Beware: Some MySQL table types (storage engines) do not support
+      transactions. When writing transactional database code using a
+      table type that does not support transactions, MySQL will pretend
+      that a transaction was initiated successfully. In addition, any
+      DDL queries issued will implicitly commit any pending
+      transactions.
+</p>
+</div>
+<p><a name="apis-php-ref.pdo-mysql.installation"></a></p><p>
+    The common Unix distributions include binary versions of PHP that
+    can be installed. Although these binary versions are typically built
+    with support for the MySQL extensions, the extension libraries
+    themselves may need to be installed using an additional package.
+    Check the package manager than comes with your chosen distribution
+    for availability.
+  </p><p>
+    For example, on Ubuntu the <code class="literal">php5-mysql</code> package
+    installs the ext/mysql, ext/mysqli, and PDO_MYSQL PHP extensions. On
+    CentOS, the <code class="literal">php-mysql</code> package also installs these
+    three PHP extensions.
+  </p><p>
+    Alternatively, you can compile this extension yourself. Building PHP
+    from source allows you to specify the MySQL extensions you want to
+    use, as well as your choice of client library for each extension.
+  </p><p>
+    When compiling, use <code class="option">--with-pdo-mysql[=DIR]</code> to
+    install the PDO MySQL extension, where the optional
+    <code class="literal">[=DIR]</code> is the MySQL base library. As of PHP 5.4,
+    <a class="link" href="apis-php-mysqlnd.html" title="Chapter 6 MySQL Native Driver">mysqlnd</a> is the default
+    library. For details about choosing a library, see
+    <a class="link" href="apis-php-mysqlinfo.html#apis-php-mysqlinfo.library.choosing" title="2.4 Choosing a library">Choosing a MySQL
+    library</a>.
+  </p><p>
+    Optionally, the <code class="option">--with-mysql-sock[=DIR]</code> sets to
+    location to the MySQL unix socket pointer for all MySQL extensions,
+    including PDO_MYSQL. If unspecified, the default locations are
+    searched.
+  </p><p>
+    Optionally, the <code class="option">--with-zlib-dir[=DIR]</code> is used to
+    set the path to the libz install prefix.
+  </p><p>
+</p><pre class="screen">
+
+$ ./configure --with-pdo-mysql --with-mysql-sock=/var/mysql/mysql.sock
+
+  </pre><p>
+  </p><p>
+    SSL support is enabled using the appropriate
+    <a class="link" href="apis-php-pdo-mysql.html#apis-php-pdo-mysql.constants">PDO_MySQL
+    constants</a>, which is equivalent to calling the
+    <a class="ulink" href="http://dev.mysql.com/doc/mysql/en/mysql-ssl-set.html" target="_top">MySQL
+    C API function mysql_ssl_set()</a>. Also, SSL cannot be enabled
+    with <code class="classname">PDO::setAttribute</code> because the connection
+    already exists. See also the MySQL documentation about
+    <a class="ulink" href="http://dev.mysql.com/doc/mysql/en/configuring-for-ssl.html" target="_top">connecting
+    to MySQL with SSL</a>.
+</p>
+<div class="table">
+<a name="idm139660450177984"></a><p class="title"><b>Table 4.1 Changelog</b></p>
+<div class="table-contents">
+<table class="table" summary="Changelog" border="1"><colgroup><col><col></colgroup><thead><tr><th scope="col">Version</th><th scope="col">Description</th></tr></thead><tbody><tr><td scope="row">5.4.0</td><td><a class="link" href="apis-php-mysqlnd.html" title="Chapter 6 MySQL Native Driver">mysqlnd</a> became the default MySQL
+            library when compiling PDO_MYSQL. Previously, libmysqlclient
+was the default MySQL library.</td></tr><tr><td scope="row">5.4.0</td><td>MySQL client libraries 4.1 and below are no longer supported.</td></tr><tr><td scope="row">5.3.9</td><td>Added SSL support with mysqlnd and OpenSSL.</td></tr><tr><td scope="row">5.3.7</td><td>Added SSL support with libmysqlclient and OpenSSL.</td></tr></tbody></table>
+</div>
+
+</div>
+<br class="table-break"><p><a name="apis-php-pdo-mysql.constants"></a></p><p>The constants below are defined by
+this driver, and will only be available when the extension has been either
+compiled into PHP or dynamically loaded at runtime. In addition, these
+driver-specific constants should only be used if you are using this driver.
+Using driver-specific attributes with another driver may result in
+unexpected behaviour. <a class="ulink" href="http://www.php.net/PDO::getAttribute" target="_top"><code class="function">PDO::getAttribute</code></a> may be used to
+obtain the <code class="constant">PDO_ATTR_DRIVER_NAME</code> attribute to check the
+driver, if your code can run against multiple drivers.</p>
+<div class="variablelist">
+<dl class="variablelist"><dt><a name="apis-php-pdo.constants.mysql-attr-use-buffered-query"></a><span class="term">
+        <code class="constant">PDO::MYSQL_ATTR_USE_BUFFERED_QUERY</code>
+        (<span class="type">integer</span>)
+      </span></dt><dd><p class="simpara">
+     If this attribute is set to <code class="constant">TRUE</code> on a
+     <code class="classname">PDOStatement</code>, the MySQL driver will use the
+     buffered versions of the MySQL API.  If you're writing portable code, you
+     should use <a class="ulink" href="http://www.php.net/PDOStatement::fetchAll" target="_top"><code class="function">PDOStatement::fetchAll</code></a> instead.
+    </p><p>
+</p>
+<div class="example">
+<a name="idm139660450159392"></a><p class="title"><b>Example 4.1 Forcing queries to be buffered in mysql</b></p>
+<div class="example-contents">
+<pre class="programlisting">
+
+&lt;?php
+if ($db-&gt;getAttribute(PDO::ATTR_DRIVER_NAME) == 'mysql') {
+    $stmt = $db-&gt;prepare('select * from foo',
+        array(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY =&gt; true));
+} else {
+    die("my application only works with mysql; I should use \$stmt-&gt;fetchAll() instead");
+}
+?&gt;
+
+</pre>
+</div>
+
+</div>
+<p><br class="example-break">
+        </p></dd><dt><a name="apis-php-pdo.constants.mysql-attr-local-infile"></a><span class="term">
+        <code class="constant">PDO::MYSQL_ATTR_LOCAL_INFILE</code>
+        (<span class="type">integer</span>)
+      </span></dt><dd><p>
+          Enable <code class="literal">LOAD LOCAL INFILE</code>.
+        </p><p>
+          Note, this constant can only be used in the
+          <em class="parameter"><code>driver_options</code></em> array when constructing
+          a new database handle.
+        </p></dd><dt><a name="apis-php-pdo.constants.mysql-attr-init-command"></a><span class="term">
+        <code class="constant">PDO::MYSQL_ATTR_INIT_COMMAND</code>
+        (<span class="type">integer</span>)
+      </span></dt><dd><p>
+          Command to execute when connecting to the MySQL server. Will
+          automatically be re-executed when reconnecting.
+        </p><p>
+          Note, this constant can only be used in the
+          <em class="parameter"><code>driver_options</code></em> array when constructing
+          a new database handle.
+        </p></dd><dt><a name="apis-php-pdo.constants.mysql-attr-read-default-file"></a><span class="term">
+        <code class="constant">PDO::MYSQL_ATTR_READ_DEFAULT_FILE</code>
+        (<span class="type">integer</span>)
+      </span></dt><dd><p>
+          Read options from the named option file instead of from
+          <code class="filename">my.cnf</code>. This option is not available if
+          mysqlnd is used, because mysqlnd does not read the mysql
+          configuration files.
+        </p></dd><dt><a name="apis-php-pdo.constants.mysql-attr-read-default-group"></a><span class="term">
+        <code class="constant">PDO::MYSQL_ATTR_READ_DEFAULT_GROUP</code>
+        (<span class="type">integer</span>)
+      </span></dt><dd><p>
+          Read options from the named group from
+          <code class="filename">my.cnf</code> or the file specified with
+          <code class="constant">MYSQL_READ_DEFAULT_FILE</code>. This option is
+          not available if mysqlnd is used, because mysqlnd does not
+          read the mysql configuration files.
+        </p></dd><dt><a name="apis-php-pdo.constants.mysql-attr-max-buffer-size"></a><span class="term">
+        <code class="constant">PDO::MYSQL_ATTR_MAX_BUFFER_SIZE</code>
+        (<span class="type">integer</span>)
+      </span></dt><dd><p>
+          Maximum buffer size. Defaults to 1 MiB. This constant is not
+          supported when compiled against mysqlnd.
+        </p></dd><dt><a name="apis-php-pdo.constants.mysql-attr-direct-query"></a><span class="term">
+        <code class="constant">PDO::MYSQL_ATTR_DIRECT_QUERY</code>
+        (<span class="type">integer</span>)
+      </span></dt><dd><p>
+          Perform direct queries, don't use prepared statements.
+        </p></dd><dt><a name="apis-php-pdo.constants.mysql-attr-found-rows"></a><span class="term">
+        <code class="constant">PDO::MYSQL_ATTR_FOUND_ROWS</code>
+        (<span class="type">integer</span>)
+      </span></dt><dd><p>
+          Return the number of found (matched) rows, not the number of
+          changed rows.
+        </p></dd><dt><a name="apis-php-pdo.constants.mysql-attr-ignore-space"></a><span class="term">
+        <code class="constant">PDO::MYSQL_ATTR_IGNORE_SPACE</code>
+        (<span class="type">integer</span>)
+      </span></dt><dd><p>
+          Permit spaces after function names. Makes all functions names
+          reserved words.
+        </p></dd><dt><a name="apis-php-pdo.constants.mysql-attr-compress"></a><span class="term">
+        <code class="constant">PDO::MYSQL_ATTR_COMPRESS</code>
+        (<span class="type">integer</span>)
+      </span></dt><dd><p>
+          Enable network communication compression. This is also
+          supported when compiled against mysqlnd as of PHP 5.3.11.
+        </p></dd><dt><a name="apis-php-pdo.constants.mysql-attr-ssl-ca"></a><span class="term">
+        <code class="constant">PDO::MYSQL_ATTR_SSL_CA</code>
+        (<span class="type">integer</span>)
+      </span></dt><dd><p>
+          The file path to the SSL certificate authority.
+        </p><p>
+          This exists as of PHP 5.3.7.
+        </p></dd><dt><a name="apis-php-pdo.constants.mysql-attr-ssl-capath"></a><span class="term">
+        <code class="constant">PDO::MYSQL_ATTR_SSL_CAPATH</code>
+        (<span class="type">integer</span>)
+      </span></dt><dd><p>
+          The file path to the directory that contains the trusted SSL
+          CA certificates, which are stored in PEM format.
+        </p><p>
+          This exists as of PHP 5.3.7.
+        </p></dd><dt><a name="apis-php-pdo.constants.mysql-attr-ssl-cert"></a><span class="term">
+        <code class="constant">PDO::MYSQL_ATTR_SSL_CERT</code>
+        (<span class="type">integer</span>)
+      </span></dt><dd><p>
+          The file path to the SSL certificate.
+        </p><p>
+          This exists as of PHP 5.3.7.
+        </p></dd><dt><a name="apis-php-pdo.constants.mysql-attr-cipher"></a><span class="term">
+        <code class="constant">PDO::MYSQL_ATTR_SSL_CIPHER</code>
+        (<span class="type">integer</span>)
+      </span></dt><dd><p>
+          A list of one or more permissible ciphers to use for SSL
+          encryption, in a format understood by OpenSSL. For example:
+          <code class="literal">DHE-RSA-AES256-SHA:AES128-SHA</code>
+        </p><p>
+          This exists as of PHP 5.3.7.
+        </p></dd><dt><a name="apis-php-pdo.constants.mysql-attr-key"></a><span class="term">
+        <code class="constant">PDO::MYSQL_ATTR_SSL_KEY</code>
+        (<span class="type">integer</span>)
+      </span></dt><dd><p>
+          The file path to the SSL key.
+        </p><p>
+          This exists as of PHP 5.3.7.
+        </p></dd><dt><a name="apis-php-pdo.constants.mysql-attr-multi-statements"></a><span class="term">
+        <code class="constant">PDO::MYSQL_ATTR_MULTI_STATEMENTS</code>
+        (<span class="type">integer</span>)
+      </span></dt><dd><p>
+          Disables multi query execution in both
+          <a class="ulink" href="http://www.php.net/PDO::prepare" target="_top"><code class="function">PDO::prepare</code></a>
+          and
+          <a class="ulink" href="http://www.php.net/PDO::query" target="_top"><code class="function">PDO::query</code></a>
+          when set to <code class="constant">FALSE</code>.
+        </p><p>
+          Note, this constant can only be used in the
+          <em class="parameter"><code>driver_options</code></em> array when constructing
+          a new database handle.
+        </p><p>
+          This exists as of PHP 5.5.21 and PHP 5.6.5.
+</p></dd></dl>
+</div>
+<p><a name="apis-php-pdo-mysql.configuration"></a></p><p>
+The behaviour of these functions is affected by settings in <code class="filename">php.ini</code>.
+</p><p>
+</p>
+<div class="table">
+<a name="idm139660450095776"></a><p class="title"><b>Table 4.2 PDO_MYSQL Configuration Options</b></p>
+<div class="table-contents">
+<table class="table" summary="PDO_MYSQL Configuration Options" border="1"><colgroup><col><col><col></colgroup><thead><tr><th scope="col">Name</th><th scope="col">Default</th><th scope="col">Changeable</th></tr></thead><tbody><tr><td scope="row"><a class="link" href="apis-php-pdo-mysql.html#apis-php-ini.pdo-mysql.default-socket">pdo_mysql.default_socket</a></td><td>"/tmp/mysql.sock"</td><td>PHP_INI_SYSTEM</td></tr><tr><td scope="row"><a class="link" href="apis-php-pdo-mysql.html#apis-php-ini.pdo-mysql.debug">pdo_mysql.debug</a></td><td>NULL</td><td>PHP_INI_SYSTEM</td></tr></tbody></table>
+</div>
+
+</div>
+<p><br class="table-break">
+
+    For further details and definitions of the PHP_INI_* modes, see the
+    <a class="ulink" href="http://www.php.net/manual/en/configuration.changes.modes" target="_top">http://www.php.net/manual/en/configuration.changes.modes</a>.
+  </p><p>
+    Here's a short explanation of the configuration directives.
+  </p><p>
+</p>
+<div class="variablelist">
+<dl class="variablelist"><dt><a name="apis-php-ini.pdo-mysql.default-socket"></a><span class="term">
+          <em class="parameter"><code>pdo_mysql.default_socket</code></em>
+          <span class="type">string</span>
+        </span></dt><dd><p>
+            Sets a Unix domain socket. This value can either be set at
+            compile time if a domain socket is found at configure. This
+            ini setting is Unix only.
+          </p></dd><dt><a name="apis-php-ini.pdo-mysql.debug"></a><span class="term">
+          <em class="parameter"><code>pdo_mysql.debug</code></em> <span class="type">boolean</span>
+        </span></dt><dd><p>
+            Enables debugging for PDO_MYSQL. This setting is only
+            available when PDO_MYSQL is compiled against mysqlnd and in
+            PDO debug mode.
+</p></dd></dl>
+</div>
+<p>
+</p>
+<div class="section">
+
+<div class="titlepage">
+<div>
+<div>
+<h2 class="title" style="clear: both"><a name="apis-php-ref.pdo-mysql.connection"></a>4.1 <code class="literal">PDO_MYSQL DSN</code></h2>
+</div>
+</div>
+</div>
+<p>
+      <a class="link" href="apis-php-introduction.html#php-api-copyright">Copyright 1997-2014 the PHP
+      Documentation Group.</a>
+</p>
+<div class="itemizedlist">
+<ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+          <code class="literal">PDO_MYSQL DSN</code>
+        </p><p>
+          Connecting to MySQL databases
+</p></li></ul>
+</div>
+<p>
+      <span class="bold"><strong>Description</strong></span>
+    </p><p>
+      The PDO_MYSQL Data Source Name (DSN) is composed of the following
+      elements:
+
+</p>
+<div class="variablelist">
+<dl class="variablelist"><dt><span class="term">
+            DSN prefix
+          </span></dt><dd><p>
+              The DSN prefix is <strong class="userinput"><code>mysql:</code></strong>.
+            </p></dd><dt><span class="term">
+            <code class="literal">host</code>
+          </span></dt><dd><p>
+              The hostname on which the database server resides.
+            </p></dd><dt><span class="term">
+            <code class="literal">port</code>
+          </span></dt><dd><p>
+              The port number where the database server is listening.
+            </p></dd><dt><span class="term">
+            <code class="literal">dbname</code>
+          </span></dt><dd><p>
+              The name of the database.
+            </p></dd><dt><span class="term">
+            <code class="literal">unix_socket</code>
+          </span></dt><dd><p>
+              The MySQL Unix socket (shouldn't be used with
+              <code class="literal">host</code> or <code class="literal">port</code>).
+            </p></dd><dt><span class="term">
+            <code class="literal">charset</code>
+          </span></dt><dd><p>
+              The character set. See the
+              <a class="link" href="apis-php-mysqlinfo.html#apis-php-mysqlinfo.concepts.charset" title="2.5.2 Character sets">character
+              set</a> concepts documentation for more information.
+            </p><p>
+              Prior to PHP 5.3.6, this element was silently ignored. The
+              same behaviour can be partly replicated with the
+              <code class="constant">PDO::MYSQL_ATTR_INIT_COMMAND</code> driver
+              option, as the following example shows.
+</p>
+<div class="warning" style="margin-left: 0.5in; margin-right: 0.5in;">
+
+<div class="admon-title">
+Warning
+</div>
+<p>
+          The method in the below example can only be used with character sets
+          that share the same lower 7 bit representation as ASCII, such as
+          ISO-8859-1 and UTF-8. Users using character sets that have different
+          representations (such as UTF-16 or Big5) <span class="emphasis"><em>must</em></span>
+          use the <code class="literal">charset</code> option provided in PHP 5.3.6
+          and later versions.
+</p>
+</div>
+<p>
+</p>
+<div class="example">
+<a name="idm139660450050688"></a><p class="title"><b>Example 4.2 Setting the connection character set to UTF-8 prior to PHP 5.3.6</b></p>
+<div class="example-contents">
+<pre class="programlisting">
+
+&lt;?php
+$dsn = 'mysql:host=localhost;dbname=testdb';
+$username = 'username';
+$password = 'password';
+$options = array(
+    PDO::MYSQL_ATTR_INIT_COMMAND =&gt; 'SET NAMES utf8',
+); 
+
+$dbh = new PDO($dsn, $username, $password, $options);
+?&gt;
+
+</pre>
+</div>
+
+</div>
+<p><br class="example-break">
+</p></dd></dl>
+</div>
+<p>
+    </p><p>
+      <span class="bold"><strong>Changelog</strong></span>
+    </p><p>
+</p>
+<div class="informaltable">
+<table class="informaltable" summary="Changelog information for this function" border="1"><colgroup><col><col></colgroup><thead><tr><th scope="col">Version</th><th scope="col">Description</th></tr></thead><tbody><tr><td scope="row">5.3.6</td><td>Prior to version 5.3.6, <code class="literal">charset</code> was ignored.</td></tr></tbody></table>
+</div>
+<p>
+    </p><p>
+      <span class="bold"><strong>Examples</strong></span>
+    </p><p>
+</p>
+<div class="example">
+<a name="idm139660450038672"></a><p class="title"><b>Example 4.3 PDO_MYSQL DSN examples</b></p>
+<div class="example-contents">
+<p>
+          The following example shows a PDO_MYSQL DSN for connecting to
+          MySQL databases:
+
+</p><pre class="programlisting">
+
+mysql:host=localhost;dbname=testdb
+
+       </pre><p>
+
+          More complete examples:
+
+</p><pre class="programlisting">
+
+mysql:host=localhost;port=3307;dbname=testdb
+mysql:unix_socket=/tmp/mysql.sock;dbname=testdb
+
+       </pre><p>
+</p>
+</div>
+
+</div>
+<p><br class="example-break">
+    </p><p>
+      <span class="bold"><strong>Notes</strong></span>
+</p>
+<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+
+<div class="admon-title">
+Unix only:
+</div>
+<p>
+        When the host name is set to
+        <code class="literal">"localhost"</code>, then the connection to
+        the server is made thru a domain socket. If PDO_MYSQL is
+        compiled against libmysqlclient then the location of the socket
+        file is at libmysqlclient's compiled in location. If
+        PDO_MYSQL is compiled against mysqlnd a default socket can be
+        set thru the
+        <a class="link" href="apis-php-pdo-mysql.html#apis-php-ini.pdo-mysql.default-socket">
+        pdo_mysql.default_socket</a> setting.
+</p>
+</div>
+
+</div>
+
+</div>
+<div class="copyright-footer">
+
+</div>
+<div class="navfooter">
+<hr>
+<table width="100%" summary="Navigation footer">
+<tr>
+<td width="40%" align="left"><a accesskey="p" href="apis-php-mysqli.html">Prev</a></td>
+<td width="20%" align="center"><a accesskey="u" href="">Up</a></td>
+<td width="40%" align="right"> <a accesskey="n" href="apis-php-mysql.html">Next</a></td>
+</tr>
+<tr>
+<td width="40%" align="left" valign="top">Chapter 3 MySQL Improved Extension</td>
+<td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
+<td width="40%" align="right" valign="top">Chapter 5 Original MySQL API</td>
+</tr>
+</table>
+</div>
+</body>
+</html>

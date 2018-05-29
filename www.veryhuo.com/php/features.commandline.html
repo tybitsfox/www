@@ -1,0 +1,274 @@
+<HTML><HEAD><TITLE>PHP 的命令行模式</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="特点" HREF="features.html"><LINK REL="PREVIOUS" TITLE="被安全模式限制或屏蔽的函数" HREF="features.safe-mode.functions.html"><LINK REL="NEXT" TITLE="函数参考" HREF="funcref.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="chapter" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="features.safe-mode.functions.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="funcref.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="chapter"><H1><A NAME="features.commandline">章 23. PHP 的命令行模式</A></H1><P>&#13; 从版本 4.3.0 开始，<TT CLASS="literal">PHP</TT> 提供了一种新类型的 <TT CLASS="literal">SAPI</TT>（Server Application Programming Interface，服务端应用编程端口）支持，名为 <TT CLASS="literal">CLI</TT>，意为 <SPAN CLASS="emphasis"><I CLASS="emphasis">Command Line Interface</I></SPAN>，即命令行接口。顾名思义，该 <TT CLASS="literal">SAPI</TT> 模块主要用作 PHP 的开发外壳应用。<TT CLASS="literal">CLI SAPI</TT> 和其它 <TT CLASS="literal">SAPI</TT> 模块相比有很多的不同之处，我们将在本章中详细阐述。值得一提的是，<TT CLASS="literal">CLI</TT> 和 <TT CLASS="literal">CGI</TT> 是不同的 SAPI，尽管它们之间有很多共同的行为。
+</P><P>&#13; <TT CLASS="literal">CLI SAPI</TT> 最先是随 <TT CLASS="literal">PHP 4.2.0</TT> 版本发布的，但仍旧只是一个实验性的版本，并需要在运行 <TT CLASS="literal">./configure</TT> 时加上 <TT CLASS="literal">--enable-cli</TT> 参数。从 <TT CLASS="literal">PHP 4.3.0</TT> 版本开始，<TT CLASS="literal">CLI SAPI</TT> 成为了正式模块，<TT CLASS="literal">--enable-cli</TT> 参数会被默认得设置为 on，您也可以用参数 <TT CLASS="literal">--disable-cli</TT> 来屏蔽。
+</P><P>&#13; 从 PHP 4.3.0开始，CLI/CGI 二进制执行文件的文件名、位置和是否存在会根据 PHP 在您系统上的安装而不同。在默认情况下，当运行 <TT CLASS="literal">make</TT> 时，CGI 和 CLI 都会被编译并且分别放置在您 PHP 源文件目录的 <TT CLASS="literal">sapi/cgi/php</TT> 和 <TT CLASS="literal">sapi/cli/php</TT> 下。您可以注意到两个文件都被命名为了 <TT CLASS="literal">php</TT>。在 <TT CLASS="literal">make
+install</TT> 的过程中会发生什么取决于您的配置行。如果在配置的时候选择了一个 SAPI 模块，如 apxs，或者使用了 <TT CLASS="literal">--disable-cgi</TT> 参数，则在 <TT CLASS="literal">make install</TT> 的过程中，CLI 将被拷贝到 <TT CLASS="literal">{PREFIX}/bin/php</TT>，除非 CGI 已经被放置在了那个位置。因此，例如，如果在您的配置行中有 <TT CLASS="literal">--with--apxs
+</TT>，则在 <TT CLASS="literal">make install</TT> 的过程中，CLI 将被拷贝到 <TT CLASS="literal">{PREFIX}/bin/php</TT>。如果您希望撤销 CGI 执行文件的安装，请在 <TT CLASS="literal">make install</TT> 之后运行 <TT CLASS="literal">make install-cli</TT>。或者，您也可以在您的配置行中加上 <TT CLASS="literal">--disable-cgi</TT> 参数。
+</P><P>&#13; <DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+由于 <TT CLASS="literal">--enable-cli</TT> 和 <TT CLASS="literal">--enable-cgi</TT> 同时默认有效，因此，您不必再配置行中加上 <TT CLASS="literal">--enable-cli</TT> 来使得 CLI 在 <TT CLASS="literal">make install</TT> 过程中被拷贝到 <TT CLASS="literal">&#13; {PREFIX}/bin/php</TT>。
+</P></BLOCKQUOTE></DIV>
+</P><P>&#13; 在 PHP 4.2.0 到 PHP 4.2.3 之间的 Windows 发行包中，CLI 的文件名为 <TT CLASS="filename">php-cli.exe</TT>，相同文件夹下的 <TT CLASS="filename">php.exe</TT> 为 CGI。从 PHP 4.3.0 版本开始，Windows 的发行包中 CLI 的执行文件为 <TT CLASS="filename">php.exe</TT>，被放置在一个单独的名为 <TT CLASS="literal">cli</TT> 的文件夹下，即 <TT CLASS="literal">cli/php.exe</TT>。
+</P><P>&#13; <DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>这是哪个 SAPI？: </B>
+在命令外壳下，运行 <TT CLASS="literal">php -v</TT> 便能得知该 <TT CLASS="literal">php</TT> 是 CGI 还是 CLI。请参考函数 <A HREF="function.php-sapi-name.html"><B CLASS="function">php_sapi_name()</B></A> 以及常量 <TT CLASS="constant"><B>PHP_SAPI</B></TT>。
+</P></BLOCKQUOTE></DIV>
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+在 PHP 4.3.2 中加入了 UNIX 的 <TT CLASS="literal">man</TT> 页面。可以在你的命令外壳下键入
+<TT CLASS="literal">man php</TT> 来查看。
+</P></BLOCKQUOTE></DIV>
+</P><P>&#13; 以下为 <TT CLASS="literal">CLI SAPI</TT> 和其它 <TT CLASS="literal">SAPI</TT> 模块相比的显著区别：
+<P></P><UL><LI><P>&#13; 与 <TT CLASS="literal">CGI SAPI</TT> 不同，其输出没有任何头信息。
+</P><P>&#13; 尽管 <TT CLASS="literal">CGI SAPI</TT> 提供了取消 HTTP 头信息的方法，但在 <TT CLASS="literal">CLI SAPI</TT> 中并不存在类似的方法以开启 HTTP 头信息的输出。
+</P><P>&#13; CLI 默认以安静模式开始，但为了保证兼容性， <TT CLASS="literal">-q</TT> 参数使得您可以使用旧的 CGI 脚本。
+</P><P>&#13; 在运行时，不会把工作目录改为脚本的当前目录。（您可以使用 <TT CLASS="literal">-C</TT> 参数来兼容 CGI 模式）。
+</P><P>&#13; 出错时输出纯文本的错误信息（非 HTML 格式）。
+</P></LI><LI><P>&#13; <TT CLASS="literal">CLI SAPI</TT> 强制更改了 <TT CLASS="filename">php.ini</TT> 中的某些设置，因为这些设置在外壳环境下是没有意义的。
+</P><P>&#13; <DIV CLASS="table"><A NAME="AEN7212"></A><P><B>表格 23-1. 被更改的 <TT CLASS="filename">php.ini</TT> 设置选项</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">设置选项</TH><TH ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">CLI SAPI</TT> 默认值</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">备注</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="ref.errorfunc.html#ini.html-errors">html_errors</A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>FALSE</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; 无意义的 HTML 标记符会使得出错信息很凌乱，所以在外壳下阅读报错信息是十分困难的。因此将该选项的默认值改为 <TT CLASS="constant"><B>FALSE</B></TT>。
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="ref.outcontrol.html#ini.implicit-flush">implicit_flush</A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>TRUE</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; 在命令行模式下，所有来自 <A HREF="function.print.html"><B CLASS="function">print()</B></A> 和 <A HREF="function.echo.html"><B CLASS="function">echo()</B></A> 的输出将被立即写到输出端，而不作任何地缓冲操作。如果您希望延缓或控制标准输出，您仍然可以使用 <A HREF="ref.outcontrol.html">output buffering</A> 设置项。
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="ref.info.html#ini.max-execution-time">max_execution_time</A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">0 （无限值）</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; 鉴于在外壳环境下使用 <TT CLASS="literal">PHP</TT> 的无穷的可能性，最大运行时间被设置为了无限值。为 WEB 开发的应用程序可能只需运行几秒钟时间，而外壳应用程序的运行时间可能会长的多。
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><A HREF="configuration.directives.html#ini.register-argc-argv">register_argc_argv</A></TD><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>TRUE</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <P>&#13; 由于该设置为 <TT CLASS="constant"><B>TRUE</B></TT>，您将总是可以在 <TT CLASS="literal">CLI SAPI</TT> 中访问到 <SPAN CLASS="emphasis"><I CLASS="emphasis">argc</I></SPAN>（传送给应用程序参数的个数）和 <SPAN CLASS="emphasis"><I CLASS="emphasis">argv</I></SPAN>（包含有实际参数的数组）。
+</P>
+<P>&#13; 对于 PHP 4.3.0，在使用 <TT CLASS="literal">CLI SAPI</TT> 时，<TT CLASS="literal">PHP</TT> 变量 <TT CLASS="literal">$argc</TT>
+和 <TT CLASS="literal">$argv</TT> 已被注册并且设定了对应的值。而在这之前的版本，这两个变量在 <TT CLASS="literal">CGI</TT> 或者 <TT CLASS="literal">模块</TT> 版本中的建立依赖于将 PHP 的设置选项 <A HREF="configuration.directives.html#ini.register-globals">register_globals</A> 设为 <SPAN CLASS="emphasis"><I CLASS="emphasis">on</I></SPAN>。除了版本和 <TT CLASS="literal">register_globals</TT> 设定以外，您可以随时通过调用 <A HREF="reserved.variables.html#reserved.variables.server">$_SERVER</A> 或者 <TT CLASS="varname">$HTTP_SERVER_VARS</TT>来访问它们。例如：<TT CLASS="varname">$_SERVER['argv']</TT>
+</P>
+</TD></TR></TBODY></TABLE></DIV>
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+这些设置无法在设置文件 <TT CLASS="filename">php.ini</TT> 或任何指定的其它文件中被初始化为其它值。这些默认值被限制在所有其它的设置文件被解析后改变。不过，它们的值可以在程序运行的过程中被改变（尽管对于该运行过程来说，这些设置项是没有意义的）。
+</P></BLOCKQUOTE></DIV></LI><LI><P>&#13; 为了减轻外壳环境下的工作，我们定义了如下常量：
+<DIV CLASS="table"><A NAME="AEN7274"></A><P><B>表格 23-2. CLI 专用常量</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">常量名称</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">描 述</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STDIN</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; 一个已打开的指向 <TT CLASS="literal">stdin</TT> 的流。您可以用如下方法来调用：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+$stdin = fopen('php://stdin', 'r');</font>
+</code></TD></TR></TABLE>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STDOUT</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; 一个已打开的指向 <TT CLASS="literal">stdout</TT> 的流。您可以用如下方式来调用：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+$stdout = fopen('php://stdout', 'w');</font>
+</code></TD></TR></TABLE>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="constant"><B>STDERR</B></TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; 一个已打开的指向 <TT CLASS="literal">stderr</TT> 的流。您可以用如下方式来调用：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+$stderr = fopen('php://stderr', 'w');</font>
+</code></TD></TR></TABLE>
+</TD></TR></TBODY></TABLE></DIV>
+</P><P>&#13; 有了以上常量，您就无需自己建立指向诸如 <TT CLASS="literal">stderr</TT> 的流，只需简单的使用这些常量来代替流指向：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+php -r 'fwrite(STDERR, "stderr\n");'</font>
+</code></TD></TR></TABLE>
+您无需自己来关闭这些流，PHP 会自动完成这些操作。
+</P></LI><LI><P>&#13; <TT CLASS="literal">CLI SAPI</TT> <SPAN CLASS="strong"><B CLASS="emphasis">不</B></SPAN>会将当前目录改为已运行的脚本所在的目录。
+</P><P>&#13; 以下范例显示了本模块与 <TT CLASS="literal">CGI SAPI</TT> 模块之间的不同：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">/* Our simple test application named test.php*/ <br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">echo </font><font color="#0000BB">getcwd</font><font color="#007700">(), </font><font color="#DD0000">"\n"</font><font color="#007700">;<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE>
+</P><P>&#13; 在使用 <TT CLASS="literal">CGI</TT> 版本时，其输出为
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">$ pwd
+/tmp
+
+$ php-cgi -f another_directory/test.php
+/tmp/another_directory</PRE></TD></TR></TABLE>
+</P><P>&#13; 我们明显可以看到 <TT CLASS="literal">PHP</TT> 将当前目录改成了刚刚运行过的脚本所在的目录。
+</P><P>&#13; 使用 <TT CLASS="literal">CLI SAPI</TT> 模式，我们得到：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">$ pwd
+/tmp
+
+$ php -q another_directory/test.php
+/tmp</PRE></TD></TR></TABLE>
+这使得我们在利用 <TT CLASS="literal">PHP</TT> 编写外壳工具时获得了很大的便利。
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+您可以在命令行运行时给 <TT CLASS="literal">CGI SAPI</TT> 加上 <TT CLASS="literal">-C</TT> 参数，使其支持 <TT CLASS="literal">CLI SAPI</TT> 的功能。
+</P></BLOCKQUOTE></DIV></LI></UL>
+</P><P>&#13; 以下是 <TT CLASS="literal">PHP</TT> 二进制文件（即 <TT CLASS="filename">php.exe</TT> 程序）提供的命令行模式的选项参数，您随时可以通过 <B CLASS="command">PHP -h </B> 命令来查询这些参数。
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">Usage: php [options] [-f] &#60;file&#62; [args...]
+       php [options] -r &#60;code&#62; [args...]
+       php [options] [-- args...]
+  -s               Display colour syntax highlighted source.
+  -w               Display source with stripped comments and whitespace.
+  -f &#60;file&#62;        Parse &#60;file&#62;.
+  -v               Version number
+  -c &#60;path&#62;|&#60;file&#62; Look for php.ini file in this directory
+  -a               Run interactively
+  -d foo[=bar]     Define INI entry foo with value 'bar'
+  -e               Generate extended information for debugger/profiler
+  -z &#60;file&#62;        Load Zend extension &#60;file&#62;.
+  -l               Syntax check only (lint)
+  -m               Show compiled in modules
+  -i               PHP information
+  -r &#60;code&#62;        Run PHP &#60;code&#62; without using script tags &#60;?..?&#62;
+  -h               This help
+
+  args...          Arguments passed to script. Use -- args when first argument 
+                   starts with - or script is read from stdin</PRE></TD></TR></TABLE>
+</P><P>&#13; <TT CLASS="literal">CLI SAPI</TT> 模块有以下三种不同的方法来获取您要运行的 <TT CLASS="literal">PHP</TT> 代码：
+<P></P><OL TYPE="1"><LI><P>&#13; 让 <TT CLASS="literal">PHP</TT> 运行指定文件。
+</P><P>&#13; <TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">php my_script.php
+
+php -f my_script.php</PRE></TD></TR></TABLE>
+</P><P>&#13; 以上两种方法（使用或不使用 <TT CLASS="literal">-f</TT> 参数）都能够运行给定的 <TT CLASS="filename">my_script.php</TT> 文件。您可以选择任何文件来运行，您指定的 <TT CLASS="literal">PHP</TT> 脚本并非必须要以 <TT CLASS="filename">.php</TT> 为扩展名，它们可以有任意的文件名和扩展名。
+</P></LI><LI><P>&#13; 在命令行直接运行 <TT CLASS="literal">PHP</TT> 代码。
+</P><P>&#13; <TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">php -r 'print_r(get_defined_constants());'</PRE></TD></TR></TABLE>
+</P><P>&#13; 在使用这种方法时，请您注意外壳变量的替代及引号的使用。
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+请仔细阅读以上范例，在运行代码时没有开始和结束的标记符！加上 <TT CLASS="literal">-r</TT> 参数后，这些标记符是不需要的，加上它们会导致语法错误。
+</P></BLOCKQUOTE></DIV></LI><LI><P>&#13; 通过标准输入（<TT CLASS="literal">stdin</TT>）提供需要运行的 <TT CLASS="literal">PHP</TT> 代码。
+</P><P>&#13; 以上用法给我们提供了非常强大的功能，使得我们可以如下范例所示，动态地生成 <TT CLASS="literal">PHP</TT> 代码并通过命令行运行这些代码：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">$ some_application | some_filter | php | sort -u &#62;final_output.txt</PRE></TD></TR></TABLE>
+</P></LI></OL>
+</P><P>&#13; 以上三种运行代码的方法不能同时使用。
+</P><P>&#13; 和所有的外壳应用程序一样，<TT CLASS="literal">PHP</TT> 的二进制文件（<TT CLASS="filename">php.exe</TT> 文件）及其运行的 <TT CLASS="literal">PHP</TT> 脚本能够接受一系列的参数。<TT CLASS="literal">PHP</TT> 没有限制传送给脚本程序的参数的个数（外壳程序对命令行的字符数有限制，但您通常都不会超过该限制）。传递给您脚本的参数可在全局变量 <TT CLASS="literal">$argv</TT> 中获取。该数组中下标为零的成员为脚本的名称（当 <TT CLASS="literal">PHP</TT> 代码来自标准输入获直接用 <TT CLASS="literal">-r</TT> 参数以命令行方式运行时，该名称为“<TT CLASS="literal">-</TT>”）。另外，全局变量 <TT CLASS="literal">$argc</TT> 存有 <TT CLASS="literal">$argv</TT> 数组中成员变量的个数（而非传送给脚本程序的参数的个数）。
+</P><P>&#13; 只要您传送给您脚本的参数不是以 <TT CLASS="literal">-</TT> 符号开头，您就无需过多的注意什么。向您的脚本传送以 <TT CLASS="literal">-</TT> 开头的参数会导致错误，因为 <TT CLASS="literal">PHP</TT> 会认为应该由它自身来处理这些参数。您可以用参数列表分隔符 <TT CLASS="literal">--</TT> 来解决这个问题。在 <TT CLASS="literal">PHP</TT> 解析完参数后，该符号后所有的参数将会被原样传送给您的脚本程序。
+</P><P>&#13; <TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen"># 以下命令将不会运行 PHP 代码，而只显示 PHP 命令行模式的使用说明：
+$ php -r 'var_dump($argv);' -h
+Usage: php [options] [-f] &#60;file&#62; [args...]
+[...]
+
+# 以下命令将会把“-h”参数传送给脚本程序，PHP 不会显示命令行模式的使用说明：
+$ php -r 'var_dump($argv);' -- -h
+array(2) {
+  [0]=&#62;
+  string(1) "-"
+  [1]=&#62;
+  string(2) "-h"
+}</PRE></TD></TR></TABLE>
+</P><P>&#13; 除此之外，我们还有另一个方法将 <TT CLASS="literal">PHP</TT> 用于外壳脚本。您可以在写一个脚本，并在第一行以 <TT CLASS="literal">#!/usr/bin/php</TT> 开头，在其后加上以 <TT CLASS="literal">PHP</TT> 开始和结尾标记符包含的正常的 <TT CLASS="literal">PHP</TT> 代码，然后为该文件设置正确的运行属性。该方法可以使得该文件能够像外壳脚本或 PERL 脚本一样被直接执行。
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+#!/usr/bin/php<br /><font color="#0000BB">&lt;?php<br />&nbsp;&nbsp;&nbsp;&nbsp;var_dump</font><font color="#007700">(</font><font color="#0000BB">$argv</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE>
+</P><P>&#13; 假设改文件名为 <TT CLASS="filename">test</TT> 并被放置在当前目录下，我们可以做如下操作：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">$ chmod 755 test
+$ ./test -h -- foo
+array(4) {
+  [0]=&#62;
+  string(6) "./test"
+  [1]=&#62;
+  string(2) "-h"
+  [2]=&#62;
+  string(2) "--"
+  [3]=&#62;
+  string(3) "foo"
+}</PRE></TD></TR></TABLE>
+</P><P>&#13; 正如您所看到的，在您向该脚本传送以 <TT CLASS="literal">-</TT> 开头的参数时，脚本仍然能够正常运行。
+</P><P>&#13; <DIV CLASS="table"><A NAME="AEN7391"></A><P><B>表格 23-3. 命令行选项</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">选项名称</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">描 述</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">-s</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <P>&#13; 显示有语法高亮色彩的源文件。
+</P>
+<P>&#13; 该参数使用内建机制来解析文件并为其生成一个 <TT CLASS="literal">HTML</TT> 高亮版本并将结果写到标准输出。请注意该过程所做的只是生成了一个 <TT CLASS="literal">&#60;code&#62; [...] &#60;/code&#62;</TT> 的 <TT CLASS="literal">HTML</TT> 标记符块，并不包含任何的 <TT CLASS="literal">HTML</TT> 头。
+</P>
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+该选项不能和 <TT CLASS="literal">-r</TT> 参数同时使用。
+</P></BLOCKQUOTE></DIV>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">-w</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <P>&#13; 显示除去了注释和空格的源代码。
+</P>
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+该选项不能和 <TT CLASS="literal">-r</TT> 参数同时使用。
+</P></BLOCKQUOTE></DIV>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">-f</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <P>&#13; 解析并运行给定的文件名。该参数为可选参数且可以不加，仅指明需要运行的文件名即可。
+</P>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">-v</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <P>&#13; 将 PHP、PHP SAPI 及 Zend 的版本信息写入的标准输出。例如：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">$ php -v
+PHP 4.3.0-dev (cli), Copyright (c) 1997-2002 The PHP Group
+Zend Engine v1.3.0, Copyright (c) 1998-2002 Zend Technologies</PRE></TD></TR></TABLE>
+</P>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">-c</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <P>&#13; 用该参数，您可以指定一个放置 <TT CLASS="filename">php.ini</TT> 文件的目录，或者直接指定一个自定义的 <TT CLASS="literal">INI</TT> 文件，其文件名可以不是 <TT CLASS="filename">php.ini</TT>。例如：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">$ php -c /custom/directory/ my_script.php
+
+$ php -c /custom/directory/custom-file.ini my_script.php</PRE></TD></TR></TABLE>
+</P>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">-a</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <P>&#13; 交互地运行 PHP。
+</P>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">-d</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <P>&#13; 用该参数可以自行设置 <TT CLASS="filename">php.ini</TT> 文件中设置变量的值，其语法为：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">-d configuration_directive[=value]</PRE></TD></TR></TABLE>
+</P>
+<P>&#13; 范例：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen"># Ommiting the value part will set the given configuration directive to "1"
+$ php -d max_execution_time 
+       -r '$foo = ini_get("max_execution_time"); var_dump($foo);'
+string(1) "1"
+
+# Passing an empty value part will set the configuration directive to ""
+php -d max_execution_time= 
+       -r '$foo = ini_get("max_execution_time"); var_dump($foo);'
+string(0) ""
+
+# The configuration directive will be set to anything passed after the '=' character
+$  php -d max_execution_time=20 
+      -r '$foo = ini_get("max_execution_time"); var_dump($foo);'
+string(2) "20"
+$  php 
+       -d max_execution_time=doesntmakesense 
+       -r '$foo = ini_get("max_execution_time"); var_dump($foo);'
+string(15) "doesntmakesense"</PRE></TD></TR></TABLE>
+</P>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">-e</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <P>&#13; 为调试器等生成扩展信息。
+</P>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">-z</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <P>&#13; 加载 Zend 扩展库。如果仅给定一个文件名，PHP 将试图从您系统扩展库的默认路径（在 Linux 系统下，该路径通常由 <TT CLASS="filename">/etc/ld.so.conf</TT> 指定）加载该扩展库。如果您用一个绝对路径指定文件名，则系统的扩展库默认路径将不会被使用。如果用相对路径指定的文件名，PHP 则仅试图加载相对于当前目录的扩展库。
+</P>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">-l</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <P>&#13; 该参数提供了对指定 <TT CLASS="literal">PHP</TT> 代码进行语法检查的方便的方法。如果成功，则向标准输出写入 <TT CLASS="literal">No syntax errors detected in &#60;filename&#62;</TT> 字符串，并且外壳返回值为 <TT CLASS="literal">0</TT>。如果失败，则 <TT CLASS="literal">Errors parsing
+&#60;filename&#62;</TT> 以及内部解析器错误信息会一起被写入到标准输出，同时外壳返回值将别设置为 <TT CLASS="literal">255</TT>。
+</P>
+<P>&#13; 该参数将无法检查致命错误（如未定义函数），如果您希望检测之名错误，请使用 <TT CLASS="literal">-f</TT> 参数。
+</P>
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+该参数不能和 <TT CLASS="literal">-r</TT> 一同使用。
+</P></BLOCKQUOTE></DIV>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">-m</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <P>&#13; 使用该参数，PHP 将打印出内置以及已加载的 PHP 及 Zend 模块：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">$ php -m
+[PHP Modules]
+xml
+tokenizer
+standard
+session
+posix
+pcre
+overload
+mysql
+mbstring
+ctype
+
+[Zend Modules]</PRE></TD></TR></TABLE>
+</P>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">-i</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; 该命令行参数会调用 <A HREF="function.phpinfo.html"><B CLASS="function">phpinfo()</B></A> 函数，并打印出结果。如果 <TT CLASS="literal">PHP</TT> 没有正常工作，我们建议您执行 <B CLASS="command">php -i</B> 命令来查看在信息表格之前或者对应的地方是否有任何错误信息输出。请注意输出的内容为 <TT CLASS="literal">HTML</TT> 格式，因此输出的信息篇幅较大。
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">-r</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; <P>&#13; 使用该参数可以在命令行运行 <TT CLASS="literal">PHP</TT> 代码。您<SPAN CLASS="strong"><B CLASS="emphasis">无需</B></SPAN>加上 <TT CLASS="literal">PHP</TT> 的起始和结束标识符（<TT CLASS="literal">&#60;?php</TT> 和 <TT CLASS="literal">?&#62;</TT>），否则将会导致语法解析错误。
+</P>
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+使用这种形式的 <TT CLASS="literal">PHP</TT> 时，应个别注意避免和外壳环境进行的命令行参数替换相冲突。
+</P><P>&#13; 显示语法解析错误的范例
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">$ php -r "$foo = get_defined_constants();"
+Command line code(1) : Parse error - parse error, unexpected '='</PRE></TD></TR></TABLE>
+</P><P>&#13; 这里的问题在于即时使用了双引号 <TT CLASS="literal">"</TT>，sh/bash 仍然实行了参数替换。由于 <TT CLASS="literal">$foo</TT> 没有被定义，被替换后它所在的位置变成了空字符，因此在运行时，实际被 <TT CLASS="literal">PHP</TT> 读取的代码为：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">$ php -r " = get_defined_constants();"</PRE></TD></TR></TABLE>
+</P><P>&#13; 正确的方法是使用单引号 <TT CLASS="literal">'</TT>。在用单引号引用的字符串中，变量不会被 sh/bash 还原成其原值。
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">$ php -r '$foo = get_defined_constants(); var_dump($foo);'
+array(370) {
+  ["E_ERROR"]=&#62;
+  int(1)
+  ["E_WARNING"]=&#62;
+  int(2)
+  ["E_PARSE"]=&#62;
+  int(4)
+  ["E_NOTICE"]=&#62;
+  int(8)
+  ["E_CORE_ERROR"]=&#62;
+  [...]</PRE></TD></TR></TABLE>
+</P><P>&#13; 如果您使用的外壳不是 sh/bash，您可能会碰到其它的问题。请报告您碰到的 bug，或者发邮件到 phpdoc@lists.php.net。
+</P><P>&#13; 当您试图将外壳的环境变量引入到马或者用反斜线来转义字符时也可能碰到各种各样的问题，请您在使用时注意！
+</P></BLOCKQUOTE></DIV>
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+<TT CLASS="literal">-r</TT> 在 <SPAN CLASS="emphasis"><I CLASS="emphasis">CLI</I></SPAN> SAPI 中有效，在 <SPAN CLASS="emphasis"><I CLASS="emphasis">CGI</I></SPAN> SAPI 中无效。
+</P></BLOCKQUOTE></DIV>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">-h</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; 使用该参数，您可以得到完整的命令行参数的列表及这些参数作用的简单描述。
+</TD></TR></TBODY></TABLE></DIV>
+</P><P>&#13; PHP 的命令行模式能使得 PHP 脚本能完全独立于 WEB 服务器单独运行。如果您使用 Unix 系统，您需要在您的 PHP 脚本的最前面加上一行特殊的代码，使得它能够被执行，这样系统就能知道用什么样的程序要运行该脚本。在 Windows 平台下您可以将 <TT CLASS="literal">php.exe</TT> 和 <TT CLASS="literal">.php</TT> 文件的双击属性相关联，您也可以编写一个批处理文件来用 PHP 执行脚本。为 Unix 系统增加的第一行代码不会影响该脚本在 Windows 下的运行，因此您也可以用该方法编写跨平台的脚本程序。以下是一个简单的PHP 命令行程序的范例。
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN7518"></A><P><B>例子 23-1. 试图以命令行方式运行的 PHP 脚本（script.php）</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+#!/usr/bin/php<br /><font color="#0000BB">&lt;?php<br /><br /></font><font color="#007700">if (</font><font color="#0000BB">$argc </font><font color="#007700">!= </font><font color="#0000BB">2 </font><font color="#007700">|| </font><font color="#0000BB">in_array</font><font color="#007700">(</font><font color="#0000BB">$argv</font><font color="#007700">[</font><font color="#0000BB">1</font><font color="#007700">], array(</font><font color="#DD0000">'--help'</font><font color="#007700">, </font><font color="#DD0000">'-help'</font><font color="#007700">, </font><font color="#DD0000">'-h'</font><font color="#007700">, </font><font color="#DD0000">'-?'</font><font color="#007700">))) {<br /></font><font color="#0000BB">?&gt;<br /></font><br />This is a command line PHP script with one option.<br /><br />&nbsp;&nbsp;Usage:<br />&nbsp;&nbsp;<font color="#0000BB">&lt;?php </font><font color="#007700">echo </font><font color="#0000BB">$argv</font><font color="#007700">[</font><font color="#0000BB">0</font><font color="#007700">]; </font><font color="#0000BB">?&gt;</font> &lt;option&gt;<br /><br />&nbsp;&nbsp;&lt;option&gt; can be some word you would like<br />&nbsp;&nbsp;to print out. With the --help, -help, -h,<br />&nbsp;&nbsp;or -? options, you can get this help.<br /><br /><font color="#0000BB">&lt;?php<br /></font><font color="#007700">} else {<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#0000BB">$argv</font><font color="#007700">[</font><font color="#0000BB">1</font><font color="#007700">];<br />}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; 在以上脚本中，我们用第一行特殊的代码来指明该文件应该由 PHP 来执行。我们在这里使用 CLI 的版本，因此不会有 HTTP 头信息输出。在您用 PHP 编写命令行应用程序时，您可以使用两个参数：<TT CLASS="varname">$argc</TT> 和 <TT CLASS="varname">$argv</TT>。前面一个的值是比参数个数大 1 的整数（运行的脚本本身的名称也被当作一个参数）。第二个时包含有参数的数组，其第一个元素为脚本的名称，下标为数字 0（<TT CLASS="varname">$argv[0]</TT>）。
+</P><P>&#13; 在以上程序中我们检查了参数的个数是大于 1 个还是小于 1 个。即时参数是 <TT CLASS="literal">--help</TT>、<TT CLASS="literal">-help</TT>、<TT CLASS="literal">-h</TT> 或 <TT CLASS="literal">-?</TT>，我们仍然打印出帮助信息，并同时动态输出脚本的名称。如果还收到了其它参数，我们也把它们显示出来。
+</P><P>&#13; 如果您希望在 Unix 下运行以上脚本，您需要使得它成为可执行脚本，然后简单的运行 <TT CLASS="literal">script.php echothis</TT> 或 <TT CLASS="literal">script.php -h</TT>。在 Windows 下，您可以为此编写一个批处理文件：
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN7534"></A><P><B>例子 23-2. 运行 PHP 命令行脚本的批处理文件（script.bat）</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="winbat">@c:\php\cli\php.exe script.php %1 %2 %3 %4</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; 假设您将上述程序命名为 <TT CLASS="filename">script.php</TT>，且您的 CLI <TT CLASS="filename">php.exe</TT> 文件放置在 <TT CLASS="filename">c:\php\cli\php.exe</TT>，该批处理文件会帮助您将附加的参数传给脚本程序： <TT CLASS="literal">script.bat echothis</TT> 或
+<TT CLASS="literal">script.bat -h</TT>。
+</P><P>&#13; 请参阅 <A HREF="ref.readline.html">Readline</A> 扩展模块的有关文档，以获取更多的函数的信息。这些函数可以帮助您完善您的 PHP 命令行应用程序。
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="features.safe-mode.functions.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="funcref.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">被安全模式限制或屏蔽的函数</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="features.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">函数参考</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<HTML><HEAD><TITLE>安全模式</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="特点" HREF="features.html"><LINK REL="PREVIOUS" TITLE="数据库永久连接" HREF="features.persistent-connections.html"><LINK REL="NEXT" TITLE="被安全模式限制或屏蔽的函数" HREF="features.safe-mode.functions.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="chapter" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="features.persistent-connections.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="features.safe-mode.functions.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="chapter"><H1><A NAME="features.safe-mode">章 22. 安全模式</A></H1><DIV CLASS="TOC"><DL><DT><B>目录</B></DT><DT><A HREF="features.safe-mode.html#ini.sect.safe-mode">保安措施和安全模式</A></DT><DT><A HREF="features.safe-mode.functions.html">被安全模式限制或屏蔽的函数</A></DT></DL></DIV><P>&#13; PHP 的安全模式是为了试图解决共享服务器（shared-server）安全问题而设立的。在结构上，试图在
+PHP 层上解决这个问题是不合理的，但修改 WEB
+服务器层和操作系统层显得非常不现实。因此许多人，特别是 ISP，目前使用安全模式。
+</P><DIV CLASS="sect1"><H1 CLASS="sect1"><A NAME="ini.sect.safe-mode"></A>保安措施和安全模式</H1><P>&#13; <DIV CLASS="table"><A NAME="AEN6763"></A><P><B>表格 22-1. 保安措施和安全模式配置指令</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">名称</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">默认值</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">作用范围</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">safe_mode</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">"0"</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_SYSTEM</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">safe_mode_gid</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">"0"</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_SYSTEM</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">safe_mode_include_dir</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">NULL</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_SYSTEM</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">safe_mode_exec_dir</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">""</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_SYSTEM</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">safe_mode_allowed_env_vars</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_SYSTEM</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">safe_mode_protected_env_vars</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">LD_LIBRARY_PATH</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_SYSTEM</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">open_basedir</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">NULL</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_SYSTEM</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">disable_functions</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">""</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_SYSTEM</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">disable_classes</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">""</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">PHP_INI_SYSTEM</TD></TR></TBODY></TABLE></DIV>
+PHP_INI_* 常量的进一步详细说明与定义见 <A HREF="function.ini-set.html"><B CLASS="function">ini_set()</B></A>。
+</P><P>以下是该配置选项的简要解释。</P><P>&#13; <P></P><DIV CLASS="variablelist"><DL><DT><A NAME="ini.safe-mode"></A><TT CLASS="parameter"><I>safe_mode</I></TT>
+<A HREF="language.types.boolean.html"><B CLASS="type">boolean</B></A></DT><DD><P>&#13; 是否启用 PHP 的安全模式。更多信息请阅读<A HREF="security.index.html">安全</A>一章。
+</P></DD><DT><A NAME="ini.safe-mode-gid"></A><TT CLASS="parameter"><I>safe_mode_gid</I></TT>
+<A HREF="language.types.boolean.html"><B CLASS="type">boolean</B></A></DT><DD><P>&#13; 默认情况下，安全模式在打开文件时会做 UID 比较检查。如果你想将其放宽到
+GID 比较，则打开 safe_mode_gid。是否在文件访问时使用
+<TT CLASS="literal">UID</TT>（<TT CLASS="constant"><B>FALSE</B></TT>）或者
+<TT CLASS="literal">GID</TT>（<TT CLASS="constant"><B>TRUE</B></TT>）来做检查。
+</P></DD><DT><A NAME="ini.safe-mode-include-dir"></A><TT CLASS="parameter"><I>safe_mode_include_dir</I></TT>
+<A HREF="language.types.string.html"><B CLASS="type">string</B></A></DT><DD><P>&#13; 当从此目录及其子目录（目录必须在 <A HREF="configuration.directives.html#ini.include-path">include_path</A>
+中或者用完整路径来包含）包含文件时越过
+<TT CLASS="literal">UID</TT>/<TT CLASS="literal">GID</TT> 检查。
+</P><P>&#13; 从 PHP 4.2.0 开始，本指令可以接受和 <A HREF="configuration.directives.html#ini.include-path">include_path</A>
+指令类似的风格用分号隔开的路径，而不只是一个目录。
+</P><P>&#13; 指定的限制实际上是一个前缀，而非一个目录名。这也就是说“safe_mode_include_dir = /dir/incl”将允许访问“/dir/include”和“/dir/incls”，如果它们存在。如果您希望将访问控制在一个指定的目录，那么请在结尾加上一个斜线，例如：“safe_mode_include_dir = /dir/incl/”。
+</P></DD><DT><A NAME="ini.safe-mode-exec-dir"></A><TT CLASS="parameter"><I>safe_mode_exec_dir</I></TT>
+<A HREF="language.types.string.html"><B CLASS="type">string</B></A></DT><DD><P>&#13; 如果 PHP 使用了安全模式，<A HREF="function.system.html"><B CLASS="function">system()</B></A> 和其它<A HREF="ref.exec.html">执行系统程序的函数</A>将拒绝启动不在此目录中的程序。
+</P></DD><DT><A NAME="ini.safe-mode-allowed-env-vars"></A><TT CLASS="parameter"><I>safe_mode_allowed_env_vars</I></TT>
+<A HREF="language.types.string.html"><B CLASS="type">string</B></A></DT><DD><P>&#13; 设置某些环境变量可能是潜在的安全缺口。本指令包含有一个逗号分隔的前缀列表。在安全模式下，用户只能改变那些名字具有在这里提供的前缀的环境变量。默认情况下，用户只能设置以
+PHP_ 开头的环境变量（例如 PHP_FOO = BAR）。
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+如果本指令为空，PHP 将使用户可以修改任何环境变量！
+</P></BLOCKQUOTE></DIV></DD><DT><A NAME="ini.safe-mode-protected-env-vars"></A><TT CLASS="parameter"><I>safe_mode_protected_env_vars</I></TT>
+<A HREF="language.types.string.html"><B CLASS="type">string</B></A></DT><DD><P>&#13; 本指令包含有一个逗号分隔的环境变量的列表，最终用户不能用
+<A HREF="function.putenv.html"><B CLASS="function">putenv()</B></A> 来改变这些环境变量。甚至在
+safe_mode_allowed_env_vars 中设置了允许修改时也不能改变这些变量。
+</P></DD><DT><A NAME="ini.open-basedir"></A><TT CLASS="parameter"><I>open_basedir</I></TT>
+<A HREF="language.types.string.html"><B CLASS="type">string</B></A></DT><DD><P>&#13; 将 PHP 所能打开的文件限制在指定的目录树，包括文件本身。本指令<SPAN CLASS="emphasis"><I CLASS="emphasis">不受</I></SPAN>安全模式打开或者关闭的影响。
+</P><P>&#13; 当一个脚本试图用例如 <A HREF="function.fopen.html"><B CLASS="function">fopen()</B></A> 或者 <A HREF="function.gzopen.html"><B CLASS="function">gzopen()</B></A>
+打开一个文件时，该文件的位置将被检查。当文件在指定的目录树之外时
+PHP 将拒绝打开它。所有的符号连接都会被解析，所以不可能通过符号连接来避开此限制。
+</P><P>&#13; 特殊值 <SPAN CLASS="systemitem">.</SPAN>
+指定了存放该脚本的目录将被当做基准目录。
+</P><P>&#13; 在 Windows 中，用分号分隔目录。在任何其它系统中用冒号分隔目录。作为
+Apache 模块时，父目录中的 open_basedir 路径自动被继承。
+</P><P>&#13; 用 open_basedir 指定的限制实际上是前缀，不是目录名。也就是说
+"open_basedir = /dir/incl" 也会允许访问 "/dir/include" 和
+"/dir/incls"，如果它们存在的话。如果要将访问限制在仅为指定的目录，用斜线结束路径名。例如："open_basedir = /dir/incl/"。
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+支持多个目录是 3.0.7 加入的。
+</P></BLOCKQUOTE></DIV><P>&#13; 默认是允许打开所有文件。
+</P></DD><DT><A NAME="ini.disable-functions"></A><TT CLASS="parameter"><I>disable_functions</I></TT>
+<A HREF="language.types.string.html"><B CLASS="type">string</B></A></DT><DD><P>&#13; 本指令允许你基于<A HREF="security.index.html">安全</A>原因禁止某些函数。接受逗号分隔的函数名列表作为参数。
+disable_functions 不受<A HREF="features.safe-mode.html#ini.safe-mode">安全模式</A>的影响。
+</P><P>&#13; 本指令只能设置在 <TT CLASS="filename">php.ini</TT> 中。例如你不能将其设置在 <TT CLASS="filename">httpd.conf</TT>。
+</P></DD><DT><A NAME="ini.disable-classes"></A><TT CLASS="parameter"><I>disable_classes</I></TT>
+<A HREF="language.types.string.html"><B CLASS="type">string</B></A></DT><DD><P>&#13; 本指令可以使你出于<A HREF="security.index.html">安全</A>的理由禁用某些类。用逗号分隔类名。disable_classes
+不受<A HREF="features.safe-mode.html#ini.safe-mode">安全模式</A>的影响。
+</P><P>&#13; 本指令只能设置在 <TT CLASS="filename">php.ini</TT> 中。例如你不能将其设置在 <TT CLASS="filename">httpd.conf</TT>。
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>可用性说明: </B>
+本指令自 PHP 4.3.2 起可用。
+</P></BLOCKQUOTE></DIV></DD></DL></DIV>
+</P><P>&#13; 参见 <A HREF="configuration.directives.html#ini.register-globals">register_globals</A>，<A HREF="ref.errorfunc.html#ini.display-errors">display_errors</A> 和 <A HREF="ref.errorfunc.html#ini.log-errors">log_errors</A>。
+</P><P>&#13; 当 <A HREF="features.safe-mode.html#ini.safe-mode">safe_mode</A> 设置为 on，PHP 将检查当前脚本的拥有者是否和将被文件函数操作的文件的拥有者相匹配。例如：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="ls">-rw-rw-r--    1 rasmus   rasmus       33 Jul  1 19:20 script.php
+-rw-r--r--    1 root     root       1116 May 26 18:01 /etc/passwd</PRE></TD></TR></TABLE>
+运行 script.php
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /> readfile</font><font color="#007700">(</font><font color="#DD0000">'/etc/passwd'</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE>
+如果安全模式被激活，则将会导致以下错误：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">Warning: SAFE MODE Restriction in effect. The script whose uid is 500 is not
+allowed to access /etc/passwd owned by uid 0 in /docroot/script.php on line 2</PRE></TD></TR></TABLE>
+</P><P>&#13; 同时，或许会存在这样的环境，在该环境下，宽松的 <TT CLASS="literal">GID</TT> 检查已经足够，但严格的 <TT CLASS="literal">UID</TT> 检查反而是不适合的。您可以用 <A HREF="features.safe-mode.html#ini.safe-mode-gid">safe_mode_gid</A> 选项来控制这种检查。如果设置为 <TT CLASS="literal">On</TT> 则进行宽松的 <TT CLASS="literal">GID</TT> 检查；设置为 <TT CLASS="literal">Off</TT>（默认值）则进行 <TT CLASS="literal">UID</TT> 检查。
+</P><P>&#13; 除了 <A HREF="features.safe-mode.html#ini.safe-mode">safe_mode</A> 以外，如果您设置了 <A HREF="features.safe-mode.html#ini.open-basedir">open_basedir</A> 选项，则所有的文件操作将被限制在您指定的目录下。例如：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="ini">&#60;Directory /docroot&#62;
+  php_admin_value open_basedir /docroot
+&#60;/Directory&#62;</PRE></TD></TR></TABLE>
+如果您在设置了 <A HREF="features.safe-mode.html#ini.open-basedir">open_basedir</A> 选项后运行同样的 script.php，则其结果会是：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">Warning: open_basedir restriction in effect. File is in wrong directory in
+/docroot/script.php on line 2</PRE></TD></TR></TABLE>
+</P><P>&#13; 您也可以单独地屏蔽某些函数。请注意
+<A HREF="features.safe-mode.html#ini.disable-functions">disable_functions</A>
+选项不能在 <TT CLASS="filename">php.ini</TT> 文件外部使用，也就是说您无法在 <TT CLASS="filename">httpd.conf</TT>
+文件的按不同虚拟主机或不同目录的方式来屏蔽函数。
+如果我们将如下内容加入到 <TT CLASS="filename">php.ini</TT> 文件：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="ini">disable_functions readfile,system</PRE></TD></TR></TABLE>
+则我们会得到如下的输出：
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="screen">Warning: readfile() has been disabled for security reasons in
+/docroot/script.php on line 2</PRE></TD></TR></TABLE>
+</P></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="features.persistent-connections.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="features.safe-mode.functions.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">数据库永久连接</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="features.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">被安全模式限制或屏蔽的函数</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

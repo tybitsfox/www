@@ -1,0 +1,324 @@
+<HTML
+><HEAD
+><TITLE
+>位串类型</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="数据类型"
+HREF="datatype.html"><LINK
+REL="PREVIOUS"
+TITLE="网络地址数据类型"
+HREF="datatype-net-types.html"><LINK
+REL="NEXT"
+TITLE="数组"
+HREF="arrays.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="datatype-net-types.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="datatype.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 8. 数据类型</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="datatype.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="arrays.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="DATATYPE-BIT"
+>8.9. 位串类型</A
+></H1
+><A
+NAME="AEN5550"
+></A
+><P
+>        位串就是一串 1 和 0 的字串。它们可以用于存储和视觉化位掩码。
+        我们有两种类型的 SQL 位类型：
+        <TT
+CLASS="TYPE"
+>bit(<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>)</TT
+> 和 <TT
+CLASS="TYPE"
+>bit
+	varying(<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>)</TT
+>; 这里的
+	<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>是一个正整数。
+   </P
+><P
+>	<TT
+CLASS="TYPE"
+>bit</TT
+>类型的数据必须准确匹配长度<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>; 
+	试图存储短些或者长一些的数据都是错误的。类型
+	<TT
+CLASS="TYPE"
+>bit varying</TT
+> 数据是最长 <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> 的变长类型；
+	更长的串会被拒绝。写一个没有长度的 <TT
+CLASS="TYPE"
+>bit</TT
+> 等效于
+	 <TT
+CLASS="LITERAL"
+>bit(1)</TT
+>，没有长度的<TT
+CLASS="TYPE"
+>bit varying</TT
+> 意思是没有长度限制。
+   </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	如果我们明确地把一个位串值转换成 <TT
+CLASS="TYPE"
+>bit(<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>)</TT
+>，
+	那么它的右边将被截断或者在右边补齐零，直到刚好 <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> 位，
+	而不会抛出任何错误。类似地，如果我们明确地把一个位串数值转换成
+	<TT
+CLASS="TYPE"
+>bit varying(<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>)</TT
+>，如果它超过了<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> 位，
+	那么它的右边将被截断。
+    </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	在<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>7.2 之前，不管是否有明确的转换，
+	<TT
+CLASS="TYPE"
+>bit</TT
+> 都会在右边自动截断或者在在右边填充零的。这个行为现在已经为了和<SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+>标准兼容修改过来了。
+    </P
+></BLOCKQUOTE
+></DIV
+><P
+>	请参考 <A
+HREF="sql-syntax.html#SQL-SYNTAX-BIT-STRINGS"
+>Section 4.1.2.3</A
+>
+        获取有关位串常量的语法的信息。还有一些位逻辑操作符和位处理函数可用；
+        见<A
+HREF="functions-bitstring.html"
+>Section 9.6</A
+>。
+   </P
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN5585"
+></A
+><P
+><B
+>Example 8-3. 使用位串类型</B
+></P
+><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE test (a bit(3), b bit varying(5));
+INSERT INTO test VALUES (B'101', B'00');
+INSERT INTO test VALUES (B'10', B'101');
+<TT
+CLASS="COMPUTEROUTPUT"
+>ERROR:  Bit string length 2 does not match type bit(3)</TT
+>
+INSERT INTO test VALUES (B'10'::bit(3), B'101');
+SELECT * FROM test;
+<TT
+CLASS="COMPUTEROUTPUT"
+>  a  |  b
+-----+-----
+ 101 | 00
+ 100 | 101</TT
+></PRE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="datatype-net-types.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="arrays.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>网络地址数据类型</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="datatype.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>数组</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

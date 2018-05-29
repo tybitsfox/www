@@ -1,0 +1,348 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>使用 SQL 描述符范围 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="ecpg - 在 C 里嵌入 SQL" HREF="ecpg.html"><LINK REL="PREVIOUS" TITLE="动态 SQL" HREF="ecpg-dynamic.html"><LINK REL="NEXT" TITLE="错误处理" HREF="ecpg-errors.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="ecpg-dynamic.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="ecpg.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 30. <SPAN
+CLASS="APPLICATION"
+>ecpg</SPAN
+> - 在 C 里嵌入 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="ecpg.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="ecpg-errors.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="ECPG-DESCRIPTORS" >30.8. 使用 SQL 描述符范围</A
+></H1
+><P
+>   SQL 描述符范围是一个处理 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 或者 <TT
+CLASS="COMMAND"
+>FETCH</TT
+>
+   语句结果的更复杂的方法。一个 SQL 描述符范围把一行数据里的数据和原数据项组合到了一个数据结构中。
+   原数据在执行动态 SQL 语句的时候特别有用，因为结果字段的性质可能是事先不知道的。
+  </P
+><P
+>   一个 SQL 描述符范围由一个头，（包含有关整个描述符的信息），一个或多个项描述符范围，（基本上每个描述结果行中的一个字段）组成。
+  </P
+><P
+>   在你可以使用 SQL 描述符范围之前，你需要分配一个：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL ALLOCATE DESCRIPTOR <TT
+CLASS="REPLACEABLE"
+><I
+>identifier</I
+></TT
+>;</PRE
+><P>
+   identifier 用做描述符范围的 <SPAN
+CLASS="QUOTE"
+>"变量名"</SPAN
+>。
+   如果你不再需要这个描述符，你应该释放它：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL DEALLOCATE DESCRIPTOR <TT
+CLASS="REPLACEABLE"
+><I
+>identifier</I
+></TT
+>;</PRE
+><P>
+  </P
+><P
+>   要使用一个描述符范围，在一个 <TT
+CLASS="LITERAL"
+>INTO</TT
+> 子句的存储目标里声明它，而不是列出宿主变量：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL FETCH NEXT FROM mycursor INTO DESCRIPTOR mydesc;</PRE
+><P>
+  </P
+><P
+>   现在，我们应该如何从描述符范围里获取数据？你可以把描述符范围看作是一个有着命名字段的结构。
+   要从头里面检索数值并且把它存储到一个宿主变量里，使用下面的命令：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL GET DESCRIPTOR <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> :<TT
+CLASS="REPLACEABLE"
+><I
+>hostvar</I
+></TT
+> = <TT
+CLASS="REPLACEABLE"
+><I
+>field</I
+></TT
+>;</PRE
+><P>
+   目前只定义了一个头字段：<TT
+CLASS="REPLACEABLE"
+><I
+>COUNT</I
+></TT
+>，这个字段告诉我们有几个项描述符范围存在（也就是说，在结果里包含多少个字段）。
+   宿主变量需要是一个整数类型。要从项描述符范围里获取一个字段，使用下面的命令：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL GET DESCRIPTOR <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> VALUE <TT
+CLASS="REPLACEABLE"
+><I
+>num</I
+></TT
+> :<TT
+CLASS="REPLACEABLE"
+><I
+>hostvar</I
+></TT
+> = <TT
+CLASS="REPLACEABLE"
+><I
+>field</I
+></TT
+>;</PRE
+><P>
+   <TT
+CLASS="REPLACEABLE"
+><I
+>num</I
+></TT
+> 可以是一个字符整数或者一个包含整数的宿主变量。可能的 field 有：
+
+   <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>CARDINALITY</TT
+> (integer)</DT
+><DD
+><P
+>       结果集中的行数
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>DATA</TT
+></DT
+><DD
+><P
+>       实际的数据项（因此，这个字段的数据类型依赖于这个查询）
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>DATETIME_INTERVAL_CODE</TT
+> (integer)</DT
+><DD
+><P
+>       ?
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>DATETIME_INTERVAL_PRECISION</TT
+> (integer)</DT
+><DD
+><P
+>       未实现
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>INDICATOR</TT
+> (integer)</DT
+><DD
+><P
+>       描述符（标识一个空值或者一个截断的值）
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>KEY_MEMBER</TT
+> (integer)</DT
+><DD
+><P
+>       未实现
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>LENGTH</TT
+> (integer)</DT
+><DD
+><P
+>       数据的字符长度
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>NAME</TT
+> (string)</DT
+><DD
+><P
+>       字段的名字
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>NULLABLE</TT
+> (integer)</DT
+><DD
+><P
+>       未实现
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>OCTET_LENGTH</TT
+> (integer)</DT
+><DD
+><P
+>       以字节计的数据的长度
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>PRECISION</TT
+> (integer)</DT
+><DD
+><P
+>       精度（用于 <TT
+CLASS="TYPE"
+>numeric</TT
+>）
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>RETURNED_LENGTH</TT
+> (integer)</DT
+><DD
+><P
+>       以字符计的数据长度
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>RETURNED_OCTET_LENGTH</TT
+> (integer)</DT
+><DD
+><P
+>       数据以字节计的长度
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>SCALE</TT
+> (integer)</DT
+><DD
+><P
+>       比例（用于 <TT
+CLASS="TYPE"
+>numeric</TT
+> ）
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>TYPE</TT
+> (integer)</DT
+><DD
+><P
+>       字段数据类型的数值代码
+      </P
+></DD
+></DL
+></DIV
+><P>
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="ecpg-dynamic.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="ecpg-errors.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >动态 SQL</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="ecpg.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >错误处理</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

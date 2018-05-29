@@ -1,0 +1,628 @@
+<HTML
+><HEAD
+><TITLE
+>服务器配置</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="服务器管理"
+HREF="admin.html"><LINK
+REL="PREVIOUS"
+TITLE="用SSH隧道进行安全 TCP/IP 联接"
+HREF="ssh-tunnels.html"><LINK
+REL="NEXT"
+TITLE="文件位置"
+HREF="runtime-config-file-locations.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="ssh-tunnels.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="runtime.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="user-manag.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="runtime-config-file-locations.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="RUNTIME-CONFIG"
+>Chapter 17. 服务器配置</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>17.1. <A
+HREF="runtime-config.html#CONFIG-SETTING"
+>设置参数</A
+></DT
+><DT
+>17.2. <A
+HREF="runtime-config-file-locations.html"
+>文件位置</A
+></DT
+><DT
+>17.3. <A
+HREF="runtime-config-connection.html"
+>连接和认证</A
+></DT
+><DD
+><DL
+><DT
+>17.3.1. <A
+HREF="runtime-config-connection.html#RUNTIME-CONFIG-CONNECTION-SETTINGS"
+>连接设置</A
+></DT
+><DT
+>17.3.2. <A
+HREF="runtime-config-connection.html#RUNTIME-CONFIG-CONNECTION-SECURITY"
+>安全和认证</A
+></DT
+></DL
+></DD
+><DT
+>17.4. <A
+HREF="runtime-config-resource.html"
+>资源消耗</A
+></DT
+><DD
+><DL
+><DT
+>17.4.1. <A
+HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-MEMORY"
+>内存</A
+></DT
+><DT
+>17.4.2. <A
+HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-FSM"
+>自由空间映射</A
+></DT
+><DT
+>17.4.3. <A
+HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-KERNEL"
+>内核资源使用</A
+></DT
+><DT
+>17.4.4. <A
+HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-VACUUM-COST"
+>基于开销的清理延迟</A
+></DT
+><DT
+>17.4.5. <A
+HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-BACKGROUND-WRITER"
+>后端写进程</A
+></DT
+></DL
+></DD
+><DT
+>17.5. <A
+HREF="runtime-config-wal.html"
+>预写式日志</A
+></DT
+><DD
+><DL
+><DT
+>17.5.1. <A
+HREF="runtime-config-wal.html#RUNTIME-CONFIG-WAL-SETTINGS"
+>设置</A
+></DT
+><DT
+>17.5.2. <A
+HREF="runtime-config-wal.html#RUNTIME-CONFIG-WAL-CHECKPOINTS"
+>检查点</A
+></DT
+><DT
+>17.5.3. <A
+HREF="runtime-config-wal.html#RUNTIME-CONFIG-WAL-ARCHIVING"
+>归档</A
+></DT
+></DL
+></DD
+><DT
+>17.6. <A
+HREF="runtime-config-query.html"
+>查询规划</A
+></DT
+><DD
+><DL
+><DT
+>17.6.1. <A
+HREF="runtime-config-query.html#RUNTIME-CONFIG-QUERY-ENABLE"
+>规划器方法配置</A
+></DT
+><DT
+>17.6.2. <A
+HREF="runtime-config-query.html#RUNTIME-CONFIG-QUERY-CONSTANTS"
+>规划器开销常量</A
+></DT
+><DT
+>17.6.3. <A
+HREF="runtime-config-query.html#RUNTIME-CONFIG-QUERY-GEQO"
+>基因查询优化器</A
+></DT
+><DT
+>17.6.4. <A
+HREF="runtime-config-query.html#RUNTIME-CONFIG-QUERY-OTHER"
+>其它规划器选项</A
+></DT
+></DL
+></DD
+><DT
+>17.7. <A
+HREF="runtime-config-logging.html"
+>错误报告和日志</A
+></DT
+><DD
+><DL
+><DT
+>17.7.1. <A
+HREF="runtime-config-logging.html#RUNTIME-CONFIG-LOGGING-WHERE"
+>在哪里记录日志</A
+></DT
+><DT
+>17.7.2. <A
+HREF="runtime-config-logging.html#RUNTIME-CONFIG-LOGGING-WHEN"
+>什么时候记日志</A
+></DT
+><DT
+>17.7.3. <A
+HREF="runtime-config-logging.html#RUNTIME-CONFIG-LOGGING-WHAT"
+>记录什么</A
+></DT
+></DL
+></DD
+><DT
+>17.8. <A
+HREF="runtime-config-statistics.html"
+>运行时统计</A
+></DT
+><DD
+><DL
+><DT
+>17.8.1. <A
+HREF="runtime-config-statistics.html#RUNTIME-CONFIG-STATISTICS-MONITOR"
+>统计监控</A
+></DT
+><DT
+>17.8.2. <A
+HREF="runtime-config-statistics.html#RUNTIME-CONFIG-STATISTICS-COLLECTOR"
+>查询和索引统计收集器</A
+></DT
+></DL
+></DD
+><DT
+>17.9. <A
+HREF="runtime-config-autovacuum.html"
+>自动清理</A
+></DT
+><DT
+>17.10. <A
+HREF="runtime-config-client.html"
+>客户端连接缺省</A
+></DT
+><DD
+><DL
+><DT
+>17.10.1. <A
+HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-STATEMENT"
+>语句行为</A
+></DT
+><DT
+>17.10.2. <A
+HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-FORMAT"
+>区域和格式化</A
+></DT
+><DT
+>17.10.3. <A
+HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-OTHER"
+>其它缺省</A
+></DT
+></DL
+></DD
+><DT
+>17.11. <A
+HREF="runtime-config-locks.html"
+>锁管理</A
+></DT
+><DT
+>17.12. <A
+HREF="runtime-config-compatible.html"
+>版本和平台兼容性</A
+></DT
+><DD
+><DL
+><DT
+>17.12.1. <A
+HREF="runtime-config-compatible.html#RUNTIME-CONFIG-COMPATIBLE-VERSION"
+>以前的 PostgreSQL 版本</A
+></DT
+><DT
+>17.12.2. <A
+HREF="runtime-config-compatible.html#RUNTIME-CONFIG-COMPATIBLE-CLIENTS"
+>平台和客户端兼容性</A
+></DT
+></DL
+></DD
+><DT
+>17.13. <A
+HREF="runtime-config-preset.html"
+>预置的选项</A
+></DT
+><DT
+>17.14. <A
+HREF="runtime-config-custom.html"
+>客户化的选项</A
+></DT
+><DT
+>17.15. <A
+HREF="runtime-config-developer.html"
+>开发人员选项</A
+></DT
+><DT
+>17.16. <A
+HREF="runtime-config-short.html"
+>短选项</A
+></DT
+></DL
+></DIV
+><A
+NAME="AEN18247"
+></A
+><P
+>        有一堆配置参数可以影响数据库系统的行为。
+        本章第一节我们将描述一下如何设置它们。然后随后的小节我们将逐个讨论它们。
+  </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="CONFIG-SETTING"
+>17.1. 设置参数</A
+></H1
+><P
+>        所有参数名都是大小写不敏感的。每个参数都可以接受四种类型之一：布尔，
+        整数，浮点数和字符串。布尔值可以是 <TT
+CLASS="LITERAL"
+>ON</TT
+>，<TT
+CLASS="LITERAL"
+>OFF</TT
+>，
+        <TT
+CLASS="LITERAL"
+>TRUE</TT
+>，<TT
+CLASS="LITERAL"
+>FALSE</TT
+>，
+        <TT
+CLASS="LITERAL"
+>YES</TT
+>，<TT
+CLASS="LITERAL"
+>NO</TT
+>，
+        <TT
+CLASS="LITERAL"
+>1</TT
+>，<TT
+CLASS="LITERAL"
+>0</TT
+>
+        （都是大小写无关）或这些东西的任意清晰无歧义的前缀。
+   </P
+><P
+>        设置这些选项的一个方法是编辑文件 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+><A
+NAME="AEN18264"
+></A
+>，
+	这个文件通常在数据目录里。（<TT
+CLASS="COMMAND"
+>initdb</TT
+> 在那里安装一个缺省的拷贝。）
+        比如，下面是一个该文件的例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+># 这是一个注释
+log_connections = yes
+log_destination = 'syslog'
+search_path = '$user, public'</PRE
+><P>
+        象你看到的那样，选项是每条一行。选项名和值之间的等号是可选的。
+        空白和空行被忽略。井号（<TT
+CLASS="LITERAL"
+>#</TT
+>）用做任何地方引入注释。
+	非简单标识符或者数字必须用单引号包围。如果需要在参数值里嵌入单引号，
+	要么写两个单引号（推荐方法），要么用反斜扛包围。
+  </P
+><P
+>    <A
+NAME="AEN18270"
+></A
+>
+        每次<TT
+CLASS="COMMAND"
+>postmaster</TT
+>收到<SPAN
+CLASS="SYSTEMITEM"
+>SIGHUP</SPAN
+>（最简单的发送方法就是使用 <TT
+CLASS="LITERAL"
+>pg_ctl reload</TT
+>）。
+        信号后都会重新读取这个配置文件。
+        <TT
+CLASS="COMMAND"
+>postmaster</TT
+> 同时也将这个信号广播给所有正在运行的服务器进程，这样现有会话也能得到新的缺省。
+	另外，你可以只向一个服务器进程直接发送信号。
+	有些参数只能在服务器启动的时候设置；对这些条目中的任何进行修改都将忽略，直到下次服务器重启。
+   </P
+><P
+>        第二种设置这些配置参数的方法是把它们作为命令行参数传递给 <TT
+CLASS="COMMAND"
+>postmaster</TT
+>，
+        比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>postmaster -c log_connections=yes -c log_destination='syslog'</PRE
+><P>
+        命令行选项覆盖任何与 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>
+        冲突的选项。请注意，这意味着你不能通过编辑 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>，
+	在运行时改变其数值，因此，虽然命令行方法很方便，但你在以后可能会付出灵活性的代价。
+   </P
+><P
+>        有时候，给某一个特定会话一个命令行参数也是很有用的。
+        可以在客户端使用环境变量 <TT
+CLASS="ENVAR"
+>PGOPTIONS</TT
+> 来实现这个目的：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>env PGOPTIONS='-c geqo=off' psql</PRE
+><P>
+        （这个选项可以用于任何基于<SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>的客户端应用，不光是 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>。）
+	请注意，这个变量对那些需要在服务器启动后固定的选项或者必须在
+	<TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 里声明的选项是无效的。
+   </P
+><P
+>    并且，我们可以给一个用户或者一个数据库赋予一套选项设置。
+    在一个会话开始的时候，装载所涉及到的用户和数据库的缺省设置。
+    命令 <A
+HREF="sql-alteruser.html"
+><I
+>ALTER USER</I
+></A
+> 和
+    <A
+HREF="sql-alterdatabase.html"
+><I
+>ALTER DATABASE</I
+></A
+> 分别用于配置这些设置。
+    每数据库的设置覆盖任何从 <TT
+CLASS="COMMAND"
+>postmaster</TT
+> 命令行或者配置文件收到的设置，
+    然后接着又被每用户的设置覆盖；最后又会都被每会话的选项覆盖。
+   </P
+><P
+>        一些选项可以用 <TT
+CLASS="COMMAND"
+>SET</TT
+> 在独立的 SQL 会话中修改，
+	方法是使用 <A
+HREF="sql-set.html"
+><I
+>SET</I
+></A
+> 命令，
+        比如：
+</P><PRE
+CLASS="SCREEN"
+>SET ENABLE_SEQSCAN TO OFF;</PRE
+><P>
+        如果允许用 <TT
+CLASS="COMMAND"
+>SET</TT
+> 设置，这种每数据库的设置覆盖任何来自其它方面的设置。
+	有些参数不能通过<TT
+CLASS="COMMAND"
+>SET</TT
+>改变：比如，
+	如果这些选项不重启动<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>就无法合理控制其行为。
+	同样，有些参数是由超级用户通过 <TT
+CLASS="COMMAND"
+>SET</TT
+> 和 <TT
+CLASS="COMMAND"
+>ALTER</TT
+> 修改，而普通用户不能修改。
+   </P
+><P
+>    <A
+HREF="sql-show.html"
+><I
+>SHOW</I
+></A
+> 命令允许检查所有参数的当前值。
+   </P
+><P
+>        我们也可以用虚表 <TT
+CLASS="STRUCTNAME"
+>pg_settings</TT
+> 来显示和更新当前会话的运行时参数。
+	（在 <A
+HREF="view-pg-settings.html"
+>Section 42.41</A
+> 里描述）。
+	它等效于 <TT
+CLASS="COMMAND"
+>SHOW</TT
+> 和 <TT
+CLASS="COMMAND"
+>SET</TT
+>，但是用起来更方便，因为它可以和其它表连接起来使用，
+	或者用任意用户需要的选择条件来查询。
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="ssh-tunnels.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="runtime-config-file-locations.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>用<SPAN
+CLASS="APPLICATION"
+>SSH</SPAN
+>隧道进行安全 TCP/IP 联接</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="admin.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>文件位置</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

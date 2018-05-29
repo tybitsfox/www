@@ -1,0 +1,61 @@
+<HTML><HEAD><TITLE>在 Unix 系统上安装</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="安装" HREF="installation.html"><LINK REL="PREVIOUS" TITLE="Unix/Solaris 安装" HREF="install.solaris.html"><LINK REL="NEXT" TITLE="Windows 系统下的安装" HREF="install.windows.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="sect1" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="install.solaris.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 3. 安装</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="install.windows.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="sect1"><H1 CLASS="sect1"><A NAME="install.unix"></A>在 Unix 系统上安装</H1><P>&#13;该节将指导你在 Unix 系统上一般配置和安装 PHP。
+在安装之前，确定研究了任何与你平台或 web 服务器相关的章节。
+</P><P>&#13;预备知识和软件
+<P></P><UL><LI><P>&#13; 基本 Unix 技术(如果编译，能够操作 "make" 和一个 C 编译器)
+</P></LI><LI><P>&#13; 一个 ANSI C 编译器 (如果编译)
+</P></LI><LI><P>&#13; flex (用于编译)
+</P></LI><LI><P>&#13; bison (用于编译)
+</P></LI><LI><P>&#13; 一个 web 服务器
+</P></LI><LI><P>&#13; 任何模块特异组件(例如 gd、 pdf 库，等等)
+</P></LI></UL>
+</P><P>&#13;有几种在 Unix 平台上安装 PHP
+的方法，使用编译和配置的过程 ，或者通过大量的预打包的方式。本文主要关注编译和配置
+PHP 的过程。
+</P><P>&#13;初始 PHP 安装和配置过程是使用 <TT CLASS="filename">configure</TT>
+脚本的命令行选项来控制的。本文概要了大部分通用选项，但是还有许多其它选项来玩耍。
+查 <A HREF="install.configure.html">完整的配置选项</A> 来得到一个详尽的选项列表。
+有几种安装 PHP 的方法。
+<P></P><UL><LI><P>&#13; 作为 <A HREF="install.apache.html">Apache 1.x 模块</A> 或
+<A HREF="install.apache2.html">Apache 2.x 模块</A>。
+</P></LI><LI><P>&#13; 作为 <A HREF="install.caudium.html"> Caudium 的 Pike 模块</A>
+</P></LI><LI><P>&#13; 同 <A HREF="install.otherhttpd.html">AOLServer, NSAPI,
+phttpd, Pi3Web, Roxen, thttpd 或 Zeus</A> 一起使用
+</P></LI><LI><P>&#13; 作为 <A HREF="install.commandline.html">CGI 命令行</A>
+</P></LI></UL>
+</P><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="install.unix.apache-module"></A>Apache 模块快速参考</H2><P>&#13; PHP 能够使用大量不同的方法编译，但是最常用的方式是作为
+Apache 的模块。
+下面是一个快速安装楷观。
+</P><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="install.unix.apache-module.quick"></A><P><B>例子 3-2.
+PHP 4 快速安装指导( Apache 模块版本)
+</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="shell">1.  gunzip apache_1.3.x.tar.gz
+2.  tar xvf apache_1.3.x.tar
+3.  gunzip php-x.x.x.tar.gz
+4.  tar xvf php-x.x.x.tar
+5.  cd apache_1.3.x
+6.  ./configure --prefix=/www
+7.  cd ../php-x.x.x
+8.  ./configure --with-mysql --with-apache=../apache_1.3.x --enable-ftp
+9.  make
+10. make install
+11. cd ../apache_1.3.x
+12. ./configure --activate-module=src/modules/php4/libphp4.a
+13. make
+14. make install
+15. cd ../php-x.x.x
+16. cp php.ini-dist /usr/local/lib/php.ini
+17. 编辑你的 httpd.conf 或 srm.conf 文件增加:
+      AddType application/x-httpd-php .php
+
+18. 使用你的正常过程来重新启动 Apache 
+服务器。(你必须停止和重新启动服务器，不仅仅是使用
+ HUP 或 USR1 信号来使服务器重载。)</PRE></TD></TR></TABLE></DIV></TD></TR></TABLE></DIV><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="install.building"></A>建立</H2><P>&#13;当 PHP 被配置，你准备建立 CGI
+执行文件，命令 <B CLASS="command">make</B> 将完成这个。
+如果它失败了，你不能找出原因，请参看
+<A HREF="install.problems.html">问题</A> 节。
+</P></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="install.solaris.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="install.windows.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Unix/Solaris 安装</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="installation.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Windows 系统下的安装</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

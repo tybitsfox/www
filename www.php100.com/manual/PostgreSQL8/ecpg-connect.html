@@ -1,0 +1,371 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>与数据库服务器连接 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="ecpg - 在 C 里嵌入 SQL" HREF="ecpg.html"><LINK REL="PREVIOUS" TITLE="ecpg - 在 C 里嵌入 SQL" HREF="ecpg.html"><LINK REL="NEXT" TITLE="关闭连接" HREF="ecpg-disconnect.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="ecpg.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="ecpg.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 30. <SPAN
+CLASS="APPLICATION"
+>ecpg</SPAN
+> - 在 C 里嵌入 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="ecpg.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="ecpg-disconnect.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="ECPG-CONNECT" >30.2. 与数据库服务器连接</A
+></H1
+><P
+>	我们用下面的语句与一个数据库连接：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL CONNECT TO <TT
+CLASS="REPLACEABLE"
+><I
+>目标</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>AS <TT
+CLASS="REPLACEABLE"
+><I
+>连接名</I
+></TT
+></SPAN
+>] [<SPAN
+CLASS="OPTIONAL"
+>USER <TT
+CLASS="REPLACEABLE"
+><I
+>用户名</I
+></TT
+></SPAN
+>];</PRE
+><P>
+	<TT
+CLASS="REPLACEABLE"
+><I
+>目标</I
+></TT
+> 可以用下面的方法声明：
+
+   <P
+></P
+></P><UL
+><LI
+><P
+>      <TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>数据库名</I
+></TT
+>[<SPAN
+CLASS="OPTIONAL"
+>@<TT
+CLASS="REPLACEABLE"
+><I
+>主机名</I
+></TT
+></SPAN
+>][<SPAN
+CLASS="OPTIONAL"
+>:<TT
+CLASS="REPLACEABLE"
+><I
+>端口</I
+></TT
+></SPAN
+>]</TT
+>
+     </P
+></LI
+><LI
+><P
+>      <TT
+CLASS="LITERAL"
+>tcp:postgresql://<TT
+CLASS="REPLACEABLE"
+><I
+>主机名</I
+></TT
+>[<SPAN
+CLASS="OPTIONAL"
+>:<TT
+CLASS="REPLACEABLE"
+><I
+>端口</I
+></TT
+></SPAN
+>][<SPAN
+CLASS="OPTIONAL"
+>/<TT
+CLASS="REPLACEABLE"
+><I
+>数据库名</I
+></TT
+></SPAN
+>][<SPAN
+CLASS="OPTIONAL"
+>?<TT
+CLASS="REPLACEABLE"
+><I
+>选项</I
+></TT
+></SPAN
+>]</TT
+>
+     </P
+></LI
+><LI
+><P
+>      <TT
+CLASS="LITERAL"
+>unix:postgresql://<TT
+CLASS="REPLACEABLE"
+><I
+>主机名</I
+></TT
+>[<SPAN
+CLASS="OPTIONAL"
+>:<TT
+CLASS="REPLACEABLE"
+><I
+>端口</I
+></TT
+></SPAN
+>][<SPAN
+CLASS="OPTIONAL"
+>/<TT
+CLASS="REPLACEABLE"
+><I
+>数据库名</I
+></TT
+></SPAN
+>][<SPAN
+CLASS="OPTIONAL"
+>?<TT
+CLASS="REPLACEABLE"
+><I
+>选项</I
+></TT
+></SPAN
+>]</TT
+>
+     </P
+></LI
+><LI
+><P
+>      一个包含上面形式的  SQL 字串文本
+     </P
+></LI
+><LI
+><P
+>      一个对包含上面的形式之一的字符串变量的引用
+     </P
+></LI
+><LI
+><P
+>      <TT
+CLASS="LITERAL"
+>DEFAULT</TT
+>
+     </P
+></LI
+></UL
+><P>
+
+   如果你用文本声明连接目标（也就说说，不是通过一个变量引用），而且你还不引用这个数值，
+   那么使用普通 SQL 的大小写无关的规则。这种情况下，
+   你也可以根据需要独立地对参数使用双引号包围。实际上，可能用一个（单引号包围）的字串文本或者变量引用作为连接目标可能更结实一些。
+   连接目标 <TT
+CLASS="LITERAL"
+>DEFAULT</TT
+> 发起一个用缺省用户名对缺省数据库地连接。这个时候不应该声明用户名或连接名。
+  </P
+><P
+>	声明用户名的方法也有几种不同方式：
+
+   <P
+></P
+></P><UL
+><LI
+><P
+>      <TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>用户名</I
+></TT
+></TT
+>
+     </P
+></LI
+><LI
+><P
+>      <TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>用户名</I
+></TT
+>/<TT
+CLASS="REPLACEABLE"
+><I
+>口令</I
+></TT
+></TT
+>
+     </P
+></LI
+><LI
+><P
+>      <TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>用户名</I
+></TT
+> IDENTIFIED BY <TT
+CLASS="REPLACEABLE"
+><I
+>口令</I
+></TT
+></TT
+>
+     </P
+></LI
+><LI
+><P
+>      <TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>用户名</I
+></TT
+> USING <TT
+CLASS="REPLACEABLE"
+><I
+>口令</I
+></TT
+></TT
+>
+     </P
+></LI
+></UL
+><P>
+   和上面一样，
+	<TT
+CLASS="REPLACEABLE"
+><I
+>用户名</I
+></TT
+>和<TT
+CLASS="REPLACEABLE"
+><I
+>口令</I
+></TT
+>
+	可以是一个 SQL 标识符，一个字符变量，或者一个字符串。
+  </P
+><P
+>	<TT
+CLASS="REPLACEABLE"
+><I
+>连接名</I
+></TT
+> 用于处理一个程序里的多个连接。
+	如果一个程序只使用一个连接，则可以省略它。最近打开的连接成为当前连接，
+	在准备执行 SQL 语句的时候，缺省时会使用这个连接（参阅本章稍后部分）。
+  </P
+><P
+>   这里是一些 <TT
+CLASS="COMMAND"
+>CONNECT</TT
+> 语句的例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL CONNECT TO mydb@sql.mydomain.com;
+
+EXEC SQL CONNECT TO 'unix:postgresql://sql.mydomain.com/mydb' AS myconnection USER john;
+
+EXEC SQL BEGIN DECLARE SECTION;
+const char *target = "mydb@sql.mydomain.com";
+const char *user = "john";
+EXEC SQL END DECLARE SECTION;
+ ...
+EXEC SQL CONNECT TO :target USER :user;</PRE
+><P>
+   最后的一个形式使用了上面说过的变量引用的方法。在后面的小节里你会看到在 SQL 语句里如何使用前缀了冒号的 C 变量。
+  </P
+><P
+>   请注意连接目标的格式没有在 SQL 标准里说明。所以，如果你想书写可以移植的应用，
+   你可能会想使用类似上面的最后一个例子这样的方法来把连接目标字串封装在什么地方。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="ecpg.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="ecpg-disconnect.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><SPAN
+CLASS="APPLICATION"
+>ecpg</SPAN
+> - 在 C 里嵌入 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="ecpg.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >关闭连接</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

@@ -1,0 +1,724 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>通过 CVSup获取源代码 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="CVS 仓库" HREF="cvs.html"><LINK REL="PREVIOUS" TITLE="CVS 树的组织" HREF="cvs-tree.html"><LINK REL="NEXT" TITLE="文档" HREF="docguide.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="cvs-tree.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="cvs.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Appendix F. <SPAN
+CLASS="PRODUCTNAME"
+>CVS</SPAN
+> 仓库</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="cvs.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="docguide.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="CVSUP" >F.3. 通过 <SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+>获取源代码</A
+></H1
+><P
+>        使用匿名 CVS 检索
+        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 源码树的另一个方法是
+        <SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+>。
+   <SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+> 是由
+   <A HREF="mailto:jdp@polstra.com" TARGET="_top" >John Polstra</A
+> 开发的，用于为
+   <A HREF="../../../www.freebsd.org/index.html" TARGET="_top" >FreeBSD 项目</A
+>
+        分发CVS 仓库和其他文件树。
+  </P
+><P
+>        使用
+   <SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+> 的主要优点是它可以可靠地在你的本地机器上复制
+        <I
+CLASS="EMPHASIS"
+>整个</I
+> CVS 仓库，允许快速的本地使用cvs 操作，
+        象<TT
+CLASS="OPTION"
+>log</TT
+> 和  <TT
+CLASS="OPTION"
+>diff</TT
+>。
+        其他优点包括与 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        服务器的快速同步，因为它使用一种高效的流传输协议，
+        该协议只传输最后更新（以来）的修改。
+  </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN78792" >F.3.1. 准备一个 <SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+> 客户端系统</A
+></H2
+><P
+>        做这件事需要为
+         <SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+> 准备两个目录区域：一个本地
+         <SPAN
+CLASS="PRODUCTNAME"
+>CVS</SPAN
+>
+        仓库（或者就是一个目录区域 — 如果你只是抓取一个快照而不是整个仓库；
+        见下文）
+        和一个本地
+         <SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+> 簿记区域。
+        这些东西可以在同一个目录树里面共存。
+   </P
+><P
+>        确定你将在哪个目录里面安放你的
+    <SPAN
+CLASS="PRODUCTNAME"
+>CVS</SPAN
+> 仓库的本地拷贝。在我们的一个系统中，
+    我们最近在 <TT
+CLASS="FILENAME"
+>/home/cvs/</TT
+> 设立了仓库，
+        但是以前我们把它放在 <TT
+CLASS="FILENAME"
+>/opt/postgres/cvs/</TT
+> 里的一个
+    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 开发版的目录树里。
+        如果你想把你的仓库放在
+        <TT
+CLASS="FILENAME"
+>/home/cvs/</TT
+>，那么把
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>setenv CVSROOT /home/cvs</PRE
+><P>
+
+    放到你的 <TT
+CLASS="FILENAME"
+>.cshrc</TT
+> 文件，
+        或者根据你用的 shell 把类似的行放到你的
+        <TT
+CLASS="FILENAME"
+>.bashrc</TT
+> 或
+    <TT
+CLASS="FILENAME"
+>.profile</TT
+> 文件里。
+   </P
+><P
+>        <SPAN
+CLASS="APPLICATION"
+>cvs</SPAN
+> 仓库区域必须被初始化。一旦设置了
+         <TT
+CLASS="ENVAR"
+>CVSROOT</TT
+>，那么初始化可以简单地用下面的命令完成：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>$ cvs init</PRE
+><P>
+
+        之后，你列举
+    <TT
+CLASS="FILENAME"
+>CVSROOT</TT
+> 目录时，你至少能看到一个名为
+    <TT
+CLASS="ENVAR"
+>CVSROOT</TT
+> 的目录。
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>$ ls $CVSROOT
+CVSROOT/</PRE
+><P>
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN78816" >F.3.2. 运行<SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+>客户端</A
+></H2
+><P
+>        先证实
+    <SPAN
+CLASS="APPLICATION"
+>cvsup</SPAN
+> 在你的路径里；
+        在大多数系统上你可以键入下面命令核实这些
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>which cvsup</PRE
+><P>
+
+    然后，只需要用下面命令运行
+    <SPAN
+CLASS="APPLICATION"
+>cvsup</SPAN
+>：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>$ cvsup -L 2 <TT
+CLASS="REPLACEABLE"
+><I
+>postgres.cvsup</I
+></TT
+></PRE
+><P>
+
+    这里的 <TT
+CLASS="OPTION"
+>-L 2</TT
+> 打开了一些状态消息，
+        这样你就可以监控更新的进展过程，而
+        <TT
+CLASS="REPLACEABLE"
+><I
+>postgres.cvsup</I
+></TT
+>
+        是你赋予你的
+    <SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+> 配置文件的路径和名称。
+   </P
+><P
+>    这里是一份为特定安装修改过的<SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+>
+        配置文件，它维护着一个完整的本地
+        <SPAN
+CLASS="PRODUCTNAME"
+>CVS</SPAN
+> 仓库：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+># This file represents the standard CVSup distribution file
+# for the<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>ORDBMS project
+# Modified by lockhart@fourpalms.org 1997-08-28
+# - Point to my local snapshot source tree
+# - Pull the full CVS repository, not just the latest snapshot
+#
+# Defaults that apply to all the collections
+*default host=cvsup.postgresql.org
+*default compress
+*default release=cvs
+*default delete use-rel-suffix
+# enable the following line to get the latest snapshot
+#*default tag=.
+# enable the following line to get whatever was specified above or by default
+# at the date specified below
+#*default date=97.08.29.00.00.00
+
+# base directory where CVSup will store its 'bookmarks' file(s)
+# will create subdirectory sup/
+#*default base=/opt/postgres # /usr/local/pgsql
+*default base=/home/cvs
+
+# prefix directory where CVSup will store the actual distribution(s)
+*default prefix=/home/cvs
+
+# complete distribution, including all below
+pgsql
+
+# individual distributions vs 'the whole thing'
+# pgsql-doc
+# pgsql-perl5
+# pgsql-src</PRE
+><P>
+   </P
+><P
+>    在上面的步骤里，如果你声明 <TT
+CLASS="OPTION"
+>repository</TT
+>，而不是<TT
+CLASS="OPTION"
+>pgsql</TT
+>，
+    那么你就会得到 cvsup.postgresql.org 上面的一个完整的仓库拷贝，
+    包括其 <TT
+CLASS="FILENAME"
+>CVSROOT</TT
+> 目录。如果这么做，你可能会希望排除那些目录中的某些文件，
+    以便你做本地的修改，方法是使用一个 refuse 文件。比如，对于上面的设置，你可以在
+    <TT
+CLASS="FILENAME"
+>/home/cvs/sup/repository/refuse</TT
+> 里面放下面这些行：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CVSROOT/config*
+CVSROOT/commitinfo*
+CVSROOT/loginfo*</PRE
+><P>
+    参考 <SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+> 的手册页获取如何使用拒绝（refuse）文件的信息。
+   </P
+><P
+>        下面的是<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        <A HREF="../../../ftp.postgresql.org/pub/CVSup/README.cvsup" TARGET="_top" >        ftp 站点
+        </A
+>
+        建议的
+        <SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+> 配置文件，
+        它将只是抓取目前（版本）的快照：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+># This file represents the standard CVSup distribution file
+# for the<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>ORDBMS project
+#
+# Defaults that apply to all the collections
+*default host=cvsup.postgresql.org
+*default compress
+*default release=cvs
+*default delete use-rel-suffix
+*default tag=.
+
+# base directory where CVSup will store its 'bookmarks' file(s)
+*default base=<TT
+CLASS="REPLACEABLE"
+><I
+>/usr/local/pgsql</I
+></TT
+>
+
+# prefix directory where CVSup will store the actual distribution(s)
+*default prefix=<TT
+CLASS="REPLACEABLE"
+><I
+>/usr/local/pgsql</I
+></TT
+>
+
+# complete distribution, including all below
+pgsql
+
+# individual distributions vs 'the whole thing'
+# pgsql-doc
+# pgsql-perl5
+# pgsql-src</PRE
+><P>
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN78848" >F.3.3. 安装 <SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+></A
+></H2
+><P
+>    <SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+>
+        可以以源代码的形式、制作好了的二进制形式、或者 Linux RPM 的形式获得。
+        使用二进制的形式要远比从源代码里面制作要容易得多，
+        主要是因为编译需要高效但是庞大的 Modula-3 编译器。
+   </P
+><DIV
+CLASS="PROCEDURE"
+><P
+><B
+>从二进制包安装<SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+></B
+></P
+><P
+>        如果你拥有一个在<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+     <A HREF="../../../ftp.postgresql.org/pub" TARGET="_top" >ftp 站点</A
+>
+        里贴出来的平台，或者你正在运行 FreeBSD，
+        你就可以使用制作好了的二进制形式，这时候
+     <SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+> 是以一个已移植好了的形式获得的。
+
+     </P><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>       <SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+> 最初是作为一个用于分发
+         <SPAN
+CLASS="PRODUCTNAME"
+>FreeBSD</SPAN
+>  源码树的工具开发的。
+        对于那些运行 FreeBSD 的人来说，它可以当作 "port"（移植）获取，
+        如果这些描述不足以说明如何获取和安装它的问题，
+        那么请为我们在这里贡献一个过程。
+      </P
+></BLOCKQUOTE
+></DIV
+><P>
+    </P
+><P
+>        在写作这些的时候，可以获得下面平台的二进制
+     Alpha/Tru64，ix86/xBSD，
+     HPPA/HP-UX10.20，MIPS/irix，
+     ix86/linux-libc5，ix86/linux-glibc，
+     Sparc/Solaris，and Sparc/SunOS。
+    </P
+><OL
+TYPE="1"
+><LI
+><P
+>        检索适合你的平台的
+      <SPAN
+CLASS="APPLICATION"
+>cvsup</SPAN
+>
+      （做客户端不需要<SPAN
+CLASS="APPLICATION"
+>cvsupd</SPAN
+>）
+        二进制文件。
+     </P
+><OL
+CLASS="SUBSTEPS"
+TYPE="a"
+><LI
+><P
+>        如果你用 FreeBSD，安装<SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+> 移植。
+       </P
+></LI
+><LI
+><P
+>        如果你使用其他平台，在<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        <A HREF="../../../ftp.postgresql.org/pub" TARGET="_top" >ftp 站点</A
+>
+        找出并下载适合你的二进制文件。
+       </P
+></LI
+></OL
+></LI
+><LI
+><P
+>        如果需要，检查tar 文件以核实内容和目录结构。
+        至少对于 linux 的 tar 文件而言，
+        静态二进制和 手册页是不包括任何目录包信息的。
+     </P
+><OL
+CLASS="SUBSTEPS"
+TYPE="a"
+><LI
+><P
+>        如果二进制在 tar 文件的顶层，那么只需要把他们解包到你的目标目录里面：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>cd /usr/local/bin
+tar zxvf /usr/local/src/cvsup-16.0-linux-i386.tar.gz
+mv cvsup.1 ../doc/man/man1/</PRE
+><P>
+       </P
+></LI
+><LI
+><P
+>        如果 tar 文件里面有一个目录结构，
+        那么把 tar 文件解包到 /usr/local/src 里，
+        然后把二进制移动到上面对应的合适路径里。
+       </P
+></LI
+></OL
+></LI
+><LI
+><P
+>        确保新的二进制在你的路径里。
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>$ rehash
+$ which cvsup
+$ set path=(<TT
+CLASS="REPLACEABLE"
+><I
+>path to cvsup</I
+></TT
+> $path)
+$ which cvsup
+/usr/local/bin/cvsup</PRE
+><P>
+     </P
+></LI
+></OL
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN78890" >F.3.4. 从源代码安装</A
+></H2
+><P
+>        从源代码安装
+        <SPAN
+CLASS="PRODUCTNAME"
+>CVSup</SPAN
+> 并非易如反掌，
+        主要是因为大多数系统将需要先安装一个 Modula-3 编译器。
+        这个编译器可以以Linux
+        <SPAN
+CLASS="PRODUCTNAME"
+>RPM</SPAN
+>，
+        FreeBSD 的包或者源代码的形式获得。
+
+    </P><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>        一个 Modula-3 的净代码安装大约需要 200MB 磁盘空间，
+        当把源代码删除后大约只有 50MB。
+     </P
+></BLOCKQUOTE
+></DIV
+><P>
+   </P
+><DIV
+CLASS="PROCEDURE"
+><P
+><B
+>Linux 安装</B
+></P
+><OL
+TYPE="1"
+><LI
+><P
+>        安装 Modula-3．
+     </P
+><OL
+CLASS="SUBSTEPS"
+TYPE="a"
+><LI
+><P
+>        从 <A HREF="../../../m3.polymtl.ca/m3" TARGET="_top" >Polytechnique Montral</A
+>
+        获取
+        <SPAN
+CLASS="PRODUCTNAME"
+>Modula-3</SPAN
+>
+        发布，他们还在积极地维护着基于
+        <A HREF="../../../www.research.digital.com/SRC/modula-3/html/home.html" TARGET="_top" >        DEC 系统研究中心
+        </A
+> 的代码。
+        <SPAN
+CLASS="PRODUCTNAME"
+>PM3</SPAN
+> <SPAN
+CLASS="PRODUCTNAME"
+>RPM</SPAN
+>
+        版本压缩后大约 30MB。
+        在我们写作的时候，1.1.10-1 版在 RH-5.2 上干净利落的安装好了，
+        而1.1.11-1 版本显然是为另外一个版本（RH-6.0？）制作的，
+        无法在 RH-5.2 上运行。
+
+        <DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>        这些 rpm 包有<I
+CLASS="EMPHASIS"
+>许多</I
+>
+        <SPAN
+CLASS="PRODUCTNAME"
+>RPM</SPAN
+> 文件，
+        因此你可能会愿意把它们放在独立的一个目录里。
+         </P
+></BLOCKQUOTE
+></DIV
+>
+       </P
+></LI
+><LI
+><P
+>&#13;        安装 Modula-3 rpm：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+># rpm -Uvh pm3*.rpm</PRE
+><P>
+       </P
+></LI
+></OL
+></LI
+><LI
+><P
+>        解包 cvsup 版本：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+># cd /usr/local/src
+# tar zxf cvsup-16.0.tar.gz</PRE
+><P>
+     </P
+></LI
+><LI
+><P
+>        制作 cvsup 的发布版，禁止 GUI 界面以避免要求 X11 库：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+># make M3FLAGS="-DNOGUI"</PRE
+><P>
+
+     如果你想制作一个静态的二进制以便于装到一个没有安装 Modula-3 的系统，用：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+># make M3FLAGS="-DNOGUI -DSTATIC"</PRE
+><P>
+     </P
+></LI
+><LI
+><P
+>        安装制作好了的二进制：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+># make M3FLAGS="-DNOGUI -DSTATIC" install</PRE
+><P>
+     </P
+></LI
+></OL
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="cvs-tree.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="docguide.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><SPAN
+CLASS="PRODUCTNAME"
+>CVS</SPAN
+> 树的组织</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="cvs.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >文档</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

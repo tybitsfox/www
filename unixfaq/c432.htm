@@ -1,0 +1,34 @@
+<html><head><title>终端输入/输出</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="PREVIOUS" title="有名管道(FIFO)能做什么？" href="./x395.htm"><link rel="NEXT" title="我怎样从终端读取单个字符？" href="./x442.htm"></head><body class="CHAPTER" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x395.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%"></td><td align="right" valign="bottom" width="10%"><a href="./x442.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="CHAPTER"><h1><a name="AEN432">Chapter 3. 终端输入/输出</a></h1><div class="TOC"><dl><dt><b>Table of Contents</b></dt><dt>3.1. <a href="./c432.htm#AEN434">我怎样使我的程序不回射输入？</a></dt><dt>3.2. <a href="./x442.htm">我怎样从终端读取单个字符？</a></dt><dt>3.3. <a href="./x447.htm">我怎样检查是否一个键被摁下？</a></dt><dt>3.4. <a href="./x451.htm">我怎样将光标在屏幕里移动？</a></dt><dt>3.5. <a href="./x456.htm">pttys是什么？</a></dt><dt>3.6. <a href="./x460.htm">怎样控制一个串行口和调制解调器？</a></dt></dl></div><div class="SECT1"><h1 class="SECT1"><a name="AEN434">3.1. 我怎样使我的程序不回射输入？</a></h1><p>     我怎样能使我的程序不回射输入，就象登录时询问我的口令时那样？
+    </p><p>有一个简单方法，也有一个稍微复杂点的方法：
+    </p><p>简单方法是使用‘getpass()’函数，它几乎能在所有Unix系统上找到。它以一个
+给定的字符串参数作为提示符(prompt)。它读取输入直到读到一个‘EOF’或换
+行符(译者注：‘EOF’用‘^d’输入，而换行符为‘^m’或回车)然后返回一个
+指向位于静态内存区包含键入字符的字符串指针。(译者注：字符串不包含换行符)
+    </p><p>复杂一点的方法是使用‘tcgetattr()’函数和‘tcsetattr()’函数，两个函数都使用
+一个‘struct termios’结构来操纵终端。下面这两段程序应当能设置回射状态和
+不回射状态。
+    </p><pre class="PROGRAMLISTING">     #include &lt;stdlib.h&gt;
+     #include &lt;stdio.h&gt;
+
+     #include &lt;termios.h&lt;
+     #include &lt;string.h&lt;
+
+     static struct termios stored_settings;
+
+     void echo_off(void)
+     {
+         struct termios new_settings;
+         tcgetattr(0,&amp;stored_settings);
+         new_settings = stored_settings;
+         new_settings.c_lflag &amp;= (~ECHO);
+         tcsetattr(0,TCSANOW,&amp;new_settings);
+         return;
+     }
+
+     void echo_on(void)
+     {
+         tcsetattr(0,TCSANOW,&amp;stored_settings);
+         return;
+     }
+    </pre><p>两段程序使用到的都是在POSIX标准定义的。
+    </p></div></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x395.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x442.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">有名管道(FIFO)能做什么？</td><td align="center" valign="top" width="34%">&nbsp;</td><td align="right" valign="top" width="33%">我怎样从终端读取单个字符？</td></tr></tbody></table></div></body></html>

@@ -1,0 +1,60 @@
+<html><head><title>我怎样检查一个用户的口令?</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="系统信息" href="./c533.htm"><link rel="PREVIOUS" title="系统信息" href="./c533.htm"><link rel="NEXT" title="编程杂技" href="./c565.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./c533.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 4. 系统信息</td><td align="right" valign="bottom" width="10%"><a href="./c565.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN541">4.2. 我怎样检查一个用户的口令?</a></h1><div class="SECT2"><h2 class="SECT2"><a name="AEN543">4.2.1. 我怎样得到一个用户的口令?</a></h2><p>在多数的UNIX系统中, 用户口令通常存放在`/etc/passwd'文件中.  该文件一般是
+这种格式:
+      </p><p>用户名:口令:用户号:用户组号:注释:用户目录:登录shell
+(username:password:uid:gid:gecos field:home directory:login shell)
+      </p><p>但是这些标准随着时间而不断改变, 现在的用户信息可能存放在其它机器上, 或
+者说并不存放在 `/etc/passwd' 文件中。 当今系统实现也使用 `shadow' 文件保存用
+户口令以及一些敏感信息. 该文件只允许有特定权限的用户读取.
+      </p><p>为安全考虑，用户口令一般是加密的，而不是用明文表示的。
+      </p><p>POSIX 定义了一组访问用户信息的函数. 取得一个用户信息的最快方式是使用`getpwnam()'
+和`getpwuid()' 函数. 这两个函数都返回一个结构指针, 该结构包含了用户的所有信
+息. `getpwnam()' 接收用户名字符串(username), `getpwuid()' 接收用户号(uid),
+(`uid_t'类型在POSIX中有定义). 若调用失败则返回NULL.
+      </p><p>但是, 正如前面所讲, 当今的操作系统都有一个shadow文件存放敏感信息，即用户口令。
+有些系统当调用者用户号是超级用户时返回用户口令, 其它用户要求你使用其它方式存取
+shadow文件. 这时你可以使用`getspnam()', 通过输入用户名得到一个有关用户信息的结
+构. 再者, 为了能够成功的完成这些, 你需要有一定的权限. (在一些系统中, 如HP-UX和
+SCO, 你可以用`getprpwnam()'代替。)
+      </p></div><div class="SECT2"><h2 class="SECT2"><a name="AEN551">4.2.2. 我怎样通过用户号得到阴影口令文件中的口令?</a></h2><p>      我的系统使用一组getsp*函数获得重要用户信息的. 然而, 我没有`getspuid()',
+      只有`getspnam()'. 我怎样做才能通过用户号获得用户信息呢?
+      </p><p>变通方法是相对非常容易的。下面的函数可以直接放入你个人的应用函数库:
+      </p><pre class="PROGRAMLISTING">     #include &lt;stdlib.h&gt;
+     #include &lt;stdio.h&gt;
+
+     #include &lt;pwd.h&gt;
+     #include &lt;shadow.h&gt;
+
+     struct spwd *getspuid(uid_t pw_uid)
+     {
+       struct spwd *shadow;
+       struct passwd *ppasswd;
+
+       if( ((ppasswd = getpwuid(pw_uid)) == NULL)
+           || ((shadow = getspnam(ppasswd-&gt;pw_name)) == NULL))
+         return NULL;
+
+       return shadow;
+     }
+      </pre><p>现在的问题是, 有些系统在阴影文件中并不保存用户号(uid)以及其它的信息。
+      </p></div><div class="SECT2"><h2 class="SECT2"><a name="AEN557">4.2.3. 我怎样核对一个用户的口令?</a></h2><p>一个基本的问题是, 存在各种各样的认证系统, 所以口令也就并不总是象它们看上去
+那样。 在传统的系统中, 使用UNIX风格的加密算法，加密算法是不同的，有些系统使
+用DES(译者注：DES：Data Encryption Standard，为NIST[National Institute of
+Standard and Technology]确认的标准加密算法，最新消息表明，NIST将采用一种新
+的加密标准Rijndael逐步取代DES)算法，其它的系统, 如FreeBSD国际版使用MD5(译者
+注：MD5是当今最为广泛使用的单项散列算法，由Ron Rivest发明，详细资料参见RFC 1321
+<a href="http://www.faqs.org/rfcs/rfc1321.html" target="_top">http://www.faqs.org/rfcs/rfc1321.html</a>)算法。
+      </p><p>最常用的方法是使用一种单项加密算法(译者注：即单项散列[Hash]算法)。输入的
+明文口令被加密，然后与文件中存放的加密口令比较。怎样加密的详细信息可以
+查看`crypt()'的手册页, 这里有一个通常做法的版本：
+      </p><pre class="PROGRAMLISTING">     /*  输入明文口令和加密口令, 检查是否匹配，
+      *  成功返回 1， 其它情况返回 0。
+     */
+
+     int check_pass(const char *plainpw, const char *cryptpw)
+     {
+         return strcmp(crypt(plainpw,cryptpw), cryptpw) == 0;
+     }
+      </pre><p>这个函数之所以能工作是因为加密函数使用的添加(salt)字串存放在加密口令字串的前部。
+      </p><p>*警告：* 在一些系统中, 口令加密是使用一种‘crypt()’的变体，
+即‘bigcrypt()’函数。  
+      </p></div></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./c533.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./c565.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">系统信息</td><td align="center" valign="top" width="34%"><a href="./c533.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">编程杂技</td></tr></tbody></table></div></body></html>

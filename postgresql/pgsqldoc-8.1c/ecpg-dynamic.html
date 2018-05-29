@@ -1,0 +1,244 @@
+<HTML
+><HEAD
+><TITLE
+>动态 SQL</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="ecpg - 在 C 里嵌入 SQL"
+HREF="ecpg.html"><LINK
+REL="PREVIOUS"
+TITLE="使用宿主变量"
+HREF="ecpg-variables.html"><LINK
+REL="NEXT"
+TITLE="使用 SQL 描述符范围"
+HREF="ecpg-descriptors.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="ecpg-variables.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="ecpg.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 30. <SPAN
+CLASS="APPLICATION"
+>ecpg</SPAN
+> - 在 C 里嵌入 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="ecpg.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="ecpg-descriptors.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="ECPG-DYNAMIC"
+>30.7. 动态 SQL</A
+></H1
+><P
+>   在许多情况下，应用要执行的具体的 SQL 语句在书写应用的时候就已经知道了。
+   不过，在某些情况下，SQL 语句是在运行时或者由外部的数据提供的。
+   在这种情况下，我们不能直接在 C 代码嵌入 SQL 语句，但是有个机制可以允许你调用放在一个字串变量里的任何 SQL 语句。
+  </P
+><P
+>   执行任意 SQL 语句最简单的方法是使用 <TT
+CLASS="COMMAND"
+>EXECUTE IMMEDIATE</TT
+>
+   命令。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL BEGIN DECLARE SECTION;
+const char *stmt = "CREATE TABLE test1 (...);";
+EXEC SQL END DECLARE SECTION;
+
+EXEC SQL EXECUTE IMMEDIATE :stmt;</PRE
+><P>
+   你不能用这个办法执行检索数据的语句（也就是说，<TT
+CLASS="COMMAND"
+>SELECT</TT
+> ）。
+  </P
+><P
+>   执行任意 SQL 语句的更强大的方法是准备这些语句一次，并且执行这些准备好的语句任意多次。
+   我们也可以准备一个普遍的语句版本，然后通过替换一些参数，
+   执行一个特定的版本。在准备语句的时候，在你稍后需要替换参数的地方书写一个问号。比如：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL BEGIN DECLARE SECTION;
+const char *stmt = "INSERT INTO test1 VALUES(?, ?);";
+EXEC SQL END DECLARE SECTION;
+
+EXEC SQL PREPARE mystmt FROM :stmt;
+ ...
+EXEC SQL EXECUTE mystmt USING 42, 'foobar';</PRE
+><P>
+   如果你在执行的语句返回数值，那么增加一个 <TT
+CLASS="LITERAL"
+>INTO</TT
+> 子句：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL BEGIN DECLARE SECTION;
+const char *stmt = "SELECT a, b, c FROM test1 WHERE a &gt; ?";
+int v1, v2;
+VARCHAR v3;
+EXEC SQL END DECLARE SECTION;
+
+EXEC SQL PREPARE mystmt FROM :stmt;
+ ...
+EXEC SQL EXECUTE mystmt INTO v1, v2, v3 USING 37;</PRE
+><P>
+   一个 <TT
+CLASS="COMMAND"
+>EXECUTE</TT
+> 命令可以有一个 <TT
+CLASS="LITERAL"
+>INTO</TT
+> 子句，
+   一个 <TT
+CLASS="LITERAL"
+>USING</TT
+> 子句，也可以两个都有或者两个都没有。
+  </P
+><P
+>   如果你不再需要已准备好的语句，你应该释放它：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>EXEC SQL DEALLOCATE PREPARE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>;</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="ecpg-variables.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="ecpg-descriptors.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>使用宿主变量</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="ecpg.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>使用 SQL 描述符范围</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

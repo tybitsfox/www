@@ -1,0 +1,587 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>initdb PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="PostgreSQL 服务器应用" HREF="reference-server.html"><LINK REL="PREVIOUS" TITLE="PostgreSQL 服务器应用" HREF="reference-server.html"><LINK REL="NEXT" TITLE="ipcclean" HREF="app-ipcclean.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="reference-server.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="reference-server.html#AEN53477" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="app-ipcclean.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="app-ipcclean.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="APP-INITDB" >initdb</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN53486" ></A
+><H2
+>Name</H2
+>initdb&nbsp;--&nbsp;创建一个新的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>数据库集群</DIV
+><A NAME="AEN53490" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN53492" ></A
+><H2
+>Synopsis</H2
+><P
+><TT
+CLASS="COMMAND"
+>initdb</TT
+> [<TT
+CLASS="REPLACEABLE"
+><I
+>option</I
+></TT
+>...]  --pgdata  | -D <TT
+CLASS="REPLACEABLE"
+><I
+>directory</I
+></TT
+> </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="R1-APP-INITDB-1" ></A
+><H2
+>	描述
+  </H2
+><P
+>	<SPAN
+CLASS="APPLICATION"
+>initdb</SPAN
+> 创建一个新的
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 数据库集群。
+	一个数据库集群是由单个服务器实例管理的数据库集合。
+  </P
+><P
+>	创建数据库系统包括创建数据库数据的宿主目录，
+	生成共享的系统表（不属于任何特定数据库的表）和创建
+	<TT
+CLASS="LITERAL"
+>template1</TT
+> 和 <TT
+CLASS="LITERAL"
+>postgres</TT
+>
+	数据库。当你以后再创建一个新数据库时，
+	<TT
+CLASS="LITERAL"
+>template1</TT
+> 数据库里所有内容都会拷贝过来。
+	（因此，任何在 <TT
+CLASS="LITERAL"
+>template1</TT
+> 里面安装的东西都自动拷贝到之后创建的数据库中。）
+	<TT
+CLASS="LITERAL"
+>postgres</TT
+> 数据库是一个缺省数据库，用于给用户、工具或者第三方应用提供缺省数据库。
+  </P
+><P
+>	尽管<TT
+CLASS="COMMAND"
+>initdb</TT
+>会尝试创建相应的数据目录，
+	但经常会发生它没有权限做这些事情的情况。因为所需要的目录的父目录通常是 root 所有的目录。
+	要初始化这种设置，用 root 创建一个空数据目录，
+	然后用 <TT
+CLASS="COMMAND"
+>chown</TT
+> 把该目录的所有权交给数据库用户帐号，
+	然后 <TT
+CLASS="COMMAND"
+>su</TT
+> 成数据库用户，最后以数据库用户身份运行
+	<TT
+CLASS="COMMAND"
+>initdb</TT
+>。
+  </P
+><P
+>	<TT
+CLASS="COMMAND"
+>initdb</TT
+> 初始化该数据库集群的缺省区域和字符集编码。
+	字符编码排序（<TT
+CLASS="LITERAL"
+>LC_COLLATE</TT
+>）和字符集表（<TT
+CLASS="LITERAL"
+>LC_CTYPE</TT
+>，
+	也就是，大写，小写，数字等）是对所有数据库估定的，不能改变。
+	使用 <TT
+CLASS="LITERAL"
+>C</TT
+> 或 <TT
+CLASS="LITERAL"
+>POSIX</TT
+>
+	之外的字符编码排序还会有性能影响。因此在运行 <TT
+CLASS="COMMAND"
+>initdb</TT
+> 的时候选取正确的是非常重要的。
+	其它区域范畴可以在之后服务器启动的时候的时间里改变。
+	所有服务器区域值（<TT
+CLASS="LITERAL"
+>lc_*</TT
+>）都可以用 <TT
+CLASS="COMMAND"
+>SHOW ALL</TT
+> 显示。
+	更多细节可以在 <A HREF="charset.html#LOCALE" >Section 21.1</A
+> 找到。
+  </P
+><P
+>	字符集编码可以在数据库创建的时候独立设置。
+	<TT
+CLASS="COMMAND"
+>initdb</TT
+> 决定
+	<TT
+CLASS="LITERAL"
+>template1</TT
+> 数据库的编码，而该编码将成为所有其它数据库的缺省。
+	要修改缺省编码，我们可以使用 <TT
+CLASS="OPTION"
+>--encoding</TT
+> 选项。
+	更多细节可以在 <A HREF="multibyte.html" >Section 21.2</A
+> 找到。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN53532" ></A
+><H2
+>选项</H2
+><P
+>    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="OPTION"
+>-A <TT
+CLASS="REPLACEABLE"
+><I
+>authmethod</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--auth=<TT
+CLASS="REPLACEABLE"
+><I
+>authmethod</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	这个选项声明本地用户在 <TT
+CLASS="FILENAME"
+>pg_hba.conf</TT
+> 里面使用的认证方法。
+	除非你相信所有你的系统上的本地用户，否则不要使用 <TT
+CLASS="LITERAL"
+>trust</TT
+>。
+	<TT
+CLASS="LITERAL"
+>Trust</TT
+> 是所有安装的缺省。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-D <TT
+CLASS="REPLACEABLE"
+><I
+>directory</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--pgdata=<TT
+CLASS="REPLACEABLE"
+><I
+>directory</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	这个选项声明数据库集群应该存放在哪个目录。
+	这是<TT
+CLASS="COMMAND"
+>initdb</TT
+>需要的唯一信息，但是你可以通过设置
+	<TT
+CLASS="ENVAR"
+>PGDATA</TT
+> 环境变量来避免键入，
+	这样做可能方便一些，因为稍后数据库服务器（<TT
+CLASS="COMMAND"
+>postmaster</TT
+>）可以通过同一个变量找到数据库目录。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-E <TT
+CLASS="REPLACEABLE"
+><I
+>encoding</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--encoding=<TT
+CLASS="REPLACEABLE"
+><I
+>encoding</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	选择模板数据库的编码方式。这将是你以后创建的数据库的缺省编码方式，
+	除非你创建数据库时覆盖了它。缺省是从区域设置中获得的，如果没有区域设置，就是 <TT
+CLASS="LITERAL"
+>SQL_ASCII</TT
+>。
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器支持的字符集在 <A HREF="multibyte.html#MULTIBYTE-CHARSET-SUPPORTED" >Section 21.2.1</A
+> 里描述。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--locale=<TT
+CLASS="REPLACEABLE"
+><I
+>locale</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	为数据库集群设置缺省的区域。如果没有声明这个选项，那么区域
+	是从 <TT
+CLASS="COMMAND"
+>initdb</TT
+> 运行的环境中继承过来的。
+	区域设置在 <A HREF="charset.html#LOCALE" >Section 21.1</A
+> 里描述。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--lc-collate=<TT
+CLASS="REPLACEABLE"
+><I
+>locale</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--lc-ctype=<TT
+CLASS="REPLACEABLE"
+><I
+>locale</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--lc-messages=<TT
+CLASS="REPLACEABLE"
+><I
+>locale</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--lc-monetary=<TT
+CLASS="REPLACEABLE"
+><I
+>locale</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--lc-numeric=<TT
+CLASS="REPLACEABLE"
+><I
+>locale</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--lc-time=<TT
+CLASS="REPLACEABLE"
+><I
+>locale</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	类似 <TT
+CLASS="OPTION"
+>--locale</TT
+>，但是只设置特殊范畴的区域。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-U <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--username=<TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	选择数据库超级用户的用户名。
+	缺省是运行 <TT
+CLASS="COMMAND"
+>initdb</TT
+> 的用户的有效用户。
+	超级用户的名字是什么并不重要，
+	但是我们可以选择习惯的名字 <SPAN
+CLASS="SYSTEMITEM"
+>postgres</SPAN
+>，即使操作系统的用户名字不一样也无所谓。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-W</TT
+><BR><TT
+CLASS="OPTION"
+>--pwprompt</TT
+></DT
+><DD
+><P
+>	令
+	<TT
+CLASS="COMMAND"
+>initdb</TT
+> 提示输入数据库超级用户的口令。
+	如果你不准备使用口令认证，这个东西并不重要。
+	否则你将不能使用口令认证直到你设置了口令。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--pwfile=<TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	令 <TT
+CLASS="COMMAND"
+>initdb</TT
+> 从一个文件里读取数据库超级用户的口令。
+	该文件的第一行将被当作口令使用。
+       </P
+></DD
+></DL
+></DIV
+><P>
+   </P
+><P
+>	其他不常用的参数还有：
+
+    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="OPTION"
+>-d</TT
+><BR><TT
+CLASS="OPTION"
+>--debug</TT
+></DT
+><DD
+><P
+>	从初始化后端打印调试输出以及一些其它的一些普通用户不太感兴趣的信息。
+	初始化后端是 <TT
+CLASS="COMMAND"
+>initdb</TT
+> 用于创建系统表的程序。
+	这个选项生成大量非常烦人的输出。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-L <TT
+CLASS="REPLACEABLE"
+><I
+>directory</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	告诉 <TT
+CLASS="COMMAND"
+>initdb</TT
+>
+	到哪里找初始化数据库所需要的输入文件。
+	通常是不必要的。如果需要你明确声明的话，程序会提示你输入。
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-n</TT
+><BR><TT
+CLASS="OPTION"
+>--noclean</TT
+></DT
+><DD
+><P
+>	缺省时，当<TT
+CLASS="COMMAND"
+>initdb</TT
+>
+	发现一些错误妨碍它完成创建数据库集群的工作时，
+	它将在检测到不能结束工作之前将其创建的所有文件删除。
+	这个选项禁止任何清理动作，因而对调试很有用。
+       </P
+></DD
+></DL
+></DIV
+><P>
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN53653" ></A
+><H2
+>环境</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="ENVAR"
+>PGDATA</TT
+></DT
+><DD
+><P
+>	声明数据库集群存储的目录；可以用 <TT
+CLASS="OPTION"
+>-D</TT
+> 
+	选项覆盖。
+     </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN53662" ></A
+><H2
+>又见</H2
+><A HREF="app-postgres.html" ><SPAN
+CLASS="APPLICATION"
+>postgres</SPAN
+></A
+>, <A HREF="app-postmaster.html" ><SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="reference-server.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="app-ipcclean.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >PostgreSQL 服务器应用</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="reference-server.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><SPAN
+CLASS="APPLICATION"
+>ipcclean</SPAN
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

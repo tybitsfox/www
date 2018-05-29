@@ -1,0 +1,603 @@
+<HTML
+><HEAD
+><TITLE
+>pg_statistic</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="系统表"
+HREF="catalogs.html"><LINK
+REL="PREVIOUS"
+TITLE="pg_shdepend"
+HREF="catalog-pg-shdepend.html"><LINK
+REL="NEXT"
+TITLE="pg_tablespace"
+HREF="catalog-pg-tablespace.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="catalog-pg-shdepend.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="catalogs.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 42. 系统表</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="catalogs.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="catalog-pg-tablespace.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="CATALOG-PG-STATISTIC"
+>42.30. <TT
+CLASS="STRUCTNAME"
+>pg_statistic</TT
+></A
+></H1
+><A
+NAME="AEN58040"
+></A
+><P
+>	<TT
+CLASS="STRUCTNAME"
+>pg_statistic</TT
+>表存储有关该数据库内容的统计数据。
+	记录是 <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+> 创建的，并且随后被查询规划器使用。
+	请注意所有统计信息天生都是近似的数值，即使我们假设它是最新的也如此。
+  </P
+><P
+>   <TT
+CLASS="STRUCTNAME"
+>pg_statistic</TT
+> 还存储有关索引表达式数值的统计数据。
+   这些是把他们当作实际的数据字段来描述的；特别是，<TT
+CLASS="STRUCTFIELD"
+>starelid</TT
+> 引用索引。
+   不过，普通的非表达式字段没有记录，因为会和下层的表字段记录冗余。
+  </P
+><P
+>	因为不同类型的统计信息适用于不同类型的数据，
+	<TT
+CLASS="STRUCTNAME"
+>pg_statistic</TT
+> 
+	被设计成不太在意自己存储的是什么类型的统计。
+	只有极为常用的统计信息（比如NULL的含量）才在
+	<TT
+CLASS="STRUCTNAME"
+>pg_statistic</TT
+>里给予专用的字段。
+	其它所有东西都存储在<SPAN
+CLASS="QUOTE"
+>"槽位"</SPAN
+>中，而槽位是一组相关的字段，
+	它们的内容用槽位中的一个字段的代码号码表示。
+	更详细的信息请参阅
+	<TT
+CLASS="FILENAME"
+>src/include/catalog/pg_statistic.h</TT
+>。
+  </P
+><P
+>	<TT
+CLASS="STRUCTNAME"
+>pg_statistic</TT
+> 不应该是公众可读的，
+	因为即使是表内容的统计信息也应该认为是敏感的。
+	（例子：薪水字段的最大最小值肯定是相当让人感兴趣的。）
+	<TT
+CLASS="STRUCTNAME"
+>pg_stats</TT
+> 是一个在
+	<TT
+CLASS="STRUCTNAME"
+>pg_statistic</TT
+> 上的全局可读的视图，它只显示那些表对于当前用户可读的信息。
+	<TT
+CLASS="STRUCTNAME"
+>pg_stats</TT
+> 也设计成具有比其所依靠的下层
+	<TT
+CLASS="STRUCTNAME"
+>pg_statistic</TT
+> 表更具可读性的信息 ---
+	代价是增加新的槽位类型的时候，它的模式必须扩展。
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="AEN58059"
+></A
+><P
+><B
+>Table 42-30. <TT
+CLASS="STRUCTNAME"
+>pg_statistic</TT
+> 字段</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>名字</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>类型</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>参考</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+>starelid</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><A
+HREF="catalog-pg-class.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+></A
+>.oid</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>所描述的字段所属的表或者索引</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+>staattnum</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>int2</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><A
+HREF="catalog-pg-attribute.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_attribute</TT
+></A
+>.attnum</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>所描述的字段的个数</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+>stanullfrac</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>float4</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>该字段中为 NULL 的记录的比率</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+>stawidth</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>int4</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>非 NULL 记录的平均存储宽度，以字节计</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+>stadistinct</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>float4</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>	字段里唯一的非 NULL 数据值的数目。
+	一个大于零的数值是独立数值的实际数目。
+	一个小于零的数值是表中行数的分数的负数（比如，一个字段的数值平均出现概率为两次，那么可以表示为 <TT
+CLASS="STRUCTFIELD"
+>stadistinct</TT
+> = -0.5）。
+	零值表示独立数值的数目未知。
+      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+>stakind<TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>int2</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>	一个编码，表示这种类型的统计存储在
+	<TT
+CLASS="STRUCTNAME"
+>pg_statistic</TT
+> 行的
+	第<TT
+CLASS="LITERAL"
+>N</TT
+>个<SPAN
+CLASS="QUOTE"
+>"槽位"</SPAN
+>。
+      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+>staop<TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+><A
+HREF="catalog-pg-operator.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_operator</TT
+></A
+>.oid</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>	一个用于生成这些存储在第<TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+>个<SPAN
+CLASS="QUOTE"
+>"槽位"</SPAN
+>的统计信息的操作符。
+	比如，一个柱面图槽位会显示<TT
+CLASS="LITERAL"
+>&lt;</TT
+>操作符，该操作符定义了
+	该数据的排序顺序。
+      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+>stanumbers<TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>float4[]</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>	第<TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+>个<SPAN
+CLASS="QUOTE"
+>"槽位"</SPAN
+>的相关类型的数值类型统计，
+	如果该槽位和数值类型没有关系，那么就是NULL。
+      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+>stavalues<TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="TYPE"
+>anyarray</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>	第<TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+>个<SPAN
+CLASS="QUOTE"
+>"槽位"</SPAN
+>相关类型的字段数据值，如果该槽位类型不存储
+	任何数据值那么就是 NULL。
+	每个数组的元素值实际上都是指定字段的数据类型，
+	因此，除了把这些字段的类型定义成 <SPAN
+CLASS="QUOTE"
+>"anyarray"</SPAN
+> 之外，
+	没有更好的办法。
+      </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="catalog-pg-shdepend.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="catalog-pg-tablespace.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><TT
+CLASS="STRUCTNAME"
+>pg_shdepend</TT
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="catalogs.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><TT
+CLASS="STRUCTNAME"
+>pg_tablespace</TT
+></TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

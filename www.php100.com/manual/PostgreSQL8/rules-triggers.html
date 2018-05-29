@@ -1,0 +1,296 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>规则与触发器之比较 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="规则系统" HREF="rules.html"><LINK REL="PREVIOUS" TITLE="规则和命令状态" HREF="rules-status.html"><LINK REL="NEXT" TITLE="过程语言" HREF="xplang.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="rules-status.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="rules.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 34. 规则系统</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="rules.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="xplang.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="RULES-TRIGGERS" >34.6. 规则与触发器之比较</A
+></H1
+><A NAME="AEN34186" ></A
+><A NAME="AEN34189" ></A
+><P
+>	许多用触发器可以干的事情同样也可以用
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 规则系统来完成。
+	目前不能用规则来实现的东西之一是某些约束，特别是外键。
+	我们可能在某字段的值没有在另一个表里出现的情况下用一条有条件的规则把查询重写为 <TT
+CLASS="LITERAL"
+>NOTHING</TT
+>。
+	不过这样做数据就会被不声不响的被仍掉，因而这也不是一个好主意。
+	如果需要检查有效的值，而且如果是无效值出现时要生成一个错误信息，
+	这种情况下我们要用触发器来做。</P
+><P
+>	另一方面，一个用于<TT
+CLASS="COMMAND"
+>INSERT</TT
+>一个视图的触发器可以做到与规则一样，
+	把数据放到另外的地方去而取代对视图的插入。
+	但它不能在<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>或<TT
+CLASS="COMMAND"
+>DELETE</TT
+>时做同样的事情，
+	因为在视图关系里没有可供扫描的真实数据，因而触发器将永远不被调用。
+	这时只有规则可用。</P
+><P
+>	对于两者都可用的情况，哪个更好取决于对数据库的使用。
+	触发器为任何涉及到的行执行一次。规则修改查询树或生成额外的查询。
+	所以如果在一个语句中涉及到多行，
+	一个生成一个额外查询的规则通常可能会比一个对每一行都分别执行一次（因此要执行很多次）的触发器要快一些。
+	不过，触发器的方法从概念上要远比规则的方法简单，并且很容易让新手可以做正确事情。</P
+><P
+>	例如：这里有两个表
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE computer (
+    hostname	text,    -- indexed
+    manufacturer    text     -- indexed
+);
+
+CREATE TABLE software (
+    software	text,    -- indexed
+    hostname	text     -- indexed
+);</PRE
+><P>
+
+	两个表都有好几千行，并且<TT
+CLASS="STRUCTFIELD"
+>hostname</TT
+>上的索引是唯一的。
+	规则/触发器应该实现这样一个约束，这个约束从<TT
+CLASS="LITERAL"
+>software</TT
+>表中删除引用已删除计算机的行。触发器可以用下面这条命令：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>DELETE FROM software WHERE hostname = $1;</PRE
+><P>
+
+	因为触发器是为从 <TT
+CLASS="LITERAL"
+>computer</TT
+> 里面删除的每一个独立的行调用一次，那么它可以准备并且保存这个命令的规划，
+	把<TT
+CLASS="STRUCTFIELD"
+>hostname</TT
+>（主机名）作为参数传递。规则应该这样写
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE RULE computer_del AS ON DELETE TO computer
+    DO DELETE FROM software WHERE hostname = OLD.hostname;</PRE
+><P>
+	</P
+><P
+>	现在我们看看这两种不同的删除。在下面情况
+    
+</P><PRE
+CLASS="PROGRAMLISTING"
+>DELETE FROM computer WHERE hostname = 'mypc.local.net';</PRE
+><P>
+
+	对表 <TT
+CLASS="LITERAL"
+>computer</TT
+> 使用索引（快速）进行扫描并且由触发器声明的查询也用索引进行扫描（同样快速）。规则里多出来的查询是一个
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>DELETE FROM software WHERE computer.hostname = 'mypc.local.net'
+		       AND software.hostname = computer.hostname;</PRE
+><P>
+
+	因为已经建立了合适的索引，规划器将创建一个下面的规划
+
+</P><PRE
+CLASS="LITERALLAYOUT"
+>Nestloop
+  -&gt;  Index Scan using comp_hostidx on computer
+  -&gt;  Index Scan using soft_hostidx on software</PRE
+><P>
+
+	所以在规则和触发器的实现之间没有太多的速度差别。
+	</P
+><P
+>	下面的删除我们希望删掉所有 2000 个 <TT
+CLASS="STRUCTFIELD"
+>hostname</TT
+> 以 <TT
+CLASS="LITERAL"
+>old</TT
+> 开头的计算机。
+	有两个可能的用于这个用途的查询。一个是
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>DELETE FROM computer WHERE hostname &gt;= 'old'
+		       AND hostname &lt;  'ole'</PRE
+><P>
+
+	规则增加的命令是
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>DELETE FROM software WHERE computer.hostname &gt;= 'old' AND computer.hostname &lt; 'ole'
+                       AND software.hostname = computer.hostname;</PRE
+><P>
+
+	查询的规划将会是
+
+</P><PRE
+CLASS="LITERALLAYOUT"
+>Hash Join
+  -&gt;  Seq Scan on software
+  -&gt;  Hash
+      -&gt;  Index Scan using comp_hostidx on computer</PRE
+><P>
+
+	另一个可能的查询是
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>DELETE FROM computer WHERE hostname ~ '^old';</PRE
+><P>
+
+	它由规则增加执行规划是：
+
+</P><PRE
+CLASS="LITERALLAYOUT"
+>Nestloop
+  -&gt;  Index Scan using comp_hostidx on computer
+  -&gt;  Index Scan using soft_hostidx on software</PRE
+><P>
+
+	这表明，规划器不能认识到表 <TT
+CLASS="LITERAL"
+>computer</TT
+> 里的<TT
+CLASS="STRUCTFIELD"
+>hostname</TT
+>
+	（计算机主机名）的条件在多个条件表达式以 <TT
+CLASS="LITERAL"
+>AND</TT
+> 的方式组合在一起时同样可以用于 <TT
+CLASS="LITERAL"
+>software</TT
+>，就象在用正则表达式的查询里一样。
+	触发器将在任何 2000 个要被删除的旧计算机里被调用一次，
+	结果是对 <TT
+CLASS="LITERAL"
+>computer</TT
+> 的一次索引扫描和对 <TT
+CLASS="LITERAL"
+>software</TT
+> 的2000次索引扫描。
+	规则的实现将在两个对索引的查询实现之。
+	所以这是由 <TT
+CLASS="LITERAL"
+>software</TT
+> 表的实际大小决定规则进行了顺序扫描后是否还是快一些。
+	2000 个在 SPI 管理器上的查询的执行是要点时间的，
+	即使所有要使用的索引块都很快在缓冲里出现。</P
+><P
+>	我们看的最后一个查询是
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>DELETE FROM software WHERE computer.manufacurer = 'bim'
+                       AND software.hostname = computer.hostname;</PRE
+><P>
+
+	同样，这也会导致从 <TT
+CLASS="LITERAL"
+>computer</TT
+> 表里的多行删除。
+	所以触发器同样会向执行器提交很多查询。规则生成的命令将会是
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>DELETE FROM software WHERE computer.manufacturer = 'bim'
+                       AND software.hostname = computer.hostname;</PRE
+><P>
+
+	但规则规划又将是对两个索引扫描的嵌套循环。
+	只是用了 <TT
+CLASS="LITERAL"
+>computer</TT
+> 的另外一个索引：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>Nestloop
+  -&gt;  Index Scan using comp_manufidx on computer
+  -&gt;  Index Scan using soft_hostidx on software</PRE
+><P>
+
+	在任何一种情况下，从规则系统出来的额外查询都或多或少与查询中涉及到的行的数量相对独立。</P
+><P
+>	概括来说，规则只是在它们的动作（action）生成了又大又烂的条件连接时才比触发器有较大速度差异，
+	这时规划器将失效。</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="rules-status.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="xplang.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >规则和命令状态</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="rules.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >过程语言</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

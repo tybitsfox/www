@@ -1,0 +1,272 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>系统字段 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="数据定义" HREF="ddl.html"><LINK REL="PREVIOUS" TITLE="约束" HREF="ddl-constraints.html"><LINK REL="NEXT" TITLE="修改表" HREF="ddl-alter.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="ddl-constraints.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="ddl.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 5. 数据定义</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="ddl.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="ddl-alter.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="DDL-SYSTEM-COLUMNS" >5.4. 系统字段</A
+></H1
+><P
+>	每个表都有几个<I
+CLASS="FIRSTTERM"
+>系统字段</I
+>，这些字段是由系统隐含定义的。
+	因此，这些名字不能用于用户定义的字段名。
+	（请注意这些限制与这个名字是否关键字无关；把名字用引号括起来并不能让你逃离这些限制。）
+	你实际上不需要注意这些字段，只要知道它们存在就可以了。
+  </P
+><A NAME="AEN2135" ></A
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="STRUCTFIELD"
+>oid</TT
+></DT
+><DD
+><P
+>      <A NAME="AEN2144" ></A
+>
+	行的对象标识符（对象 ID）。这个字段只有在创建表的时候使用了
+	<TT
+CLASS="LITERAL"
+>WITH OIDS</TT
+>，或者是设置了配置参数 <A HREF="runtime-config-compatible.html#GUC-DEFAULT-WITH-OIDS" >default_with_oids</A
+> 时出现。
+	这个字段的类型是 <TT
+CLASS="LITERAL"
+>oid</TT
+>（和字段同名）；
+	参阅 <A HREF="datatype-oid.html" >Section 8.12</A
+> 获取有关这种类型的更多信息。
+     </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+>tableoid</TT
+></DT
+><DD
+><A NAME="AEN2155" ></A
+><P
+>	包含本行的表的 OID。这个字段对那些从继承层次中选取的查询特别有用（参阅 <A HREF="ddl-inherit.html" >Section 5.8</A
+>），
+	因为如果没有它的话，我们就很难说明一行来自哪个独立的表。
+	<TT
+CLASS="STRUCTFIELD"
+>tableoid</TT
+> 可以和 <TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+> 的
+	<TT
+CLASS="STRUCTFIELD"
+>oid</TT
+> 字段连接起来获取表名字。
+     </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+>xmin</TT
+></DT
+><DD
+><A NAME="AEN2166" ></A
+><P
+>	插入该行版本的事务的标识（事务 ID）。（注意：在这个环境里，
+	一个行版本是一行的一个状态；一行的每次更新都为同一个逻辑行创建一个新的行版本。）
+     </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+>cmin</TT
+></DT
+><DD
+><A NAME="AEN2173" ></A
+><P
+>	在插入事务内部的命令标识（从零开始）。
+     </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+>xmax</TT
+></DT
+><DD
+><A NAME="AEN2180" ></A
+><P
+>	删除事务的标识（事务ID），如果不是被删除的行版本，那么是零。
+	在一个可见行版本里，这个字段有可能是非零。这通常意味着删除事务还没有提交，
+	或者是一个删除的企图被回滚掉了。
+     </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+>cmax</TT
+></DT
+><DD
+><A NAME="AEN2187" ></A
+><P
+>	在删除事务内部的命令标识符，或者是零。
+     </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+>ctid</TT
+></DT
+><DD
+><A NAME="AEN2194" ></A
+><P
+>	一个行版本在它所处的表内的物理位置。请注意，尽管 <TT
+CLASS="STRUCTFIELD"
+>ctid</TT
+>
+	可以用于非常快速地定位行版本，但每次 <TT
+CLASS="COMMAND"
+>VACUUM FULL</TT
+> 之后，
+	一个行的 <TT
+CLASS="STRUCTFIELD"
+>ctid</TT
+> 都会被更新或者移动。
+	因此 <TT
+CLASS="STRUCTFIELD"
+>ctid</TT
+> 是不能作为长期的行标识符的。
+	应该使用OID，或者更好是用户定义的序列号，来标识一个逻辑行。
+     </P
+></DD
+></DL
+></DIV
+><P
+>	OID 是 32 位的量，是在同一个集群内通用的计数器上赋值的。
+	对于一个大型或者长时间使用的数据库，这个计数器是有可能重叠的。
+	因此，假设 OID 是唯一的是非常错误的，除非你自己采取了措施来保证它们是唯一的。
+	如果你需要标识表中的行，我们强烈建议使用序列号生成器。
+	不过，也可以使用 OID，只要采取几个注意事项即可：
+
+    <P
+></P
+></P><UL
+><LI
+><P
+>       在使用 OID 标识行的每个表的 OID 字段创建一个唯一约束。
+       在唯一约束（或者唯一索引）存在的时候，系统会注意不去生成一个和现有行相同的 OID。
+       （当然，只有在表中的数据行少于 2 <SUP
+>32</SUP
+> （40 亿）行的时候才是可能的，
+       而实际上表中的行最好远比这个小，要不性能就会受影响了。）
+      </P
+></LI
+><LI
+><P
+>       绝对不要假设 OID 是跨表唯一的；如果你需要全数据库范围内的标识，请使用 <TT
+CLASS="STRUCTFIELD"
+>tableoid</TT
+> 和行的 OID 的组合。
+      </P
+></LI
+><LI
+><P
+>       需要 OID 的表应该带着 <TT
+CLASS="LITERAL"
+>WITH OIDS</TT
+> 创建。
+       对于 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 8.1，<TT
+CLASS="LITERAL"
+>WITHOUT OIDS</TT
+> 是缺省。
+      </P
+></LI
+></UL
+><P>
+
+   </P
+><P
+>	事务标识符也是 32 位的量。在长时间运转的数据库里，它也可能会重叠。
+	只要我们采取一些合适的维护步骤，这并不是很要命的问题；
+	参阅 <A HREF="maintenance.html" >Chapter 22</A
+> 获取细节。不过，
+	在长时间运行的环境里（超过十亿次事务）依赖事务 ID 的唯一性并非明智的做法。
+   </P
+><P
+>	命令标识符也是 32 位的量。这样就在一个事务里有2<SUP
+>32</SUP
+>（四十亿）条 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令的硬限制。
+	在现实里这个限制应该不是什么问题  &mdash;  注意这个限制是 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 命令的条数，
+	而不是处理的行版本的条数。
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="ddl-constraints.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="ddl-alter.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >约束</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="ddl.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >修改表</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

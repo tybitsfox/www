@@ -1,0 +1,46 @@
+<HTML><HEAD><TITLE>Memory Management</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Source Layout" HREF="zend.layout.html"><LINK REL="PREVIOUS" TITLE="Macros" HREF="zend.layout.macros.html"><LINK REL="NEXT" TITLE="Directory and File Functions" HREF="zend.layout.dir-and-file.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="section" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="zend.layout.macros.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 26. Source Layout</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="zend.layout.dir-and-file.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="section"><H1 CLASS="section"><A NAME="zend.layout.memory-management"></A>Memory Management</H1><P>&#13; Resource management is a crucial issue, especially in server
+software. One of the most valuable resources is memory, and memory
+management should be handled with extreme care. Memory management
+has been partially abstracted in Zend, and you should stick to
+this abstraction for obvious reasons: Due to the abstraction, Zend
+gets full control over all memory allocations. Zend is able to
+determine whether a block is in use, automatically freeing unused
+blocks and blocks with lost references, and thus prevent memory
+leaks. The functions to be used are described in the following
+table:
+<DIV CLASS="informaltable"><A NAME="AEN121707"></A><P></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE">Function</TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Description</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">emalloc()</B></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Serves as replacement for
+<B CLASS="function">malloc()</B>.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">efree()</B></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Serves as replacement for
+<B CLASS="function">free()</B>.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">estrdup()</B></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Serves as replacement for
+<B CLASS="function">strdup()</B>.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">estrndup()</B></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Serves as replacement for
+<B CLASS="function">strndup()</B>. Faster than
+<B CLASS="function">estrdup()</B> and binary-safe. This is the
+recommended function to use if you know the string length
+prior to duplicating it.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">ecalloc()</B></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Serves as replacement for
+<B CLASS="function">calloc()</B>.</TD></TR><TR><TD WIDTH="38%" ALIGN="LEFT" VALIGN="MIDDLE"><B CLASS="function">erealloc()</B></TD><TD WIDTH="62%" ALIGN="LEFT" VALIGN="MIDDLE">Serves as replacement for
+<B CLASS="function">realloc()</B>.</TD></TR></TBODY></TABLE><P></P></DIV> <B CLASS="function">emalloc()</B>,
+<B CLASS="function">estrdup()</B>, <B CLASS="function">estrndup()</B>,
+<B CLASS="function">ecalloc()</B>, and <B CLASS="function">erealloc()</B>
+allocate internal memory; <B CLASS="function">efree()</B> frees these
+previously allocated blocks. Memory handled by the
+<B CLASS="function">e*()</B> functions is considered local to the
+current process and is discarded as soon as the script executed by
+this process is terminated.
+<DIV CLASS="warning"><P></P><TABLE CLASS="warning" BORDER="1" WIDTH="100%"><TR><TD ALIGN="CENTER"><B>警告</B></TD></TR><TR><TD ALIGN="LEFT"><P>&#13; To allocate resident memory that survives termination of
+the current script, you can use <B CLASS="function">malloc()</B> and
+<B CLASS="function">free()</B>. This should only be done with extreme
+care, however, and only in conjunction with demands of the Zend
+API; otherwise, you risk memory leaks.
+</P></TD></TR></TABLE></DIV>
+Zend also features a thread-safe resource manager to
+provide better native support for multithreaded Web servers. This
+requires you to allocate local structures for all of your global
+variables to allow concurrent threads to be run. Because the
+thread-safe mode of Zend was not finished back when this was written,
+it is not yet extensively covered here.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="zend.layout.macros.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="zend.layout.dir-and-file.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Macros</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="zend.layout.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Directory and File Functions</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

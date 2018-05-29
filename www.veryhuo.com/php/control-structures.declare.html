@@ -1,0 +1,45 @@
+<HTML><HEAD><TITLE>declare</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="流程控制" HREF="control-structures.html"><LINK REL="PREVIOUS" TITLE="switch" HREF="control-structures.switch.html"><LINK REL="NEXT" TITLE="return" HREF="function.return.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="sect1" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="control-structures.switch.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 11. 流程控制</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.return.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="sect1"><H1 CLASS="sect1"><A NAME="control-structures.declare"></A><TT CLASS="literal">declare</TT></H1><P>&#13; <TT CLASS="literal">declare</TT> 结构用来设定一段代码的执行指令。<TT CLASS="literal">declare</TT>
+的语法和其它流程控制结构相似：
+<DIV CLASS="informalexample"><A NAME="AEN5251"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">declare (directive) statement</PRE></TD></TR></TABLE><P></P></DIV>
+</P><P>&#13; <TT CLASS="literal">directive</TT> 部分允许设定 <TT CLASS="literal">declare</TT>
+代码段的行为。目前只认识一个指令：<TT CLASS="literal">ticks</TT>（更多信息见下面
+<A HREF="control-structures.declare.html#control-structures.declare.ticks">ticks</A> 指令）。
+</P><P>&#13; <TT CLASS="literal">declare</TT> 代码段中的 <TT CLASS="literal">statement</TT>
+部分将被执行 － 怎样执行以及执行中有什么副作用出现取决于
+<TT CLASS="literal">directive</TT> 中设定的指令。
+</P><P>&#13; <TT CLASS="literal">declare</TT> 结构也可用于全局范围，影响到其后的所有代码。
+<DIV CLASS="informalexample"><A NAME="AEN5264"></A><P></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">&#60;?php
+// these are the same:
+
+// you can use this:
+declare(ticks=1) {
+    // entire script here
+}
+
+// or you can use this:
+declare(ticks=1);
+// entire script here
+?&#62;</PRE></TD></TR></TABLE><P></P></DIV>
+</P><DIV CLASS="sect2"><H2 CLASS="sect2"><A NAME="control-structures.declare.ticks"></A>Ticks</H2><P>Tick 是一个在 <TT CLASS="literal">declare</TT> 代码段中解释器每执行
+<TT CLASS="replaceable"><I>N</I></TT> 条低级语句就会发生的事件。<TT CLASS="replaceable"><I>N</I></TT>
+的值是在 <TT CLASS="literal">declare</TT> 中的 <TT CLASS="literal">directive</TT> 部分用
+<TT CLASS="literal">ticks=<TT CLASS="replaceable"><I>N</I></TT></TT> 来指定的。
+</P><P>&#13; 在每个 tick 中出现的事件是由 <A HREF="function.register-tick-function.html"><B CLASS="function">register_tick_function()</B></A>
+来指定的。更多细节见下面的例子。注意每个 tick 中可以出现多个事件。
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN5279"></A><P><B>例子 11-1. 评估一段 PHP 代码的执行时间</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#FF8000">// A function that records the time when it is called<br /></font><font color="#007700">function </font><font color="#0000BB">profile </font><font color="#007700">(</font><font color="#0000BB">$dump </font><font color="#007700">= </font><font color="#0000BB">FALSE</font><font color="#007700">)<br />{<br />&nbsp;&nbsp;&nbsp;&nbsp;static </font><font color="#0000BB">$profile</font><font color="#007700">;<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// Return the times stored in profile, then erase it<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">if (</font><font color="#0000BB">$dump</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$temp </font><font color="#007700">= </font><font color="#0000BB">$profile</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unset (</font><font color="#0000BB">$profile</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return (</font><font color="#0000BB">$temp</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$profile</font><font color="#007700">[] = </font><font color="#0000BB">microtime </font><font color="#007700">();<br />}<br /><br /></font><font color="#FF8000">// Set up a tick handler<br /></font><font color="#0000BB">register_tick_function</font><font color="#007700">(</font><font color="#DD0000">"profile"</font><font color="#007700">);<br /><br /></font><font color="#FF8000">// Initialize the function before the declare block<br /></font><font color="#0000BB">profile </font><font color="#007700">();<br /><br /></font><font color="#FF8000">// Run a block of code, throw a tick every 2nd statement<br /></font><font color="#007700">declare (</font><font color="#0000BB">ticks</font><font color="#007700">=</font><font color="#0000BB">2</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;for (</font><font color="#0000BB">$x </font><font color="#007700">= </font><font color="#0000BB">1</font><font color="#007700">; </font><font color="#0000BB">$x </font><font color="#007700">&lt; </font><font color="#0000BB">50</font><font color="#007700">; ++</font><font color="#0000BB">$x</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#0000BB">similar_text </font><font color="#007700">(</font><font color="#0000BB">md5</font><font color="#007700">(</font><font color="#0000BB">$x</font><font color="#007700">), </font><font color="#0000BB">md5</font><font color="#007700">(</font><font color="#0000BB">$x</font><font color="#007700">*</font><font color="#0000BB">$x</font><font color="#007700">)), </font><font color="#DD0000">"&lt;br /&gt;;"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />}<br /><br /></font><font color="#FF8000">// Display the data stored in the profiler<br /></font><font color="#0000BB">print_r </font><font color="#007700">(</font><font color="#0000BB">profile </font><font color="#007700">(</font><font color="#0000BB">TRUE</font><font color="#007700">));<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+这个例子评估“declare”中的 PHP
+代码，每执行两条低级语句就记录下时间。此信息可以用来找到一段特定代码中速度慢的部分。这个过程也可以用其它方法完成，但用
+tick 更方便也更容易实现。
+</P><P>&#13; Ticks 很适合用来做调试，以及实现简单的多任务，后台 I/O 和很多其它任务。
+</P><P>&#13; 参见 <A HREF="function.register-tick-function.html"><B CLASS="function">register_tick_function()</B></A> 和
+<A HREF="function.unregister-tick-function.html"><B CLASS="function">unregister_tick_function()</B></A>。
+</P></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="control-structures.switch.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.return.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><TT CLASS="literal">switch</TT></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="control-structures.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">return</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

@@ -1,0 +1,1265 @@
+<HTML
+><HEAD
+><TITLE
+>扩展索引接口</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="扩展 SQL"
+HREF="extend.html"><LINK
+REL="PREVIOUS"
+TITLE="操作符优化信息"
+HREF="xoper-optimization.html"><LINK
+REL="NEXT"
+TITLE="触发器"
+HREF="triggers.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="xoper-optimization.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="extend.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 32. 扩展 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="extend.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="triggers.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="XINDEX"
+>32.14. 扩展索引接口</A
+></H1
+><P
+>	到目前为止我们描述的过程可以让你定义一个新类型，新函数和新操作符．
+	但是，我们还不能在一个新数据类型的字段上面定义一个索引。为了做这
+	些事情，我们必须为新数据类型定义一个 <I
+CLASS="FIRSTTERM"
+>操作符表</I
+>。
+	我们讲在一个真实的例子的环境中来描述操作符表：
+	一个用于 B-tree 访问方法的新的操作符表，它保存复数并对之以绝对值
+	递增的顺序排序。
+  </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本7.3之前，我们必须
+	手工给系统表 <TT
+CLASS="CLASSNAME"
+>pg_amop</TT
+>，<TT
+CLASS="CLASSNAME"
+>pg_amproc</TT
+>，和
+	<TT
+CLASS="CLASSNAME"
+>pg_opclass</TT
+> 添加记录，以便于创建用户定义操作符表。
+	现在这个方法已经废弃了，因为我们有了 <TT
+CLASS="COMMAND"
+>CREATE OPERATOR CLASS</TT
+>，
+	它在创建必要的表记录的时候更简单并且更不容易出错。
+   </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="XINDEX-IM"
+>32.14.1. 索引方法和操作符表</A
+></H2
+><P
+>	<TT
+CLASS="FILENAME"
+>pg_am</TT
+> 表为每个索引方法（内部称作访问方法）都包含一条记录．
+	对表的普通访问方法的支持内建于
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>，但所有访问方法在
+	<TT
+CLASS="FILENAME"
+>pg_am</TT
+> 里都有描述．
+	我们可以通过定义要求的接口过程并在 <TT
+CLASS="CLASSNAME"
+>pg_am</TT
+>
+	里创建一个行的办法增加一个索引访问方法 &mdash; 但那些远远超出了本章
+	的内容（参阅 <A
+HREF="indexam.html"
+>Chapter 48</A
+>）。
+  </P
+><P
+>	一个索引方法的过程并不直接知道任何该索引方法将要操作的
+	数据类型的信息。而是<I
+CLASS="FIRSTTERM"
+>操作符表</I
+>表明索引方法在操作特定
+	数据类型的时候需要使用的操作集合。操作符表的名称由来是因为它们
+	声明的一件事情是一种索引可以使用的 <TT
+CLASS="LITERAL"
+>WHERE</TT
+> 子句的操作符集（也就是说
+	可以转化成一个索引扫描条件）。一个操作符表也可以声明一些索引
+	方法需要的内部操作的<I
+CLASS="FIRSTTERM"
+>支持过程</I
+>，但是它们并不直接和可以
+	与索引一起使用的 <TT
+CLASS="LITERAL"
+>WHERE</TT
+> 子句操作符相关。
+  </P
+><P
+>	我们可以为同一个数据类型和索引方法定义多个操作符表。
+	这么做的结果是，我们可以为一种数据类型定义多套索引语义。比如，
+	一个 B-tree 索引要求为它操作的每种数据类型定义一个排序顺序。
+	对于一个复数数据类型而言，有一个通过复数绝对值对数据排序的
+	B-tree 操作符表可能会有用，还有一个是用实部排序，等等。
+	通常其中一个操作符表会被认为最常用的，并且被标记为该数据类型和索引
+	方法的缺省操作符表。
+  </P
+><P
+>	同样的操作符表名字可以用于多种不同的索引方法（比如，B-tree 和散列访问
+	方法都有叫 <TT
+CLASS="LITERAL"
+>oid_ops</TT
+> 的操作符表），但是每个这样的
+	表都是一个独立的实体，必须分别定义。
+  </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="XINDEX-STRATEGIES"
+>32.14.2. 索引方法策略</A
+></H2
+><P
+>	和一种操作符表相关联的操作符是通过<SPAN
+CLASS="QUOTE"
+>"策略号"</SPAN
+>标识的，
+	策略号用于标识每种操作符在它的操作符表环境里的语义。
+	比如，B-tree 对键字有严格的排序要求，小于到大于，因此，象<SPAN
+CLASS="QUOTE"
+>"小于"</SPAN
+>
+	和<SPAN
+CLASS="QUOTE"
+>"大于或等于"</SPAN
+>这样的操作符都是 B-tree 所感兴趣的。
+	因为 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 允许用户定义操作符，
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 无法查看操作符的名字
+	（比如，<TT
+CLASS="LITERAL"
+>&lt;</TT
+> 或 <TT
+CLASS="LITERAL"
+>&gt;=</TT
+>）就明白它进行的比较是什么。
+	实际上，索引索引方法定义了一套<SPAN
+CLASS="QUOTE"
+>"策略"</SPAN
+>，它可以看作时一般性的操作符。
+	每种操作符表显示对于特定数据类型，是哪种实际操作符对应每种策略，
+	以及解释索引的语义。
+  </P
+><P
+>	B-tree 索引定义了五种策略．在 <A
+HREF="xindex.html#XINDEX-BTREE-STRAT-TABLE"
+>Table 32-2</A
+>
+	中显示。
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="XINDEX-BTREE-STRAT-TABLE"
+></A
+><P
+><B
+>Table 32-2. B-tree 策略</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>操作</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>索引</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>小于</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>1</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>小于或等于</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>2</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>等于</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>3</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>大于或等于</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>4</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>大于</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>5</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	散列索引只表示按位的相等，因此它们只定义了一个策略，
+	在 <A
+HREF="xindex.html#XINDEX-HASH-STRAT-TABLE"
+>Table 32-3</A
+> 里显示。
+	
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="XINDEX-HASH-STRAT-TABLE"
+></A
+><P
+><B
+>Table 32-3. 散列索引</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>操作</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>策略号</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>等于</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>1</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	R-tree 索引用两维空间表示关系。它使用十二个策略，
+	在 <A
+HREF="xindex.html#XINDEX-RTREE-STRAT-TABLE"
+>Table 32-4</A
+> 里显示。
+	这里面的四个是真的两维测试（重叠，相同，包含和包含于），
+	四个是只考虑 x 坐标的，另外四个对 y 坐标进行同样测试。
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="XINDEX-RTREE-STRAT-TABLE"
+></A
+><P
+><B
+>Table 32-4. R-tree 策略</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>操作</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>策略号</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>严格地在...左边</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>1</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>不扩展到...右边</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>2</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>重叠</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>3</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>并不延伸到...左边</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>4</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>严格地在...右边</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>5</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>相同</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>6</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>包含</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>7</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>被包含</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>8</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>不扩展到...上面</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>9</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>严格地在...下方</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>10</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>严格地在...上面</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>11</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>不扩展到...下面</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>12</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	GiST 索引甚至更加灵活：它们根本就没有固定地策略集。实际上，是
+	每个特定 GiST 操作符表的<SPAN
+CLASS="QUOTE"
+>"一致性"</SPAN
+>支持过程解释策略号是什么样子。
+  </P
+><P
+>   请注意，所有策略操作符都返回布尔值。实际上，所有定义为索引方法
+   策略的操作符都必须返回类型<TT
+CLASS="TYPE"
+>boolean</TT
+>，因为它们必须出现在
+   一个 <TT
+CLASS="LITERAL"
+>WHERE</TT
+> 子句的顶层，这样才能被一个索引使用。
+  </P
+><P
+>	顺便提一下，<TT
+CLASS="CLASSNAME"
+>pg_am</TT
+> 里的 <TT
+CLASS="STRUCTFIELD"
+>amorderstrategy</TT
+>
+	字段告诉我们该索引方法是否支持排序的扫描。零意味着它不支持；
+	如果它支持，<TT
+CLASS="STRUCTFIELD"
+>amorderstrategy</TT
+> 是对应该排序操作符
+	的策略号。比如，B-tree 的 <TT
+CLASS="STRUCTFIELD"
+>amorderstrategy</TT
+> = 1，
+	是它的<SPAN
+CLASS="QUOTE"
+>"小于"</SPAN
+>的策略号。
+  </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="XINDEX-SUPPORT"
+>32.14.3. 索引方法支持过程</A
+></H2
+><P
+>	有时候，策略的信息还不足以让系统决定如何使用某个索引．
+	实际上，索引方法就需要附加的一些过程来保证能够工作．
+	例如，B-tree
+	索引方法必须能够比较两个键字以决定其中一个是大于，等于，
+	还是小于另外一个．
+	类似的还有 R-tree 索引方法必须能够计算长方形的相交，
+	并，和大小等．这些操作和 SQL 命令条件里使用的操作符并不对应；
+	它们是被索引方法的管理性质的过程内部调用的过程．
+  </P
+><P
+>	就像策略一样，操作符表声明在一定的数据类型和语义解释的条件下，
+	哪个特定函数对应这些角色中的哪一个。索引方法声明它需要的函数集，
+	儿操作符表通过给它们赋予<SPAN
+CLASS="QUOTE"
+>"支持函数编号"</SPAN
+>来标识要使用的正确的函数。
+  </P
+><P
+>	B-tree 需要一个支持函数，在 <A
+HREF="xindex.html#XINDEX-BTREE-SUPPORT-TABLE"
+>Table 32-5</A
+> 里显示。
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="XINDEX-BTREE-SUPPORT-TABLE"
+></A
+><P
+><B
+>Table 32-5. B-tree 支持函数</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>函数</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>支持号</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>	比较两个键字并且返回一个小于零，零，或者大于零的整数，
+	标识第一个键字是小于，等于还是大于第二个键字。
+       </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>1</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	类似的是散列索引也需要一个支持函数，在 <A
+HREF="xindex.html#XINDEX-HASH-SUPPORT-TABLE"
+>Table 32-6</A
+> 里显示。
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="XINDEX-HASH-SUPPORT-TABLE"
+></A
+><P
+><B
+>Table 32-6. 散列支持函数</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>函数</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>支持号</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>为一个键字比较散列值</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>1</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	R-tree 索引需要三个支持函数，在 <A
+HREF="xindex.html#XINDEX-RTREE-SUPPORT-TABLE"
+>Table 32-7</A
+> 里显示。
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="XINDEX-RTREE-SUPPORT-TABLE"
+></A
+><P
+><B
+>Table 32-7. R-tree 支持函数</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>函数</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>支持号</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>联合</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>1</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>交</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>2</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>大小</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>3</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>	Gist 索引需要七种支持函数，在 <A
+HREF="xindex.html#XINDEX-GIST-SUPPORT-TABLE"
+>Table 32-8</A
+> 里显示。
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="XINDEX-GIST-SUPPORT-TABLE"
+></A
+><P
+><B
+>Table 32-8. GiST 支持函数</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>函数</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>支持号</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>一致性</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>1</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>联合</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>2</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>压缩</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>3</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>解压缩</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>4</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>处罚</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>5</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>选择分裂</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>6</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>等于</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>7</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>    和策略操作符不同，支持函数返回特定索引方法预期的数据类型，比如在
+    B-tree 的情况下，返回一个符号整数。
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="XINDEX-EXAMPLE"
+>32.14.4. 例子</A
+></H2
+><P
+>	既然我们已经了解了这些概念，那么现在就是我们承诺过的创建一个
+	新的操作符表的例子。
+	操作符表封装了那些以绝对值顺序对复数排序的操作符，这样我们
+	就可以选择 <TT
+CLASS="LITERAL"
+>complex_abs_ops</TT
+> 这个名字。
+	首先，我们需要一个操作符集合。
+	用于定义操作符的过程已经在<A
+HREF="xoper.html"
+>Section 32.12</A
+>讨论过了．
+	对这个用于 B-tree 的 <TT
+CLASS="LITERAL"
+>complex_abs_ops</TT
+> 操作符表，
+	我们需要的操作符是：
+
+   <P
+></P
+></P><UL
+COMPACT="COMPACT"
+><LI
+><SPAN
+>absolute-value less-than (strategy 1)</SPAN
+></LI
+><LI
+><SPAN
+>absolute-value less-than-or-equal (strategy 2)</SPAN
+></LI
+><LI
+><SPAN
+>absolute-value equal (strategy 3)</SPAN
+></LI
+><LI
+><SPAN
+>absolute-value greater-than-or-equal (strategy 4)</SPAN
+></LI
+><LI
+><SPAN
+>absolute-value greater-than (strategy 5)</SPAN
+></LI
+></UL
+><P>
+  </P
+><P
+>  用于相等操作的 C 代码看起来像这样：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>#define Mag(c) ((c)-&gt;x*(c)-&gt;x + (c)-&gt;y*(c)-&gt;y)
+
+bool
+complex_abs_eq(Complex *a, Complex *b)
+{
+    double amag = Mag(a), bmag = Mag(b);
+    return (amag==bmag);
+}</PRE
+><P>
+	其它四个操作符非常类似．你可以在源代码的 <TT
+CLASS="FILENAME"
+>src/tutorial/complex.c</TT
+>
+	和 <TT
+CLASS="FILENAME"
+>src/tutorial/complex.sql</TT
+> 获取代码。
+  </P
+><P
+>	然后基于这些函数声明函数和操作符：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION complex_abs_eq(complex, complex) RETURNS boolean
+    AS '<TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>', 'complex_abs_eq'
+    LANGUAGE C;
+
+CREATE OPERATOR = (
+    leftarg = complex,
+    rightarg = complex,
+    procedure = complex_abs_eq,
+    restrict = eqsel,
+    join = eqjoinsel
+);</PRE
+><P>
+	声明限制和连接选择性函数是非常重要的，否则优化器将无法有效地
+	利用索引。请注意，小于，等于和大于的情况下应该使用不同的选择性
+	函数。
+  </P
+><P
+>	其它几个值得一提的问题问题要在这里出现∶
+
+  <P
+></P
+></P><UL
+><LI
+><P
+>	我们可以只有一个命名了的操作符名，就是 <TT
+CLASS="LITERAL"
+>=</TT
+>，
+	并把类型 <TT
+CLASS="FILENAME"
+>complex</TT
+>
+	做为其两个操作数．这种情况下我们没有其它用于
+	<TT
+CLASS="FILENAME"
+>complex</TT
+>
+	的 <TT
+CLASS="LITERAL"
+>=</TT
+>　操作符，但是如果我们要制作一个实用的数据类型，
+	我们可能需要<TT
+CLASS="LITERAL"
+>=</TT
+>做为用于复数的普通等于操作的操作符．
+	这种情况，我们可能需要使用一些其他操作符名称来命名
+	<TT
+CLASS="FUNCTION"
+>complex_abs_eq</TT
+>．
+  </P
+></LI
+><LI
+><P
+>	尽管<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>可以处理 SQL 名字相同的函数，
+	只要它们的输入数据类型不同，
+	而 C 只能处理一个具有给出名称的全局过程．
+	因此我们不能把 C 函数命名为象
+	<TT
+CLASS="FILENAME"
+>abs_eq</TT
+> 这样简单的名字．
+	通常在 C 函数名里面包含数据类型名称是一个好习惯，
+	这样就不会和用于其它数据类型的函数冲突．
+  </P
+></LI
+><LI
+><P
+>	我们可以制作叫 <TT
+CLASS="FILENAME"
+>abs_eq</TT
+> 的
+	SQL 函数，
+	依靠 PostgreSQL 通过输入数据类型的不同区分任何其他同名
+	 SQL 函数．
+	为了令例子简单，我们做的函数在 C 层次和
+	SQL 层次都有相同的名称．
+  </P
+></LI
+></UL
+><P>
+  </P
+><P
+>	下一步是注册 B-tree 需要的比较<SPAN
+CLASS="QUOTE"
+>"支持过程"</SPAN
+>。
+	实现这个的例子 C 代码在包含操作符过程的同一个文件中，
+	下面是定义函数的方法：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION complex_abs_cmp(complex, complex)
+    RETURNS integer
+    AS '<TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+>'
+    LANGUAGE C;</PRE
+><P>
+  </P
+><P
+>	既然我们已经有了需要的操作符何支持过程，
+	我们就可以最后创建这个操作符表了：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE OPERATOR CLASS complex_abs_ops
+    DEFAULT FOR TYPE complex USING btree AS
+        OPERATOR        1       &lt; ,
+        OPERATOR        2       &lt;= ,
+        OPERATOR        3       = ,
+        OPERATOR        4       &gt;= ,
+        OPERATOR        5       &gt; ,
+        FUNCTION        1       complex_abs_cmp(complex, complex);</PRE
+><P>
+  </P
+><P
+>	这样我们就完成了！现在我们可以在一个
+	<TT
+CLASS="TYPE"
+>complex</TT
+> 列上创建和使用 B-tree 索引了．
+  </P
+><P
+>	我们可以把操作符记录写得更冗余一些，象
+</P><PRE
+CLASS="PROGRAMLISTING"
+>        OPERATOR        1       &lt; (complex, complex) ,</PRE
+><P>
+	但是如果该操作符接受的数据类型是我们定义的操作符表处理的东西，
+	那就没必要这么做。
+  </P
+><P
+>	上面的例子假设你象把这个新操作符表作为 <TT
+CLASS="TYPE"
+>complex</TT
+> 数据类型
+	的缺省的 B-tree 操作符表。如果你不想这么做，只要去掉关键字 <TT
+CLASS="LITERAL"
+>DEFAULT</TT
+> 就行了。
+  </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="XINDEX-OPCLASS-FEATURES"
+>32.14.5. 操作符表的特殊特性</A
+></H2
+><P
+>	还有两种操作符表的特殊特性我们没有讨论，主要是因为它们
+	对于缺省的 B-tree 索引索引方法并不非常有用。
+  </P
+><P
+>	通常，把一个操作符声明为一个操作符表的成员意味着索引索引方法
+	可以使用该操作符检索满足一个 <TT
+CLASS="LITERAL"
+>WHERE</TT
+> 条件的行集合。比如，
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM table WHERE integer_column &lt; 4;</PRE
+><P>
+	可以由一个建立在整数字段上的 B-tree 索引精确地满足。但是有时候
+	会有这样的现象：索引是用作匹配数据行的并不精确的指向。比如，
+	如果一个 R-tree 索引只为对象存储周界的方块，那么它就无法精确地
+	满足一个两个非方形对象（比如多边形）之间是否覆盖的<TT
+CLASS="LITERAL"
+>WHERE</TT
+>条件的测试。
+	但是我们可以使用这个索引找出那些周界方块和目标对象的周界方块
+	重合的对象，然后只在索引找到的对象上做精确的重合测试。如果这种
+	情形可以通过，那我们就说索引对操作符是<SPAN
+CLASS="QUOTE"
+>"松散的"</SPAN
+>，
+	并且我们在 <TT
+CLASS="COMMAND"
+>CREATE OPERATOR CLASS</TT
+> 命令里给
+	<TT
+CLASS="LITERAL"
+>OPERATOR</TT
+> 子句增加 <TT
+CLASS="LITERAL"
+>RECHECK</TT
+>。如果索引保证
+	返回所有要求的元组加上一些附加的行，那么 <TT
+CLASS="LITERAL"
+>RECHECK</TT
+> 就合法，
+	这些额外的元组就可以通过执行最初的操作符调用消除。
+  </P
+><P
+>	再考虑我们再索引中只存储复杂对象（比如多边形）的周界方块的情形。
+	这种情况下我们在索引条目里存储整个多边形没有太多的数值 &mdash; 我们
+	也可以只存储更简单的类型 <TT
+CLASS="TYPE"
+>box</TT
+> 的对象。
+	这种情形由 <TT
+CLASS="COMMAND"
+>CREATE OPERATOR CLASS</TT
+> 里的 <TT
+CLASS="LITERAL"
+>STORAGE</TT
+>
+	选项存储：我们可以写类似这样的东西
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE OPERATOR CLASS polygon_ops
+    DEFAULT FOR TYPE polygon USING gist AS
+        ...
+        STORAGE box;</PRE
+><P>
+
+	目前，只有 GiST 索引方法支持与字段数据类型不同的 <TT
+CLASS="LITERAL"
+>STORAGE</TT
+> 类型。
+	GiST <TT
+CLASS="LITERAL"
+>compress</TT
+> 和 <TT
+CLASS="LITERAL"
+>decompress</TT
+> 支持过程
+	在使用 <TT
+CLASS="LITERAL"
+>STORAGE</TT
+> 的时候必须处理数据类型转换。
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="xoper-optimization.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="triggers.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>操作符优化信息</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="extend.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>触发器</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

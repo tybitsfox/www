@@ -1,0 +1,163 @@
+create user 'sdhl'@'localhost' identified by 'sdhl2016';
+grant all on env2016.* to 'sdhl'@'localhost';
+
+<center><font size=5 color=red>关于windows下mysql的优化</font></center>
+生成了550M的测试数据（一个月，96个废气站点）在windows下表现糟糕！一个select count(*)竟然要用1分20秒。
+同样的机器配置，将数据导入linux下的数据库，执行select count(*) 只用了1秒多点，效率相差了近百倍！
+为确保比较结果的正确性，又将数据导入我的thinkpad本本上的mysql数据库（linux下）测试依然是1秒多。看来
+这种效率的差别是绝对不能容忍的了，对比linux和windows下mysql的配置文件，差别不是很大，为确保一致，将
+linux下的配置移至windows下，测试无效。进入mysql查看加载的插件(linux下)：
+mysql&gt; show plugins;
++--------------------------+----------+--------------------+---------+---------+
+| Name                     | Status   | Type               | Library | License |
++--------------------------+----------+--------------------+---------+---------+
+| binlog                   | ACTIVE   | STORAGE ENGINE     | NULL    | GPL     |
+| mysql_native_password    | ACTIVE   | AUTHENTICATION     | NULL    | GPL     |
+| mysql_old_password       | ACTIVE   | AUTHENTICATION     | NULL    | GPL     |
+| MRG_MYISAM               | ACTIVE   | STORAGE ENGINE     | NULL    | GPL     |
+| CSV                      | ACTIVE   | STORAGE ENGINE     | NULL    | GPL     |
+| MyISAM                   | ACTIVE   | STORAGE ENGINE     | NULL    | GPL     |
+| MEMORY                   | ACTIVE   | STORAGE ENGINE     | NULL    | GPL     |
+| PERFORMANCE_SCHEMA       | ACTIVE   | STORAGE ENGINE     | NULL    | GPL     |
+| FEDERATED                | DISABLED | STORAGE ENGINE     | NULL    | GPL     |
+| ARCHIVE                  | ACTIVE   | STORAGE ENGINE     | NULL    | GPL     |
+| BLACKHOLE                | ACTIVE   | STORAGE ENGINE     | NULL    | GPL     |
+| InnoDB                   | ACTIVE   | STORAGE ENGINE     | NULL    | GPL     |
+| INNODB_TRX               | ACTIVE   | INFORMATION SCHEMA | NULL    | GPL     |
+| INNODB_LOCKS             | ACTIVE   | INFORMATION SCHEMA | NULL    | GPL     |
+| INNODB_LOCK_WAITS        | ACTIVE   | INFORMATION SCHEMA | NULL    | GPL     |
+| INNODB_CMP               | ACTIVE   | INFORMATION SCHEMA | NULL    | GPL     |
+| INNODB_CMP_RESET         | ACTIVE   | INFORMATION SCHEMA | NULL    | GPL     |
+| INNODB_CMPMEM            | ACTIVE   | INFORMATION SCHEMA | NULL    | GPL     |
+| INNODB_CMPMEM_RESET      | ACTIVE   | INFORMATION SCHEMA | NULL    | GPL     |
+| INNODB_BUFFER_PAGE       | ACTIVE   | INFORMATION SCHEMA | NULL    | GPL     |
+| INNODB_BUFFER_PAGE_LRU   | ACTIVE   | INFORMATION SCHEMA | NULL    | GPL     |
+| INNODB_BUFFER_POOL_STATS | ACTIVE   | INFORMATION SCHEMA | NULL    | GPL     |
+| partition                | ACTIVE   | STORAGE ENGINE     | NULL    | GPL     |
++--------------------------+----------+--------------------+---------+---------+
+mysql&gt; show engines;
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+| Engine             | Support | Comment                                                        | Transactions | XA   | Savepoints |
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+| MyISAM             | YES     | MyISAM storage engine                                          | NO           | NO   | NO         |
+| CSV                | YES     | CSV storage engine                                             | NO           | NO   | NO         |
+| MEMORY             | YES     | Hash based, stored in memory, useful for temporary tables      | NO           | NO   | NO         |
+| BLACKHOLE          | YES     | /dev/null storage engine (anything you write to it disappears) | NO           | NO   | NO         |
+| PERFORMANCE_SCHEMA | YES     | Performance Schema                                             | NO           | NO   | NO         |
+| MRG_MYISAM         | YES     | Collection of identical MyISAM tables                          | NO           | NO   | NO         |
+| ARCHIVE            | YES     | Archive storage engine                                         | NO           | NO   | NO         |
+| FEDERATED          | NO      | Federated MySQL storage engine                                 | NULL         | NULL | NULL       |
+| InnoDB             | DEFAULT | Supports transactions, row-level locking, and foreign keys     | YES          | YES  | YES        |
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+mysql&gt; show global variables like 'have_%';
++----------------------+----------+
+| Variable_name        | Value    |
++----------------------+----------+
+| have_compress        | YES      |
+| have_crypt           | YES      |
+| have_csv             | YES      |
+| have_dynamic_loading | YES      |
+| have_geometry        | YES      |
+| have_innodb          | YES      |
+| have_ndbcluster      | NO       |
+| have_openssl         | DISABLED |
+| have_partitioning    | YES      |
+| have_profiling       | YES      |
+| have_query_cache     | YES      |
+| have_rtree_keys      | YES      |
+| have_ssl             | DISABLED |
+| have_symlink         | YES      |
++----------------------+----------+
+查看数据库的数据引擎：
+show table status from env2016;
+结果数据引擎都是使用的InnoDB引擎。
+而在windows下使用上述命令的查询结果除了global variables表中没有have_innodb这一项以外，其余的都与linux下的设置一样，也就是可以排除
+了数据引擎造成的差异。排除了引擎的差异后就看mysql的配置了，配置对于mysql的性能同样影响很大。下面记录了修改前两者的配置：
+linux下my.cnf:
+[client]
+port		= 3306
+socket		= /var/run/mysqld/mysqld.sock
+[mysqld_safe]
+socket		= /var/run/mysqld/mysqld.sock
+nice		= 0
+[mysqld]
+character-set-server	=	utf8
+user		= mysql
+pid-file	= /var/run/mysqld/mysqld.pid
+socket		= /var/run/mysqld/mysqld.sock
+port		= 3306
+basedir		= /usr
+datadir		= /var/lib/mysql
+tmpdir		= /tmp
+lc-messages-dir	= /usr/share/mysql
+skip-external-locking
+bind-address		= 127.0.0.1
+key_buffer		= 16M
+max_allowed_packet	= 16M
+thread_stack		= 192K
+thread_cache_size       = 8
+myisam-recover         = BACKUP
+query_cache_limit	= 1M
+query_cache_size        = 16M
+
+
+[mysqldump]
+quick
+quote-names
+max_allowed_packet	= 16M
+
+[mysql]
+
+[isamchk]
+key_buffer		= 16M
+
+!includedir /etc/mysql/conf.d/
+---------------------------------------------------------------------------
+windows下my.ini:
+[client]
+port=3306
+
+[mysql]
+default-character-set=utf8
+[mysqld]
+# innodb_buffer_pool_size = 128M
+basedir = "D:/app/mysql56"
+datadir = "D:/app/mysql56/data"
+port = 3306
+#server_id = localhost
+character-set-server=utf8
+default-storage-engine=INNODB
+
+sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES 
+---------------------------------------------------------------------------
+
+为了消除配置造成的差异，我将linux下的配置移植到windows下，测试的结果几乎没有改观，看来也不是配置造成的，无奈只能在网上查找
+是否有与我碰到同样问题的情况，无果。难道真的是由于系统造成的差异？如果是，这种差异也太大了吧。区区几百万条记录如果有此差异
+的话我想mysql也不会在windows下有什么市场了。可是除此之外我实在是想不还有什么区别了。如果说有，那就是windows下的数据库是测
+试动态生成的。而linux下是由windows下导出后导入的。在没有任何可能的情况下，只能试试通过导出文件再导入到windows下的数据库。
+导入完成后，select count(*)迅速提升至linux下的水平，虽然还有些差异，但已经是可以忍受的了。原来导入还能起到整理和优化数据库
+的作用，再次上网查找相关结论，果然是因为有大量数据写操作时会有一些碎片产生，从而导致的查询的效率。整理的命令就是：
+<font color=red>optimize</font>
+即当对数据库有频繁的写操作时，每隔一段时间（不要太频繁） 都要通过optimize table table_name;命令来对某个表进行整理。
+不过，该命令对innodb引擎的数据库并不支持，在对innodb库操作时，他会使用recreate和analyze命令替代：
+mysql&gt; optimize table wsc_h_master;
++----------------------+----------+----------+-------------------------------------------------------------------+
+| Table                | Op       | Msg_type | Msg_text                                                          |
++----------------------+----------+----------+-------------------------------------------------------------------+
+| env2016.wsc_h_master | optimize | note     | Table does not support optimize, doing recreate + analyze instead |
+| env2016.wsc_h_master | optimize | status   | OK                                                                |
++----------------------+----------+----------+-------------------------------------------------------------------+
+2 rows in set (0.50 sec)
+另外，对innodb引擎的数据库进行这项操作时还会引起锁表。这要在实际应用中确定合理的间隔来对表进行整理。
+
+现总结下上面使用的各种命令：<font size=4 color=red>
+mysql&gt; show plugins;		&lt;--查看已安装的插件
+mysql&gt; show engines;		&lt;--查看已安装的引擎
+mysql&gt; show global variables like 'have_%';		&lt;--查看部分全局变量
+mysql&gt; show table status from env2016;		&lt;--查看表状态
+mysql&gt; show index from fs_h_master;		&lt;--查看指定表建立所的索引
+mysql&gt; optimize table wsc_h_master;		&lt;--表整理，碎片消除
+</font>
+
+
+

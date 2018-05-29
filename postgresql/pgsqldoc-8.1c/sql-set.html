@@ -1,0 +1,686 @@
+<HTML
+><HEAD
+><TITLE
+>SET</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="SQL 命令"
+HREF="sql-commands.html"><LINK
+REL="PREVIOUS"
+TITLE="SELECT INTO"
+HREF="sql-selectinto.html"><LINK
+REL="NEXT"
+TITLE="SET CONSTRAINTS"
+HREF="sql-set-constraints.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="REFENTRY"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sql-selectinto.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sql-selectinto.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sql-set-constraints.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sql-set-constraints.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SQL-SET"
+>SET</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN48295"
+></A
+><H2
+>Name</H2
+>SET&nbsp;--&nbsp;改变运行时参数</DIV
+><A
+NAME="AEN48298"
+></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN48300"
+></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>SET [ SESSION | LOCAL ] <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> { TO | = } { <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+> | '<TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+>' | DEFAULT }
+SET [ SESSION | LOCAL ] TIME ZONE { <TT
+CLASS="REPLACEABLE"
+><I
+>timezone</I
+></TT
+> | LOCAL | DEFAULT }</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN48306"
+></A
+><H2
+>描述</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>SET</TT
+> 命令修改运行时配置参数。许多在 <A
+HREF="runtime-config.html"
+>Chapter 17</A
+>
+	里面列出的运行时参数可以用 <TT
+CLASS="COMMAND"
+>SET</TT
+> 在运行时设置。
+	（但是有些要求使用超级用户权限来修改，而其它有些则在服务器或者会话
+	开始之后不能修改。）请注意 <TT
+CLASS="COMMAND"
+>SET</TT
+> 只影响当前会话使用的数值。
+  </P
+><P
+>	如果 <TT
+CLASS="COMMAND"
+>SET</TT
+> 或者 <TT
+CLASS="COMMAND"
+>SET SESSION</TT
+> 是在一个稍后退出的事务里发出的，
+	那么 <TT
+CLASS="COMMAND"
+>SET</TT
+> 命令的效果将在事务回滚的之后小时。
+	（这个行为和<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>版本 7.3 之前的不同，
+	那个时候 <TT
+CLASS="COMMAND"
+>SET</TT
+> 的效果在后面的错误之后不会回滚。）
+	一旦包围它的事务提交，那么其效果将持续到事务的结束，除非被另外一个
+	<TT
+CLASS="COMMAND"
+>SET</TT
+> 覆盖。
+  </P
+><P
+>	<TT
+CLASS="COMMAND"
+>SET LOCAL</TT
+> 的效果只持续到当前事务结束，不管是否提交。
+	一个特例是在一个事务里面的 <TT
+CLASS="COMMAND"
+>SET</TT
+> 后面跟着一个
+	<TT
+CLASS="COMMAND"
+>SET LOCAL</TT
+>：在事务结束之前只能看到 <TT
+CLASS="COMMAND"
+>SET LOCAL</TT
+>
+	的数值，但是之后（如果事务提交），则是 <TT
+CLASS="COMMAND"
+>SET</TT
+> 的值生效。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN48326"
+></A
+><H2
+>输入</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>variable</I
+></TT
+></DT
+><DD
+><P
+>        可设置的全局变量。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+></DT
+><DD
+><P
+>        参数的新值。<TT
+CLASS="OPTION"
+>DEFAULT</TT
+>
+        可以用于声明把参数恢复为缺省值。允许使用字串数组，
+        但是更复杂的结构需要用单引号或者双引号引起来.
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN48340"
+></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>SESSION</TT
+></DT
+><DD
+><P
+>      声明这个命令只对当前会话起作用。
+      （如果 <TT
+CLASS="LITERAL"
+>SESSION</TT
+> 或 <TT
+CLASS="LITERAL"
+>LOCAL</TT
+> 都没出现，那么这个是缺省。）
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>LOCAL</TT
+></DT
+><DD
+><P
+>      声明该命令只在当前事务中有效。在 <TT
+CLASS="COMMAND"
+>COMMIT</TT
+> 或者
+      <TT
+CLASS="COMMAND"
+>ROLLBACK</TT
+> 之后，会话级别的设置将再次生效。
+      请注意如果在 <TT
+CLASS="COMMAND"
+>BEGIN</TT
+> 块之外运行，那么 <TT
+CLASS="COMMAND"
+>SET LOCAL</TT
+>
+      将表现出没有作用，因为事务将立即结束。
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>variable</I
+></TT
+></DT
+><DD
+><P
+>      可设置的运行时参数的名字。可用的参数在 <A
+HREF="runtime-config.html"
+>Chapter 17</A
+> 和下面归档。
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+></DT
+><DD
+><P
+>      参数的新值。值可以声明为字串常量，标识符，数字，或者逗号分隔的上面这些东西的列表。
+      <TT
+CLASS="LITERAL"
+>DEFAULT</TT
+> 可以用于把这些参数设置为它们的缺省值。
+     </P
+></DD
+></DL
+></DIV
+><P
+>   除了在 <A
+HREF="runtime-config.html"
+>Chapter 17</A
+> 里面有文档记载的配置参数之外，
+   还有几个只能用 <TT
+CLASS="COMMAND"
+>SET</TT
+> 命令设置，或者是有特殊的语法的参数。
+
+   <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>NAMES</TT
+></DT
+><DD
+><P
+>       <TT
+CLASS="LITERAL"
+>&#62;SET NAMES <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+></TT
+> 是
+       <TT
+CLASS="LITERAL"
+>SET client_encoding TO <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+></TT
+>
+       的别名。
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>SEED</TT
+></DT
+><DD
+><P
+>       为随机数生成器（函数 <TT
+CLASS="FUNCTION"
+>random</TT
+>）设置内部的种子。
+       允许的值是介于 0 和 1 之间的浮点数，然后它会被乘以 2<SUP
+>31</SUP
+>-1。
+      </P
+><P
+>       我们也可以通过调用函数 <TT
+CLASS="FUNCTION"
+>setseed</TT
+> 来设置种子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT setseed(<TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+>);</PRE
+><P>
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>TIME ZONE</TT
+></DT
+><DD
+><P
+>       <TT
+CLASS="LITERAL"
+>SET TIME ZONE <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+></TT
+> 是
+       <TT
+CLASS="LITERAL"
+>SET timezone TO <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+></TT
+> 的一个别名。
+       语法 <TT
+CLASS="LITERAL"
+>SET TIME ZONE</TT
+> 允许为时区设置特殊的语法。
+       下面是有效值的例子：
+
+       <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>'PST8PDT'</TT
+></DT
+><DD
+><P
+>	   加州伯克利的时区。
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>'Europe/Rome'</TT
+></DT
+><DD
+><P
+>	   意大利时区。
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>7</TT
+></DT
+><DD
+><P
+>	   UTC 以西 7 小时的时区（等效于 PDT）。
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>INTERVAL '08:00' HOUR TO MINUTE</TT
+></DT
+><DD
+><P
+>	   UTC 以西 8 小时的时区（等效于 PST）。
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>LOCAL</TT
+><BR><TT
+CLASS="LITERAL"
+>DEFAULT</TT
+></DT
+><DD
+><P
+>	 将时区设置为你的本地时区（服务器的操作系统缺省的那个）。
+        </P
+></DD
+></DL
+></DIV
+><P>
+
+     参阅 <A
+HREF="datatype-datetime.html"
+>Section 8.5</A
+> 获取有关时区的更多细节。
+     还有，<A
+HREF="datetime-appendix.html"
+>Appendix B</A
+> 里有一个可以识别的时区列表。
+    </P
+></DD
+></DL
+></DIV
+><P></P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN48435"
+></A
+><H2
+>注意</H2
+><P
+>	函数 <TT
+CLASS="FUNCTION"
+>set_config</TT
+> 提供了等效的功能。
+	参阅 <A
+HREF="functions-admin.html"
+>Section 9.20</A
+>。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN48440"
+></A
+><H2
+>例子</H2
+><P
+>   设置模式搜索路径：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SET search_path TO my_schema, public;</PRE
+><P>
+  </P
+><P
+>	把日期时间风格设置为传统的 <SPAN
+CLASS="PRODUCTNAME"
+>POSTGRES</SPAN
+> 风格，同时还有Europen（欧洲）风格：
+</P><PRE
+CLASS="SCREEN"
+>SET DATESTYLE TO postgres,European;</PRE
+><P>
+
+        把时区设置为加州伯克力。
+
+</P><PRE
+CLASS="SCREEN"
+> 
+SET TIME ZONE 'PST8PDT';</PRE
+><P>
+    </P
+><P
+>   为意大利设置时区：
+</P><PRE
+CLASS="SCREEN"
+>SET TIME ZONE 'Europe/Rome';</PRE
+><P>
+    </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN48450"
+></A
+><H2
+>兼容性</H2
+><P
+>	<TT
+CLASS="LITERAL"
+>SET TIME ZONE</TT
+> 扩展了在 SQL 标准里定义的语法。
+	标准只允许有一个数字时区偏移，
+	而 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 还允许完整更灵活的时区声明。
+	所有其它的 <TT
+CLASS="LITERAL"
+>SET</TT
+> 特性都是 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 扩展。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN48457"
+></A
+><H2
+>又见</H2
+><A
+HREF="sql-reset.html"
+><I
+>RESET</I
+></A
+>, <A
+HREF="sql-show.html"
+><I
+>SHOW</I
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sql-selectinto.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sql-set-constraints.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SELECT INTO</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="sql-commands.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SET CONSTRAINTS</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

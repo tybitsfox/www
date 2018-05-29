@@ -1,0 +1,59 @@
+<HTML><HEAD><TITLE>sqlite_create_function</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="SQLite" HREF="ref.sqlite.html"><LINK REL="PREVIOUS" TITLE="sqlite_create_aggregate" HREF="function.sqlite-create-aggregate.html"><LINK REL="NEXT" TITLE="sqlite_current" HREF="function.sqlite-current.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.sqlite-create-aggregate.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.sqlite-current.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.sqlite-create-function"></A>sqlite_create_function</H1><DIV CLASS="refnamediv"><A NAME="AEN101191"></A><P> (no version information, might be only in CVS)</P>sqlite_create_function&nbsp;--&nbsp;
+Registers a "regular" User Defined Function for use in SQL statements.
+</DIV><DIV CLASS="refsect1"><A NAME="AEN101194"></A><H2>Description</H2>bool <B CLASS="methodname">sqlite_create_function</B> ( resource dbhandle, string function_name, mixed callback [, int num_args])<BR></BR><P>&#13; <B CLASS="function">sqlite_create_function()</B> allows you to register a PHP
+function with SQLite as an <SPAN CLASS="acronym">UDF</SPAN> (User Defined
+Function), so that it can be called from within your SQL
+statements.
+</P><P>&#13; <TT CLASS="parameter"><I>dbhandle</I></TT> specifies the database handle that you
+wish to extend, <TT CLASS="parameter"><I>function_name</I></TT> specifies the name
+of the function that you will use in your SQL statements,
+<TT CLASS="parameter"><I>callback</I></TT> is any valid PHP callback to specify a
+PHP function that should be called to handle the SQL function.
+The optional parameter <TT CLASS="parameter"><I>num_args</I></TT> is used as a hint
+by the SQLite expression parser/evaluator. It is recommended that you
+specify a value if your function will only ever accept a fixed number of
+parameters.
+</P><P>&#13; The UDF can be used in any SQL statement that can call functions, such as
+SELECT and UPDATE statements and also in triggers.
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN101221"></A><P><B>例子 1. <B CLASS="function">sqlite_create_function()</B> example</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /></font><font color="#007700">function </font><font color="#0000BB">md5_and_reverse</font><font color="#007700">(</font><font color="#0000BB">$string</font><font color="#007700">) <br />{<br />&nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">strrev</font><font color="#007700">(</font><font color="#0000BB">md5</font><font color="#007700">(</font><font color="#0000BB">$string</font><font color="#007700">));<br />}<br /><br />if (</font><font color="#0000BB">$dbhandle </font><font color="#007700">= </font><font color="#0000BB">sqlite_open</font><font color="#007700">(</font><font color="#DD0000">'mysqlitedb'</font><font color="#007700">, </font><font color="#0000BB">0666</font><font color="#007700">, </font><font color="#0000BB">$sqliteerror</font><font color="#007700">)) {<br />&nbsp;&nbsp;&nbsp;&nbsp;<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">sqlite_create_function</font><font color="#007700">(</font><font color="#0000BB">$dbhandle</font><font color="#007700">, </font><font color="#DD0000">'md5rev'</font><font color="#007700">, </font><font color="#DD0000">'md5_and_reverse'</font><font color="#007700">, </font><font color="#0000BB">1</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$sql&nbsp;&nbsp;</font><font color="#007700">= </font><font color="#DD0000">'SELECT md5rev(filename) FROM files'</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$rows </font><font color="#007700">= </font><font color="#0000BB">sqlite_array_query</font><font color="#007700">(</font><font color="#0000BB">$dbhandle</font><font color="#007700">, </font><font color="#0000BB">$sql</font><font color="#007700">);<br />} else {<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">'Error opening sqlite db: ' </font><font color="#007700">. </font><font color="#0000BB">$sqliteerror</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;exit;<br />}<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; In this example, we have a function that calculates the md5 sum of a
+string, and then reverses it. When the SQL statement executes, it
+returns the value of the filename transformed by our function. The data
+returned in <TT CLASS="parameter"><I>$rows</I></TT> contains the processed result.
+</P><P>&#13; The beauty of this technique is that you do not need to process the
+result using a foreach() loop after you have queried for the data.
+</P><P>&#13; PHP registers a special function named <TT CLASS="literal">php</TT> when the
+database is first opened. The php function can be used to call any PHP
+function without having to register it first.
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN101231"></A><P><B>例子 2. Example of using the PHP function</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br />$rows </font><font color="#007700">= </font><font color="#0000BB">sqlite_array_query</font><font color="#007700">(</font><font color="#0000BB">$dbhandle</font><font color="#007700">, </font><font color="#DD0000">"SELECT php('md5', filename) from files"</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE><P>&#13; This example will call the <A HREF="function.md5.html"><B CLASS="function">md5()</B></A> on each
+<TT CLASS="literal">filename</TT> column in the database and return the result
+into <TT CLASS="parameter"><I>$rows</I></TT>
+</P></DIV></TD></TR></TABLE>
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+For performance reasons, PHP will not automatically encode/decode binary
+data passed to and from your UDF's. You need to manually encode/decode
+the parameters and return values if you need to process binary data in
+this way. Take a look at <A HREF="function.sqlite-udf-encode-binary.html"><B CLASS="function">sqlite_udf_encode_binary()</B></A>
+and <A HREF="function.sqlite-udf-decode-binary.html"><B CLASS="function">sqlite_udf_decode_binary()</B></A> for more details.
+</P></BLOCKQUOTE></DIV><DIV CLASS="tip"><BLOCKQUOTE CLASS="tip"><P><B>提示: </B>
+It is not recommended to use UDF's to handle processing of
+binary data, unless high performance is not a key requirement of your
+application.
+</P></BLOCKQUOTE></DIV><DIV CLASS="tip"><BLOCKQUOTE CLASS="tip"><P><B>提示: </B>
+You can use <B CLASS="function">sqlite_create_function()</B> and
+<A HREF="function.sqlite-create-aggregate.html"><B CLASS="function">sqlite_create_aggregate()</B></A> to override SQLite native
+SQL functions.
+</P></BLOCKQUOTE></DIV><P>&#13; See also <A HREF="function.sqlite-create-aggregate.html"><B CLASS="function">sqlite_create_aggregate()</B></A>.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.sqlite-create-aggregate.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.sqlite-current.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">sqlite_create_aggregate</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.sqlite.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">sqlite_current</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

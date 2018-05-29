@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+  "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<meta http-equiv="content-language" content="en">
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+	<title>Git Book 中文版 - 更底层的Git</title>
+	<link rel="icon" href="favicon.png" type="image/png">
+	<link rel="stylesheet" href="assets/blueprint/screen.css" type="text/css" media="screen, projection">
+  <link rel="stylesheet" href="assets/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="assets/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="assets/stylesheets/mac_classic.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="assets/stylesheets/style.css" type="text/css" media="screen, projection">
+</head>
+
+<body>
+<div class="container chapter showgrids">
+
+  <div class="span-21 header">
+    <div class="nav"><a href="7_5.html">Prev</a>  <a href="7_7.html">Next</a></div>
+    <div class="title"><a href='index.html'>Git Community Book 中文版</a></div>
+  </div>
+  
+  <div class="span-21">
+    <br/>
+  </div>
+  
+  <div class="span-21">
+    <h2>更底层的Git</h2>
+
+<p>这一章我们会学习如何在更低的层次操作Git, 以防你需要自己写一个新工具去人工生成blob(块), tree(树)或者commit(提交)对象. 如果你想使用更加底层的Git命令去写脚本, 你会需要用到以下的命令.</p>
+
+<h3>创建blob对象</h3>
+
+<p>在你的Git仓库中创建一个blob对象并且得到它的SHA值是很容易的, 使用<a href="http://www.kernel.org/pub/software/scm/git/docs/git-hash-object.html">git hash-object</a>就足够了. 要使用一个现有的文件去创建新blob, 使用'-w'选项去运行前面提到的命令('-w'选项告诉Git要生成blob, 而不是仅仅计算SHA值).</p>
+
+<pre><code>$ git hash-object -w myfile.txt
+6ff87c4664981e4397625791c8ea3bbb5f2279a3
+
+$ git hash-object -w myfile2.txt
+3bb0e8592a41ae3185ee32266c860714980dbed7
+</code></pre>
+
+<p>标准输出中显示的值就是创建的blob的SHA值.</p>
+
+<h3>创建tree对象</h3>
+
+<p>假设你要使用你创建的一些对象去组建一棵树, 按照<a href="http://www.kernel.org/pub/software/scm/git/docs/git-ls-tree.html">git ls-tree</a>的格式组织好输入, <a href="http://www.kernel.org/pub/software/scm/git/docs/git-mktree.html">git mktree</a>就可以为你生成需要的tree对象. 例如, 如果你把下面的信息写入到'/tmp/tree.txt'中:</p>
+
+<pre><code>100644 blob 6ff87c4664981e4397625791c8ea3bbb5f2279a3    file1
+100644 blob 3bb0e8592a41ae3185ee32266c860714980dbed7    file2
+</code></pre>
+
+<p>然后通过管道把这些信息输入到<a href="http://www.kernel.org/pub/software/scm/git/docs/git-mktree.html">git mktree</a>中, Git会生成一个新的tree对象, 把它写入到对象数据库(object database)中, 然后返回tree对象的SHA值.</p>
+
+<pre><code>$ cat /tmp/tree.txt | git mk-tree
+f66a66ab6a7bfe86d52a66516ace212efa00fe1f
+</code></pre>
+
+<p>然后, 我们可以把刚才生成的tree作为另外一个tree的子目录, 等等等等. 如果我们需要创建一个带子树的树对象(这个子树就是前面生成的tree对象), 只需创建一个新文件(/tmp/newtree.txt), 把前面的tree对象的SHA值写入:</p>
+
+<pre><code>100644 blob 6ff87c4664981e4397625791c8ea3bbb5f2279a3    file1-copy
+040000 tree f66a66ab6a7bfe86d52a66516ace212efa00fe1f    our_files
+</code></pre>
+
+<p>然后再次调用<a href="http://www.kernel.org/pub/software/scm/git/docs/git-mk-tree.html">git mk-tree</a>:</p>
+
+<pre><code>$ cat /tmp/newtree.txt | git mk-tree
+5bac6559179bd543a024d6d187692343e2d8ae83
+</code></pre>
+
+<p>现在我们有了一个人工创建的目录结构:</p>
+
+<pre><code>.
+|-- file1-copy
+`-- our_files
+    |-- file1
+    `-- file2
+
+1 directory, 3 files
+</code></pre>
+
+<p>但是上面的结构并不在磁盘上存在. 另外, 我们使用SHA值去指向它(<code>5bac6559</code>).</p>
+
+<h3>重新组织树</h3>
+
+<p>我们也可以使用索引文件把树嵌入到新的结构中. 举个简单的例子, 我们使用一个临时索引文件创建一棵新的树, 其中包含了<code>5bac6559</code>这棵树的两个副本. (设置GIT_INDEX_FILE环境变量使之指向临时索引文件)</p>
+
+<p>首先, 用<a href="http://www.kernel.org/pub/software/scm/git/docs/git-read-tree.html">git read-tree</a>把树对象读入到临时索引文件中, 并给每个副本一个新的前缀; 然后再用<a href="http://www.kernel.org/pub/software/scm/git/docs/git-write-tree.html">git write-tree</a>把索引中的内容生成一棵新的树:</p>
+
+<pre><code>$ export GIT_INDEX_FILE=/tmp/index
+$ git read-tree --prefix=copy1/  5bac6559
+$ git read-tree --prefix=copy2/  5bac6559
+$ git write-tree 
+bb2fa6de7625322322382215d9ea78cfe76508c1
+
+$&gt;git ls-tree bb2fa
+040000 tree 5bac6559179bd543a024d6d187692343e2d8ae83    copy1
+040000 tree 5bac6559179bd543a024d6d187692343e2d8ae83    copy2
+</code></pre>
+
+<p>现在我们可以看到, 通过操纵索引文件可以得到一棵新的树. 你也可以在临时索引文件中做合并等操作 - 请参见<a href="http://www.kernel.org/pub/software/scm/git/docs/git-read-tree.html">git read-tree</a>取得更多信息.</p>
+
+<h3>创建commit对象</h3>
+
+<p>现在我们有了一棵树的SHA值, 我们可以使用<a href="http://www.kernel.org/pub/software/scm/git/docs/git-commit-tree.html">git commit-tree</a>命令创建一个指向它的commit对象. 大部分commit对象的数据都是通过环境变量来设定的, 你需要设置下面的环境变量:</p>
+
+<pre><code>GIT_AUTHOR_NAME
+GIT_AUTHOR_EMAIL
+GIT_AUTHOR_DATE
+GIT_COMMITTER_NAME
+GIT_COMMITTER_EMAIL
+GIT_COMMITTER_DATE
+</code></pre>
+
+<p>然后你把你的提交信息写入到一个文件中并且通过管道传送给<a href="http://www.kernel.org/pub/software/scm/git/docs/git-commit-tree.html">git commit-tree</a>, 即可得到一个commit对象.</p>
+
+<pre><code>$ git commit-tree bb2fa &lt; /tmp/message
+a5f85ba5875917319471dfd98dfc636c1dc65650
+</code></pre>
+
+<p>如果你需要指定一个或多个父commit对象, 只需要使用'-p'参数一个一个指定父commit对象. 同样的, 新对象的SHA值通过STDOUT返回.</p>
+
+<h3>更新分支的引用</h3>
+
+<p>现在我得拿到了新的commit对象的SHA值, 如有需要, 我们可以使用一个分支指向它. 比如说我们需要更新'master'分支的引用, 使其指向刚刚创建的新对象, 我们可以使用<a href="http://www.kernel.org/pub/software/scm/git/docs/git-update-ref.html">git update-ref</a>去完成这个工作:</p>
+
+<pre><code>$ git update-ref refs/heads/master a5f85ba5875917319471dfd98dfc636c1dc65650
+</code></pre>
+
+
+  </div>
+  
+  <div class="span-21">
+    <hr/>
+    <div class="center"><a href="7_5.html">Prev</a>  <a href="7_7.html">Next</a></div>
+    <hr/>
+  </div>
+  
+  <div class="span-17 footer">
+  	<div class="menu">
+  		This book is maintained by Scott Chacon, and hosting is donated by GitHub.
+  		<br>
+  		Please email me at <a href="mailto:schacon@gmail.com">schacon@gmail.com</a>
+  		with patches, suggestions and comments.<br>
+		中文版是由 <a href="http://liuhui998.com">liuhui998.com</a>维护,如果有任何意见建议或发现有bug,请联系我.
+	  </div>
+
+  </div>
+  <div class="span-4 last center">
+    <a href="http://github.com/liuhui998/gitbook"><img src="assets/images/github.png" alt="github logo"></a>
+  </div>
+  
+</div>
+
+
+
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-82337-12");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>
+<script src="http://static.getclicky.com/40584.js" type="text/javascript"></script>
+<noscript><p><img alt="Clicky" src="http://in.getclicky.com/40584-db6.gif" /></p></noscript>
+
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-6896227-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+
+</script>
+
+<div style="display:none">
+<script src="http://s9.cnzz.com/stat.php?id=2459744&web_id=2459744" language="JavaScript"></script>
+</div>
+
+</body>
+</html>

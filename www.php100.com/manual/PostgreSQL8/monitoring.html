@@ -1,0 +1,277 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>监控数据库的活动 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="服务器管理" HREF="admin.html"><LINK REL="PREVIOUS" TITLE="在不同版本之间迁移" HREF="migration.html"><LINK REL="NEXT" TITLE="统计收集器" HREF="monitoring-stats.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="CHAPTER" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="migration.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="backup.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="diskusage.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="monitoring-stats.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A NAME="MONITORING" >Chapter 24. 监控数据库的活动</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>24.1. <A HREF="monitoring.html#MONITORING-PS" >标准 Unix 工具</A
+></DT
+><DT
+>24.2. <A HREF="monitoring-stats.html" >统计收集器</A
+></DT
+><DD
+><DL
+><DT
+>24.2.1. <A HREF="monitoring-stats.html#MONITORING-STATS-SETUP" >统计收集器配置</A
+></DT
+><DT
+>24.2.2. <A HREF="monitoring-stats.html#MONITORING-STATS-VIEWS" >查看收集到的统计信息</A
+></DT
+></DL
+></DD
+><DT
+>24.3. <A HREF="monitoring-locks.html" >查看锁</A
+></DT
+></DL
+></DIV
+><A NAME="AEN23615" ></A
+><A NAME="AEN23618" ></A
+><P
+>	一个数据库管理员常常想知道，<SPAN
+CLASS="QUOTE"
+>"现在系统正在干什么呢？"</SPAN
+>。
+	本章讨论如何回答这个问题。
+ </P
+><P
+>	有一些工具可以用来监控数据库的活动以及分析性能。
+	本章大部分内容是用于描述 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的<I
+CLASS="FIRSTTERM"
+>统计收集器(statistics collector)</I
+>，
+	但我们也不能忽视普通的 Unix 监控程序，比如 <TT
+CLASS="COMMAND"
+>ps</TT
+>，<TT
+CLASS="COMMAND"
+>top</TT
+>，<TT
+CLASS="COMMAND"
+>iostat</TT
+> 和
+	<TT
+CLASS="COMMAND"
+>vmstat</TT
+>。
+	同样，一旦我们找出了一个性能恶劣的查询，那么我们可能还要用 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的
+	<A HREF="sql-explain.html" ><I
+>EXPLAIN</I
+></A
+> 命令进一步分析。
+	<A HREF="performance-tips.html#USING-EXPLAIN" >Section 13.1</A
+> 里讨论了 <TT
+CLASS="COMMAND"
+>EXPLAIN</TT
+>
+	和其它用于理解独立查询的行为的方法。
+  </P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="MONITORING-PS" >24.1. 标准 Unix 工具</A
+></H1
+><A NAME="AEN23636" ></A
+><P
+>	在大多数平台上，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 修改
+	<TT
+CLASS="COMMAND"
+>ps</TT
+> 输出的命令标题，这样我们就很容易找出某个服务器进程。一个简单的显示如下
+
+</P><PRE
+CLASS="SCREEN"
+>$ ps auxww | grep ^postgres
+postgres   960  0.0  1.1  6104 1480 pts/1    SN   13:17   0:00 postmaster -i
+postgres   963  0.0  1.1  7084 1472 pts/1    SN   13:17   0:00 postgres: stats buffer process   
+postgres   965  0.0  1.1  6152 1512 pts/1    SN   13:17   0:00 postgres: stats collector process   
+postgres   998  0.0  2.3  6532 2992 pts/1    SN   13:18   0:00 postgres: tgl runbug 127.0.0.1 idle
+postgres  1003  0.0  2.4  6532 3128 pts/1    SN   13:19   0:00 postgres: tgl regression [local] SELECT waiting
+postgres  1016  0.1  2.4  6532 3080 pts/1    SN   13:19   0:00 postgres: tgl regression [local] idle in transaction</PRE
+><P>
+
+	（调用 <TT
+CLASS="COMMAND"
+>ps</TT
+> 的方法因不同的平台而略有不同，显示出来的细节也有一些区别。这个例子来自一个最近的 Linux 系统。）
+	这里显示出来的第一个进程时 <SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+>，主服务进程。
+	给它显示的命令参数和运行它的时候给它的是一样的。
+	下面两个进程实现统计收集器，我们将在下一节里详细描述它。
+	（如果你设置了系统不启动统计收集器，那么它们不会出现。）
+	剩下的进程每个都是一个服务器进程，每个处理一个客户的联接。
+	每个这样的进程都用下面的形式设置其命令行显示：
+
+</P><PRE
+CLASS="SCREEN"
+>postgres: <TT
+CLASS="REPLACEABLE"
+><I
+>user</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>database</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>host</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>activity</I
+></TT
+></PRE
+><P>
+
+	在该客户端联接的生命期中，用户，数据库，和联接源主机项都保持不变，
+	但是活跃性指示符会变化。活跃性可以是 <TT
+CLASS="LITERAL"
+>idle</TT
+> （也就是说，
+	等待客户端的命令），<TT
+CLASS="LITERAL"
+>idle in transaction</TT
+> （在一个<TT
+CLASS="COMMAND"
+>BEGIN</TT
+>
+	块里等待用户），或者一个命令类型名，比如 <TT
+CLASS="LITERAL"
+>SELECT</TT
+>。
+	同样，如果服务器目前正在等待一个其它服务器进程持有的锁的时候，
+	会在信息后面附加 <TT
+CLASS="LITERAL"
+>waiting</TT
+>。在上面的例子中，我们可以推出：进程 1003 正在等待 1016完成其事务，
+	这样才能施放一些锁或者其它什么东西．
+  </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>	<SPAN
+CLASS="PRODUCTNAME"
+>Solaris</SPAN
+> 需要特别的处理。
+	你必需使用 <TT
+CLASS="COMMAND"
+>/usr/ucb/ps</TT
+>，而不是
+	<TT
+CLASS="COMMAND"
+>/bin/ps</TT
+>．你还必需使用两个 <TT
+CLASS="COMMAND"
+>w</TT
+>
+	标志，而不是一个。另外，你最初调用
+	<SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+> 时用到的命令行在
+	<TT
+CLASS="COMMAND"
+>ps</TT
+>
+	状态显示中必须比 <TT
+CLASS="COMMAND"
+>ps</TT
+> 给每个服务器进程显示的短。如果没满足这三个条件，
+	那么 <TT
+CLASS="COMMAND"
+>ps</TT
+> 为每个服务器进程输出的将是最初的 <SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+> 的命令行。
+  </P
+></BLOCKQUOTE
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="migration.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="monitoring-stats.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >在不同版本之间迁移</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="admin.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >统计收集器</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

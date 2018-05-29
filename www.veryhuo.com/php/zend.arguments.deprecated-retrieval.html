@@ -1,0 +1,52 @@
+<HTML><HEAD><TITLE>Old way of retrieving arguments (deprecated)</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Accepting Arguments" HREF="zend.arguments.html"><LINK REL="PREVIOUS" TITLE="Retrieving Arguments" HREF="zend.arguments.retrieval.html"><LINK REL="NEXT" TITLE="Dealing with a Variable Number of Arguments/Optional Parameters" HREF="zend.arguments.variable.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="section" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="zend.arguments.retrieval.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 32. Accepting Arguments</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="zend.arguments.variable.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="section"><H1 CLASS="section"><A NAME="zend.arguments.deprecated-retrieval"></A>Old way of retrieving arguments (deprecated)</H1><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>Deprecated parameter parsing API: </B>
+This API is deprecated and superseded by the new ZEND
+parameter parsing API.
+</P></BLOCKQUOTE></DIV><P>&#13; After having checked the number of arguments, you need to get access
+to the arguments themselves. This is done with the help of
+<B CLASS="function">zend_get_parameters_ex()</B>:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">zval **parameter;
+
+if(zend_get_parameters_ex(1, &#38;parameter) != SUCCESS)
+  WRONG_PARAM_COUNT;</PRE></TD></TR></TABLE>
+All arguments are stored in a <TT CLASS="envar">zval</TT> container,
+which needs to be pointed to <SPAN CLASS="emphasis"><I CLASS="emphasis">twice</I></SPAN>. The snippet above
+tries to retrieve one argument and make it available to us via the
+<TT CLASS="envar">parameter</TT> pointer.
+</P><P>&#13; <B CLASS="function">zend_get_parameters_ex()</B> accepts at least two
+arguments. The first argument is the number of arguments to
+retrieve (which should match the number of arguments with which
+the function has been called; this is why it's important to check
+for correct call syntax). The second argument (and all following
+arguments) are pointers to pointers to pointers to
+<TT CLASS="envar">zval</TT>s. (Confusing, isn't it?) All these pointers
+are required because Zend works internally with
+<TT CLASS="envar">**zval</TT>; to adjust a local <TT CLASS="envar">**zval</TT> in
+our function,<B CLASS="function">zend_get_parameters_ex()</B> requires
+a pointer to it.
+</P><P>&#13; The return value of <B CLASS="function">zend_get_parameters_ex()</B>
+can either be <TT CLASS="literal">SUCCESS</TT> or
+<TT CLASS="literal">FAILURE</TT>, indicating (unsurprisingly) success or
+failure of the argument processing. A failure is most likely
+related to an incorrect number of arguments being specified, in
+which case you should exit with
+<TT CLASS="literal">WRONG_PARAM_COUNT</TT>.
+</P><P>&#13; To retrieve more than one argument, you can use a similar snippet:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">zval **param1, **param2, **param3, **param4;
+     
+if(zend_get_parameters_ex(4, &#38;param1, &#38;param2, &#38;param3, &#38;param4) != SUCCESS)
+    WRONG_PARAM_COUNT;</PRE></TD></TR></TABLE>
+</P><P>&#13; <B CLASS="function">zend_get_parameters_ex()</B> only checks whether
+you're trying to retrieve too many parameters. If the function is
+called with five arguments, but you're only retrieving three of
+them with <B CLASS="function">zend_get_parameters_ex()</B>, you won't
+get an error but will get the first three parameters instead.
+Subsequent calls of <B CLASS="function">zend_get_parameters_ex()</B>
+won't retrieve the remaining arguments, but will get the same
+arguments again.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="zend.arguments.retrieval.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="zend.arguments.variable.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Retrieving Arguments</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="zend.arguments.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Dealing with a Variable Number of Arguments/Optional Parameters</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

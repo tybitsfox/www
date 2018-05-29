@@ -1,0 +1,369 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>测试评估 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="回归测试" HREF="regress.html"><LINK REL="PREVIOUS" TITLE="回归测试" HREF="regress.html"><LINK REL="NEXT" TITLE="平台相关的比较文件" HREF="regress-platform.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="regress.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="regress.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 27. 回归测试</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="regress.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="regress-platform.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="REGRESS-EVALUATION" >27.2. 测试评估</A
+></H1
+><P
+>        有一些正确安装并且具有完整功能的
+        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>可能会在一些回归测试中<SPAN
+CLASS="QUOTE"
+>"失效"</SPAN
+>，
+        这些主要是因为浮点数的形式和时区支持的问题。
+	目前的测试只是简单的用 <TT
+CLASS="COMMAND"
+>diff</TT
+> 与参考系统的输出进行比较，
+        因而对一些细小的系统区别很敏感。
+        当一项测试报告<SPAN
+CLASS="QUOTE"
+>"失败"</SPAN
+>时，只要检查一下预期和实际的结果，
+        你就会发现区别并不大。
+        当然，我们仍然在努力维护所有我们支持的平台的准确的参考文件，
+        这样我们就可以假定所有测试都通过。
+   </P
+><P
+>        回归测试的实际输出是在 <TT
+CLASS="FILENAME"
+>src/test/regress/results</TT
+>
+        目录里的文件里。测试脚本使用 <TT
+CLASS="COMMAND"
+>diff</TT
+> 以比较每个输出文件和存放在 <TT
+CLASS="FILENAME"
+>src/test/regress/expected</TT
+>
+        目录里的参考输出。任何区别都存放在
+        <TT
+CLASS="FILENAME"
+>src/test/regress/regression.diffs</TT
+>
+        里面供你检查。（或者如果你愿意的话，你也可以自己运行 <TT
+CLASS="COMMAND"
+>diff</TT
+>。）
+   </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN24307" >27.2.1. 错误信息差别</A
+></H2
+><P
+>        有一些回归测试涉及到有意的非法输入值。
+	错误信息可能会来自 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        代码或来自主机平台系统过程。
+        对于后者，信息可能在平台之间区别比较大，但应该反映相似的信息。
+        这些信息上的差别将会导致一个<SPAN
+CLASS="QUOTE"
+>"失败"</SPAN
+>的回归测试，
+        我们可以通过检查文件发现这一点。
+      </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN24312" >27.2.2. 区域差别</A
+></H2
+><P
+>	如果你在一台已经安装好了的服务器上运行测试，而该服务器是用一种非 C 的区域设置初始化的，
+	那么可能因为有排序顺序和其它类似的差别导致的失败。回归测试套件处理这种问题的方法是提供可选的结果文件，
+	这些文件一起处理一大堆的区域。比如，对于 <TT
+CLASS="LITERAL"
+>char</TT
+> 测试，
+	预期的文件 <TT
+CLASS="FILENAME"
+>char.out</TT
+> 处理<TT
+CLASS="LITERAL"
+>C</TT
+>和<TT
+CLASS="LITERAL"
+>POSIX</TT
+>区域，
+	而文件 <TT
+CLASS="FILENAME"
+>char_1.out</TT
+> 处理许多其它区域。
+	回归测试驱动将自动选取最接近的文件进行成功检查以及计算失败差别。
+	（这就意味着回归测试不能检测该结果对于配置的区域是否合适。
+	该测试将简单地选取一个运转得最好的文件。）
+    </P
+><P
+>	如果由于某些原因，现有的预期文件无法覆盖一些区域，那么你可以增加一个新文件。命名模式是
+	<TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>testname</I
+></TT
+>_<TT
+CLASS="REPLACEABLE"
+><I
+>digit</I
+></TT
+>.out</TT
+>。
+	实际的 digit 是什么并不重要。要记住回归测试驱动将认为所有这样的文件都是有效的测试结果。
+	如果测试结果是平台相关的，那么应该使用在 <A HREF="regress-platform.html" >Section 27.3</A
+> 里描述的技巧。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN24325" >27.2.3. 日期和时间差别</A
+></H2
+><P
+>	如果你在夏时制时间切换的那天，或者是之后一天运行测试，那么在 <TT
+CLASS="FILENAME"
+>horology</TT
+>
+	测试中的几个查询会失败，这些查询假设在昨日午夜，今日午夜和明日午夜之间的差距正好时 24 小时 -- 如果在夏时制切换的时候这个数值时错误的。
+    </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>      因为使用了 USA 的夏时制规则，所以这些问题总是出现在四月的第一个星期天，
+      和十月的最后一个星期六，以及它们后面的那个星期一 &mdash; 不管你居住的地方的夏时制是从什么时候开始的。
+      还要注意这个问题在太平洋时间（UTC-7或者UTC-8）的午夜出现或者消失，
+      而不是你本地时间的午夜。因此，这些问题可能在星期六的晚上出现，
+      或者一直到星期二的大部分时间都存在，具体现象取决于你居住的地方。
+     </P
+></BLOCKQUOTE
+></DIV
+><P
+>	大多数日期和时间结果依赖于时区环境变量。参考文件是为时区 <TT
+CLASS="LITERAL"
+>PST8PDT</TT
+>
+	（伯克利，加州）准备的，因而如果测试没有设置为那个时区是显然会失败的。
+	回归测试的驱动器把环境变量 <TT
+CLASS="ENVAR"
+>PGTZ</TT
+> 设置为 <TT
+CLASS="LITERAL"
+>PST8PDT</TT
+>，基本可以保证正确的测试。
+      </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN24336" >27.2.4. 浮点数差别</A
+></H2
+><P
+>        有些测试涉及到对表中的数据列进行 64位浮点数（<TT
+CLASS="TYPE"
+>double precision</TT
+>）计算的问题。
+        我们观察了涉及到计算<TT
+CLASS="TYPE"
+>double precision</TT
+>字段的数学函数的结果的差别。
+        <TT
+CLASS="TYPE"
+>float8</TT
+>和<TT
+CLASS="TYPE"
+>geometry</TT
+>（几何类型）测试尤其容易在不同平台之间产生小差别。
+        这时需要肉眼对这些差别进行比较，
+        以判断这些差别究竟有多大，我们发现是在小数点右边10位数。
+      </P
+><P
+>	有些系统把负零显示为 <TT
+CLASS="LITERAL"
+>-0</TT
+>，而其它的只是显示 <TT
+CLASS="LITERAL"
+>0</TT
+>。
+    </P
+><P
+>        有些系统在<TT
+CLASS="FUNCTION"
+>pow()</TT
+>和<TT
+CLASS="FUNCTION"
+>exp()</TT
+>
+        出错时产生的信号与目前 <SPAN
+CLASS="PRODUCTNAME"
+>Postgres</SPAN
+> 代码里期望的机制不一样。
+      </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN24350" >27.2.5. 行顺序差别</A
+></H2
+><P
+>	你可能会看见同样的行以与预期文件的不同的顺序输出。在大多数情况下，
+	严格说来这不算臭虫。大多数回归测试脚本都不会迂腐到在每个<TT
+CLASS="LITERAL"
+>SELECT</TT
+>中都使用<TT
+CLASS="LITERAL"
+>ORDER BY</TT
+>的地步，
+	因此根据 SQL 规范里的词汇的说明，它们的结果集的顺序并非定义得非常好的。尤其是因为我们是在同样的数据上运行同样的查询，
+	因此我们在所有平台上通常都获得同样的结果，
+	因此即使缺少<TT
+CLASS="LITERAL"
+>ORDER BY</TT
+>也不算什么大问题。
+	不过有些查询的确存在跨平台的排序问题。
+	在测试一台已经安装的服务器的时候，排序的差别也可能因为非 C 的区域设置，
+	或者非缺省的参数设置，比如客户自己设置的 <TT
+CLASS="VARNAME"
+>work_mem</TT
+> 或者规划器开销参数设置受影响。
+    </P
+><P
+>	因此，如果你看到一个排序差异，应该不是什么要担心的问题（除非出问题的查询的确使用了 ORDER BY）。
+	不过，如果有这样的现象，请告诉我们，这样我们就可以在那条查询上加一个 ORDER BY，
+	这样我们就可以在以后版本里消除着种伪<SPAN
+CLASS="QUOTE"
+>"失败"</SPAN
+>。
+    </P
+><P
+>	你可能会问，为什么我们不对所有回归测试的 SELECT 进行排序以一次性消灭所有这类问题。
+	原因是这样做只能让回归测试用处更少，而不是更多，因为它们会试图使用那些生成顺序结果的查询规划，
+	而不再使用那些不排序的查询规划。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN24360" >27.2.6. 堆栈深度不够</A
+></H2
+><P
+>     如果 <TT
+CLASS="LITERAL"
+>errors</TT
+> 测试导致在 <TT
+CLASS="LITERAL"
+>select infinite_recurse()</TT
+>
+     命令的时候服务器崩溃，这就意味着平台对进程堆栈的限制小于 <A HREF="runtime-config-resource.html#GUC-MAX-STACK-DEPTH" >max_stack_depth</A
+>
+     参数指出的值。我们可以通过在更高的堆栈限制的数值上运行 postmaster 绕开这个问题
+     （缺省的 <TT
+CLASS="VARNAME"
+>max_stack_depth</TT
+> 下，建议数值是 4M）。
+     如果你无法这么做，那么另外一个方法是减少 <TT
+CLASS="VARNAME"
+>max_stack_depth</TT
+> 的值。
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="AEN24368" >27.2.7. <SPAN
+CLASS="QUOTE"
+>"随机"</SPAN
+>测试</A
+></H2
+><P
+>        <TT
+CLASS="LITERAL"
+>随机</TT
+>测试脚本的目的是测试生成随机结果。
+        在很罕见的情况下，这会导致回归测试中的随机测试失败。
+        键入
+</P><PRE
+CLASS="PROGRAMLISTING"
+>diff results/random.out expected/random.out</PRE
+><P>
+        会产生仅仅一行或几行差别。
+        你不必担心这些，除非随机测试在重复测试中总是失败。
+      </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="regress.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="regress-platform.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >回归测试</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="regress.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >平台相关的比较文件</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

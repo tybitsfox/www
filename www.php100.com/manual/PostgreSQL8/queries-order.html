@@ -1,0 +1,194 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>行排序 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="查询" HREF="queries.html"><LINK REL="PREVIOUS" TITLE="组合查询" HREF="queries-union.html"><LINK REL="NEXT" TITLE="LIMIT 和 OFFSET" HREF="queries-limit.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="queries-union.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="queries.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 7. 查询</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="queries.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="queries-limit.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="QUERIES-ORDER" >7.5. 行排序</A
+></H1
+><A NAME="AEN3485" ></A
+><A NAME="AEN3487" ></A
+><P
+>	在一个查询生成一个输出表之后（在处理完选择列表之后），
+	你还可以对它进行排序。如果没有选择排序，那么行将以未声明的顺序返回。
+	这时候的实际顺序将取决于扫描和连接规划类型和在磁盘上的顺序，但是肯定不能依赖这些东西。
+	一定的顺序只能在明确地使用了排序步骤之后才能保证。
+  </P
+><P
+>	<TT
+CLASS="LITERAL"
+>ORDER BY</TT
+>子句声明了排序顺序
+</P><PRE
+CLASS="SYNOPSIS"
+>SELECT <TT
+CLASS="REPLACEABLE"
+><I
+>select_list</I
+></TT
+>
+	FROM <TT
+CLASS="REPLACEABLE"
+><I
+>table_expression</I
+></TT
+>
+	ORDER BY <TT
+CLASS="REPLACEABLE"
+><I
+>column1</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>ASC | DESC</SPAN
+>] [<SPAN
+CLASS="OPTIONAL"
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>column2</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>ASC | DESC</SPAN
+>] ...</SPAN
+>]</PRE
+><P>
+	<TT
+CLASS="REPLACEABLE"
+><I
+>column1</I
+></TT
+>，等指向选择列表：
+	它可以是一个列的名字（可以是明确的列标签也可以是缺省名字，象 <A HREF="queries-select-lists.html#QUERIES-COLUMN-LABELS" >Section 7.3.2</A
+> 里解释的那样）
+	或者是一个列的编号。一些例子：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT a, b FROM table1 ORDER BY a;
+SELECT a + b AS sum, c FROM table1 ORDER BY sum;
+SELECT a, sum(b) FROM table1 GROUP BY a ORDER BY 1;</PRE
+><P>
+  </P
+><P
+>	作为对标准 SQL 的扩展，PostgreSQL 还允许对任意表达式进行排序：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT a, b FROM table1 ORDER BY a + b;</PRE
+><P>
+	还允许引用 <TT
+CLASS="LITERAL"
+>FROM</TT
+> 子句中的字段名，但是没有出现在选择列表中的字段名字：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT a FROM table1 ORDER BY b;</PRE
+><P>
+
+	但是这个特性在涉及<TT
+CLASS="LITERAL"
+>UNION</TT
+>，<TT
+CLASS="LITERAL"
+>INTERSECT</TT
+>，或 <TT
+CLASS="LITERAL"
+>EXCEPT</TT
+>的查询中是不能用的，而且也不可移植到其它 <SPAN
+CLASS="ACRONYM"
+>DBMS</SPAN
+>。
+  </P
+><P
+>	声明的每个字段都可以跟着一个可选的<TT
+CLASS="LITERAL"
+>ASC</TT
+>或<TT
+CLASS="LITERAL"
+>DESC</TT
+>
+	以设置排序方向。
+	缺省是<TT
+CLASS="LITERAL"
+>ASC</TT
+>。升序先输出小的数值，这里的<SPAN
+CLASS="QUOTE"
+>"小"</SPAN
+>是以
+	<TT
+CLASS="LITERAL"
+>&lt;</TT
+> 操作符的角度定义的。类似的是，
+	降序是以 <TT
+CLASS="LITERAL"
+>&gt;</TT
+> 操作符来判断的。
+  </P
+><P
+>	如果声明了多于一个排序列，那么在前面的排序字段排序相等的情况下使用后面的排序项做进一步排序。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="queries-union.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="queries-limit.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >组合查询</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="queries.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><TT
+CLASS="LITERAL"
+>LIMIT</TT
+> 和 <TT
+CLASS="LITERAL"
+>OFFSET</TT
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

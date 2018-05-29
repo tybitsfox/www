@@ -1,0 +1,70 @@
+<HTML><HEAD><TITLE>Duplicating Variable Contents: The Copy Constructor</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Zend API" HREF="zend.html"><LINK REL="PREVIOUS" TITLE="Creating Constants" HREF="zend.variables.constant.html"><LINK REL="NEXT" TITLE="Returning Values" HREF="zend.returning.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="chapter" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="zend.variables.constant.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="zend.returning.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="chapter"><H1><A NAME="zend.copy-constructor">章 34. Duplicating Variable Contents: The Copy Constructor</A></H1><P>&#13; Sooner or later, you may need to assign the contents of one
+<TT CLASS="envar">zval</TT> container to another. This is easier said than
+done, since the <TT CLASS="envar">zval</TT> container doesn't contain only
+type information, but also references to places in Zend's internal
+data. For example, depending on their size, arrays and objects may
+be nested with lots of hash table entries. By assigning one
+<TT CLASS="envar">zval</TT> to another, you avoid duplicating the hash
+table entries, using only a reference to them (at most).
+</P><P>&#13; To copy this complex kind of data, use the <SPAN CLASS="emphasis"><I CLASS="emphasis">copy
+constructor</I></SPAN>. Copy constructors are typically defined in
+languages that support operator overloading, with the express
+purpose of copying complex types. If you define an object in such a
+language, you have the possibility of overloading the "=" operator,
+which is usually responsible for assigning the contents of the
+lvalue (result of the evaluation of the left side of the operator)
+to the rvalue (same for the right side).
+</P><P>&#13; <SPAN CLASS="emphasis"><I CLASS="emphasis">Overloading</I></SPAN> means assigning a different
+meaning to this operator, and is usually used to assign a function
+call to an operator. Whenever this operator would be used on such
+an object in a program, this function would be called with the
+lvalue and rvalue as parameters. Equipped with that information, it
+can perform the operation it intends the "=" operator to have
+(usually an extended form of copying).
+</P><P>&#13; This same form of "extended copying" is also necessary for PHP's
+<TT CLASS="envar">zval</TT> containers. Again, in the case of an array,
+this extended copying would imply re-creation of all hash table
+entries relating to this array. For strings, proper memory
+allocation would have to be assured, and so on.
+</P><P>&#13; Zend ships with such a function,
+called <B CLASS="function">zend_copy_ctor()</B> (the previous PHP equivalent
+was <B CLASS="function">pval_copy_constructor()</B>).
+</P><P>&#13; A most useful demonstration is a function that accepts a complex type as
+argument, modifies it, and then returns the argument:
+</P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">zval *parameter;
+   
+if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &#38;parameter) == FAILURE)
+   return;
+}
+   
+// do modifications to the parameter here
+
+// now we want to return the modified container:
+*return_value == *parameter;
+zval_copy_ctor(return_value);</PRE></TD></TR></TABLE><P>&#13; The first part of the function is plain-vanilla argument retrieval.
+After the (left out) modifications, however, it gets interesting:
+The container of <TT CLASS="envar">parameter</TT> is assigned to the
+(predefined) <TT CLASS="envar">return_value</TT> container. Now, in order
+to effectively duplicate its contents, the copy constructor is
+called. The copy constructor works directly with the supplied
+argument, and the standard return values are
+<TT CLASS="literal">FAILURE</TT> on failure and
+<TT CLASS="literal">SUCCESS</TT> on success.
+</P><P>&#13; If you omit the call to the copy constructor in this example, both
+<TT CLASS="envar">parameter</TT> and <TT CLASS="envar">return_value</TT> would
+point to the same internal data, meaning that
+<TT CLASS="envar">return_value</TT> would be an illegal additional
+reference to the same data structures. Whenever changes occurred in
+the data that <TT CLASS="envar">parameter</TT> points to,
+<TT CLASS="envar">return_value</TT> might be affected. Thus, in order to
+create separate copies, the copy constructor must be used.
+</P><P>&#13; The copy constructor's counterpart in the Zend API, the destructor
+<B CLASS="function">zval_dtor()</B>, does the opposite of the
+constructor.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="zend.variables.constant.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="zend.returning.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Creating Constants</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="zend.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Returning Values</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

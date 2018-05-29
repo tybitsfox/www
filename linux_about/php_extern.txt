@@ -1,0 +1,109 @@
+<pre><center><font size=5 color=red>php5.32及后续版本使用扩展模块调用动态链接库的方法</font></center>
+与asp.net类似，这种方法可以将某些功能代码封装起来以二进制的形式提供给用户使用，同时又避免了这些代码的公开。
+不过在lamp下php调用c写成的so链接库比asp.net稍微麻烦些，主要是原始的so不能直接被php调用，必须通过php的扩展
+模块间接的使用so.这里对使用方法简单总结一下：
+一、编写so文件
+----------t005.c-------------
+#include"clsscr.h"
+
+int tadd()
+{
+	int i,j;
+	i=10;j=2;
+	return i+j;
+}
+int tstr(char *ch)
+{
+//这里传入的指针必须在扩展模块分配过空间的。
+	memset(ch,0,100);
+	snprintf(ch,100,"hello world!");
+	return 0;
+}
+----------------makefile-------------------
+libt005.so:t005.o
+	gcc -shared -o listt005.so t005.o
+t005.o:t005.c
+	gcc -c -fpic -o t005.o t005.c -I/workarea/cprogram/include
+clean:
+	rm *.o *.so
+install:
+	cp libt005.so /usr/local/lib/
+--------------------------------------------
+生成了libt005.so以后，我们就准备将它封装在php的扩展模块中了。扩展模块的生成需要php5-dev，确保系统安装了
+该包。
+1、进入/usr/share/php5,运行 ./ext_skel --extname=bitsfox_php extname指定了新扩展模块的名称。
+2、成功运行上述命令后，会在当前目录下建立一个新的目录：bitsfox_php，如果出现错误（我碰上了），在新的目
+录下没有生成*c，*h文件，看错误提示是没有找到skeleton相关目录，该目录与bitsfox_php在同级目录下，将其拷贝
+至/usr/lib/php5/下，再次运行上述命令即可成功。
+3、进入新目录bitsfox_php,修改config.m4，将16,18行的注释dnl去掉:
+16:  PHP_ARG_ENABLE(hello, whether to enable hello support,
+17:  dnl Make sure that the comment is aligned:
+18:  [  --enable-hello           Enable hello support])
+然后运行phpize生成configure等配置文件。
+4、编辑php_bitsfox_php.h文件，将你动态链接库so中需要调用的函数扩展模块的函数在此声明：
+PHP_FUNCTION(in_tadd);
+PHP_FUNCTION(in_tstr);
+注意：这里定义的是扩展模块的接口函数，而非你so中的函数，你的函数是通过这些接口调用实现的。
+所以，这些接口是和你的函数对应的。
+5、编辑bitsfox_php.c文件，实现你扩展模块接口：
+首先添加程序入口：
+zend_function_entry hello_functions[] = {
+    PHP_FE(confirm_hello_compiled,  NULL)       /* For testing, remove later. */
+    PHP_FE(in_tadd,   NULL)       /*你的第一个模块接口*/
+	PHP_FE(in_tstr,   NULL)	   /*你的第二个模块接口*/
+    PHP_FE_END				  /* Must be the last line in hello_functions[] */
+};
+然后在文件尾部添加编写接口函数：
+PHP_FUNCTION(in_tadd)
+{//因为原so函数tadd没有参数，所以这里也没必要使用参数。
+	long int result;
+	result=tadd();		//这就是扩展模块与外部动态链接库的结合。
+	RETURN_LONG(result);
+}
+PHP_FUNCTION(in_tstr)
+{//注意这里参数的做法，原so函数有参数，并通过参数返回结果。如果本接口函数和so函数保持一致的话
+//那么用户在使用该接口时就要分配该参数的空间。这样做等于把麻烦交给了用户，因此我们应在这里解决
+//这一问题，字符串空间在这里申请，这样该接口就没有必要再有传入参数了（也就是接口函数的参数和原
+//so函数不一致）,而且这个接口函数的返回值也设定成字符串了	
+	char *ch;
+	long int le;
+	long int result;
+	len=100;	//看so中memset()的长度为100;
+	ch=emalloc(len); //在这个接口函数内分配空间供so函数使用,在这里不要使用char ch[100]这样的定义。
+//这样的定义将不能以返回值或参数的形式使用。	
+//下面这个参数分析的函数是用于该接口有参数传入时的分析，所以在这里没用。	
+//  if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,"s",&s1,&len)==FAILURE)
+//	{return;}
+	result=tstr(ch);		//最终接口与动态链接库函数的结合
+	RETURN_STRING(ch,0);
+}
+看到这里，作为一个有强迫症的C程序员总会感到不舒服的，怎么有emalloc而没有efree与之配对调用？
+先看看php模块所用到的一些函数：
+	emalloc		efree
+.....
+emalloc与标准的C函数malloc相对应，所有函数的对应关系看名字就知道了。而这个内存分配函数并非真正的
+malloc，他的分配更像是对某一内存块的使用增加一个计数。当计数为0系统会自动收回。也因此这些内存不能
+作为一个永久申请的内存使用。如需长久使用的内存，还应使用malloc，但这样必须自己处理内存的释放。
+6、开始编译安装，
+./configure
+make LDFLAGS=-lt005
+make test	查看下模块的正确性。
+make install 这里记住安装到的目录,如/usr/lib/php5/20100525+lfs。以便将其加入php的配置文件中。
+然后在/var/www中编写个测试网页：
+-------------------dl_aaa.php--------------------
+&lt;?php
+	$i=in_tadd();
+	$j=in_tstr();
+	echo "test: ".$i."str:".$j;
+?&gt;
+7、修改/etc/php5/apache2/php.ini,加入：
+extension_dir = /usr/lib/php5/20100525+lfs  <font color=red> &lt;-注意：请将你的扩展安装在默认位置（make install的位置），
+并且不要随意添加或修改这个值，因为他可能会影响到你系统上其他扩展的应用！对该位置的确认可以使用php-config</font>
+extension = bitsfox_php.so
+保存退出，重启apache2
+cd /etc/init.d
+./apache2 restart
+
+成功与否首先查看phpinfo();中是否已存在bitsfox_php模块，在就打开测试页面，如能正常显示则成功。
+在早期的php版本中还可以使用dl()函数动态加载扩展模块，现在这种做法已经废弃了，只能使用静态方式加载。
+</pre>

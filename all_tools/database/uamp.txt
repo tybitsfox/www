@@ -1,0 +1,67 @@
+一、apache24中conf文件修改的地方：
+ServerRoot "d:/app/Apache24"   
+DocumentRoot "d:/app/www"
+&lt;Directory "d:/app/www"&gt;
+ScriptAlias /cgi-bin/ "d:/app/Apache24/cgi-bin/"
+&lt;Directory "d:/app/Apache24/cgi-bin"&gt;
+DirectoryIndex index.php index.html
+
+apache添加启动服务：httpd -k install -n"apache" 添加windows服务
+运行 net start apache 启动服务 
+
+
+二、php.ini配置
+extension_dir = "d:/php/php55/ext"
+extension=php_curl.dll
+extension=php_gd2.dll
+extension=php_mysql.dll
+display_errors = Off
+
+三、重新编辑apache24目录下的conf配置文件
+添加php的支持：
+LoadModule php5_module "D:/app/php55/php5apache2_4.dll"
+PHPIniDir "D:/app/php55"
+AddType application/x-httpd-php .php
+
+此时，重启apache服务，查看phpinfo是否正常运行
+
+四、my.ini配置
+添加：
+[client]
+port=3306
+
+[mysql]
+default-character-set=utf8
+[mysqld]
+
+ basedir = "D:/app/mysql56"
+ datadir = "D:/app/mysql56/data"
+ port = 3306
+#server_id = localhost
+character-set-server=utf8
+default-storage-engine=INNODB
+
+添加服务：mysqld install
+启动服务：net start mysql
+
+
+所有服务启动成功后，进入mysql56/bin/目录下，执行：
+mysqladmin -u root -p password 112233
+修改root管理员的密码为112233，要求输入原密码是为空。
+然后就可以使用root账号建立新数据库和账号。
+
+<font color=red>几个常用的文本转换、处理操作：
+删除行首空格和TAB:
+cat bbb.txt | sed 's/^[ \t]*//g' &gt; aaa.txt
+删除行尾空格和TAB:
+cat bbb.txt | sed 's/[ \t]*$//g' &gt;aaa.txt
+
+去除dos格式的^M: 
+sed -e 's/.$//' dos.txt &gt; linux.txt
+转换为dos格式：
+sed -e 's/$/\r/' unix.file &gt; dos.file
+
+转换GB2312为UTF-8编码：
+cat g16.txt | iconv -f GB2312 -t UTF-8 &gt;u16.txt
+</font><a href="#header">返回</a>;
+

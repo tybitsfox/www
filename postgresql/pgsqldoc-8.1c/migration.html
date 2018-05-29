@@ -1,0 +1,278 @@
+<HTML
+><HEAD
+><TITLE
+>在不同版本之间迁移</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="备份和恢复"
+HREF="backup.html"><LINK
+REL="PREVIOUS"
+TITLE="在线备份以及即时恢复(PITR)"
+HREF="backup-online.html"><LINK
+REL="NEXT"
+TITLE="监控数据库的活动"
+HREF="monitoring.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="backup-online.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="backup.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 23. 备份和恢复</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="backup.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="monitoring.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="MIGRATION"
+>23.4. 在不同版本之间迁移</A
+></H1
+><A
+NAME="AEN23584"
+></A
+><A
+NAME="AEN23586"
+></A
+><P
+>   本节讨论如何把你的数据库数据从一个 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本迁移到一个更新的版本上。
+   软件安装步骤<I
+CLASS="FOREIGNPHRASE"
+>本身</I
+>不是本节的论题；它们的细节在 <A
+HREF="installation.html"
+>Chapter 14</A
+> 里。
+  </P
+><P
+>	通常，不同主版本的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 之间的内部存储结构经常做改变
+	（第一个点后面的数字变化）。
+	这个情况不会在不同的子版本里面发生（第二个点后面的数字变化）。它们通常用的都是兼容的存储格式。
+	比如，版本 7.0.1，7.1.2 和 7.2 是不兼容的，而 7.1.1 和 7.1.2
+	是兼容的。如果你在兼容的版本之间升级，那你只需要简单地用新的可执行文件替换原来的并且使用原来的磁盘存储区上就行了。
+	否则，你需要用 <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 备份你的数据，然后到新的服务器里恢复它们；
+	文件系统级别的备份明显是不适用的。
+	系统里有一些位置有错误检查，可以防止你使用不兼容的 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 版本的数据区，
+	因此就算混淆这些事情也不会造成什么损害。
+  </P
+><P
+>	我们建议你使用新版本的 <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 程序，
+	以便利用新版本的 <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> 新特性和功能。
+	目前版本的转储程序可以支持到最老 7.0 的服务器版本。
+  </P
+><P
+>	最短停业时间（downtime）可以这样实现：把新服务器安装在不同的目录然后同时在不同端口并行运行旧的和新的服务器。
+	这样你就可以用类似
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>pg_dumpall -p 5432 | psql -d postgres -p 6543</PRE
+><P>
+
+	这样的命令转移数据，或者用你选择的过渡文件。
+	然后你就可以关闭老服务器然后在旧端口启动新服务器。
+	你要确保在你运行完<SPAN
+CLASS="APPLICATION"
+>pg_dumpall</SPAN
+>之后没有更新旧数据库，
+	否则你显然会丢失那些数据。
+	参阅 <A
+HREF="client-authentication.html"
+>Chapter 20</A
+> 获取如何禁止访问的更多信息。
+  </P
+><P
+>	实际上你在完全切换到新库之前可能还要测试你的客户端应用。
+	这是另外一个设置新旧库并行安装的原因。
+  </P
+><P
+>	如果你不能或者不想同时运行两个服务器。你可以在安装新服务器之前做备份工作，
+	然后停掉服务器，移走旧版本的东西，安装新版本，启动服务器，恢复数据。例如：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>pg_dumpall &gt; backup
+pg_ctl stop
+mv /usr/local/pgsql /usr/local/pgsql.old
+cd ~/postgresql-7.8.1
+gmake install
+initdb -D /usr/local/pgsql/data
+postmaster -D /usr/local/pgsql/data
+psql -f backup postgres</PRE
+><P>
+
+   参阅 <A
+HREF="runtime.html"
+>Chapter 16</A
+> ，里面有启动和停止服务器以及其他细节信息。
+	安装指导里面有执行这些步骤的战略位置的建议。
+  </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	当你<SPAN
+CLASS="QUOTE"
+>"把旧的安装移走"</SPAN
+>之后，它就可能不再可以毫无问题地使用了。
+	安装的某些可执行程序包含各种安装的程序和数据文件的绝对路径信息。这通常算不上什么问题，
+	但是如果你计划并行使用两个安装一段时间，你应该在制作的时候给它们赋不同的安装目录。
+	（这个问题在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 8.0　和更新的版本里是可以纠正的，
+	不过在老版本上，你可得小心。）
+   </P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="backup-online.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="monitoring.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>在线备份以及即时恢复(PITR)</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="backup.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>监控数据库的活动</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

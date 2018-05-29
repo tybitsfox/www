@@ -1,0 +1,865 @@
+<HTML
+><HEAD
+><TITLE
+>内部</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="PREVIOUS"
+TITLE="postmaster"
+HREF="app-postmaster.html"><LINK
+REL="NEXT"
+TITLE="PostgreSQL 内部概貌"
+HREF="overview.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="PART"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="app-postmaster.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="reference.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="appendixes.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="overview.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="PART"
+><A
+NAME="INTERNALS"
+></A
+><DIV
+CLASS="TITLEPAGE"
+><H1
+CLASS="TITLE"
+>VII. 内部</H1
+><DIV
+CLASS="PARTINTRO"
+><A
+NAME="AEN54798"
+></A
+><P
+>	这部分包含可以用于 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 开发人员的分类信息。
+   </P
+></DIV
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>41. <A
+HREF="overview.html"
+>PostgreSQL 内部概貌</A
+></DT
+><DD
+><DL
+><DT
+>41.1. <A
+HREF="overview.html#QUERY-PATH"
+>查询经过的路径</A
+></DT
+><DT
+>41.2. <A
+HREF="connect-estab.html"
+>联接是如何建立起来的</A
+></DT
+><DT
+>41.3. <A
+HREF="parser-stage.html"
+>分析器阶段</A
+></DT
+><DT
+>41.4. <A
+HREF="rule-system.html"
+><SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 规则系统</A
+></DT
+><DT
+>41.5. <A
+HREF="planner-optimizer.html"
+>规划器/优化器</A
+></DT
+><DT
+>41.6. <A
+HREF="executor.html"
+>执行器</A
+></DT
+></DL
+></DD
+><DT
+>42. <A
+HREF="catalogs.html"
+>系统表</A
+></DT
+><DD
+><DL
+><DT
+>42.1. <A
+HREF="catalogs.html#CATALOGS-OVERVIEW"
+>概述</A
+></DT
+><DT
+>42.2. <A
+HREF="catalog-pg-aggregate.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_aggregate</TT
+></A
+></DT
+><DT
+>42.3. <A
+HREF="catalog-pg-am.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_am</TT
+></A
+></DT
+><DT
+>42.4. <A
+HREF="catalog-pg-amop.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_amop</TT
+></A
+></DT
+><DT
+>42.5. <A
+HREF="catalog-pg-amproc.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_amproc</TT
+></A
+></DT
+><DT
+>42.6. <A
+HREF="catalog-pg-attrdef.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_attrdef</TT
+></A
+></DT
+><DT
+>42.7. <A
+HREF="catalog-pg-attribute.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_attribute</TT
+></A
+></DT
+><DT
+>42.8. <A
+HREF="catalog-pg-authid.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_authid</TT
+></A
+></DT
+><DT
+>42.9. <A
+HREF="catalog-pg-auth-members.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_auth_members</TT
+></A
+></DT
+><DT
+>42.10. <A
+HREF="catalog-pg-autovacuum.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_autovacuum</TT
+></A
+></DT
+><DT
+>42.11. <A
+HREF="catalog-pg-cast.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_cast</TT
+></A
+></DT
+><DT
+>42.12. <A
+HREF="catalog-pg-class.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+></A
+></DT
+><DT
+>42.13. <A
+HREF="catalog-pg-constraint.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_constraint</TT
+></A
+></DT
+><DT
+>42.14. <A
+HREF="catalog-pg-conversion.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_conversion</TT
+></A
+></DT
+><DT
+>42.15. <A
+HREF="catalog-pg-database.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_database</TT
+></A
+></DT
+><DT
+>42.16. <A
+HREF="catalog-pg-depend.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_depend</TT
+></A
+></DT
+><DT
+>42.17. <A
+HREF="catalog-pg-description.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_description</TT
+></A
+></DT
+><DT
+>42.18. <A
+HREF="catalog-pg-index.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_index</TT
+></A
+></DT
+><DT
+>42.19. <A
+HREF="catalog-pg-inherits.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_inherits</TT
+></A
+></DT
+><DT
+>42.20. <A
+HREF="catalog-pg-language.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_language</TT
+></A
+></DT
+><DT
+>42.21. <A
+HREF="catalog-pg-largeobject.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_largeobject</TT
+></A
+></DT
+><DT
+>42.22. <A
+HREF="catalog-pg-listener.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_listener</TT
+></A
+></DT
+><DT
+>42.23. <A
+HREF="catalog-pg-namespace.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_namespace</TT
+></A
+></DT
+><DT
+>42.24. <A
+HREF="catalog-pg-opclass.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_opclass</TT
+></A
+></DT
+><DT
+>42.25. <A
+HREF="catalog-pg-operator.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_operator</TT
+></A
+></DT
+><DT
+>42.26. <A
+HREF="catalog-pg-pltemplate.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_pltemplate</TT
+></A
+></DT
+><DT
+>42.27. <A
+HREF="catalog-pg-proc.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_proc</TT
+></A
+></DT
+><DT
+>42.28. <A
+HREF="catalog-pg-rewrite.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_rewrite</TT
+></A
+></DT
+><DT
+>42.29. <A
+HREF="catalog-pg-shdepend.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_shdepend</TT
+></A
+></DT
+><DT
+>42.30. <A
+HREF="catalog-pg-statistic.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_statistic</TT
+></A
+></DT
+><DT
+>42.31. <A
+HREF="catalog-pg-tablespace.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_tablespace</TT
+></A
+></DT
+><DT
+>42.32. <A
+HREF="catalog-pg-trigger.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_trigger</TT
+></A
+></DT
+><DT
+>42.33. <A
+HREF="catalog-pg-type.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_type</TT
+></A
+></DT
+><DT
+>42.34. <A
+HREF="views-overview.html"
+>系统视图</A
+></DT
+><DT
+>42.35. <A
+HREF="view-pg-group.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_group</TT
+></A
+></DT
+><DT
+>42.36. <A
+HREF="view-pg-indexes.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_indexes</TT
+></A
+></DT
+><DT
+>42.37. <A
+HREF="view-pg-locks.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_locks</TT
+></A
+></DT
+><DT
+>42.38. <A
+HREF="view-pg-prepared-xacts.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_prepared_xacts</TT
+></A
+></DT
+><DT
+>42.39. <A
+HREF="view-pg-roles.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_roles</TT
+></A
+></DT
+><DT
+>42.40. <A
+HREF="view-pg-rules.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_rules</TT
+></A
+></DT
+><DT
+>42.41. <A
+HREF="view-pg-settings.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_settings</TT
+></A
+></DT
+><DT
+>42.42. <A
+HREF="view-pg-shadow.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_shadow</TT
+></A
+></DT
+><DT
+>42.43. <A
+HREF="view-pg-stats.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_stats</TT
+></A
+></DT
+><DT
+>42.44. <A
+HREF="view-pg-tables.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_tables</TT
+></A
+></DT
+><DT
+>42.45. <A
+HREF="view-pg-user.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_user</TT
+></A
+></DT
+><DT
+>42.46. <A
+HREF="view-pg-views.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_views</TT
+></A
+></DT
+></DL
+></DD
+><DT
+>43. <A
+HREF="protocol.html"
+>前/后端协议</A
+></DT
+><DD
+><DL
+><DT
+>43.1. <A
+HREF="protocol.html#PROTOCOL-OVERVIEW"
+>概述</A
+></DT
+><DT
+>43.2. <A
+HREF="protocol-flow.html"
+>消息流</A
+></DT
+><DT
+>43.3. <A
+HREF="protocol-message-types.html"
+>消息数据类型</A
+></DT
+><DT
+>43.4. <A
+HREF="protocol-message-formats.html"
+>消息格式</A
+></DT
+><DT
+>43.5. <A
+HREF="protocol-error-fields.html"
+>错误和通知消息字段</A
+></DT
+><DT
+>43.6. <A
+HREF="protocol-changes.html"
+>自协议 2.0 以来的变化的概述</A
+></DT
+></DL
+></DD
+><DT
+>44. <A
+HREF="source.html"
+>PostgreSQL 源代码</A
+></DT
+><DD
+><DL
+><DT
+>44.1. <A
+HREF="source.html#SOURCE-FORMAT"
+>格式</A
+></DT
+><DT
+>44.2. <A
+HREF="error-message-reporting.html"
+>报告服务器里的错误</A
+></DT
+><DT
+>44.3. <A
+HREF="error-style-guide.html"
+>错误消息风格指导</A
+></DT
+></DL
+></DD
+><DT
+>45. <A
+HREF="nls.html"
+>本地语言支持</A
+></DT
+><DD
+><DL
+><DT
+>45.1. <A
+HREF="nls.html#NLS-TRANSLATOR"
+>寄语翻译家</A
+></DT
+><DT
+>45.2. <A
+HREF="nls-programmer.html"
+>寄语程序员</A
+></DT
+></DL
+></DD
+><DT
+>46. <A
+HREF="plhandler.html"
+>书写一个过程语言句柄</A
+></DT
+><DT
+>47. <A
+HREF="geqo.html"
+>基因查询优化</A
+></DT
+><DD
+><DL
+><DT
+>47.1. <A
+HREF="geqo.html#GEQO-INTRO"
+>作为复杂优化问题的查询处理</A
+></DT
+><DT
+>47.2. <A
+HREF="geqo-intro2.html"
+>基因算法</A
+></DT
+><DT
+>47.3. <A
+HREF="geqo-pg-intro.html"
+>PostgreSQL 里的基因查询优化（<SPAN
+CLASS="ACRONYM"
+>GEQO</SPAN
+>）</A
+></DT
+><DT
+>47.4. <A
+HREF="geqo-biblio.html"
+>进一步阅读</A
+></DT
+></DL
+></DD
+><DT
+>48. <A
+HREF="indexam.html"
+>索引访问方法接口定义</A
+></DT
+><DD
+><DL
+><DT
+>48.1. <A
+HREF="indexam.html#INDEX-CATALOG"
+>索引的系统表记录</A
+></DT
+><DT
+>48.2. <A
+HREF="index-functions.html"
+>索引访问方法函数</A
+></DT
+><DT
+>48.3. <A
+HREF="index-scanning.html"
+>索引扫描</A
+></DT
+><DT
+>48.4. <A
+HREF="index-locking.html"
+>索引锁的考量</A
+></DT
+><DT
+>48.5. <A
+HREF="index-unique-checks.html"
+>索引唯一性检查</A
+></DT
+><DT
+>48.6. <A
+HREF="index-cost-estimation.html"
+>索引开销估计函数</A
+></DT
+></DL
+></DD
+><DT
+>49. <A
+HREF="gist.html"
+>GiST 索引</A
+></DT
+><DD
+><DL
+><DT
+>49.1. <A
+HREF="gist.html#INTRO"
+>介绍</A
+></DT
+><DT
+>49.2. <A
+HREF="gist-extensibility.html"
+>扩展性</A
+></DT
+><DT
+>49.3. <A
+HREF="gist-implementation.html"
+>实现</A
+></DT
+><DT
+>49.4. <A
+HREF="gist-examples.html"
+>例子</A
+></DT
+><DT
+>49.5. <A
+HREF="gist-recovery.html"
+>崩溃恢复</A
+></DT
+></DL
+></DD
+><DT
+>50. <A
+HREF="storage.html"
+>数据库物理存储</A
+></DT
+><DD
+><DL
+><DT
+>50.1. <A
+HREF="storage.html#STORAGE-FILE-LAYOUT"
+>数据库文件布局</A
+></DT
+><DT
+>50.2. <A
+HREF="storage-toast.html"
+>TOAST</A
+></DT
+><DT
+>50.3. <A
+HREF="storage-page-layout.html"
+>数据库分页文件</A
+></DT
+></DL
+></DD
+><DT
+>51. <A
+HREF="bki.html"
+><SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+> 后端接口</A
+></DT
+><DD
+><DL
+><DT
+>51.1. <A
+HREF="bki.html#BKI-FORMAT"
+><SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+> 文件格式</A
+></DT
+><DT
+>51.2. <A
+HREF="bki-commands.html"
+><SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+>命令</A
+></DT
+><DT
+>51.3. <A
+HREF="bki-structure.html"
+>系统初始化的 <SPAN
+CLASS="ACRONYM"
+>BKI</SPAN
+> 文件的结构</A
+></DT
+><DT
+>51.4. <A
+HREF="bki-example.html"
+>例子</A
+></DT
+></DL
+></DD
+><DT
+>52. <A
+HREF="planner-stats-details.html"
+>规划器如何使用统计信息</A
+></DT
+><DD
+><DL
+><DT
+>52.1. <A
+HREF="planner-stats-details.html#ROW-ESTIMATION-EXAMPLES"
+>行预期的例子</A
+></DT
+></DL
+></DD
+></DL
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="app-postmaster.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="overview.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><SPAN
+CLASS="APPLICATION"
+>postmaster</SPAN
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>PostgreSQL 内部概貌</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

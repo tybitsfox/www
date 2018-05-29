@@ -1,0 +1,305 @@
+<HTML
+><HEAD
+><TITLE
+>关闭服务器</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="操作系统环境"
+HREF="runtime.html"><LINK
+REL="PREVIOUS"
+TITLE="管理内核资源"
+HREF="kernel-resources.html"><LINK
+REL="NEXT"
+TITLE="加密选项"
+HREF="encryption-options.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="kernel-resources.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="runtime.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 16. 操作系统环境</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="runtime.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="encryption-options.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="POSTMASTER-SHUTDOWN"
+>16.5. 关闭服务器</A
+></H1
+><P
+>        有好几种关闭数据库服务器的方法。
+        通过给服务器进程发送不同的信号，你就可以控制关闭服务器的方法。
+   <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><SPAN
+CLASS="SYSTEMITEM"
+>SIGTERM</SPAN
+><A
+NAME="AEN18086"
+></A
+></DT
+><DD
+><P
+>        在收到<SPAN
+CLASS="SYSTEMITEM"
+>SIGTERM</SPAN
+>信号后，服务器不再允许新的联接，但是允许所有活跃的会话正常完成他们的工作，
+	只有在所有会话都结束任务（通过客户端请求）后才关闭。
+        这是 <I
+CLASS="FIRSTTERM"
+>智能关闭</I
+>。
+      </P
+></DD
+><DT
+><SPAN
+CLASS="SYSTEMITEM"
+>SIGINT</SPAN
+><A
+NAME="AEN18095"
+></A
+></DT
+><DD
+><P
+>        服务器不再允许新的联接，向所有活跃服务器发送<SPAN
+CLASS="SYSTEMITEM"
+>SIGTERM</SPAN
+>，
+        （这样会让它们立刻退出），然后它等待子进程退出并关闭数据库。
+        这是<I
+CLASS="FIRSTTERM"
+>快速关闭</I
+>。
+      </P
+></DD
+><DT
+><SPAN
+CLASS="SYSTEMITEM"
+>SIGQUIT</SPAN
+><A
+NAME="AEN18104"
+></A
+></DT
+><DD
+><P
+>       这是 <I
+CLASS="FIRSTTERM"
+>立即关闭</I
+>，
+        会令<TT
+CLASS="COMMAND"
+>postmaster</TT
+>向所有子进程发送<SPAN
+CLASS="SYSTEMITEM"
+>SIGQUIT</SPAN
+>并且立即退出，而不会妥善地关闭数据库系统。
+        服务器在收到<SPAN
+CLASS="SYSTEMITEM"
+>SIGQUIT</SPAN
+>之后会立即退出。
+        这样做会导致下次启动时的恢复（通过重放 WAL 日志）。
+        我们推荐只在紧急的时候使用这个方法。
+      </P
+></DD
+></DL
+></DIV
+><P>
+   </P
+><P
+>   <A
+HREF="app-pg-ctl.html"
+><SPAN
+CLASS="APPLICATION"
+>pg_ctl</SPAN
+></A
+> 程序提供了一个发送这些信号关闭服务器的便利接口。
+  </P
+><P
+>        另外，你可以用 <TT
+CLASS="COMMAND"
+>kill</TT
+> 直接发送这些信号。
+	可以用 <SPAN
+CLASS="APPLICATION"
+>ps</SPAN
+> 命令找出 <TT
+CLASS="COMMAND"
+>postmaster</TT
+>
+        的 <SPAN
+CLASS="ACRONYM"
+>PID</SPAN
+>，或者也可以从数据目录里的文件 <TT
+CLASS="FILENAME"
+>postmaster.pid</TT
+>
+        里面找到。所以，举例来说，要做一次快速关闭：
+</P><PRE
+CLASS="SCREEN"
+>$ <TT
+CLASS="USERINPUT"
+><B
+>kill -INT `head -1 /usr/local/pgsql/data/postmaster.pid`</B
+></TT
+></PRE
+><P>
+  </P
+><DIV
+CLASS="IMPORTANT"
+><BLOCKQUOTE
+CLASS="IMPORTANT"
+><P
+><B
+>Important: </B
+>        尽可能不要用<SPAN
+CLASS="SYSTEMITEM"
+>SIGKILL</SPAN
+>关闭服务器。
+        这样会阻止服务器清理共享内存和信号灯资源，那样的话你只能在启动服务器之前自己手工做这件事。
+	另外，<SPAN
+CLASS="SYSTEMITEM"
+>SIGKILL</SPAN
+> 直接把 <TT
+CLASS="COMMAND"
+>postmaster</TT
+> 杀掉，
+	而不会等它把信号中继给它的子进程，因此我们还需要手工杀掉每个独立子进程。
+    </P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="kernel-resources.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="encryption-options.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>管理内核资源</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="runtime.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>加密选项</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

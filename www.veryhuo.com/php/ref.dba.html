@@ -1,0 +1,175 @@
+<HTML><HEAD><TITLE>Database (dbm-style) Abstraction Layer Functions</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="函数参考" HREF="funcref.html"><LINK REL="PREVIOUS" TITLE="ctype_xdigit" HREF="function.ctype-xdigit.html"><LINK REL="NEXT" TITLE="dba_close" HREF="function.dba-close.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="reference" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.ctype-xdigit.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.dba-close.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="reference"><A NAME="ref.dba"></A><DIV CLASS="TITLEPAGE"><H1 CLASS="title">XVI. Database (dbm-style) Abstraction Layer Functions</H1><DIV CLASS="PARTINTRO"><A NAME="AEN17343"></A><DIV CLASS="section"><H1 CLASS="section"><A NAME="dba.intro"></A>介绍</H1><P>&#13; These functions build the foundation for accessing Berkeley DB
+style databases.
+</P><P>&#13; This is a general abstraction layer for several file-based databases.
+As such, functionality is limited to a common subset of features
+supported by modern databases such as
+<A HREF="http://www.sleepycat.com/" TARGET="_top">Sleepycat Software's DB2</A>.
+(This is not to be confused with IBM's DB2 software, which is
+supported through the <A HREF="ref.odbc.html">ODBC functions</A>.)
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="dba.requirements"></A>需求</H1><P>&#13; The behaviour of various aspects depends on the implementation of the
+underlying database. Functions such as <A HREF="function.dba-optimize.html"><B CLASS="function">dba_optimize()</B></A>
+and <A HREF="function.dba-sync.html"><B CLASS="function">dba_sync()</B></A> will do what they promise for one
+database and will do nothing for others. You have to download and install
+supported dba-Handlers.
+<DIV CLASS="table"><A NAME="AEN17355"></A><P><B>表格 1. List of DBA handlers</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">Handler</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Notes</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">dbm</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; Dbm is the oldest (original) type of Berkeley DB style
+databases. You should avoid it, if possible. We do not support
+the compatibility functions built into DB2 and gdbm, because
+they are only compatible on the source code level, but cannot
+handle the original dbm format.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">ndbm</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; Ndbm is a newer type and more flexible than dbm. It still has
+most of the arbitrary limits of dbm (therefore it is
+deprecated).
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">gdbm</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; Gdbm is the <A HREF="ftp://ftp.gnu.org/pub/gnu/gdbm/" TARGET="_top">GNU database
+manager</A>.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">db2</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; DB2 is <A HREF="http://www.sleepycat.com/" TARGET="_top">Sleepycat Software's
+DB2</A>. It is described as "a programmatic toolkit that
+provides high-performance built-in database support for both
+standalone and client/server applications.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">db3</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; DB3 is <A HREF="http://www.sleepycat.com/" TARGET="_top">Sleepycat Software's
+DB3</A>.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">db4</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; DB4 is <A HREF="http://www.sleepycat.com/" TARGET="_top">Sleepycat Software's
+DB4</A>. This is available since PHP 4.3.2.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">cdb</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; Cdb is "a fast, reliable, lightweight package for creating and
+reading constant databases." It is from the author of qmail and
+can be found at <A HREF="http://cr.yp.to/cdb.html" TARGET="_top">http://cr.yp.to/cdb.html</A>. Since it is
+constant, we support only reading operations. And since PHP 4.3.0
+we support writing (not updating) through the internal cdb library.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">cdb_make</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; Since PHP 4.3.0 we support creation (not updating) of cdb files
+when the bundled cdb library is used.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">flatfile</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; This is available since PHP 4.3.0 for compatibility with the deprecated
+<A HREF="ref.dbm.html">dbm</A> extension only and should be avoided.
+However you may use this where files were created in this format. That
+happens when configure could not find any external library.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">inifile</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; This is available since PHP 4.3.3 to be able to modify php.ini files
+from within PHP scripts. When working with ini files you can pass arrays
+of the form array(0=&#62;group,1=&#62;value_name) or strings of the form
+"[group]value_name" where group is optional. As the functions
+<A HREF="function.dba-firstkey.html"><B CLASS="function">dba_firstkey()</B></A> and <A HREF="function.dba-nextkey.html"><B CLASS="function">dba_nextkey()</B></A>
+return string representations of the key there is a new function
+<A HREF="function.dba-key-split.html"><B CLASS="function">dba_key_split()</B></A> available since PHP 5 which allows
+to convert the string keys into array keys without loosing <TT CLASS="constant"><B>FALSE</B></TT>.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">qdbm</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; This is available since PHP 5.0.0. The qdbm library can be loaded from
+<A HREF="http://qdbm.sourceforge.net/" TARGET="_top">http://qdbm.sourceforge.net</A>.
+</TD></TR></TBODY></TABLE></DIV>
+</P><P>&#13; When invoking the <A HREF="function.dba-open.html"><B CLASS="function">dba_open()</B></A> or
+<A HREF="function.dba-popen.html"><B CLASS="function">dba_popen()</B></A> functions, one of the
+handler names must be supplied as an argument. The actually
+available list of handlers is displayed by invoking
+<A HREF="function.phpinfo.html"><B CLASS="function">phpinfo()</B></A> or <A HREF="function.dba-handlers.html"><B CLASS="function">dba_handlers()</B></A>.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="dba.installation"></A>安装</H1><P>&#13; By using the <TT CLASS="option">--enable-dba=shared</TT>
+configuration option you can build a dynamic loadable module to enable PHP
+for basic support of dbm-style databases. You also have to add support
+for at least one of the following handlers by specifying the
+<TT CLASS="literal">--with-XXXX</TT> configure switch to your PHP configure
+line.
+</P><DIV CLASS="warning"><P></P><TABLE CLASS="warning" BORDER="1" WIDTH="100%"><TR><TD ALIGN="CENTER"><B>警告</B></TD></TR><TR><TD ALIGN="LEFT"><P>&#13; After configuring and compiling PHP you must execute the following test
+from commandline: <TT CLASS="literal">php run-tests.php ext/dba</TT>. This shows
+whether your combination of handlers works. Most problematic are
+<TT CLASS="literal">dbm</TT> and <TT CLASS="literal">ndbm</TT> which conflict with
+many installations. The reason for this is that on several systems these
+libraries are part of more than one other library. The configuration test
+only prevents you from configuring malfaunctioning single handlers but not
+combinations.
+</P></TD></TR></TABLE></DIV><P>&#13; <DIV CLASS="table"><A NAME="AEN17434"></A><P><B>表格 2. Supported DBA handlers</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">Handler</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Configure Switch</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">dbm</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; To enable support for dbm add
+<TT CLASS="option">--with-dbm[=DIR]</TT>.
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+dbm normally is a wrapper which often results in failures.
+This means you should only use dbm if you are sure it works
+and if you really need this format.
+</P></BLOCKQUOTE></DIV>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">ndbm</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; To enable support for ndbm add
+<TT CLASS="option">--with-ndbm[=DIR]</TT>.
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+ndbm normally is a wrapper which often results in failures.
+This means you should only use ndbm if you are sure it works
+and if you really need this format.
+</P></BLOCKQUOTE></DIV>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">gdbm</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; To enable support for gdbm add
+<TT CLASS="option">--with-gdbm[=DIR]</TT>.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">db2</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; To enable support for db2 add
+<TT CLASS="option">--with-db2[=DIR]</TT>.
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+db2 conflicts with db3 and db4.
+</P></BLOCKQUOTE></DIV>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">db3</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; To enable support for db3 add
+<TT CLASS="option">--with-db3[=DIR]</TT>.
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+db3 conflicts with db2 and db4.
+</P></BLOCKQUOTE></DIV>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">db4</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; To enable support for db4 add
+<TT CLASS="option">--with-db4[=DIR]</TT>.
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+db4 conflicts with db2 and db3.
+</P></BLOCKQUOTE></DIV>
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+This was added in PHP 4.3.2. In earlier versions of PHP you need to use
+<TT CLASS="option">--with-db3=DIR</TT> with DIR being the
+path to db4 library. It is not possible to use db versions starting
+from 4.1 with PHP prior to version 4.3.0. Also, the db libraries with
+versions 4.1 through 4.1.24 cannot be used in any PHP version.
+</P></BLOCKQUOTE></DIV>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">cdb</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; To enable support for cdb add
+<TT CLASS="option">--with-cdb[=DIR]</TT>.
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Since PHP 4.3.0 you can omit DIR to use the bundled cdb library
+that adds the cdb_make handler which allows creation of cdb files
+and allows to access cdb files on the network using PHP's streams.
+</P></BLOCKQUOTE></DIV>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">flatfile</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; To enable support for flatfile add
+<TT CLASS="option">--with-flatfile</TT>.
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+This was added in PHP 4.3.0 to add compatibility with deprecated
+<A HREF="ref.dbm.html">dbm</A> extension. Use this handler only
+when you cannot install one of the libraries required by the other
+handlers and when you cannot use bundled cdb handler.
+</P></BLOCKQUOTE></DIV>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">inifile</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; To enable support for inifile add
+<TT CLASS="option">--with-inifile</TT>.
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+This was added in PHP 5.0.0 and allows to read and set microsoft style
+ini files (like the <TT CLASS="filename">php.ini</TT> file).
+</P></BLOCKQUOTE></DIV>
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">qdbm</TT></TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; To enable support for qdbm add
+<TT CLASS="option">--with-qdbm[=DIR]</TT>.
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+qdbm conflicts with dbm and gdbm.
+</P></BLOCKQUOTE></DIV>
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+This was added in PHP 5.0.0. The qdbm library can be loaded from
+<A HREF="http://qdbm.sourceforge.net/" TARGET="_top">http://qdbm.sourceforge.net</A>.
+</P></BLOCKQUOTE></DIV>
+</TD></TR></TBODY></TABLE></DIV>
+<DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+Up to PHP 4.3.0 you are able to add both db2 and db3 handler but only one
+of them can be used internally. That means that you cannot have both file
+formats. Starting with PHP 5.0.0 there is a configuration check avoid such
+missconfigurations.
+</P></BLOCKQUOTE></DIV>
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="dba.runtime"></A>运行时配置</H1><P>该扩展模块未定义任何设置指令。</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="dba.resources"></A>资源类型</H1><P>&#13; The functions <A HREF="function.dba-open.html"><B CLASS="function">dba_open()</B></A> and
+<A HREF="function.dba-popen.html"><B CLASS="function">dba_popen()</B></A> return a handle to the specified
+database file to access which is used by all other dba-function calls.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="dba.constants"></A>预定义常量</H1><P>该扩展模块未定义任何常量。</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="dba.examples"></A>范例</H1><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN17534"></A><P><B>例子 1. DBA example</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /><br />$id </font><font color="#007700">= </font><font color="#0000BB">dba_open</font><font color="#007700">(</font><font color="#DD0000">"/tmp/test.db"</font><font color="#007700">, </font><font color="#DD0000">"n"</font><font color="#007700">, </font><font color="#DD0000">"db2"</font><font color="#007700">);<br /><br />if (!</font><font color="#0000BB">$id</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#DD0000">"dba_open failed\n"</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;exit;<br />}<br /><br /></font><font color="#0000BB">dba_replace</font><font color="#007700">(</font><font color="#DD0000">"key"</font><font color="#007700">, </font><font color="#DD0000">"This is an example!"</font><font color="#007700">, </font><font color="#0000BB">$id</font><font color="#007700">);<br /><br />if (</font><font color="#0000BB">dba_exists</font><font color="#007700">(</font><font color="#DD0000">"key"</font><font color="#007700">, </font><font color="#0000BB">$id</font><font color="#007700">)) {<br />&nbsp;&nbsp;&nbsp;&nbsp;echo </font><font color="#0000BB">dba_fetch</font><font color="#007700">(</font><font color="#DD0000">"key"</font><font color="#007700">, </font><font color="#0000BB">$id</font><font color="#007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">dba_delete</font><font color="#007700">(</font><font color="#DD0000">"key"</font><font color="#007700">, </font><font color="#0000BB">$id</font><font color="#007700">);<br />}<br /><br /></font><font color="#0000BB">dba_close</font><font color="#007700">(</font><font color="#0000BB">$id</font><font color="#007700">);<br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P><P>&#13; DBA is binary safe and does not have any arbitrary limits.
+However, it inherits all limits set by the underlying
+database implementation.
+</P><P>&#13; All file-based databases must provide a way of setting the file
+mode of a new created database, if that is possible at all. The
+file mode is commonly passed as the fourth argument to
+<A HREF="function.dba-open.html"><B CLASS="function">dba_open()</B></A> or <A HREF="function.dba-popen.html"><B CLASS="function">dba_popen()</B></A>.
+</P><P>&#13; You can access all entries of a database in a linear way by using the
+<A HREF="function.dba-firstkey.html"><B CLASS="function">dba_firstkey()</B></A> and <A HREF="function.dba-nextkey.html"><B CLASS="function">dba_nextkey()</B></A>
+functions. You may not change the database while traversing it.
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="AEN17545"></A><P><B>例子 2. Traversing a database</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><code><font color="#000000">
+<font color="#0000BB">&lt;?php<br /><br /></font><font color="#FF8000">// ...open database...<br /><br /></font><font color="#0000BB">$key </font><font color="#007700">= </font><font color="#0000BB">dba_firstkey</font><font color="#007700">(</font><font color="#0000BB">$id</font><font color="#007700">);<br /><br />while (</font><font color="#0000BB">$key </font><font color="#007700">!= </font><font color="#0000BB">false</font><font color="#007700">) {<br />&nbsp;&nbsp;&nbsp;&nbsp;if (</font><font color="#0000BB">true</font><font color="#007700">) {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// remember the key to perform some action later<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$handle_later</font><font color="#007700">[] = </font><font color="#0000BB">$key</font><font color="#007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$key </font><font color="#007700">= </font><font color="#0000BB">dba_nextkey</font><font color="#007700">(</font><font color="#0000BB">$id</font><font color="#007700">);<br />}<br /><br />for (</font><font color="#0000BB">$i </font><font color="#007700">= </font><font color="#0000BB">0</font><font color="#007700">; </font><font color="#0000BB">$i </font><font color="#007700">&lt; </font><font color="#0000BB">count</font><font color="#007700">(</font><font color="#0000BB">$handle_later</font><font color="#007700">); </font><font color="#0000BB">$i</font><font color="#007700">++) {<br />&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">dba_delete</font><font color="#007700">(</font><font color="#0000BB">$handle_later</font><font color="#007700">[</font><font color="#0000BB">$i</font><font color="#007700">], </font><font color="#0000BB">$id</font><font color="#007700">);<br />}<br /><br /></font><font color="#0000BB">?&gt;</font>
+</font>
+</code></TD></TR></TABLE></DIV></TD></TR></TABLE>
+</P></DIV></DIV><DIV CLASS="TOC"><DL><DT><B>目录</B></DT><DT><A HREF="function.dba-close.html">dba_close</A>&nbsp;--&nbsp;Close database</DT><DT><A HREF="function.dba-delete.html">dba_delete</A>&nbsp;--&nbsp;Delete entry specified by key</DT><DT><A HREF="function.dba-exists.html">dba_exists</A>&nbsp;--&nbsp;Check whether key exists</DT><DT><A HREF="function.dba-fetch.html">dba_fetch</A>&nbsp;--&nbsp;Fetch data specified by key</DT><DT><A HREF="function.dba-firstkey.html">dba_firstkey</A>&nbsp;--&nbsp;Fetch first key</DT><DT><A HREF="function.dba-handlers.html">dba_handlers</A>&nbsp;--&nbsp;List handlers available</DT><DT><A HREF="function.dba-insert.html">dba_insert</A>&nbsp;--&nbsp;Insert entry</DT><DT><A HREF="function.dba-key-split.html">dba_key_split</A>&nbsp;--&nbsp;Splits a key in string representation into array representation</DT><DT><A HREF="function.dba-list.html">dba_list</A>&nbsp;--&nbsp;List all open database files</DT><DT><A HREF="function.dba-nextkey.html">dba_nextkey</A>&nbsp;--&nbsp;Fetch next key</DT><DT><A HREF="function.dba-open.html">dba_open</A>&nbsp;--&nbsp;Open database</DT><DT><A HREF="function.dba-optimize.html">dba_optimize</A>&nbsp;--&nbsp;Optimize database</DT><DT><A HREF="function.dba-popen.html">dba_popen</A>&nbsp;--&nbsp;Open database persistently</DT><DT><A HREF="function.dba-replace.html">dba_replace</A>&nbsp;--&nbsp;Replace or insert entry</DT><DT><A HREF="function.dba-sync.html">dba_sync</A>&nbsp;--&nbsp;Synchronize database</DT></DL></DIV></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.ctype-xdigit.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.dba-close.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">ctype_xdigit</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="funcref.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">dba_close</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

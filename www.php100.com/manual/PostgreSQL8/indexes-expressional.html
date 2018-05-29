@@ -1,0 +1,139 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>表达式上的索引 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="索引" HREF="indexes.html"><LINK REL="PREVIOUS" TITLE="唯一索引" HREF="indexes-unique.html"><LINK REL="NEXT" TITLE="部分索引" HREF="indexes-partial.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="indexes-unique.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="indexes.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 11. 索引</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="indexes.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="indexes-partial.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="INDEXES-EXPRESSIONAL" >11.6. 表达式上的索引</A
+></H1
+><A NAME="AEN15066" ></A
+><P
+>   索引字段并非一定要是一个下层表的字段，而可以是一个函数或者从表中一个或多个字段计算出来的标量表达式。
+   这个特性对于快速访问那些基于计算结果的表非常有用。
+  </P
+><P
+>        比如，做大小写无关比较的常用方法是使用函数 <TT
+CLASS="FUNCTION"
+>lower</TT
+>∶
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM test1 WHERE lower(col1) = 'value';</PRE
+><P>
+        如果我们在
+         <TT
+CLASS="LITERAL"
+>lower(col1)</TT
+> 操作的结果上定义索引，
+        那么这个查询就可以使用索引∶
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE INDEX test1_lower_col1_idx ON test1 (lower(col1));</PRE
+><P>
+  </P
+><P
+>   如果我们要把这个索引声明为 <TT
+CLASS="LITERAL"
+>UNIQUE</TT
+>，那么它会禁止创建那种 <TT
+CLASS="LITERAL"
+>col1</TT
+> 数值只是大小写有区别的数据行，
+   以及 <TT
+CLASS="LITERAL"
+>col1</TT
+> 数值完全相同的数据行。因此，在表达式上的索引可以用于强制那些无法定义为简单唯一约束的约束。
+  </P
+><P
+>   另外一个例子是，如果我们经常使用下面这样的查询：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM people WHERE (first_name || ' ' || last_name) = 'John Smith';</PRE
+><P>
+   那么我们就值得创建下面这样的索引：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE INDEX people_names ON people ((first_name || ' ' || last_name));</PRE
+><P>
+  </P
+><P
+>   <TT
+CLASS="COMMAND"
+>CREATE INDEX</TT
+> 命令的语法通常要求在索引表达式周围书写圆括弧，
+   就像我们在第二个例子里显示的那样。如果表达式只是一个函数调用，那么可以省略，
+   就像我们在第一个例子里显示的那样。
+  </P
+><P
+>   从维护角度来看，索引表达式相对费劲一些，因为在插入数据行或者更新数据行的时候，
+   都必须为每一行计算生成的表达式。
+   不过，索引表达式<I
+CLASS="EMPHASIS"
+>不是</I
+>在索引查找的时候进行计算的，
+   因为它们已经存储在索引里了。在上面的两个例子里，系统都把查询看做只是
+   <TT
+CLASS="LITERAL"
+>WHERE indexedcolumn = 'constant'</TT
+>，因此搜索的速度等效于任何其它简单的索引查询。
+   因此，表达式上的索引在检索速度比插入和更新速度更重要的场合下是有用的。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="indexes-unique.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="indexes-partial.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >唯一索引</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="indexes.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >部分索引</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

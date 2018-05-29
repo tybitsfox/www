@@ -1,0 +1,368 @@
+<html><head><title>事务控制范例程序</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="范例程序" href="./c665.htm"><link rel="PREVIOUS" title="调制解调器控制范例程序" href="./x687.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x687.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 7. 范例程序</td><td align="right" valign="bottom" width="10%">&nbsp;</td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN690">事务控制范例程序</a></h1><pre class="PROGRAMLISTING">     /* 生成前台/后台事务的函数 */
+    
+     #include &lt;stdio.h&gt;
+     #include &lt;unistd.h&gt;
+     #include &lt;stdlib.h&gt;
+     #include &lt;fcntl.h&gt;
+     #include &lt;signal.h&gt;
+     #include &lt;sys/types.h&gt;
+     #include &lt;sys/wait.h&gt;
+     #include &lt;errno.h&gt;    
+    
+     /* 一些下面的函数会因为无法定位控制tty和调用方不在前台而失败。
+      * 第一种情况时，我们假设一个前台程序会有为标准输入，标准输出或标准错误输出打开的ctty，
+      * 而如果没有则返回ENOTTY。
+      * 第二种情况时，除foreground_self()函数的特殊情况以外，
+      * 若一个非前台程序打算输出一些东西到前台，我们返回EPERM。
+      * (也许想得太多了)
+      */
+    
+    
+     /* 为给定的pgrp安排一个终端 (打开一个ctty) .
+      * 这个tcsetpgrp()外壳程序只是因为POSIX中特别错误(bogusity)的地方而需要；
+      * 遵照标准的系统在一个非前台进程调用tcsetpgrp函数时传递SIGTTOU
+      * 信号(差不多总是这样)。这是虚假的一致性之于一般想法的胜利。
+      */
+    
+     int assign_terminal(int ctty, pid_t pgrp)
+     {
+         sigset_t sigs;
+         sigset_t oldsigs;
+         int rc;
+    
+         sigemptyset(&amp;sigs);
+         sigaddset(&amp;sigs,SIGTTOU);
+         sigprocmask(SIG_BLOCK, &amp;sigs, &amp;oldsigs);
+    
+         rc = tcsetpgrp(ctty, pgrp);
+    
+         sigprocmask(SIG_SETMASK, &amp;oldsigs, NULL);
+    
+         return rc;
+     }
+    
+    
+     /* 类似fork函数，但做事务控制。如果新建立的进程放在前台则设fg为真。
+      * (这样隐式地将调用方进程放置到后台，所以做完这个后要当心tty的输入/输出)
+      * 设定pgrp为-1以创建一个新事务，在此情况下返回的进程号即是新事务的进程组号，
+      * 或者设定一个同一会话中存在的事务(一般只用来启动管道操作的第二个或第二个以后
+      * 的进程)。
+      */
+    
+     pid_t spawn_job(int fg, pid_t pgrp)
+     {
+         int ctty = -1;
+         pid_t pid;
+    
+         /* 如果生成一个*新*的前台事务，起码要求标准输入，标准输出或
+          * 标准错误输出的其中一个指向的是控制tty，并且当前进程在前台。
+          * 只有当在存在事务中开始一个新前台进程时才检查控制中的tty。
+          * 一个没有控制tty的会话只能有后台事务。
+          */
+    
+         if (fg)
+         {
+             pid_t curpgrp;
+    
+             if ((curpgrp = tcgetpgrp(ctty = 2)) &lt; 0
+                 &amp;&amp; (curpgrp = tcgetpgrp(ctty = 0)) &lt; 0
+                 &amp;&amp; (curpgrp = tcgetpgrp(ctty = 1)) &lt; 0)
+                 return errno = ENOTTY, (pid_t)-1;
+    
+             if (pgrp &lt; 0 &amp;&amp; curpgrp != getpgrp())
+                 return errno = EPERM, (pid_t)-1;
+         }
+    
+         switch (pid = fork())
+         {
+             case -1: /* fork失败 */
+                 return pid;
+    
+             case 0: /* 子进程 */
+    
+                 /* 建立新进程组, 如果需要则将我们放到前台
+                  * 不知道如果setpgid函数调用失败该怎么办(“不会发生”)
+                  */
+    
+                 if (pgrp &lt; 0)
+                     pgrp = getpid();
+    
+                 if (setpgid(0,pgrp) == 0 &amp;&amp; fg)
+                     assign_terminal(ctty, pgrp);
+    
+                 return 0;
+    
+             default: /* 父进程 */
+    
+                 /* 这里也建立自进程组. */
+    
+                 if (pgrp &lt; 0)
+                     pgrp = pid;
+    
+                 setpgid(pid, pgrp);
+    
+                 return pid;
+         }
+    
+         /*不会执行到这里*/
+     }
+    
+    
+     /* 用SIGNO表示的信号杀死PGRP表示的事务 */
+    
+     int kill_job(pid_t pgrp, int signo)
+     {
+         return kill(-pgrp, signo);
+     }
+    
+    
+     /* 中断PGRP表示的事务 */
+    
+     int suspend_job(pid_t pgrp)
+     {
+         return kill_job(pgrp, SIGSTOP);
+     }
+    
+    
+     /* 继续在后台执行PGRP表示的事务 */
+    
+     int resume_job_bg(pid_t pgrp)
+     {
+         return kill_job(pgrp, SIGCONT);
+     }
+    
+    
+     /* 继续在前台执行PGRP表示的事务 */
+    
+     int resume_job_fg(pid_t pgrp)
+     {
+         pid_t curpgrp;
+         int ctty;
+    
+         if ((curpgrp = tcgetpgrp(ctty = 2)) &lt; 0
+             &amp;&amp; (curpgrp = tcgetpgrp(ctty = 0)) &lt; 0
+             &amp;&amp; (curpgrp = tcgetpgrp(ctty = 1)) &lt; 0)
+             return errno = ENOTTY, (pid_t)-1;
+    
+         if (curpgrp != getpgrp())
+             return errno = EPERM, (pid_t)-1;
+    
+         if (assign_terminal(ctty, pgrp) &lt; 0)
+             return -1;
+    
+         return kill_job(pgrp, SIGCONT);
+     }
+    
+    
+     /* 将我们自己放置到前台，比如在中断一个前台事务之后调用
+      */
+    
+     int foreground_self()
+     {
+         pid_t curpgrp;
+         int ctty;
+    
+         if ((curpgrp = tcgetpgrp(ctty = 2)) &lt; 0
+             &amp;&amp; (curpgrp = tcgetpgrp(ctty = 0)) &lt; 0
+             &amp;&amp; (curpgrp = tcgetpgrp(ctty = 1)) &lt; 0)
+             return errno = ENOTTY, (pid_t)-1;
+    
+         return assign_terminal(ctty, getpgrp());
+     }
+    
+    
+     /* closeall() - 关闭所有&gt;=给定FD的文件描述符 */
+    
+     void closeall(int fd)
+     {
+         int fdlimit = sysconf(_SC_OPEN_MAX);
+    
+         while (fd &lt; fdlimit)
+             close(fd++);
+     }
+    
+    
+     /* 类似system()函数，但将给定的命令作为后台事务执行，返回shell进程
+      * 的进程号(并且也是这个事务的进程组号，适用于kill_job等等)。
+      * 如果参数INFD，OUTFD或ERRFD为非NULL，则打开一个管道和一个文件描述
+      * 符保存与该管道有关的父进程端，然后在子进程中将被从定向到/dev/null。
+      * 并且在子进程中关闭所有&gt;2的文件描述符(一个经常过份估计的工作)
+      */
+    
+     pid_t spawn_background_command(const char *cmd,
+                                    int *infd, int *outfd, int *errfd)
+     {
+         int nullfd = -1;
+         int pipefds[3][2];
+         int error = 0;
+    
+         if (!cmd)
+             return errno = EINVAL, -1;
+    
+         pipefds[0][0] = pipefds[0][1] = -1;
+         pipefds[1][0] = pipefds[1][1] = -1;
+         pipefds[2][0] = pipefds[2][1] = -1;
+    
+         if (infd &amp;&amp; pipe(pipefds[0]) &lt; 0)
+             error = errno;
+         else if (outfd &amp;&amp; pipe(pipefds[1]) &lt; 0)
+             error = errno;
+         else if (errfd &amp;&amp; pipe(pipefds[2]) &lt; 0)
+             error = errno;
+    
+         if (!error &amp;&amp; !(infd &amp;&amp; outfd &amp;&amp; errfd))
+         {
+             nullfd = open("/dev/null",O_RDWR);
+             if (nullfd &lt; 0)
+                 error = errno;
+         }
+    
+         if (!error)
+         {
+             pid_t pid = spawn_job(0, -1);
+             switch (pid)
+             {
+                 case -1: /* fork失败 */
+                     error = errno;
+                     break;
+    
+                 case 0: /* 子进程 */
+    
+                     dup2(infd ? pipefds[0][0] : nullfd, 0);
+                     dup2(outfd ? pipefds[1][1] : nullfd, 1);
+                     dup2(errfd ? pipefds[2][1] : nullfd, 2);
+                     closeall(3);
+    
+                     execl("/bin/sh","sh","-c",cmd,(char*)NULL);
+    
+                     _exit(127);
+    
+                 default: /* 父进程 */
+    
+                     close(nullfd);
+                     if (infd)
+                         close(pipefds[0][0]), *infd = pipefds[0][1];
+                     if (outfd)
+                         close(pipefds[1][1]), *outfd = pipefds[1][0];
+                     if (errfd)
+                         close(pipefds[2][1]), *errfd = pipefds[2][0];
+    
+                     return pid;
+             }
+         }
+    
+         /* 只在错误时执行到这里 */
+    
+         {
+             int i,j;
+             for (i = 0; i &lt; 3; ++i)
+                 for (j = 0; j &lt; 2; ++j)
+                     if (pipefds[i][j] &gt;= 0)
+                         close(pipefds[i][j]);
+         }
+    
+         if (nullfd &gt;= 0)
+             close(nullfd);
+    
+         return errno = error, (pid_t) -1;
+     }
+    
+    
+     /*---------------------------------------*/
+     /* 这里是使用上述函数一个小例子.         */
+    
+     pid_t bgjob = -1;
+     volatile int signo = 0;
+    
+     #ifndef WCOREDUMP
+      /* 如果没有 WCOREDUMP, 你也许会希望在你的平台上为它设置一个准确的定义
+       * (这通常是(status &amp; 0x80) 但也不总是这样)，或者就赌没有core dumps(
+       * 就象这个程序所做)
+       */
+     # define WCOREDUMP(status) (0)
+     #endif
+    
+     int check_children()
+     {
+         pid_t pid;
+         int status;
+         int count = 0;
+    
+         while ((pid = waitpid(-1, &amp;status, WNOHANG | WUNTRACED)) &gt; 0)
+         {
+             if (pid == bgjob &amp;&amp; !WIFSTOPPED(status))
+                 bgjob = -1;
+    
+             ++count;
+    
+             if (WIFEXITED(status))
+                 fprintf(stderr,"Process %ld exited with return code %d\n",
+                         (long)pid, WEXITSTATUS(status));
+             else if (WIFSIGNALED(status))
+                 fprintf(stderr,"Process %ld killed by signal %d%s\n",
+                         (long)pid, WTERMSIG(status),
+                         WCOREDUMP(status) ? " (core dumped)" : "");
+             else if (WIFSTOPPED(status))
+                 fprintf(stderr,"Process %ld stopped by signal %d\n",
+                         (long)pid, WSTOPSIG(status));
+             else
+                 fprintf(stderr,"Unexpected status - pid=%ld, status=0x%x\n",
+                         (long)pid, status);
+         }
+    
+         return count;
+     }
+    
+    
+     void sighandler(int sig)
+     {
+         if (sig != SIGCHLD)
+             signo = sig;
+     }
+    
+    
+     int main()
+     {
+         struct sigaction act;
+         int sigcount = 0;
+    
+         act.sa_handler = sighandler;
+         act.sa_flags = 0;
+         sigemptyset(&amp;act.sa_mask);
+         sigaction(SIGINT,&amp;act,NULL);
+         sigaction(SIGQUIT,&amp;act,NULL);
+         sigaction(SIGTERM,&amp;act,NULL);
+         sigaction(SIGTSTP,&amp;act,NULL);
+         sigaction(SIGCHLD,&amp;act,NULL);
+
+    
+         fprintf(stderr,"Starting background job 'sleep 60'\n");
+         bgjob = spawn_background_command("sleep 60", NULL, NULL, NULL);
+         if (bgjob &lt; 0)
+         {
+             perror("spawn_background_command");
+             exit(1);
+         }
+         fprintf(stderr,"Background job started with id %ld\n", (long)bgjob);
+         while (bgjob &gt;= 0)
+         {
+             if (signo)
+             {
+                 fprintf(stderr,"Signal %d caught\n", signo);
+                 if (sigcount++)
+                     kill_job(bgjob, SIGKILL);
+                 else
+                 {
+                     kill_job(bgjob, SIGTERM);
+                     kill_job(bgjob, SIGCONT);
+                 }
+             }
+    
+             if (!check_children())
+                 pause();
+         }
+    
+         fprintf(stderr,"Done - exiting\n");
+         return 0;
+     }
+    </pre></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x687.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%">&nbsp;</td></tr><tr><td align="left" valign="top" width="33%">调制解调器控制范例程序</td><td align="center" valign="top" width="34%"><a href="./c665.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">&nbsp;</td></tr></tbody></table></div></body></html>

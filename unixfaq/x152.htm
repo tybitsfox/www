@@ -1,0 +1,19 @@
+<html><head><title>我怎样睡眠小于一秒？</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="进程控制" href="./c46.htm"><link rel="PREVIOUS" title="环境变量" href="./x124.htm"><link rel="NEXT" title="我怎样得到一个更细分时间单位的alarm函数版本？" href="./x166.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x124.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 1. 进程控制</td><td align="right" valign="bottom" width="10%"><a href="./x166.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN152">1.3. 我怎样睡眠小于一秒？</a></h1><p>在所有Unix中都有的‘sleep()’函数只允许以秒计算的时间间隔。如果你想要更
+细化，那么你需要寻找替换方法：
+    </p><p></p><ul><li><p>许多系统有一个‘usleep()’函数</p></li><li><p>你可以使用‘select()’或‘poll()’，
+	 并设置成无文件描述符并试验；
+	 一个普遍技巧是基于其中一个函数写一个‘usleep()’函数。
+	 (参见comp.unix.questions FAQ 的一些例子)</p></li><li><p>如果你的系统有itimers(很多是有的)(译者注：
+	setitimer和getitimer是两个操作itimers的函数，
+	使用“man setitimer”确认你的系统支持)，
+	你可以用它们自己撺一个‘usleep()’。
+	(参见BSD源程序的‘usleep()’以便知道怎样做)</p></li><li><p>如果你有POSIX实时(realtime)支持，
+	那会有一个‘nanosleep()’函数。</p></li></ul><p>众观以上方法，‘select()’可能是移植性最好的(直截了当说，它经常比
+‘usleep()’或基于itimer的方法更有效)。但是，在睡眠中捕获信号的做法会有
+所不同；基于不同应用，这可以成为或不成为一个问题。
+    </p><p>无论你选择哪条路，意识到你将受到系统计时器分辨率的限制是很重要的(一
+些系统允许设置非常短的时间间隔，而其他的系统有一个分辨率，比如说10毫
+秒，而且总是将所有设置时间取整到那个值)。而且，关于‘sleep()’，你设置
+的延迟只是最小值(译者注：实际延迟的最小值)；经过这段时间的延迟，会有
+一个中间时间间隔直到你的进程重新被调度到。
+    </p></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x124.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x166.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">环境变量</td><td align="center" valign="top" width="34%"><a href="./c46.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">我怎样得到一个更细分时间单位的alarm函数版本？</td></tr></tbody></table></div></body></html>

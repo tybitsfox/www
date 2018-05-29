@@ -1,0 +1,147 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>联接是如何建立起来的 PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="PostgreSQL 内部概貌" HREF="overview.html"><LINK REL="PREVIOUS" TITLE="PostgreSQL 内部概貌" HREF="overview.html"><LINK REL="NEXT" TITLE="分析器阶段" HREF="parser-stage.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="overview.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="overview.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 41. PostgreSQL 内部概貌</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="overview.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="parser-stage.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="CONNECT-ESTAB" >41.2. 联接是如何建立起来的</A
+></H1
+><P
+>    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	是用一个简单的<SPAN
+CLASS="QUOTE"
+>"每用户一进程"</SPAN
+> 的client/server 模型实现的。
+	 在这种模式里一个<I
+CLASS="FIRSTTERM"
+>客户端进程</I
+>只是与一个<I
+CLASS="FIRSTTERM"
+>服务器进程联接</I
+>。
+	 因为我们不知道<I
+CLASS="FOREIGNPHRASE"
+>具体</I
+>要建立多少个联接，
+	所以我们不得不利用一个<I
+CLASS="FIRSTTERM"
+>主进程</I
+>在每次联接请求时派生出一个新的服务器进程来。
+	这个主进程叫做 <TT
+CLASS="LITERAL"
+>postmaster</TT
+>，
+	它监听着一个特定的 TCP/IP 端口等待进来的联接。
+	每当检测到一个联接请求时，<TT
+CLASS="LITERAL"
+>postmaster</TT
+>
+	进程派生出一个新的叫 <TT
+CLASS="LITERAL"
+>postgres</TT
+>的服务器进程。
+	服务器任务（<TT
+CLASS="LITERAL"
+>postgres</TT
+> 进程）相互之间使用<I
+CLASS="FIRSTTERM"
+>信号灯</I
+>和<I
+CLASS="FIRSTTERM"
+>共享内存</I
+>进行通讯，
+	以确保在并行的数据访问过程中的数据完整性。
+   </P
+><P
+>    客户端进程可以是任何理解 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 协议（在 <A HREF="protocol.html" >Chapter 43</A
+> 里描述）的程序。
+    许多客户端都是基于 C 语言库 <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>，
+    但是也存在几个对协议之独立的实现，比如 Java <SPAN
+CLASS="APPLICATION"
+>JDBC</SPAN
+> 驱动。
+   </P
+><P
+>    一旦建立起来联接，
+	客户端进程就可以向<I
+CLASS="FIRSTTERM"
+>后端</I
+>（服务器）进程发送查询了。
+	查询是通过纯文本传输的，也就是说在 <I
+CLASS="FIRSTTERM"
+>前端</I
+>（客户端）不做任何分析处理。
+    服务器分析查询，创建<I
+CLASS="FIRSTTERM"
+>执行规划</I
+>，
+	执行该规划并且通过已经建立起来的连接把检索出来的数据行返回给客户端。
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="overview.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="parser-stage.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >PostgreSQL 内部概貌</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="overview.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >分析器阶段</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

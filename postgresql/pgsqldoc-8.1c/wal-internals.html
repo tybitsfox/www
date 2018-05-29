@@ -1,0 +1,259 @@
+<HTML
+><HEAD
+><TITLE
+>WAL 内部</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="可靠性和预写式日志"
+HREF="wal.html"><LINK
+REL="PREVIOUS"
+TITLE="WAL 配置"
+HREF="wal-configuration.html"><LINK
+REL="NEXT"
+TITLE="回归测试"
+HREF="regress.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="wal-configuration.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="wal.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 26. 可靠性和预写式日志</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="wal.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="regress.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="WAL-INTERNALS"
+>26.4. WAL 内部</A
+></H1
+><P
+>	在版本 7.1 以后，<SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 是自动打开的。
+	除了要求一些磁盘空间存放 <SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+>日志以及一些必要的调节以外（参阅<A
+HREF="wal-configuration.html"
+>Section 26.3</A
+>），
+	对管理员没有什么其他要求，
+  </P
+><P
+>	<SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 日志存放在数据目录的
+	<TT
+CLASS="FILENAME"
+>pg_xlog</TT
+>
+	目录里，它是作为一个文件段的集合存储的，通常每个段 16 MB 大。
+	每个段分割成多个页，通常 8K 大。日志记录头在
+	<TT
+CLASS="FILENAME"
+>access/xlog.h</TT
+> 里描述；日志内容取决于它记录的事件的类型。
+	段文件的名字是递增自然数，从 <TT
+CLASS="FILENAME"
+>000000010000000000000000</TT
+> 开始。目前这些数字不能循环使用，
+	不过要把所有可用的数字都用光也需要非常长的时间。
+  </P
+><P
+>	日志位于和主数据库文件不同的另外一个磁盘上会比较好。
+	你可以通过把<TT
+CLASS="FILENAME"
+>pg_xlog</TT
+>目录移动到另外一个位置（ postmaster 当然得关闭），
+	然后在	<TT
+CLASS="REPLACEABLE"
+><I
+>$PGDATA</I
+></TT
+> 里原来的位置创建一个指向新位置的符号链接来实现。
+  </P
+><P
+>	<SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 的目的是确保在数据库记录被修改之前，
+	先写了日志，但是这个目的有可能被那些向内核谎报成功写的磁盘驱动器<A
+NAME="AEN24217"
+></A
+>破坏，
+	这时候，它们实际上只是缓冲了数据而并未把数据存储到磁盘上。
+	这种情况下的电源失效仍然可能导致不可恢复的数据崩溃；
+	管理员应该确保保存 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的日志文件的磁盘不会做这种虚假汇报。
+  </P
+><P
+>	在完成一个检查点并且日志文件冲刷了之后，检查点的位置保存在了文件 <TT
+CLASS="FILENAME"
+>pg_control</TT
+> 里。因此在需要做恢复的时候，
+	后端首先读取 <TT
+CLASS="FILENAME"
+>pg_control</TT
+> 和检查点记录；
+	然后它通过从检查点记录里标识的日志位置开始向前扫描执行 REDO 操作。
+	因为数据页的所有内容都保存在检查点之后的第一个页面修改的日志里，
+	所以自检查点以来的所有变化都将被恢复到一个一致的状态。
+   </P
+><P
+>	但是为了处理 <TT
+CLASS="FILENAME"
+>pg_control</TT
+> 可能的损坏，
+	我们实际上应该实现对现存的日志段的反向读取顺序 -- 从最新到最老 -- 这样才能找到最后的检查点。这些还没有实现。
+	<TT
+CLASS="FILENAME"
+>pg_control</TT
+> 很小（比一个磁盘页小），因此它出现只写了一部分的问题的概率几乎为零，
+	到目前为止，我们还没有看到只是说不能读取 <TT
+CLASS="FILENAME"
+>pg_control</TT
+> 自身的错误。
+	因此，尽管这在理论上是一个薄弱环节，但是 <TT
+CLASS="FILENAME"
+>pg_control</TT
+> 看起来似乎并不是实际会发生的问题。
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="wal-configuration.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="regress.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><SPAN
+CLASS="ACRONYM"
+>WAL</SPAN
+> 配置</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="wal.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>回归测试</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

@@ -1,0 +1,470 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>CREATE INDEX PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="CREATE GROUP" HREF="sql-creategroup.html"><LINK REL="NEXT" TITLE="CREATE LANGUAGE" HREF="sql-createlanguage.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-creategroup.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-creategroup.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-createlanguage.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-createlanguage.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-CREATEINDEX" >CREATE INDEX</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN42040" ></A
+><H2
+>Name</H2
+>CREATE INDEX&nbsp;--&nbsp;定义一个新索引</DIV
+><A NAME="AEN42043" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN42045" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>CREATE [ UNIQUE ] INDEX <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> ON <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> [ USING <TT
+CLASS="REPLACEABLE"
+><I
+>method</I
+></TT
+> ]
+    ( { <TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> | ( <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> ) } [ <TT
+CLASS="REPLACEABLE"
+><I
+>opclass</I
+></TT
+> ] [, ...] )
+    [ TABLESPACE <TT
+CLASS="REPLACEABLE"
+><I
+>tablespace</I
+></TT
+> ]
+    [ WHERE <TT
+CLASS="REPLACEABLE"
+><I
+>predicate</I
+></TT
+> ]</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42055" ></A
+><H2
+>描述</H2
+><P
+>   <TT
+CLASS="COMMAND"
+>CREATE INDEX</TT
+> 在指定的表上构造一个名为
+   <TT
+CLASS="REPLACEABLE"
+><I
+>index_name</I
+></TT
+>
+   的索引。索引主要用来提高数据库性能。但是如果不恰当的使用将导致性能的下降。
+  </P
+><P
+>   索引的键字字段是以字段名的方式声明的，或者是可选的写在一个圆括弧里面的表达式。
+   如果索引方式支持多个字段索引，那么我们也可以声明多个字段。
+  </P
+><P
+>   一个索引字段可以是一个使用表的行的一个或多个字段的数值进行计算的表达式。
+   整个特性可用于获取对基本数据某种变形的快速访问。
+   比如，一个在 <TT
+CLASS="LITERAL"
+>upper(col)</TT
+> 上的函数索引将允许子句 <TT
+CLASS="LITERAL"
+>WHERE upper(col) = 'JIM'</TT
+> 使用索引。
+  </P
+><P
+>	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	为从索引提供 B-tree，R-tree，hash（散列） 和 GiST 索引方法。
+	B-tree 索引方法是一个 Lehman-Yao 高并发 B-trees 的实
+	现。R-tree 索引方法用 Guttman 的二次分裂算法实现了标准的 R-trees。
+	hash（散列）索引方法是 Litwin 的线性散列的一个实现。
+	用户也可以定义它们自己的索引方法，但这个工作相当复杂。
+  </P
+><P
+>	如果出现了 <TT
+CLASS="COMMAND"
+>WHERE</TT
+> 子句，则创建一个<I
+CLASS="FIRSTTERM"
+>部分索引</I
+>。
+	部分索引是一个只包含表的一部分记录的索引，通常是该表中比其它部分数据更有用的部分。
+	比如，如果你有一个表，里面包含已上账和未上账的定单，
+	未上账的定单只占表的一小部分而且这部分是最常用的部分，
+	那么你就可以通过只在这个部分创建一个索引来改善性能。
+	另外一个可能的用途是用 <TT
+CLASS="COMMAND"
+>WHERE</TT
+> 和
+	<TT
+CLASS="COMMAND"
+>UNIQUE</TT
+> 强制一个表的某个子集的唯一性。
+	参阅 <A HREF="indexes-partial.html" >Section 11.7</A
+> 探讨更多信息。
+  </P
+><P
+>	在 <TT
+CLASS="COMMAND"
+>WHERE</TT
+> 子句里用的表达式只能引用下层表的字段，但是它可以使用所有字段，而不仅仅是被索引的字段。
+	目前，子查询和聚集表达式也不能出现在<TT
+CLASS="COMMAND"
+>WHERE</TT
+>里。
+  </P
+><P
+>	索引定义里的所有函数和操作符都必须是<I
+CLASS="FIRSTTERM"
+>immutable</I
+>，（不变的）也就是说，
+	它们的结果必须只能依赖于它们的输入参数，而决不能依赖任何外部的影响（比如另外一个表的内容或者当前时间）。
+	这个约束确保该索引的行为是定义完整的。要在一个索引上使用用户定义函数，请记住在你创建它的时候把它标记为immutable的函数。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42077" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>UNIQUE</TT
+></DT
+><DD
+><P
+>        令系统检测当索引创建时（如果数据已经存在）和每次添加数据时表中是否有重复值。
+	如果插入或更新的值会导致重复的记录时将生成一个错误。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+></DT
+><DD
+><P
+>	要创建的索引名。这里不能包含模式名；
+	索引总是在同一个模式中作为其父表创建的。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+></DT
+><DD
+><P
+>	要索引的表名（可能有模式修饰）。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>method</I
+></TT
+></DT
+><DD
+><P
+>       用于索引的方法的名字。可选的名字是 <TT
+CLASS="LITERAL"
+>btree</TT
+>，
+       <TT
+CLASS="LITERAL"
+>hash</TT
+>，<TT
+CLASS="LITERAL"
+>rtree</TT
+>，和
+       <TT
+CLASS="LITERAL"
+>gist</TT
+>。缺省方法是 <TT
+CLASS="LITERAL"
+>btree</TT
+>。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+></DT
+><DD
+><P
+>        表的列/字段名。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+></DT
+><DD
+><P
+>	一个基于该表的一个或多个字段的表达式。
+	这个表达式通常必须带着圆括弧包围写出，如语法中显示那样。
+	不过，如果表达式有函数调用的形式，那么圆括弧可以省略。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>opclass</I
+></TT
+></DT
+><DD
+><P
+>        一个关联的操作符表。参阅下文获取细节。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>tablespace</I
+></TT
+></DT
+><DD
+><P
+>	创建索引所在的表空间。如果没有声明，则使用 <A HREF="runtime-config-client.html#GUC-DEFAULT-TABLESPACE" >default_tablespace</A
+> 的表空间，
+	如果 <TT
+CLASS="VARNAME"
+>default_tablespace</TT
+> 是空字串，则使用数据库的缺省表空间。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>predicate</I
+></TT
+></DT
+><DD
+><P
+>	为一个部分索引定义约束表达式。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42132" ></A
+><H2
+>注意</H2
+><P
+>   参阅 <A HREF="indexes.html" >Chapter 11</A
+> 获取有关何时使用索引，何时不使用索引，
+   以及它们哪种情况下是有用的信息。
+  </P
+><P
+>	目前，只有 B-tree 和 gist 索引方法支持多字段索引。
+	缺省时最多可以声明 32 个键字（这个限制可以在制作 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 时修改）。
+	目前只有 B-tree 支持唯一索引。
+   </P
+><P
+>   可以为索引的每个列/字段声明一个 <I
+CLASS="FIRSTTERM"
+>操作符表</I
+>。
+   操作符表标识将要被该索引用于该列/字段的操作符。
+   例如， 一个四字节整数的 B-tree 索引将使用 <TT
+CLASS="LITERAL"
+>int4_ops</TT
+> 表；
+   这个操作符表包括四字节整数的比较函数。 实际上，该域的数据类型的缺省操作符表一般就足够了。
+   某些数据类型有操作符表的原因是，它们可能有多于一个的有意义的顺序。
+   例如，我们对复数类型排序时有可能以绝对值或者以实部。
+   我们可以通过为该数据类型定义两个操作符表，然后在建立索引的时候选择合适的表来实现。
+   有关操作符表更多的信息在 <A HREF="indexes-opclass.html" >Section 11.8</A
+> 和 <A HREF="xindex.html" >Section 32.14</A
+> 里。
+  </P
+><P
+>   使用 <A HREF="sql-dropindex.html" ><I
+>DROP INDEX</I
+></A
+> 删除一个索引。
+  </P
+><P
+>   缺省时索引不会用于 <TT
+CLASS="LITERAL"
+>IS NULL</TT
+> 子句。这种场合下使用索引的最好方法是用 <TT
+CLASS="LITERAL"
+>IS NULL</TT
+> 谓词创建一个部分索引。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42148" ></A
+><H2
+>例子</H2
+><P
+>        在表<TT
+CLASS="LITERAL"
+>films</TT
+>上的
+        <TT
+CLASS="LITERAL"
+>title</TT
+>字段创建一个 B-tree 索引：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE UNIQUE INDEX title_idx ON films (title);</PRE
+><P>
+  </P
+><P
+>   在表  <TT
+CLASS="LITERAL"
+>films</TT
+> 的字段 <TT
+CLASS="LITERAL"
+>code</TT
+> 上创建一个索引，
+   并且让索引存在于表空间 <TT
+CLASS="LITERAL"
+>indexspace</TT
+>上：
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE INDEX code_idx ON films(code) TABLESPACE indexspace;</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42159" ></A
+><H2
+>兼容性</H2
+><P
+>    CREATE INDEX 是 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 语言扩展。
+    在 SQL92 中没有 <TT
+CLASS="COMMAND"
+>CREATE INDEX</TT
+> 命令。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN42164" ></A
+><H2
+>又见</H2
+><A HREF="sql-alterindex.html" ><I
+>ALTER INDEX</I
+></A
+>, <A HREF="sql-dropindex.html" ><I
+>DROP INDEX</I
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-creategroup.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-createlanguage.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >CREATE GROUP</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >CREATE LANGUAGE</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

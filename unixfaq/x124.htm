@@ -1,0 +1,102 @@
+<html><head><title>环境变量</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="进程控制" href="./c46.htm"><link rel="PREVIOUS" title="进程控制" href="./c46.htm"><link rel="NEXT" title="我怎样睡眠小于一秒？" href="./x152.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./c46.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 1. 进程控制</td><td align="right" valign="bottom" width="10%"><a href="./x152.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN124">1.2. 环境变量</a></h1><div class="SECT2"><h2 class="SECT2"><a name="AEN126">1.2.1. 如何从程序中获得/设置环境变量？</a></h2><p>获得一个环境变量可以通过调用‘getenv()’函数完成。
+      </p><pre class="PROGRAMLISTING">     #include &lt;stdlib.h&gt;
+
+     char *getenv(const char *name);
+      </pre><p>设置一个环境变量可以通过调用‘putenv()’函数完成。
+      </p><pre class="PROGRAMLISTING">     #include &lt;stdlib.h&gt;
+
+     int putenv(char *string);
+      </pre><p>变量string应该遵守"name=value"的格式。已经传递给putenv函数的字符串*不*能够被
+释放或变成无效，因为一个指向它的指针将由‘putenv()’保存。这意味着它必须是
+在静态数据区中或是从堆(heap)分配的。如果这个环境变量被另一个‘putenv()’的
+调用重新定义或删除，上述字符串可以被释放。
+      </p><p>/**************************译者增加***********************************
+      </p><p>因为putenv()有这样的局限，在使用中经常会导致一些错
+误，GNU libc 中还包括了两个BSD风格的函数:
+      </p><pre class="PROGRAMLISTING">#include &lt;stdlib.h&gt;
+
+int setenv(const char *name, const char *value, int replace);
+void unsetenv(const char *name);
+      </pre><p>setenv()/unsetenv()函数可以完成所有putenv()能做的事。setenv() 可以不受指针
+限制地向环境变量中添加新值，但传入参数不能为空（NULL）。当replace为0时，如
+果环境变量中已经有了name项，函数什么也不做（保留原项），否则原项被覆盖。
+unsetenv()是用来把name项从环境变量中删除。注意：这两个函数只存在在BSD和GNU
+库中，其他如SunOS系统中不包括它们，因此将会带来一些兼容问题。我们可以用
+getenv()/putenv()来实现：
+      </p><pre class="PROGRAMLISTING">int setenv(const char *name,  const char *value, int replace)
+{
+   char *envstr;
+
+   if (name == NULL || value == NULL)
+      return 1;
+   if (getenv(name) !=NULL)
+     {
+        envstr = (char *) malloc(strlen(name) + strlen(value) + 2);
+        sprintf (envstr, "%s=%s", name, value);
+        if (putenv(envstr));
+           return 1;
+     }
+   return 0;
+} 
+      </pre><p>**************************译者增加***********************************/
+      </p><p>记住环境变量是被继承的；每一个进程有一个不同的环境变量表拷贝（译者注：
+从core文件中我们可以看出这一点）。结果是，你不能从一个其他进程改变当前
+进程的环境变量，比如shell进程。
+      </p><p>假设你想得到环境变量‘TERM’的值，你需要使用下面的程序：
+      </p><pre class="PROGRAMLISTING">     char *envvar;
+
+     envvar=getenv("TERM");
+
+     printf("The value for the environment variable TERM is ");
+     if(envvar)
+     {
+         printf("%s\n",envvar);
+     }
+     else
+     {
+         printf("not set.\n");
+     }
+      </pre><p>现在假设你想创建一个新的环境变量，变量名为‘MYVAR’，值为‘MYVAL’。
+以下是你将怎样做：
+      </p><pre class="PROGRAMLISTING">     static char envbuf[256];
+
+     sprintf(envbuf,"MYVAR=%s","MYVAL");
+
+     if(putenv(envbuf))
+     {
+         printf("Sorry, putenv() couldn't find the memory for %s\n",envbuf);
+         /* Might exit() or something here if you can't live without it */
+     }
+      </pre></div><div class="SECT2"><h2 class="SECT2"><a name="AEN144">1.2.2. 我怎样读取整个环境变量表？</a></h2><p>如果你不知道确切你想要的环境变量的名字，那么‘getenv()’函数不是很有用。
+在这种情况下，你必须更深入了解环境变量表的存储方式。
+      </p><p>全局变量，‘char **envrion’，包含指向环境字符串指针数组的指针，每一个字
+符串的形式为‘“NAME=value”’(译者注：和putenv()中的“string”的格式相同)。
+这个数组以一个‘空’(NULL)指针标记结束。这里是一个打印当前环境变量列表
+的小程序(类似‘printenv’)。
+      </p><pre class="PROGRAMLISTING">     #include &lt;stdio.h&gt;
+
+     extern char **environ;
+
+     int main()
+     {
+         char **ep = environ;
+         char *p;
+         while ((p = *ep++))
+             printf("%s\n", p);
+         return 0;
+     }
+      </pre><p>一般情况下，‘envrion’变量作为可选的第三个参数传递给‘main()’；就是说，
+上面的程序可以写成：
+      </p><pre class="PROGRAMLISTING">     #include &lt;stdio.h&gt;
+
+     int main(int argc, char **argv, char **envp)
+     {
+         char *p;
+         while ((p = *envp++))
+             printf("%s\n", p);
+         return 0;
+     }
+      </pre><p>虽然这种方法被广泛的操纵系统所支持(译者注：包括DOS)，这种方法事实上并
+没有被POSIX(译者注：POSIX: Portable Operating System Interace)标准所定义。(一
+般的，它也比较没用)
+      </p></div></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./c46.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./x152.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">进程控制</td><td align="center" valign="top" width="34%"><a href="./c46.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">我怎样睡眠小于一秒？</td></tr></tbody></table></div></body></html>

@@ -1,0 +1,799 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>FETCH PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="EXPLAIN" HREF="sql-explain.html"><LINK REL="NEXT" TITLE="GRANT" HREF="sql-grant.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-explain.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-explain.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-grant.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-grant.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-FETCH" >FETCH</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN46093" ></A
+><H2
+>Name</H2
+>FETCH&nbsp;--&nbsp;用游标从查询中抓取行</DIV
+><A NAME="AEN46096" ></A
+><A NAME="AEN46098" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN46101" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>FETCH [ <TT
+CLASS="REPLACEABLE"
+><I
+>direction</I
+></TT
+> { FROM | IN } ] <TT
+CLASS="REPLACEABLE"
+><I
+>cursorname</I
+></TT
+>
+
+这里 <TT
+CLASS="REPLACEABLE"
+><I
+>direction</I
+></TT
+> 可以是空或者下列之一：
+
+    NEXT
+    PRIOR
+    FIRST
+    LAST
+    ABSOLUTE <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+>
+    RELATIVE <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+>
+    <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+>
+    ALL
+    FORWARD
+    FORWARD <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+>
+    FORWARD ALL
+    BACKWARD
+    BACKWARD <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+>
+    BACKWARD ALL</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46111" ></A
+><H2
+>描述</H2
+><P
+>	<TT
+CLASS="COMMAND"
+>FETCH</TT
+> 使用游标检索行。
+  </P
+><P
+>	一个游标有一个由 <TT
+CLASS="COMMAND"
+>FETCH</TT
+> 使用的相关联的位置。
+	游标得位置可以在查询结果的第一行之前，或者在结果中的任意行，
+	或者在结果的最后一行之后。在创建完之后，游标是放在第一行之前的。
+	在抓取了一些行之后，游标放在检索到的最后一行上。如果 <TT
+CLASS="COMMAND"
+>FETCH</TT
+>
+	抓完了所有可用行，那么它就停在最后一行后面，或者在向前抓去的情况下是停在第一行前面。
+	<TT
+CLASS="COMMAND"
+>FETCH ALL</TT
+> 或者 <TT
+CLASS="COMMAND"
+>FETCH BACKWARD ALL</TT
+>
+	将总是把游标的位置放在最后一行或者在第一行前面。
+  </P
+><P
+>	<TT
+CLASS="LITERAL"
+>NEXT</TT
+>，<TT
+CLASS="LITERAL"
+>PRIOR</TT
+>，<TT
+CLASS="LITERAL"
+>FIRST</TT
+>，<TT
+CLASS="LITERAL"
+>LAST</TT
+>，
+	<TT
+CLASS="LITERAL"
+>ABSOLUTE</TT
+>，<TT
+CLASS="LITERAL"
+>RELATIVE</TT
+> 形式在恰当地
+	移动游标之后抓取一个行。如果没有数据行了，那么返回一个空的结果，
+	那么游标就会停在查询结果的最后一行之后或者在第一行之前。
+  </P
+><P
+>  <TT
+CLASS="LITERAL"
+>FORWARD</TT
+> 和 <TT
+CLASS="LITERAL"
+>BACKWARD</TT
+> 形式在向前或者向后移动的过程中抓取指定的行数，
+  然后把游标定位在最后返回的行上（或者是，如果 <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+>
+  大于可用的行数，在所有行之前或之后。）
+  </P
+><P
+>	<TT
+CLASS="LITERAL"
+>RELATIVE 0</TT
+>，<TT
+CLASS="LITERAL"
+>FORWARD 0</TT
+>，和 <TT
+CLASS="LITERAL"
+>BACKWARD 0</TT
+>
+	都要求在不移动游标的前提下抓取当前行－－－也就是重新抓取最近刚刚抓取过的行。
+	除非游标定位在第一行之前或者最后一行之后，这个动作都应该成功，而在那两种情况下，不返回任何行。
+    </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46135" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>direction</I
+></TT
+></DT
+><DD
+><P
+>	<TT
+CLASS="REPLACEABLE"
+><I
+>direction</I
+></TT
+>
+	定义抓取的方向和抓取的行数。它可以是下述之一：
+
+	<P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>NEXT</TT
+></DT
+><DD
+><P
+>		抓取下一行。
+		<TT
+CLASS="REPLACEABLE"
+><I
+>direction</I
+></TT
+>
+		省略时这是缺省值。
+	   </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>PRIOR</TT
+></DT
+><DD
+><P
+>		抓取前面一行。
+	   </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>FIRST</TT
+></DT
+><DD
+><P
+>		抓取查询的第一行（和 <TT
+CLASS="LITERAL"
+>ABSOLUTE 1</TT
+> 相同）。
+	   </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>LAST</TT
+></DT
+><DD
+><P
+>	抓取查询的最后一行（和 <TT
+CLASS="LITERAL"
+>ABSOLUTE -1</TT
+> 相同）。
+         </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>ABSOLUTE <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+></TT
+>R</DT
+><DD
+><P
+>	抓取查询中第 <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+> 行，
+	或者，如果 <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+> &lt; 0，
+	从查询结果末尾抓取第abs(<TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+>)行。
+	如果<TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+> 超出了范围，那么定位在第一行之前和最后一行之后的位置；
+	特别是 <TT
+CLASS="LITERAL"
+>ABSOLUTE 0</TT
+> 定位在第一行之前。
+         </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>RELATIVE <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	抓取随后的第 <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+> 行，
+	或者，如果 <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+> &lt; 0 的时候，
+	抓取前面的第 abs(<TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+>) 行。
+	如果有数据的话，<TT
+CLASS="LITERAL"
+>RELATIVE 0</TT
+> 重新抓取当前行。
+         </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+></DT
+><DD
+><P
+>	抓取下面的 <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+> 行
+	（和 FORWARD <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+> 一样）。
+         </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>ALL</TT
+></DT
+><DD
+><P
+>	抓取所有剩余的行（和 <TT
+CLASS="LITERAL"
+>FORWARD ALL</TT
+> 一样）。
+         </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>FORWARD</TT
+></DT
+><DD
+><P
+>	抓取下面一行（和 <TT
+CLASS="LITERAL"
+>NEXT</TT
+>）一样。
+         </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>FORWARD <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	抓取下面 <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+> 行。
+	<TT
+CLASS="LITERAL"
+>FORWARD 0</TT
+> 重新抓取当前行。
+         </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>FORWARD ALL</TT
+></DT
+><DD
+><P
+>	抓取所有剩余行。
+         </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>BACKWARD</TT
+></DT
+><DD
+><P
+>	抓取前面一行（和 <TT
+CLASS="LITERAL"
+>PRIOR</TT
+> 一样）。
+         </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>BACKWARD <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+></TT
+></DT
+><DD
+><P
+>	抓取前面 <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+> 行（向后扫描）。
+	<TT
+CLASS="LITERAL"
+>BACKWARD 0</TT
+> 重新抓取当前行。
+         </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>BACKWARD ALL</TT
+></DT
+><DD
+><P
+>	抓取所有前面的行（向后扫描）。
+         </P
+></DD
+></DL
+></DIV
+><P>
+      </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+></DT
+><DD
+><P
+>      <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+>
+	可能是一个有符号的整数常量，决定要抓取的行数和方向。
+	对于 <TT
+CLASS="LITERAL"
+>FORWARD</TT
+> 和 <TT
+CLASS="LITERAL"
+>BACKWARD</TT
+> 的情况，声明一个带负号的
+	<TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+>
+	等效于改变 <TT
+CLASS="LITERAL"
+>FORWARD</TT
+> 和 <TT
+CLASS="LITERAL"
+>BACKWARD</TT
+> 的方向。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>cursor</I
+></TT
+></DT
+><DD
+><P
+>	一个打开的游标的名称。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46256" ></A
+><H2
+>输出</H2
+><P
+>   成功完成时，一个 <TT
+CLASS="COMMAND"
+>FETCH</TT
+> 命令返回一个形如下面的标记
+</P><PRE
+CLASS="SCREEN"
+>FETCH <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+></PRE
+><P>
+   这里的 <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+> 是抓取的行数（可能是零）。
+   请注意在 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 里，命令标签实际上不会显示，
+   因为 <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 用抓取的行数取代了。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46265" ></A
+><H2
+>注意</H2
+><P
+>	如果你想使用 <TT
+CLASS="COMMAND"
+>FETCH NEXT</TT
+> 之外的任何 <TT
+CLASS="COMMAND"
+>FETCH</TT
+> 的变种，
+	或者是带负数计数的 <TT
+CLASS="COMMAND"
+>FETCH FORWARD</TT
+>。那么定义游标的时候应该带着 <TT
+CLASS="LITERAL"
+>SCROLL</TT
+> 选项。
+	对于简单的查询，
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 会允许那些没有带 <TT
+CLASS="LITERAL"
+>SCROLL</TT
+> 选项定义的游标也可以反向抓取，
+	但是我们最好不要依赖这个行为。
+	如果游标定义了 <TT
+CLASS="LITERAL"
+>NO SCROLL</TT
+>，那么不允许反向抓取。
+   </P
+><P
+>	<TT
+CLASS="LITERAL"
+>ABSOLUTE</TT
+> 抓取不会比用相对位移移动到需要的数据行更快：
+	因为下层的实现必须遍历所有中间的行。负数的绝对抓取甚至更糟糕：
+	查询必须一直读到结尾才能找到最后一行，然后从那里开始反向遍历。
+	不过，回退到查询开头（就像 <TT
+CLASS="LITERAL"
+>FETCH ABSOLUTE 0</TT
+>）很快。
+     </P
+><P
+>	在游标中更新数据还不被 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 支持。
+   </P
+><P
+>    使用
+    <A HREF="sql-declare.html" ><I
+>DECLARE</I
+></A
+>
+	语句定义一个游标。
+    <A HREF="sql-move.html" ><I
+>MOVE</I
+></A
+>
+	语句改变游标位置而不检索数据。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46283" ></A
+><H2
+>例子</H2
+><P
+>	下面的例子用一个游标跨过一个表。
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>-- 建立一个游标：
+
+BEGIN WORK;
+DECLARE liahona SCROLL CURSOR FOR SELECT * FROM films;
+
+-- 抓取头 5 行到游标 liahona 里：
+FETCH FORWARD 5 FROM liahona;
+
+ code  |          title          | did | date_prod  |   kind   |  len
+-------+-------------------------+-----+------------+----------+-------
+ BL101 | The Third Man           | 101 | 1949-12-23 | Drama    | 01:44
+ BL102 | The African Queen       | 101 | 1951-08-11 | Romantic | 01:43
+ JL201 | Une Femme est une Femme | 102 | 1961-03-12 | Romantic | 01:25
+ P_301 | Vertigo                 | 103 | 1958-11-14 | Action   | 02:08
+ P_302 | Becket                  | 103 | 1964-02-03 | Drama    | 02:28
+
+-- 抓取前面行：
+FETCH PRIOR FROM liahona;
+
+<TT
+CLASS="COMPUTEROUTPUT"
+> code  | title   | did | date_prod  | kind   | len
+-------+---------+-----+------------+--------+-------
+ P_301 | Vertigo | 103 | 1958-11-14 | Action | 02:08</TT
+>
+
+-- 关闭游标并提交事务：
+CLOSE liahona;
+COMMIT WORK;</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46288" ></A
+><H2
+>兼容性</H2
+><P
+>	SQL 标准定义的 <TT
+CLASS="COMMAND"
+>FETCH</TT
+> 只用于嵌入式环境下。
+	这里描述的 <TT
+CLASS="COMMAND"
+>FETCH</TT
+> 变种是把结果数据像 <TT
+CLASS="COMMAND"
+>SELECT</TT
+>
+	结果那样返回，而不是把它放在宿主变量里。除了这点之外，<TT
+CLASS="COMMAND"
+>FETCH</TT
+> 和
+	SQL 标准完全向上兼容。
+   </P
+><P
+>	涉及 <TT
+CLASS="LITERAL"
+>FORWARD</TT
+> 和 <TT
+CLASS="LITERAL"
+>BACKWARD</TT
+> 的 <TT
+CLASS="COMMAND"
+>FETCH</TT
+> 形式
+	（包括 <TT
+CLASS="LITERAL"
+>FETCH <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+></TT
+> 和
+	<TT
+CLASS="LITERAL"
+>FETCH ALL</TT
+> 的形式，这个时候 <TT
+CLASS="LITERAL"
+>FORWARD</TT
+> 是隐含的）是 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	的扩展。
+   </P
+><P
+>	SQL 标准只允许游标前面有 <TT
+CLASS="LITERAL"
+>FROM</TT
+>，
+	用 <TT
+CLASS="LITERAL"
+>IN</TT
+> 是一种扩展。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN46307" ></A
+><H2
+>又见</H2
+><A HREF="sql-close.html" ><I
+>CLOSE</I
+></A
+>, <A HREF="sql-declare.html" ><I
+>DECLARE</I
+></A
+>, <A HREF="sql-move.html" ><I
+>MOVE</I
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-explain.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-grant.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >EXPLAIN</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >GRANT</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

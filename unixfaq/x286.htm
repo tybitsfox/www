@@ -1,0 +1,19 @@
+<html><head><title>我怎样杀死一个进程的所有派生进程？</title><meta name="GENERATOR" content="Modular DocBook HTML Stylesheet Version 1.73" charset="UTF-8"><link rel="HOME" title="UNIX Programming FAQ 中文版 v0.1.0" href="./book1.htm"><link rel="UP" title="进程控制" href="./c46.htm"><link rel="PREVIOUS" title="为何父进程死时，我的进程未得到SIGHUP信号？" href="./x276.htm"><link rel="NEXT" title="一般文件操作(包括管道和套接字)" href="./c300.htm"></head><body class="SECT1" alink="#0000ff" bgcolor="#ffffff" link="#0000ff" text="#000000" vlink="#840084"><div class="NAVHEADER"><table summary="Header navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><th colspan="3" align="center">UNIX Programming FAQ 中文版 v0.1.0</th></tr><tr><td align="left" valign="bottom" width="10%"><a href="./x276.htm" accesskey="P">Prev</a></td><td align="center" valign="bottom" width="80%">Chapter 1. 进程控制</td><td align="right" valign="bottom" width="10%"><a href="./c300.htm" accesskey="N">Next</a></td></tr></tbody></table><hr align="left" width="100%"></div><div class="SECT1"><h1 class="SECT1"><a name="AEN286">1.16. 我怎样杀死一个进程的所有派生进程？</a></h1><p>没有一个完全普遍的方法来做这个。虽然你可以通过处理‘ps’的输出确定进
+程间的相互关系，但因为它只表示系统的一瞬间的状态(snapshot)所以并不可靠。
+    </p><p>但是，如果你启动一个子进程，而它可能生成它自己的子进程，而你意图一次杀
+死整个生成的事务(job)，解决方法是将最先启动的子进程置于一个新的进程组，
+当你需要时杀死整个进程组。
+    </p><p>建议为创建进程组而使用的函数是‘setpgid()’。在可能情况下，使用这个函数
+而不使用‘setpgrp()’，因为后一个在不同系统中有所不同(在一些系统上‘setgrp()；’
+等同于‘setpgid(0,0)；’，在其它系统上，‘setpgrp()’和‘setpgid()’相同)。
+参见范例章节的事务-控制范例程序。
+    </p><p>放置一个子进程于其自身的进程组有一些影响。特别的，除非你显式地将该进程
+组放置于前台，它将被认为是一个后台事务并具有以下结果：
+    </p><p></p><ul><li><p>   试图从终端读取的进程将被‘SIGTTIN’信号暂停。
+        </p></li><li><p>   如果设置终端模式‘tostop’，那么试图向终端写的进程将被‘SIGTTOU’
+   信号暂停。(试图改变终端模式也导致这个结果，且不管当前‘tostop’是否设置)
+        </p></li><li><p>    子进程将不会收到从终端发出的键盘信号(比如‘SIGINT’或‘SIGQUIT’)
+        </p></li></ul><p>在很多应用程序中输入和输出总会被重定向，所以最显著的影响将是丧失键盘
+信号。父进程需要安排程序起码捕获‘SIGINIT’和‘SIGQUIT’(可能情况下，
+还有‘SIGTERM’)，并在需要情况下清除后台事务。
+    </p></div><div class="NAVFOOTER"><hr align="left" width="100%"><table summary="Footer navigation table" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td align="left" valign="top" width="33%"><a href="./x276.htm" accesskey="P">Prev</a></td><td align="center" valign="top" width="34%"><a href="./book1.htm" accesskey="H">Home</a></td><td align="right" valign="top" width="33%"><a href="./c300.htm" accesskey="N">Next</a></td></tr><tr><td align="left" valign="top" width="33%">为何父进程死时，我的进程未得到SIGHUP信号？</td><td align="center" valign="top" width="34%"><a href="./c46.htm" accesskey="U">Up</a></td><td align="right" valign="top" width="33%">一般文件操作(包括管道和套接字)</td></tr></tbody></table></div></body></html>

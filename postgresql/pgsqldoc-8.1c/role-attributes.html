@@ -1,0 +1,412 @@
+<HTML
+><HEAD
+><TITLE
+>角色属性</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="数据库角色和权限"
+HREF="user-manag.html"><LINK
+REL="PREVIOUS"
+TITLE="数据库角色和权限"
+HREF="user-manag.html"><LINK
+REL="NEXT"
+TITLE="权限"
+HREF="privileges.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="user-manag.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="user-manag.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 18. 数据库角色和权限</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="user-manag.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="privileges.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="ROLE-ATTRIBUTES"
+>18.2. 角色属性</A
+></H1
+><P
+>        一个数据库角色可以有一系列属性，这些属性定义他的权限，以及与客户认证系统的交互。
+
+    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>登录权限<A
+NAME="AEN21002"
+></A
+></DT
+><DD
+><P
+>	只有具有 <TT
+CLASS="LITERAL"
+>LOGIN</TT
+> 属性的角色可以用做数据库连接的初始角色名。
+	一个带有 <TT
+CLASS="LITERAL"
+>LOGIN</TT
+> 属性的角色可以认为是和<SPAN
+CLASS="QUOTE"
+>"数据库用户"</SPAN
+>相同的事情。
+	要创建一个具有登录权限的角色，用下列之一
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE ROLE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> LOGIN;
+CREATE USER <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>;</PRE
+><P>
+        (<TT
+CLASS="COMMAND"
+>CREATE USER</TT
+> is equivalent to <TT
+CLASS="COMMAND"
+>CREATE ROLE</TT
+>
+        except that <TT
+CLASS="COMMAND"
+>CREATE USER</TT
+> assumes <TT
+CLASS="LITERAL"
+>LOGIN</TT
+> by
+        default, while <TT
+CLASS="COMMAND"
+>CREATE ROLE</TT
+> does not.)
+       </P
+></DD
+><DT
+>超级用户<A
+NAME="AEN21019"
+></A
+></DT
+><DD
+><P
+>        数据库超级用户超越所有权限检查。这事一个危险的权限，应该小心使用；
+	最好使用非超级用户完成你的大多数工作。
+	要创建数据库超级用户，用
+        <TT
+CLASS="LITERAL"
+>CREATE ROLE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> SUPERUSER</TT
+>。
+	你必须用已经是超级用户的用户身份执行这条命令。
+       </P
+></DD
+><DT
+>创建数据库<A
+NAME="AEN21027"
+></A
+></DT
+><DD
+><P
+>        角色要想创建数据库，必须明确给出权限（对于超级用户是例外，因为他们超越所有权限检查）。
+	要创建这样的用户，用
+        <TT
+CLASS="LITERAL"
+>CREATE ROLE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>
+        CREATEDB</TT
+>。
+       </P
+></DD
+><DT
+>role creation<A
+NAME="AEN21036"
+></A
+></DT
+><DD
+><P
+>	一个角色要想创建更多角色，必须明确给予其权限（除了超级用户之外，
+	因为超级用户绕开所有权限检查）。要创建这样的角色，
+	使用 <TT
+CLASS="LITERAL"
+>CREATE ROLE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> CREATEROLE</TT
+>。
+	一个带有 <TT
+CLASS="LITERAL"
+>CREATEROLE</TT
+> 权限的角色也可以更改和删除其它角色，
+	以及给其它角色赋予或者撤销成员属性。
+	不过，要创建，更改，删除或者改变一个超级用户角色的成员关系，需要有超级用户状态；
+	<TT
+CLASS="LITERAL"
+>CREATEROLE</TT
+> 还不够处理这些。
+       </P
+></DD
+><DT
+>口令<A
+NAME="AEN21047"
+></A
+></DT
+><DD
+><P
+>	只有在对客户认证方法要求客户在与数据库建立连接是使用口令的时候，口令才比较重要。
+	<TT
+CLASS="OPTION"
+>password</TT
+>，<TT
+CLASS="OPTION"
+>md5</TT
+>，和 <TT
+CLASS="OPTION"
+>crypt</TT
+> 认证方法使用口令。
+	数据库口令与操作系统口令是无关的。在创建角色的时候声明一个口令是这样：
+	<TT
+CLASS="LITERAL"
+>CREATE ROLE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> PASSWORD
+	'<TT
+CLASS="REPLACEABLE"
+><I
+>string</I
+></TT
+>'</TT
+>。
+       </P
+></DD
+></DL
+></DIV
+><P>
+
+    一个角色的属性可以在创建后用 <SPAN
+CLASS="APPLICATION"
+>ALTER ROLE</SPAN
+> 修改。<A
+NAME="AEN21058"
+></A
+>
+    参考 <A
+HREF="sql-createrole.html"
+><I
+>CREATE ROLE</I
+></A
+> 和
+    <A
+HREF="sql-alterrole.html"
+><I
+>ALTER ROLE</I
+></A
+> 的手册获取细节。
+   </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>提示: </B
+>    创建一个具有 <TT
+CLASS="LITERAL"
+>CREATEDB</TT
+> 和 <TT
+CLASS="LITERAL"
+>CREATEROLE</TT
+> 权限，但是并非超级用户的角色是一个很好的习惯，
+    你可以使用这个角色进行所有日常的数据库和角色的管理。这个方法避免了以超级用户操作时，
+    发生误操作导致的严重后果。
+   </P
+></BLOCKQUOTE
+></DIV
+><P
+>	一个角色也可以为许多运行时配置设置个人缺省，
+	那些配置在 <A
+HREF="runtime-config.html"
+>Chapter 17</A
+> 里描述。
+	比如，如果出于某种原因你想在所有你做的连接中关闭索引扫描（提示：不是个好主意），
+	你可以用
+</P><PRE
+CLASS="PROGRAMLISTING"
+>ALTER ROLE myname SET enable_indexscan TO off;</PRE
+><P>
+	这样就会保存该设置（但是不是立即设置）。
+	这么做后，在这个角色随后的连接中就好像在会话开始之后都马上 <TT
+CLASS="LITERAL"
+>SET enable_indexscan TO off;</TT
+>了一样。
+	你也可以在会话中修改这个设置；它只是缺省。要撤销任何这样的设置，
+	使用 <TT
+CLASS="LITERAL"
+>ALTER ROLE <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+> RESET <TT
+CLASS="REPLACEABLE"
+><I
+>varname</I
+></TT
+>;</TT
+>。
+	请注意，对那些没有 <TT
+CLASS="LITERAL"
+>LOGIN</TT
+> 权限的角色，这些角色相关的缺省值几乎没什么用，
+	因为它们从来不会被调用。
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="user-manag.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="privileges.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>数据库角色和权限</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="user-manag.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>权限</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

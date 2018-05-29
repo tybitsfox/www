@@ -1,0 +1,163 @@
+<a name=asm1601></a><font size=4><pre>
+<font color=red size=4>在使用gun/as、ld编译链接生成16位汇编代码时往往在链接阶段发生如下错误：</font>
+k03.o: In function `_start':
+(.text+0xa): relocation truncated to fit: R_386_16 against `.data'
+解决方法有几种，其中最便捷的方法就是：
+ld -o k03 k03.o -Ttext 1000
+通过T参数指定text段的装载地址。然后就可以顺利链接成功。但是只知其然不知其所以然。为什么指定他的绝对地址
+后链接就可通过，为何在汇编源代码中我们通过定位、跳转同样能指定其加载地址而链接仍通不过？这个问题我在google
+上搜索了好久，往往都是直接给出解决方法（如上）而没有给出解释。看来要真正了解还得自己动手，通过反复测试，
+发现当把源代码中.globl _start去掉时，也就是不指定入口点时，多了一行错误提示：
+ld: warning: cannot find entry symbol _start; defaulting to 0000000008048054
+哈哈，这回终于发现问题了，虽然是16位代码，但是链接时仍把入口点定为了32位。接下来验证这个猜测就很简单了：
+ld -o k03 k03.o -Ttext 100000，把text段定位设为超过16位地址，链接时终于出现了
+relocation truncated to fit: R_386_16 against `.data'错误了。
+至此问题圆满解决。</font></pre>
+<a name=asm1602></a><font size=4><pre>
+<font color=red size=4>通过/proc/下相关文件获取系统信息的方法:</font>
+1、获取cpu风扇转速的方法：cat /proc/acpi/ibm/fan  ---我的机器为thinkpad
+2、获取cpu温度的方法：cat /proc/acpi/ibm/thermal
+上述两个文件如果不存在可使用命令：sensors直接查看转速和温度。
+3、获取cpu使用率：cat /proc/stat cpu行各列分别为：用户进程，nice进程，核心进程，idle cpu的使用时间，注意
+这是一个累加值，计算某一时刻的cpu用户负载可以取得两个时间段的数值，然后除以这四项的同一时段总和获得。
+4、获得内存使用率的方法：cat /proc/meminfo，依据需要取得不同的数值。
+5、取得笔记本电池电量的方法：cat /sys/class/power_supply/BAT1(or 0)/uevent
+6、取得网络进出流量的方法：cat /proc/net/dev 这里面也是累计值，所以可取不同时间段进行计算。</font></pre>
+<a name=asm1603></a><font size=4><pre>
+<font color=red size=4>使用firefox+vimperator打造一个轻量级的文件资源管理器</font>
+vimperator的快捷键~可以快速打开本地目录，对本地文件和目录进行浏览。
+不仅如此，我们还可以通过对firefox进行简单的配置，就能实现对特定类型
+文件关联至特定程序直接打开，就像windows的资源管理器一样。对于使用各类
+轻量级wm的用户来说偶尔可以尝试下类似dm的操作。
+对特定类型文件与相关程序关联可以通过firefox首选项中应用程序进行设置，如
+果在应用程序栏中没有你所需要的文件类型，可直接修改firefox的配置文件进行
+添加。该配置文件一般为:~/.mozilla/firefox/l1ucnguj.default
+参照着里面已有的文件类型稍加添加修改即可实现应用程序的关联。
+比如我设置的：mp3关键至audacious；mkv、rmvb、rm关联至mplayer；
+pdf关联至xpdf；图片文件关联至feh等等。</font></pre>
+<a name=asm1604></a><font size=4><pre>
+<font color=red size=4>字体设置、查看的相关命令：</font>
+显示字体命令：
+xlsfonts ：core内置字体系统
+xfontsel ：core内置字体系统
+fc-list  ：xft 
+当前字体和X相关信息查询命令：
+xset q 
+mkfontscale mkfontdir  建立索引
+fc-cache   更新字体缓存
+或者使用ttmkfdir：
+推荐运行 ttmkfdir 生成字体描述文件，而不要使用mkfontdir和mkfontscale，因为它
+生成的字体描述文件中常常找不出gbk的encoding。
+执行：
+ttmkfdir /usr/local/share/fonts/ -o /usr/local/share/fonts/fonts.dir
+cp /usr/local/share/fonts/fonts.dir /usr/local/share/fonts/fonts.scale
+</font></pre>
+<a name=asm1605></a><pre><font size=4 color=red>linux下多机种模拟器mednafen</font>
+<font size=2 color=blue>
+Linux强大的游戏模拟器，模拟的效果以及CPU的占用都非常低，主要是用来玩GBA和FC的游戏，玩GBA游戏比Linux版VBA强的不是一点半点，
+Linux版VBA可以说就是一个半成品，不说功能方面，居然巨占CPU，而且占资源不说了，还不是60帧的完美平滑模拟，而且不开源，故弃之。
+FC 的话Ubuntu下有个叫FCEU的模拟器，同样是巨占资源，和VBA也是一样的毛病……似乎都不支持GPU加速，都是用CPU来死算，
+再说就是用CPU 模拟个GBA，FC之类的也绰绰有余了，也不知道是个什么情况，弃之。而Mednafen，除了没有图形前端之外，可谓是Linux下
+最完美的 GBA，FC等模拟器解决方案，超省资源，支持OpenGL和SDL两种加速方式。而且有一个亮点，那就是虽说没有图形前端，但是可以
+在游戏中随意设置按键，不像有些没有图形前端的模拟器，必须事先在配置文件中设置按键。
+Mednafen支持的机种：
+* Atari Lynx
+* GameBoy
+* GameBoy Color
+* GameBoy Advance
+* NES
+* PC Engine (TurboGrafx 16)
+* PC-FX
+* SuperGrafx
+* NeoGeo Pocket, NeoGeo Pocket Color
+* WonderSwan
+按键设置方法：游戏里按F1，可以打开帮助菜单，可以看到很多说明，其中告诉你按alt+shift+1～5就可以设置按键，每个按键设置两次，很简单。
+F5是即时存档，F6是选择存档点，F7是即时读档，F9截图（如果compiz的F9被使用了则无效，compiz的F9是降低屏幕亮度），
+F10软复位（类似于FC的那个复位按钮），F11硬复位（类似于FC的那个开关，关了再开），F12或Esc退出模拟器。全屏切换的快捷键与fceu和gens一样
+alt+enter。其配置文件在~/.mednafen目录下，修改里面的mednafen.cfg即可，我习惯使用的按键设置为：
+;gba, Built-In, Gamepad: A
+gba.input.builtin.gamepad.a keyboard 107
+;gba, Built-In, Gamepad: Rapid A
+gba.input.builtin.gamepad.rapid_a
+;gba, Built-In, Gamepad: B
+gba.input.builtin.gamepad.b keyboard 106
+;gba, Built-In, Gamepad: Rapid B
+gba.input.builtin.gamepad.rapid_b
+;gba, Built-In, Gamepad: SELECT
+gba.input.builtin.gamepad.select keyboard 9
+;gba, Built-In, Gamepad: START
+gba.input.builtin.gamepad.start keyboard 13
+;gba, Built-In, Gamepad: RIGHT →
+gba.input.builtin.gamepad.right keyboard 100
+;gba, Built-In, Gamepad: LEFT ←
+gba.input.builtin.gamepad.left keyboard 97
+;gba, Built-In, Gamepad: UP ↑
+gba.input.builtin.gamepad.up keyboard 119
+;gba, Built-In, Gamepad: DOWN ↓
+gba.input.builtin.gamepad.down keyboard 115
+配置文件下载：<a href=./mednafen.cfg>mednafen.cfg</a></font>
+<font color=red>---------------------2017-4-13更新---------------------------</font>
+以上是基于Debian7的stable版本中的mednafen版本介绍的，在debian8的stable版本中新的mednafen已经完美的支持
+sega,fc,sfc,gba,ps1等几乎所有流行的模拟器了。我的测试中，除了ps1没有成功外，其余的确实都很完美。而且秉
+承了mednafen一贯的对系统资源占用低的优点，目前在debian上我已经放弃了之前所使用的md模拟器gens,sfc模拟器
+zsnes,转而都使用mednafen一款模拟器就能实现fc,md,sfc,gba四款平台的模拟。为了方便，我还写了一个python脚本
+程序用来管理和运行各个游戏。还有其自身携带的强大的cheats让我的修改器好像少了用武之地：（下面就介绍下新
+版的配置和cheat的用法：
+新版的配置文件由原来的mednafen.cfg改为:mednafen-09x.cfg。文件名称改了，但是配置的设置基本和原来一样。
+所有的按键设置仍然是以ASCII码表的10进制表示。我常用的有如下：
+上&lt;w&gt;119,下&lt;s&gt;115,左&lt;a&gt;97,右&lt;d&gt;100,
+A&lt;j&gt;106,B&lt;k&gt;107,C&lt;l&gt;108,
+X&lt;u&gt;117,Y&lt;i&gt;105,Z&lt;o&gt;111,
+start&lt;enter&gt;13, or start&lt;]&gt;93,select&lt;[&gt;91
+配置文件中按键的设置需要对每个模拟的机型分别设置。
+cheat作弊器的使用也非常的简单，激活/关闭 命令环境为alt+c,激活/关闭 选择好的作弊记录为alt+t
+命令环境为查找生成或者录入作弊记录的，命令采用列表式给出，由用户选择操作
+1) list cheat			列出已有的作弊记录
+2) cheat search			查找，生成作弊记录
+3) Add game genie code	添加已有的作弊记录
+4) Add Pro Action replay code	添加替换之前作弊记录
+D) Display menu			显示菜单
+其中的3,4命令我没有用过，应该有现成的作弊吗直接添加就是，我用的最多的就是怎样查找，生成作弊记录
+图示如下：
+<center><img src=./mednafen_cheat.png></center>
+要查找，生成作弊记录的话，选择2，进入下级菜单：
+添加作弊记录，重置查询，开始查询，设置当前值为初始值，剔除隐藏（没用过），显示查询结果，显示菜单，
+返回上级菜单
+对于查询来说，这个菜单中最重要的命令就是4,设置当前指为初始值，这是采用模糊查询时非常重要的操作。你
+可以不知道当前设置的初始值到底是多少，但是你可以知道他在下一步是增加还是减少就能搜索查询。
+另外就是开始查询命令了，当选择开始查询时就进入第三级菜单，三级菜单是个搜索过滤公式列表。
+其中o=origin,c=current,分表表示原始值和当前值:
+o==v1 && c==v2		表示起始值=v1,当前值=v2
+o==v1 && |o-c|==v2	表示起始值=v1,差值=v2
+|o-c| == v2			表示两值的绝对值=v2
+o!=c				表示起始值和当前值发生变化
+value decreased		表示模糊减少搜索
+value increased		表示模糊增加搜索
+D)显示菜单			当执行完上面任意一步搜索后可按D返回上级菜单，在上级中查看结果或添加作弊记录
+以上就是mednafen cheat的简单应用，对于添加的作弊记录，mednafen会自动保存，以备后用，当选择了一个
+作弊记录后，在游戏运行中可随时通过alt+t启动和停止作弊。
+
+
+
+<a name=asm1606></a><pre><font size=4 color=red>mysql记录中文乱码的解决</font>
+<font size=2>debian7安装完成后默认的mysql记录中不能正常显示中文，需要在配置文件中简单的修改下：
+打开/etc/mysql/my.cnf，
+在[client]节段中添加：default-character-set=utf8
+在[mysqld]节段中添加：character-set-server=utf8
+在[mysql]节段中添加： default-character-set=utf8
+保存退出，重新启动mysqld: /etc/init.d/./mysql restart
+通过下列命令查看字符集是否改变：show variables like '%char%';
+第二种方法，直接修改各数据库的字符集：
+use database_name;
+alter database character set utf8;
+第二种方法我没有测试。
+</font></pre>
+
+
+
+
+
+
+
+
+

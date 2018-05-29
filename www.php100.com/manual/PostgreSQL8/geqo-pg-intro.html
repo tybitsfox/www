@@ -1,0 +1,216 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>PostgreSQL 里的基因查询优化（GEQO） PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="基因查询优化" HREF="geqo.html"><LINK REL="PREVIOUS" TITLE="基因算法" HREF="geqo-intro2.html"><LINK REL="NEXT" TITLE="进一步阅读" HREF="geqo-biblio.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="SECT1" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="geqo-intro2.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="geqo.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" >Chapter 47. 基因查询优化</TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="geqo.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="geqo-biblio.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A NAME="GEQO-PG-INTRO" >47.3. PostgreSQL 里的基因查询优化（<SPAN
+CLASS="ACRONYM"
+>GEQO</SPAN
+>）</A
+></H1
+><P
+>	<SPAN
+CLASS="ACRONYM"
+>GEQO</SPAN
+> 模块是试图解决类似漫游推销员问题（<SPAN
+CLASS="ACRONYM"
+>TSP</SPAN
+>）的查询优化问题的。
+	可能的查询规划被当作整数字串进行编码。每个字串代表查询里面一个关系到下一个关系的 连接的顺序。
+	例如，下面的连接树
+</P><PRE
+CLASS="LITERALLAYOUT"
+>   /\
+  /\ 2
+ /\ 3
+4  1</PRE
+><P>
+	是用整数字串 '4-1-3-2' 编码的，
+	这就是说，首先联接关系 '4' 和 '1'，然后 '3'，然后是 '2'，
+	这里的 1，2，3，4都是 
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 优化器里的关系标识（ID）。
+   </P
+><P
+>	<SPAN
+CLASS="ACRONYM"
+>GEQO</SPAN
+> 模块的一部分是采用的 D. Whitley 的 Genitor 算法。
+   </P
+><P
+>	在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里的 <SPAN
+CLASS="ACRONYM"
+>GEQO</SPAN
+> 实现的一些特性是：
+
+    <P
+></P
+></P><UL
+COMPACT="COMPACT"
+><LI
+STYLE="list-style-type: disc"
+><P
+>	使用 <I
+CLASS="FIRSTTERM"
+>稳定状态（steady state）</I
+>的 	<SPAN
+CLASS="ACRONYM"
+>GA</SPAN
+>
+	（替换全体中最小健康度的个体，而不是整代的替换）允许向改进了的查询规划快速逼近。
+	这一点对在合理时间内处理查询是非常重要的；
+      </P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+>	<I
+CLASS="FIRSTTERM"
+>边缘重组交叉（edge recombination crossover）</I
+>的使用特别适于在用 <SPAN
+CLASS="ACRONYM"
+>GA</SPAN
+>解决 <SPAN
+CLASS="ACRONYM"
+>TSP</SPAN
+>
+	问题时保持边缘损失最低。
+      </P
+><P
+> 译注: TSP 是旅行推销员问题的意思</P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+>	否决了把突变（Mutation）作为基因操作符的做法，这样生成合法的 <SPAN
+CLASS="ACRONYM"
+>TSP</SPAN
+> 漫游时不需要修复机制。
+      </P
+></LI
+></UL
+><P>
+   </P
+><P
+>	<SPAN
+CLASS="ACRONYM"
+>GEQO</SPAN
+> 模块让 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 查询优化器可以通过非穷举搜索有效地支持大的连接查询。
+   </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A NAME="GEQO-FUTURE" >47.3.1. <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> <SPAN
+CLASS="ACRONYM"
+>GEQO</SPAN
+> 未来的实现任务</A
+></H2
+><P
+>        我们还需要一些工作来改进基因算法的参数设置。
+        在文件 <TT
+CLASS="FILENAME"
+>backend/optimizer/geqo/geqo_params.c</TT
+> 里的过程 <TT
+CLASS="FUNCTION"
+>gimme_pool_size</TT
+>
+        和 <TT
+CLASS="FUNCTION"
+>gimme_number_generations</TT
+>，
+        我们在设置参数时不得不为两个竞争需求做出折衷：
+      <P
+></P
+></P><UL
+COMPACT="COMPACT"
+><LI
+><P
+>        查询规划的优化
+	</P
+></LI
+><LI
+><P
+>        计算处理时间
+	</P
+></LI
+></UL
+><P>
+     </P
+><P
+>      在最基本的层面上，我们并不清楚用给 TSP 涉及的 GA 算法解决查询优化的问题是否合适。
+      在 TSP 的情况下，与任何子字串（部分旅游）相关的开销都是独立于旅游的其他部分的，
+      但是目前，这一点对于查询优化是不同的。因此，我们可以怀疑边缘重组交叉是否最有效的突变过程。
+     </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="geqo-intro2.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="geqo-biblio.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >基因算法</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="geqo.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >进一步阅读</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>

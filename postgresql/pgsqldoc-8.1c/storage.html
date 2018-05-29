@@ -1,0 +1,561 @@
+<HTML
+><HEAD
+><TITLE
+>数据库物理存储</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="内部"
+HREF="internals.html"><LINK
+REL="PREVIOUS"
+TITLE="崩溃恢复"
+HREF="gist-recovery.html"><LINK
+REL="NEXT"
+TITLE="TOAST"
+HREF="storage-toast.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="gist-recovery.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="gist.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="bki.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="storage-toast.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="STORAGE"
+>Chapter 50. 数据库物理存储</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>50.1. <A
+HREF="storage.html#STORAGE-FILE-LAYOUT"
+>数据库文件布局</A
+></DT
+><DT
+>50.2. <A
+HREF="storage-toast.html"
+>TOAST</A
+></DT
+><DT
+>50.3. <A
+HREF="storage-page-layout.html"
+>数据库分页文件</A
+></DT
+></DL
+></DIV
+><P
+>本章对 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 数据库使用的物理格式进行一个概述。</P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="STORAGE-FILE-LAYOUT"
+>50.1. 数据库文件布局</A
+></H1
+><P
+>本节在文件和的层次上描述存储格式。</P
+><P
+>数据库集群所需要的所有数据都存储在集群的数据目录里，
+通常用 <TT
+CLASS="VARNAME"
+>PGDATA</TT
+> 来引用（用的是可以定义之的环境变量的名字）。
+<TT
+CLASS="VARNAME"
+>PGDATA</TT
+> 的一个常见位置是 <TT
+CLASS="FILENAME"
+>/var/lib/pgsql/data</TT
+>。
+不同 postmaster 管理的多个集群，可以在同一台机器上共存。</P
+><P
+><TT
+CLASS="VARNAME"
+>PGDATA</TT
+> 目录包含几个子目录以及一些控制文件，
+在 <A
+HREF="storage.html#PGDATA-CONTENTS-TABLE"
+>Table 50-1</A
+> 里面显示。除了这些必要的东西之外，
+集群的配置文件 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>，<TT
+CLASS="FILENAME"
+>pg_hba.conf</TT
+>，
+和 <TT
+CLASS="FILENAME"
+>pg_ident.conf</TT
+> 通常都存储在 <TT
+CLASS="VARNAME"
+>PGDATA</TT
+>
+（不过从 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 8.0 开始以上的版本，我们可以把它们放在别的地方。）</P
+><DIV
+CLASS="TABLE"
+><A
+NAME="PGDATA-CONTENTS-TABLE"
+></A
+><P
+><B
+>Table 50-1. <TT
+CLASS="VARNAME"
+>PGDATA</TT
+>的内容</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>项</TH
+><TH
+ALIGN="LEFT"
+VALIGN="TOP"
+>描述</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="FILENAME"
+>PG_VERSION</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>一个包含 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 主版本号的文件</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="FILENAME"
+>base</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>包含每个数据库对应的子目录的子目录</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="FILENAME"
+>global</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>包含集群范围的表的子目录，比如<TT
+CLASS="STRUCTNAME"
+>pg_database</TT
+>
+ </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="FILENAME"
+>pg_clog</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>包含事务提交状态数据的子目录</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="FILENAME"
+>pg_multixact</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>包含多重事务（multi-transaction）状态数据的子目录（用于共享的行锁）</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="FILENAME"
+>pg_subtrans</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>包含子事务状态数据的子目录</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="FILENAME"
+>pg_tblspc</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>包含指向表空间的符号链接的子目录</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="FILENAME"
+>pg_twophase</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>包含用于准备好事务状态文件的子目录</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="FILENAME"
+>pg_xlog</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>包含 WAL （预写日志）文件的子目录</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="FILENAME"
+>postmaster.opts</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>一个记录 postmaster 最后一次启动时使用的命令行参数的文件
+ </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="FILENAME"
+>postmaster.pid</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>一个锁文件，记录着当前的 postmaster PID 和共享内存段 ID
+ （在 postmaster 关闭之后不存在）
+ </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>对于集群里的每个数据库，在 <TT
+CLASS="VARNAME"
+>PGDATA</TT
+><TT
+CLASS="FILENAME"
+>/base</TT
+> 里都有一个子目录对应，
+子目录的名字时该数据库在 <TT
+CLASS="STRUCTNAME"
+>pg_database</TT
+> 里的 OID。
+这个子目录时该数据库文件的缺省位置；特别值得一提的是，该数据库的系统表存储在此。</P
+><P
+>每个表和索引都存储在独立的文件里，以该表或者该索引的 <I
+CLASS="FIRSTTERM"
+>filenode</I
+> 号命名，
+我们可以在 <TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+>.<TT
+CLASS="STRUCTFIELD"
+>relfilenode</TT
+> 找到。</P
+><DIV
+CLASS="CAUTION"
+><P
+></P
+><TABLE
+CLASS="CAUTION"
+BORDER="1"
+WIDTH="100%"
+><TR
+><TD
+ALIGN="CENTER"
+><B
+>Caution</B
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+><P
+>请注意，虽然一个表的 filenode 通常和它的 OID 相同，但实际上<I
+CLASS="EMPHASIS"
+>并不</I
+>必须如此；
+有些操作，比如 <TT
+CLASS="COMMAND"
+>TRUNCATE</TT
+>，<TT
+CLASS="COMMAND"
+>REINDEX</TT
+>，<TT
+CLASS="COMMAND"
+>CLUSTER</TT
+> 以及一些特殊的
+<TT
+CLASS="COMMAND"
+>ALTER TABLE</TT
+> 形式，都可以改变 filenode 而同时保留 OID。
+我们不应该假设 filenode 和表 OID 相同。</P
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>在表或者索引超过 1Gb 之后，它就被分裂成一吉大小的<I
+CLASS="FIRSTTERM"
+>段</I
+>。
+第一个段的文件名和 filenode 相同；随后的段名名为 filenode.1，filenode.2，等等。
+这样的安排避免了在某些有文件大小限制的平台上的问题。表和索引的内容在 <A
+HREF="storage-page-layout.html"
+>Section 50.3</A
+>
+里有进一步讨论。</P
+><P
+>一个表如果有些字段里面可能存储相当大的数据，那么就会有个相关联的 <I
+CLASS="FIRSTTERM"
+>TOAST</I
+> 表，
+用于存储无法在表的数据行中放下的太大的线外数据。
+如果有的话，<TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+>.<TT
+CLASS="STRUCTFIELD"
+>reltoastrelid</TT
+> 从一个表链接到它的 TOAST 表。
+参阅　<A
+HREF="storage-toast.html"
+>Section 50.2</A
+>　获取更多信息。</P
+><P
+>表空间把情况搞得更复杂些。每个用户定义的表空间都在 <TT
+CLASS="VARNAME"
+>PGDATA</TT
+><TT
+CLASS="FILENAME"
+>/pg_tblspc</TT
+> 
+目录里面有一个符号连接，它指向物理的表空间目录（就是在 <TT
+CLASS="COMMAND"
+>CREATE TABLESPACE</TT
+>
+命令里声明的那个目录）。这个符号连接是用表空间的 OID 命名的。
+在物理表空间里面，为每个在这个表空间里有元素的数据库都有一个子目录，
+以那个数据库的 OID 命名。该目录里的表遵循 filenode 的命名规则。
+<TT
+CLASS="LITERAL"
+>pg_default</TT
+> 没有通过 <TT
+CLASS="FILENAME"
+>pg_tblspc</TT
+> 关联，但是对应 <TT
+CLASS="VARNAME"
+>PGDATA</TT
+><TT
+CLASS="FILENAME"
+>/base</TT
+>。
+类似的还有，<TT
+CLASS="LITERAL"
+>pg_global</TT
+> 没有通过 <TT
+CLASS="FILENAME"
+>pg_tblspc</TT
+> 关联，而是对应
+<TT
+CLASS="VARNAME"
+>PGDATA</TT
+><TT
+CLASS="FILENAME"
+>/global</TT
+>。</P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="gist-recovery.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="storage-toast.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>崩溃恢复</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="internals.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>TOAST</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

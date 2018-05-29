@@ -1,0 +1,89 @@
+<HTML><HEAD><TITLE>Declaration of the Zend Function Block</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Source Discussion" HREF="zend.structure.html"><LINK REL="PREVIOUS" TITLE="Declaring Exported Functions" HREF="zend.structure.exporting-functions.html"><LINK REL="NEXT" TITLE="Declaration of the Zend Module Block" HREF="zend.structure.module-block.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="section" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="zend.structure.exporting-functions.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom">章 31. Source Discussion</TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="zend.structure.module-block.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="section"><H1 CLASS="section"><A NAME="zend.structure.function-block"></A>Declaration of the Zend Function Block</H1><P>&#13; Now that you have declared the functions to be exported, you also
+have to introduce them to Zend. Introducing the list of functions is done by
+using an array of <TT CLASS="envar">zend_function_entry</TT>. This array consecutively
+contains all functions that are to be made available externally, with the function's name
+as it should appear in PHP and its name as defined in the C source.
+Internally, <TT CLASS="envar">zend_function_entry</TT> is defined as shown in
+<A HREF="zend.structure.function-block.html#example.zend-function-entry">例子 31-1</A>.
+</P><P>&#13; <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0" CLASS="EXAMPLE"><TR><TD><DIV CLASS="example"><A NAME="example.zend-function-entry"></A><P><B>例子 31-1. Internal declaration of <TT CLASS="envar">zend_function_entry</TT>.</B></P><TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">typedef struct _zend_function_entry {
+    char *fname;
+    void (*handler)(INTERNAL_FUNCTION_PARAMETERS);
+    unsigned char *func_arg_types;
+} zend_function_entry;</PRE></TD></TR></TABLE><DIV CLASS="informaltable"><A NAME="AEN122058"></A><P></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD WIDTH="35%" ALIGN="LEFT" VALIGN="MIDDLE">Entry</TD><TD WIDTH="65%" ALIGN="LEFT" VALIGN="MIDDLE">Description</TD></TR><TR><TD WIDTH="35%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">fname</TT></TD><TD WIDTH="65%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Denotes the function name as seen in PHP (for
+example, <TT CLASS="literal">fopen</TT>, <TT CLASS="literal">mysql_connect</TT>, or, in our
+example, <TT CLASS="literal">first_module</TT>).
+</TD></TR><TR><TD WIDTH="35%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">handler</TT></TD><TD WIDTH="65%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Pointer to the C function responsible for handling calls
+to this function. For example, see the standard macro
+<TT CLASS="literal">INTERNAL_FUNCTION_PARAMETERS</TT> discussed earlier.
+</TD></TR><TR><TD WIDTH="35%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="envar">func_arg_types</TT></TD><TD WIDTH="65%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Allows you to mark certain parameters so that they're forced
+to be passed by reference. You usually should set this to
+NULL.
+</TD></TR></TBODY></TABLE><P></P></DIV></DIV></TD></TR></TABLE>
+In the example above, the declaration looks like this:
+<TABLE BORDER="0" BGCOLOR="#E0E0E0" CELLPADDING="5"><TR><TD><PRE CLASS="programlisting">zend_function_entry firstmod_functions[] =
+{
+    ZEND_FE(first_module, NULL)
+    {NULL, NULL, NULL}
+};</PRE></TD></TR></TABLE>
+You can see that the last entry in the list always has to be
+<TT CLASS="literal">{NULL, NULL, NULL}</TT>.
+This marker has to be set for Zend to know when the end of the
+list of exported functions is reached.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>
+You <SPAN CLASS="emphasis"><I CLASS="emphasis">cannot</I></SPAN> use the predefined macros for the
+end marker, as these would try to refer to a function named "NULL"!
+</P></BLOCKQUOTE></DIV><P>&#13; The macro <TT CLASS="literal">ZEND_FE</TT> (short for 'Zend Function
+Entry') simply expands to a structure entry in
+<TT CLASS="envar">zend_function_entry</TT>. Note that these macros
+introduce a special naming scheme to your functions - your C
+functions will be prefixed with <TT CLASS="literal">zif_</TT>, meaning
+that <TT CLASS="literal">ZEND_FE(first_module)</TT> will refer to a C
+function <B CLASS="function">zif_first_module()</B>. If you want to mix
+macro usage with hand-coded entries (not a good practice), keep
+this in mind.
+</P><P>&#13; Tip: Compilation errors that refer to functions
+named <B CLASS="function">zif_*()</B> relate to functions defined
+with <TT CLASS="literal">ZEND_FE</TT>.
+</P><P>&#13; <A HREF="zend.structure.function-block.html#tab.funcdef-macros">表格 31-2</A> shows a list of all the macros
+that you can use to define functions.
+</P><DIV CLASS="table"><A NAME="tab.funcdef-macros"></A><P><B>表格 31-2. Macros for Defining Functions</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD WIDTH="48%" ALIGN="LEFT" VALIGN="MIDDLE">Macro Name</TD><TD WIDTH="52%" ALIGN="LEFT" VALIGN="MIDDLE">Description</TD></TR><TR><TD WIDTH="48%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">ZEND_FE(name, arg_types)</TT></TD><TD WIDTH="52%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Defines a function entry of the name <TT CLASS="envar">name</TT> in
+<TT CLASS="envar">zend_function_entry</TT>. Requires a corresponding C
+function. <TT CLASS="envar">arg_types</TT> needs to be set to <TT CLASS="literal">NULL</TT>.
+This function uses automatic C function name generation by prefixing the PHP
+function name with <TT CLASS="literal">zif_</TT>.
+For example, <TT CLASS="literal">ZEND_FE("first_module", NULL)</TT> introduces a
+function <B CLASS="function">first_module()</B> to PHP and links it to the C
+function <B CLASS="function">zif_first_module()</B>. Use in conjunction
+with <TT CLASS="literal">ZEND_FUNCTION</TT>.
+</TD></TR><TR><TD WIDTH="48%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">ZEND_NAMED_FE(php_name, name, arg_types)</TT>
+</TD><TD WIDTH="52%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Defines a function that will be available to PHP by the
+name <TT CLASS="envar">php_name</TT> and links it to the corresponding C
+function <TT CLASS="envar">name</TT>. <TT CLASS="envar">arg_types</TT> needs to be set
+to <TT CLASS="literal">NULL</TT>. Use this function if you don't want the automatic
+name prefixing introduced by <TT CLASS="literal">ZEND_FE</TT>. Use in conjunction
+with <TT CLASS="literal">ZEND_NAMED_FUNCTION</TT>.
+</TD></TR><TR><TD WIDTH="48%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">ZEND_FALIAS(name, alias, arg_types)</TT>
+</TD><TD WIDTH="52%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Defines an alias named <TT CLASS="envar">alias</TT> for
+<TT CLASS="envar">name</TT>. <TT CLASS="envar">arg_types</TT> needs to be set
+to <TT CLASS="literal">NULL</TT>. Doesn't require a corresponding C
+function; refers to the alias target instead.
+</TD></TR><TR><TD WIDTH="48%" ALIGN="LEFT" VALIGN="MIDDLE"><TT CLASS="literal">PHP_FE(name, arg_types)</TT></TD><TD WIDTH="52%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Old PHP API equivalent of <TT CLASS="literal">ZEND_FE</TT>.
+</TD></TR><TR><TD WIDTH="48%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; <TT CLASS="literal">PHP_NAMED_FE(runtime_name, name, arg_types)</TT>
+</TD><TD WIDTH="52%" ALIGN="LEFT" VALIGN="MIDDLE">&#13; Old PHP API equivalent of <TT CLASS="literal">ZEND_NAMED_FE</TT>.
+</TD></TR></TBODY></TABLE></DIV><P>&#13; <SPAN CLASS="emphasis"><I CLASS="emphasis">Note:</I></SPAN> You can't use
+<TT CLASS="literal">ZEND_FE</TT> in conjunction with
+<TT CLASS="literal">PHP_FUNCTION</TT>, or <TT CLASS="literal">PHP_FE</TT> in
+conjunction with <TT CLASS="literal">ZEND_FUNCTION</TT>. However, it's
+perfectly legal to mix <TT CLASS="literal">ZEND_FE</TT> and
+<TT CLASS="literal">ZEND_FUNCTION</TT> with <TT CLASS="literal">PHP_FE</TT>
+and <TT CLASS="literal">PHP_FUNCTION</TT> when staying with the same
+macro set for each function to be declared. But mixing is
+<SPAN CLASS="emphasis"><I CLASS="emphasis">not</I></SPAN> recommended; instead, you're advised to
+use the <TT CLASS="literal">ZEND_*</TT> macros only.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="zend.structure.exporting-functions.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="zend.structure.module-block.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">Declaring Exported Functions</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="zend.structure.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">Declaration of the Zend Module Block</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

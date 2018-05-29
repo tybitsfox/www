@@ -1,0 +1,149 @@
+<HTML><HEAD><TITLE>OpenSSL Functions</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="函数参考" HREF="funcref.html"><LINK REL="PREVIOUS" TITLE="lob->setBuffering" HREF="function.ocisetbufferinglob.html"><LINK REL="NEXT" TITLE="openssl_csr_export_to_file" HREF="function.openssl-csr-export-to-file.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="reference" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.ocisetbufferinglob.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.openssl-csr-export-to-file.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><DIV CLASS="reference"><A NAME="ref.openssl"></A><DIV CLASS="TITLEPAGE"><H1 CLASS="title">LXXV. OpenSSL Functions</H1><DIV CLASS="PARTINTRO"><A NAME="AEN81539"></A><DIV CLASS="section"><H1 CLASS="section"><A NAME="openssl.intro"></A>介绍</H1><P>&#13; This module uses the functions of <A HREF="http://www.openssl.org/" TARGET="_top">OpenSSL</A> for generation and verification
+of signatures and for sealing (encrypting) and opening (decrypting)
+data. OpenSSL offers many features that this module currently doesn't
+support. Some of these may be added in the future.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="openssl.requirements"></A>需求</H1><P>&#13; In order to use the OpenSSL functions you need to install the <A HREF="http://www.openssl.org/" TARGET="_top">OpenSSL</A> package.
+PHP-4.0.4pl1 requires OpenSSL &#62;= 0.9.6, but PHP-4.0.5 and greater
+will also work with OpenSSL &#62;= 0.9.5.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="openssl.installation"></A>安装</H1><P>&#13; To use PHP's OpenSSL support you must also compile PHP <TT CLASS="option">--with-openssl[=DIR]</TT>.
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>Note to Win32 Users: </B>
+In order to enable this module on a Windows environment, you must copy
+<TT CLASS="filename">libeay32.dll</TT> from the DLL folder of the PHP/Win32 binary
+package to the SYSTEM32 folder of your windows machine. (Ex:
+<TT CLASS="filename">C:\WINNT\SYSTEM32</TT>
+or <TT CLASS="filename">C:\WINDOWS\SYSTEM32</TT>)
+</P><P>&#13; Additionally, if you are planning to use the key generation and certificate
+signing functions, you will need to install a valid <TT CLASS="filename">openssl.cnf
+</TT> on your system. As of PHP 4.3.0, we include a sample
+configuration file in the <TT CLASS="filename">openssl</TT>
+folder of our win32 binary distribution. If you are using PHP 4.2.0 or
+later and are missing the file, you can obtain it from
+<A HREF="http://www.openssl.org/" TARGET="_top">the OpenSSL home page</A> or by
+downloading the PHP 4.3.0 release and using the configuration file from
+there.
+</P><P><B>Note to Win32 Users: </B>
+PHP will search for the <TT CLASS="filename">openssl.cnf</TT> using the
+following logic:
+<P></P><UL><LI><P>the <TT CLASS="literal">OPENSSL_CONF</TT> environmental variable, if
+set, will be used as the path (including filename) of the configuration
+file.
+</P></LI><LI><P>the <TT CLASS="literal">SSLEAY_CONF</TT> environmental variable, if
+set, will be used as the path (including filename) of the configuration
+file.
+</P></LI><LI><P>The file <TT CLASS="filename">openssl.cnf</TT> will be assumed to be
+found in the default certificate area, as configured at the time that
+the openssl DLL was compiled. This is usually means that the default
+filename is <TT CLASS="filename">c:\usr\local\ssl\openssl.cnf</TT>.
+</P></LI></UL>
+</P><P>&#13; In your installation, you need to decide whether to install the
+configuration file at <TT CLASS="filename">c:\usr\local\ssl\openssl.cnf</TT> or
+whether to install it someplace else and use environmental variables
+(possibly on a per-virtual-host basis) to locate the configuration file.
+Note that it is possible to override the default path from the script using
+the <TT CLASS="parameter"><I>configargs</I></TT> of the functions that require a
+configuration file.
+</P></BLOCKQUOTE></DIV></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="openssl.configuration"></A>运行时配置</H1><P>该扩展模块未定义任何设置指令。</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="openssl.resources"></A>资源类型</H1><P>&#13; </P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="openssl.certparams"></A>Key/Certificate parameters</H1><P>&#13; Quite a few of the openssl functions require a key or a certificate
+parameter. PHP 4.0.5 and earlier have to use a key or certificate
+<A HREF="language.types.resource.html"><B CLASS="type">resource</B></A> returned by one of the openssl_get_xxx functions.
+Later versions may use one of the following methods:
+<P></P><UL><LI><P>&#13; Certificates
+<P></P><OL TYPE="1"><LI><P>&#13; An X.509 resource returned from
+<A HREF="function.openssl-x509-read.html"><B CLASS="function">openssl_x509_read()</B></A>
+</P></LI><LI><P>A string having the format
+<TT CLASS="filename">file://path/to/cert.pem</TT>; the named file must
+contain a PEM encoded certificate
+</P></LI><LI><P>&#13; A string containing the content of a certificate, PEM encoded
+</P></LI></OL>
+</P></LI><LI><P>&#13; Public/Private Keys
+<P></P><OL TYPE="1"><LI><P>A key resource returned from
+<A HREF="function.openssl-get-publickey.html"><B CLASS="function">openssl_get_publickey()</B></A> or
+<A HREF="function.openssl-get-privatekey.html"><B CLASS="function">openssl_get_privatekey()</B></A>
+</P></LI><LI><P>For public keys only: an X.509 resource</P></LI><LI><P>A string having the format
+<TT CLASS="filename">file://path/to/file.pem</TT> - the named file must
+contain a PEM encoded certificate/private key (it may contain both)
+</P></LI><LI><P>&#13; A string containing the content of a certificate/key, PEM encoded
+</P></LI><LI><P>&#13; For private keys, you may also use the syntax
+<SPAN CLASS="emphasis"><I CLASS="emphasis">array($key, $passphrase)</I></SPAN> where $key represents a
+key specified using the file:// or textual content notation above, and
+$passphrase represents a string containing the passphrase for that
+private key
+</P></LI></OL>
+</P></LI></UL>
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="openssl.cert.verification"></A>Certificate Verification</H1><P>&#13; When calling a function that will verify a signature/certificate, the
+<SPAN CLASS="emphasis"><I CLASS="emphasis">cainfo</I></SPAN> parameter is an array containing file and
+directory names that specify the locations of trusted CA files. If a
+directory is specified, then it must be a correctly formed hashed
+directory as the <B CLASS="command">openssl</B> command would use.
+</P></DIV><DIV CLASS="section"><H1 CLASS="section"><A NAME="openssl.constants"></A>预定义常量</H1><P>&#13;由于这些常量是由该扩展模块定义的，因此只有在该扩展模块被编译到 PHP 中，或者在运行时被动态加载后，这些常量才有效。</P><DIV CLASS="section"><H2 CLASS="section"><A NAME="openssl.purpose-check"></A>Purpose checking flags</H2><P></P><DIV CLASS="variablelist"><DL><DT><TT CLASS="constant"><B>X509_PURPOSE_SSL_CLIENT</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>X509_PURPOSE_SSL_SERVER</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>X509_PURPOSE_NS_SSL_SERVER</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>X509_PURPOSE_SMIME_SIGN</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>X509_PURPOSE_SMIME_ENCRYPT</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>X509_PURPOSE_CRL_SIGN</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>X509_PURPOSE_ANY</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD></DL></DIV></DIV><DIV CLASS="section"><H2 CLASS="section"><A NAME="openssl.padding"></A>Padding flags</H2><P></P><DIV CLASS="variablelist"><DL><DT><TT CLASS="constant"><B>OPENSSL_PKCS1_PADDING</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>OPENSSL_SSLV23_PADDING</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>OPENSSL_NO_PADDING</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>OPENSSL_PKCS1_OAEP_PADDING</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD></DL></DIV></DIV><DIV CLASS="section"><H2 CLASS="section"><A NAME="openssl.key-types"></A>Key types</H2><P></P><DIV CLASS="variablelist"><DL><DT><TT CLASS="constant"><B>OPENSSL_KEYTYPE_RSA</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>OPENSSL_KEYTYPE_DSA</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD><DT><TT CLASS="constant"><B>OPENSSL_KEYTYPE_DH</B></TT>
+(<A HREF="language.types.integer.html"><B CLASS="type">integer</B></A>)</DT><DD><P>&#13;
+</P></DD></DL></DIV></DIV><DIV CLASS="section"><H2 CLASS="section"><A NAME="openssl.pkcs7.flags"></A>PKCS7 Flags/Constants</H2><P>&#13; The S/MIME functions make use of flags which are specified using a
+bitfield which can include one or more of the following values:
+<DIV CLASS="table"><A NAME="AEN81721"></A><P><B>表格 1. PKCS7 CONSTANTS</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><THEAD><TR><TH ALIGN="LEFT" VALIGN="MIDDLE">Constant</TH><TH ALIGN="LEFT" VALIGN="MIDDLE">Description</TH></TR></THEAD><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PKCS7_TEXT</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Adds text/plain content type headers to encrypted/signed
+message. If decrypting or verifying, it strips those headers from
+the output - if the decrypted or verified message is not of MIME type
+text/plain then an error will occur.</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PKCS7_BINARY</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Normally the input message is converted to "canonical" format
+which is effectively using CR and LF as end of line: as required by
+the S/MIME specification. When this options is present, no
+translation occurs. This is useful when handling binary data which
+may not be in MIME format.</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PKCS7_NOINTERN</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">When verifying a message, certificates (if
+any) included in the message are normally searched for the
+signing certificate. With this option only the
+certificates specified in the <TT CLASS="parameter"><I>extracerts</I></TT>
+parameter of <A HREF="function.openssl-pkcs7-verify.html"><B CLASS="function">openssl_pkcs7_verify()</B></A> are
+used. The supplied certificates can still be used as
+untrusted CAs however.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PKCS7_NOVERIFY</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Do not verify the signers certificate of a signed
+message.</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PKCS7_NOCHAIN</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Do not chain verification of signers certificates: that is
+don't use the certificates in the signed message as untrusted CAs.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PKCS7_NOCERTS</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">When signing a message the signer's certificate is normally
+included - with this option it is excluded. This will reduce the
+size of the signed message but the verifier must have a copy of the
+signers certificate available locally (passed using the
+<TT CLASS="parameter"><I>extracerts</I></TT> to
+<A HREF="function.openssl-pkcs7-verify.html"><B CLASS="function">openssl_pkcs7_verify()</B></A> for example).
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PKCS7_NOATTR</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Normally when a message is signed, a set of attributes are
+included which include the signing time and the supported symmetric
+algorithms. With this option they are not included.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PKCS7_DETACHED</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">When signing a message, use cleartext signing with the MIME
+type multipart/signed. This is the default
+if you do not specify any <TT CLASS="parameter"><I>flags</I></TT> to
+<A HREF="function.openssl-pkcs7-sign.html"><B CLASS="function">openssl_pkcs7_sign()</B></A>.
+If you turn this option off, the message will be signed using
+opaque signing, which is more resistant to translation by mail relays
+but cannot be read by mail agents that do not support S/MIME.</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">PKCS7_NOSIGS</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Don't try and verify the signatures on a message</TD></TR></TBODY></TABLE></DIV>
+</P><DIV CLASS="note"><BLOCKQUOTE CLASS="note"><P><B>注: </B>These constants were added in 4.0.6.</P></BLOCKQUOTE></DIV></DIV></DIV></DIV><DIV CLASS="TOC"><DL><DT><B>目录</B></DT><DT><A HREF="function.openssl-csr-export-to-file.html">openssl_csr_export_to_file</A>&nbsp;--&nbsp;Exports a CSR to a file</DT><DT><A HREF="function.openssl-csr-export.html">openssl_csr_export</A>&nbsp;--&nbsp;Exports a CSR as a string</DT><DT><A HREF="function.openssl-csr-new.html">openssl_csr_new</A>&nbsp;--&nbsp;Generates a CSR</DT><DT><A HREF="function.openssl-csr-sign.html">openssl_csr_sign</A>&nbsp;--&nbsp;Sign a CSR with another certificate (or itself) and generate a certificate</DT><DT><A HREF="function.openssl-error-string.html">openssl_error_string</A>&nbsp;--&nbsp;Return openSSL error message</DT><DT><A HREF="function.openssl-free-key.html">openssl_free_key</A>&nbsp;--&nbsp;Free key resource</DT><DT><A HREF="function.openssl-get-privatekey.html">openssl_get_privatekey</A>&nbsp;--&nbsp;Get a private key</DT><DT><A HREF="function.openssl-get-publickey.html">openssl_get_publickey</A>&nbsp;--&nbsp;Extract public key from certificate and prepare it for use</DT><DT><A HREF="function.openssl-open.html">openssl_open</A>&nbsp;--&nbsp;Open sealed data</DT><DT><A HREF="function.openssl-pkcs7-decrypt.html">openssl_pkcs7_decrypt</A>&nbsp;--&nbsp;Decrypts an S/MIME encrypted message</DT><DT><A HREF="function.openssl-pkcs7-encrypt.html">openssl_pkcs7_encrypt</A>&nbsp;--&nbsp;Encrypt an S/MIME message</DT><DT><A HREF="function.openssl-pkcs7-sign.html">openssl_pkcs7_sign</A>&nbsp;--&nbsp;sign an S/MIME message</DT><DT><A HREF="function.openssl-pkcs7-verify.html">openssl_pkcs7_verify</A>&nbsp;--&nbsp;Verifies the signature of an S/MIME signed message</DT><DT><A HREF="function.openssl-pkey-export-to-file.html">openssl_pkey_export_to_file</A>&nbsp;--&nbsp;Gets an exportable representation of a key into a file </DT><DT><A HREF="function.openssl-pkey-export.html">openssl_pkey_export</A>&nbsp;--&nbsp;Gets an exportable representation of a key into a string</DT><DT><A HREF="function.openssl-pkey-get-private.html">openssl_pkey_get_private</A>&nbsp;--&nbsp;Get a private key</DT><DT><A HREF="function.openssl-pkey-get-public.html">openssl_pkey_get_public</A>&nbsp;--&nbsp;Extract public key from certificate and prepare it for use</DT><DT><A HREF="function.openssl-pkey-new.html">openssl_pkey_new</A>&nbsp;--&nbsp;Generates a new private key </DT><DT><A HREF="function.openssl-private-decrypt.html">openssl_private_decrypt</A>&nbsp;--&nbsp;Decrypts data with private key </DT><DT><A HREF="function.openssl-private-encrypt.html">openssl_private_encrypt</A>&nbsp;--&nbsp;Encrypts data with private key </DT><DT><A HREF="function.openssl-public-decrypt.html">openssl_public_decrypt</A>&nbsp;--&nbsp;Decrypts data with public key </DT><DT><A HREF="function.openssl-public-encrypt.html">openssl_public_encrypt</A>&nbsp;--&nbsp;Encrypts data with public key </DT><DT><A HREF="function.openssl-seal.html">openssl_seal</A>&nbsp;--&nbsp;Seal (encrypt) data</DT><DT><A HREF="function.openssl-sign.html">openssl_sign</A>&nbsp;--&nbsp;Generate signature</DT><DT><A HREF="function.openssl-verify.html">openssl_verify</A>&nbsp;--&nbsp;Verify signature</DT><DT><A HREF="function.openssl-x509-check-private-key.html">openssl_x509_check_private_key</A>&nbsp;--&nbsp;Checks if a private key corresponds to a certificate</DT><DT><A HREF="function.openssl-x509-checkpurpose.html">openssl_x509_checkpurpose</A>&nbsp;--&nbsp;Verifies if a certificate can be used for a particular
+purpose</DT><DT><A HREF="function.openssl-x509-export-to-file.html">openssl_x509_export_to_file</A>&nbsp;--&nbsp;Exports a certificate to file</DT><DT><A HREF="function.openssl-x509-export.html">openssl_x509_export</A>&nbsp;--&nbsp;Exports a certificate as a string</DT><DT><A HREF="function.openssl-x509-free.html">openssl_x509_free</A>&nbsp;--&nbsp;Free certificate resource</DT><DT><A HREF="function.openssl-x509-parse.html">openssl_x509_parse</A>&nbsp;--&nbsp;Parse an X509 certificate and return the information as an
+array</DT><DT><A HREF="function.openssl-x509-read.html">openssl_x509_read</A>&nbsp;--&nbsp;Parse an X.509 certificate and return a resource identifier for
+it</DT></DL></DIV></DIV></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.ocisetbufferinglob.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.openssl-csr-export-to-file.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">lob-&#62;setBuffering</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="funcref.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">openssl_csr_export_to_file</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<HTML><HEAD><TITLE>msg_receive</TITLE><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK REL="HOME" TITLE="PHP 手册" HREF="index-2.html"><LINK REL="UP" TITLE="Semaphore, Shared Memory and IPC Functions" HREF="ref.sem.html"><LINK REL="PREVIOUS" TITLE="msg_get_queue" HREF="function.msg-get-queue.html"><LINK REL="NEXT" TITLE="msg_remove_queue" HREF="function.msg-remove-queue.html"><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=gb2312"><LINK REL="stylesheet" HREF="style.css"></HEAD><BODY TOPMARGIN="0" LEFTMARGIN="0" CLASS="refentry" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#840084" ALINK="#0000FF"><TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0" CELLPADDING="0"><TR><TD COLSPAN="3"><DIV CLASS="NAVHEADER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR><TD><TABLE SUMMARY="Header navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TH COLSPAN="3" ALIGN="center">PHP 手册</TH></TR><TR><TD WIDTH="10%" ALIGN="left" VALIGN="bottom"><A HREF="function.msg-get-queue.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="80%" ALIGN="center" VALIGN="bottom"></TD><TD WIDTH="10%" ALIGN="right" VALIGN="bottom"><A HREF="function.msg-remove-queue.html" ACCESSKEY="N">前进</A></TD></TR></TABLE></TD></TR><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR></TABLE></DIV></TD></TR><TR><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD><TD HEIGHT="100%" VALIGN="TOP" WIDTH="100%"><BR><H1><A NAME="function.msg-receive"></A>msg_receive</H1><DIV CLASS="refnamediv"><A NAME="AEN96898"></A><P> (PHP 4 &#62;= 4.3.0)</P>msg_receive&nbsp;--&nbsp;
+Receive a message from a message queue
+</DIV><DIV CLASS="refsect1"><A NAME="AEN96901"></A><H2>Description</H2>bool <B CLASS="methodname">msg_receive</B> ( int queue, int desiredmsgtype, int msgtype, int maxsize, mixed message [, bool unserialize [, int flags [, int errorcode]]])<BR></BR><P>&#13; <B CLASS="function">msg_receive()</B> will receive the first message from the
+specified <TT CLASS="parameter"><I>queue</I></TT> of the type specified by
+<TT CLASS="parameter"><I>desiredmsgtype</I></TT>.
+The type of the message that was received will be stored in
+<TT CLASS="parameter"><I>msgtype</I></TT>.
+The maximum size of message to be accepted is specified by the
+<TT CLASS="parameter"><I>maxsize</I></TT>; if the message in the queue is larger
+than this size the function will fail (unless you set
+<TT CLASS="parameter"><I>flags</I></TT> as described below).
+The received message will be stored in <TT CLASS="parameter"><I>message</I></TT>,
+unless there were errors receiving the message, in which case the
+optional <TT CLASS="parameter"><I>errorcode</I></TT> will be set to the value of the
+system errno variable to help you identify the cause.
+</P><P>&#13; If <TT CLASS="parameter"><I>desiredmsgtype</I></TT> is 0, the message from the front
+of the queue is returned. If <TT CLASS="parameter"><I>desiredmsgtype</I></TT> is
+greater than 0, then the first message of that type is returned.
+If <TT CLASS="parameter"><I>desiredmsgtype</I></TT> is less than 0, the first
+message on the queue with the lowest type less than or equal to the
+absolute value of <TT CLASS="parameter"><I>desiredmsgtype</I></TT> will be read.
+If no messages match the criteria, your script will wait until a suitable
+message arrives on the queue. You can prevent the script from blocking
+by specifying MSG_IPC_NOWAIT in the <TT CLASS="parameter"><I>flags</I></TT> parameter.
+</P><P>&#13; <TT CLASS="parameter"><I>unserialize</I></TT> defaults to <TT CLASS="constant"><B>TRUE</B></TT>; if it is set to
+<TT CLASS="constant"><B>TRUE</B></TT>, the message is treated as though it was serialized using the same
+mechanism as the session module. The message will be unserialized and
+then returned to your script. This allows you to easily receive arrays
+or complex object structures from other PHP scripts, or if you are using
+the WDDX serializer, from any WDDX compatible source.
+If <TT CLASS="parameter"><I>unserialize</I></TT> is <TT CLASS="constant"><B>FALSE</B></TT>, the message will be
+returned as a binary-safe string.
+</P><P>&#13; The optional <TT CLASS="parameter"><I>flags</I></TT> allows you to pass flags to the
+low-level msgrcv system call. It defaults to 0, but you may specify one
+or more of the following values (by adding or ORing them together).
+<DIV CLASS="table"><A NAME="AEN96953"></A><P><B>表格 1. Flag values for msg_receive</B></P><TABLE BORDER="1" CLASS="CALSTABLE"><TBODY><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">MSG_IPC_NOWAIT</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">If there are no messages of the
+<TT CLASS="parameter"><I>desiredmsgtype</I></TT>, return immediately and do not
+wait. The function will fail and return an integer value
+corresponding to ENOMSG.
+</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">MSG_EXCEPT</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">Using this flag in combination with a
+<TT CLASS="parameter"><I>desiredmsgtype</I></TT> greater than 0 will cause the
+function to receive the first message that is not equal to
+<TT CLASS="parameter"><I>desiredmsgtype</I></TT>.</TD></TR><TR><TD ALIGN="LEFT" VALIGN="MIDDLE">MSG_NOERROR</TD><TD ALIGN="LEFT" VALIGN="MIDDLE">&#13; If the message is longer than <TT CLASS="parameter"><I>maxsize</I></TT>,
+setting this flag will truncate the message to
+<TT CLASS="parameter"><I>maxsize</I></TT> and will not signal an error.
+</TD></TR></TBODY></TABLE></DIV>
+</P><P>&#13; Upon successful completion the message queue data structure is updated as
+follows: <TT CLASS="parameter"><I>msg_lrpid</I></TT> is set to the process-ID of the
+calling process, <TT CLASS="parameter"><I>msg_qnum</I></TT> is decremented by 1 and
+<TT CLASS="parameter"><I>msg_rtime</I></TT> is set to the current time.
+</P><P>&#13; <B CLASS="function">msg_receive()</B> returns <TT CLASS="constant"><B>TRUE</B></TT> on success or <TT CLASS="constant"><B>FALSE</B></TT> on
+failure. If the function fails, the optional
+<TT CLASS="parameter"><I>errorcode</I></TT> will be set to the value of the system
+errno variable.
+</P><P>&#13; See also: <A HREF="function.msg-remove-queue.html"><B CLASS="function">msg_remove_queue()</B></A>,
+<A HREF="function.msg-send.html"><B CLASS="function">msg_send()</B></A>,
+<A HREF="function.msg-stat-queue.html"><B CLASS="function">msg_stat_queue()</B></A> and
+<A HREF="function.msg-set-queue.html"><B CLASS="function">msg_set_queue()</B></A>.
+</P></DIV><BR></TD><TD><IMG SRC="spacer.gif" WIDTH="10" HEIGHT="1"></TD></TR><TR><TD COLSPAN="3"><DIV CLASS="NAVFOOTER"><TABLE BGCOLOR="#CCCCFF" BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%"><TR BGCOLOR="#333366"><TD><IMG SRC="spacer.gif" BORDER="0" WIDTH="1" HEIGHT="1"><BR></TD></TR><TR><TD><TABLE SUMMARY="Footer navigation table" WIDTH="100%" BORDER="0" CELLPADDING="3" CELLSPACING="0"><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top"><A HREF="function.msg-get-queue.html" ACCESSKEY="P">后退</A></TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="index-2.html" ACCESSKEY="H">起点</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top"><A HREF="function.msg-remove-queue.html" ACCESSKEY="N">前进</A></TD></TR><TR><TD WIDTH="33%" ALIGN="left" VALIGN="top">msg_get_queue</TD><TD WIDTH="34%" ALIGN="center" VALIGN="top"><A HREF="ref.sem.html" ACCESSKEY="U">上一级</A></TD><TD WIDTH="33%" ALIGN="right" VALIGN="top">msg_remove_queue</TD></TR></TABLE></TD></TR></TABLE></DIV></TD></TR></TABLE>
+<p style="text-align:center;"><script type="text/javascript" src="http://www.veryhuo.com/plus/js/manual.js"></script></p>
+<div style="display:none;">
+<script type="text/javascript" src="/liehuo.net/js/stat.js"></script>
+</div>
+</body>
+</html>

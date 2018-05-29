@@ -1,0 +1,401 @@
+<HTML
+><HEAD
+><TITLE
+>PL/Perl 触发器</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="PL/Perl - Perl 过程语言"
+HREF="plperl.html"><LINK
+REL="PREVIOUS"
+TITLE="可信的和不可信的 PL/Perl"
+HREF="plperl-trusted.html"><LINK
+REL="NEXT"
+TITLE="限制及缺少的特性"
+HREF="plperl-missing.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plperl-trusted.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plperl.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 38. PL/Perl - Perl 过程语言</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plperl.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plperl-missing.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="PLPERL-TRIGGERS"
+>38.6. PL/Perl 触发器</A
+></H1
+><P
+>   PL/Perl 现在可以通过使用 <TT
+CLASS="VARNAME"
+>$_TD</TT
+> 散列引用来书写触发器函数。
+  </P
+><P
+>   PL/Perl 可以用于书写触发器函数。在触发器函数里，散列引用 <TT
+CLASS="VARNAME"
+>$_TD</TT
+>
+   包含有关当前触发器事件的信息。散列引用 <TT
+CLASS="VARNAME"
+>$_TD</TT
+> 的字段是：
+
+   <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>$_TD-&gt;{new}{foo}</TT
+></DT
+><DD
+><P
+>       字段 <TT
+CLASS="LITERAL"
+>foo</TT
+>
+       的 <TT
+CLASS="LITERAL"
+>NEW</TT
+> 值。
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>$_TD-&gt;{old}{foo}</TT
+></DT
+><DD
+><P
+>       一个字段 <TT
+CLASS="LITERAL"
+>foo</TT
+> 的 <TT
+CLASS="LITERAL"
+>OLD</TT
+> 值。
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>$_TD-&gt;{name}</TT
+></DT
+><DD
+><P
+>       被调用的触发器的名字
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>$_TD-&gt;{event}</TT
+></DT
+><DD
+><P
+>       触发器事件：<TT
+CLASS="LITERAL"
+>INSERT</TT
+>，<TT
+CLASS="LITERAL"
+>UPDATE</TT
+>，<TT
+CLASS="LITERAL"
+>DELETE</TT
+>，或者 <TT
+CLASS="LITERAL"
+>UNKNOWN</TT
+>
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>$_TD-&gt;{when}</TT
+></DT
+><DD
+><P
+>       何时调用触发器：<TT
+CLASS="LITERAL"
+>BEFORE</TT
+>，<TT
+CLASS="LITERAL"
+>AFTER</TT
+>，或者 <TT
+CLASS="LITERAL"
+>UNKNOWN</TT
+>
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>$_TD-&gt;{level}</TT
+></DT
+><DD
+><P
+>       触发器的级别：<TT
+CLASS="LITERAL"
+>ROW</TT
+>，<TT
+CLASS="LITERAL"
+>STATEMENT</TT
+>，或者 <TT
+CLASS="LITERAL"
+>UNKNOWN</TT
+>
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>$_TD-&gt;{relid}</TT
+></DT
+><DD
+><P
+>       触发触发器的表的 OID
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>$_TD-&gt;{relname}</TT
+></DT
+><DD
+><P
+>       触发触发器的表的名字
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>$_TD-&gt;{argc}</TT
+></DT
+><DD
+><P
+>       触发器函数的参数个数
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>@{$_TD-&gt;{argv}}</TT
+></DT
+><DD
+><P
+>       触发器函数的参数，如果 <TT
+CLASS="LITERAL"
+>$_TD-&gt;{argc}</TT
+> 为 0 则不存在。
+      </P
+></DD
+></DL
+></DIV
+><P>
+  </P
+><P
+>   触发器返回下列之一：
+
+   <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>return;</TT
+></DT
+><DD
+><P
+>       执行该语句
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>"SKIP"</TT
+></DT
+><DD
+><P
+>       不执行该语句
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>"MODIFY"</TT
+></DT
+><DD
+><P
+>       表明 <TT
+CLASS="LITERAL"
+>NEW</TT
+> 行被触发器函数修改过
+      </P
+></DD
+></DL
+></DIV
+><P>
+  </P
+><P
+>下面是一个触发器函数，演示了上面的一些东西。
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE test (
+        i int,
+        v varchar
+);
+
+CREATE OR REPLACE FUNCTION valid_id() RETURNS trigger AS $$
+    if (($_TD-&gt;{new}{i} &gt;= 100) || ($_TD-&gt;{new}{i} &lt;= 0)) {
+        return "SKIP";    # 忽略 INSERT/UPDATE 命令
+    } elsif ($_TD-&gt;{new}{v} ne "immortal") {
+        $_TD-&gt;{new}{v} .= "(modified by trigger)";
+        return "MODIFY";  # 修改一行并且执行 INSERT/UPDATE 命令
+    } else {
+        return;           # 执行 INSERT/UPDATE 命令
+    }
+$$ LANGUAGE plperl;
+
+CREATE TRIGGER test_valid_id_trig
+    BEFORE INSERT OR UPDATE ON test
+    FOR EACH ROW EXECUTE PROCEDURE valid_id();</PRE
+><P>
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="plperl-trusted.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="plperl-missing.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>可信的和不可信的 PL/Perl</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="plperl.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>限制及缺少的特性</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

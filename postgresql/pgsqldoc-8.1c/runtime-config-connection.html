@@ -1,0 +1,755 @@
+<HTML
+><HEAD
+><TITLE
+>连接和认证</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REV="MADE"
+HREF="mailto:pgsql-docs@postgresql.org"><LINK
+REL="HOME"
+TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="服务器配置"
+HREF="runtime-config.html"><LINK
+REL="PREVIOUS"
+TITLE="文件位置"
+HREF="runtime-config-file-locations.html"><LINK
+REL="NEXT"
+TITLE="资源消耗"
+HREF="runtime-config-resource.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="stylesheet.css"><META
+HTTP-EQUIV="Content-Type"
+CONTENT="text/html; charset=gb2312"><META
+NAME="creation"
+CONTENT="2005-12-05T14:14:52"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档（<A
+HREF="http://www.pgsqldb.org"
+TARGET="_top"
+>PostgreSQL 中国</A
+> 制作）</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="runtime-config-file-locations.html"
+>Prev</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="runtime-config.html"
+>Fast Backward</A
+></TD
+><TD
+WIDTH="60%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 17. 服务器配置</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="runtime-config.html"
+>Fast Forward</A
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="runtime-config-resource.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="RUNTIME-CONFIG-CONNECTION"
+>17.3. 连接和认证</A
+></H1
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="RUNTIME-CONFIG-CONNECTION-SETTINGS"
+>17.3.1. 连接设置</A
+></H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A
+NAME="GUC-LISTEN-ADDRESSES"
+><TT
+CLASS="VARNAME"
+>listen_addresses</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>	  声明服务器监听客户端应用连接的 TCP/IP 地址。
+	  数值是从一个逗号分隔的主机名和/或数字IP地址获取的。
+	  特殊的条目 <TT
+CLASS="LITERAL"
+>*</TT
+> 对应所有可用 IP 接口。
+	  如果这个列表是空的，那么服务器不会监听任何 IP 接口，这种情况下，
+	  只有 Unix 域套接字可以用于连接数据库。
+	  缺省值是 <SPAN
+CLASS="SYSTEMITEM"
+>localhost</SPAN
+>，
+	  它只允许进行本地 <SPAN
+CLASS="QUOTE"
+>"loopback"</SPAN
+> 连接。这个参数只能在服务器启动的时候设置。
+        </P
+></DD
+><DT
+><A
+NAME="GUC-PORT"
+><TT
+CLASS="VARNAME"
+>port</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	 服务器监听的 TCP 端口；缺省是 5432。请注意同一个端口号用于服务器监听的所有 IP 地址。
+	 这个参数只能在服务器启动的时候设置。
+        </P
+></DD
+><DT
+><A
+NAME="GUC-MAX-CONNECTIONS"
+><TT
+CLASS="VARNAME"
+>max_connections</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	决定和数据库连接的并发连接数目的最大值。
+	缺省通常是 100，但是如果你的内核设置不支持这么大（在 <SPAN
+CLASS="APPLICATION"
+>initdb</SPAN
+> 的时候判断），
+	可能会比这个数少。这个参数只能在服务器启动的时候设置。
+       </P
+><P
+>	增大这个参数可能导致 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+	要求更多的 <SPAN
+CLASS="SYSTEMITEM"
+>System V</SPAN
+> 共享内存或者信号灯，
+	可能超过你的操作系统缺省配置的许可值。必要的话，参阅 <A
+HREF="kernel-resources.html#SYSVIPC"
+>Section 16.4.1</A
+> 获取有关如何调节这个参数的信息。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-SUPERUSER-RESERVED-CONNECTIONS"
+><TT
+CLASS="VARNAME"
+>superuser_reserved_connections</TT
+>
+      (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	决定为 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 超级用户连接而保留的连接<SPAN
+CLASS="QUOTE"
+>"槽位"</SPAN
+>。
+	一次最多可以同时激活 <A
+HREF="runtime-config-connection.html#GUC-MAX-CONNECTIONS"
+>max_connections</A
+> 个连接。
+	在活跃的并发连接到了 <TT
+CLASS="VARNAME"
+>max_connections</TT
+> 减去 <TT
+CLASS="VARNAME"
+>superuser_reserved_connections</TT
+> 的时候，
+	新的连接就只能由超级用户发起了。
+       </P
+><P
+>	缺省值是 2。这个值必须小于 <TT
+CLASS="VARNAME"
+>max_connections</TT
+> 的值。
+	这个参数只能在服务器启动的时候设置。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-UNIX-SOCKET-DIRECTORY"
+><TT
+CLASS="VARNAME"
+>unix_socket_directory</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>	声明服务器监听客户端应用连接来临的 Unix 域套接字的目录。
+	缺省通常是 <TT
+CLASS="FILENAME"
+>/tmp</TT
+>，但是缺省值可以在制作的时候修改。
+	这个值只能在服务器启动的时候设置。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-UNIX-SOCKET-GROUP"
+><TT
+CLASS="VARNAME"
+>unix_socket_group</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>	设置 Unix 域套接字的组所有者。（套接字的所属用户总是启动服务器的用户。）
+	与选项 <TT
+CLASS="VARNAME"
+>unix_socket_permissions</TT
+> 一起，就可以用于控制套接字类型的附加的访问控制。
+	缺省的时候，这是一个空字串，表示使用当前用户的缺省组。这个选项只能在服务器启动的时候设置。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-UNIX-SOCKET-PERMISSIONS"
+><TT
+CLASS="VARNAME"
+>unix_socket_permissions</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	设置 Unix 域套接字的访问权限。Unix 域套接字使用普通的 Unix 文件系统权限集。
+	这个选项值应该是数值的形式，也就是那种 Unix 域套接字调用 <TT
+CLASS="FUNCTION"
+>chmod</TT
+> 和 <TT
+CLASS="FUNCTION"
+>umask</TT
+>
+	接受的形式。（要使用客户化的八进制格式，数字必须以<TT
+CLASS="LITERAL"
+>0</TT
+> （零）开头。）
+       </P
+><P
+>	缺省的权限是 <TT
+CLASS="LITERAL"
+>0777</TT
+>，意思是任何人都可以连接。
+	合理的候选是 <TT
+CLASS="LITERAL"
+>0770</TT
+>（只有用户和同组的人可以访问，
+	又见 <TT
+CLASS="VARNAME"
+>unix_socket_group</TT
+>）和 <TT
+CLASS="LITERAL"
+>0700</TT
+>
+	（只有用户）。（请注意，对于 Unix 域套接字，只有写权限有意义，设置或者撤销读和执行权限没有任何意义。）
+       </P
+><P
+>	这个访问控制机制与 <A
+HREF="client-authentication.html"
+>Chapter 20</A
+> 里描述的独立。
+       </P
+><P
+>	这个选项只能在服务器启动的时候设置。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-BONJOUR-NAME"
+><TT
+CLASS="VARNAME"
+>bonjour_name</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>	声明 <SPAN
+CLASS="PRODUCTNAME"
+>Bonjour</SPAN
+> 广播地址。缺省的时候，使用计算机名，声明是 ''。
+	如果编译时没有打开 <SPAN
+CLASS="PRODUCTNAME"
+>Bonjour</SPAN
+> 那么忽略这个参数。
+	这个选项只能在服务器启动的时候设置。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-TCP-KEEPALIVES-IDLE"
+><TT
+CLASS="VARNAME"
+>tcp_keepalives_idle</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	在那些支持 <TT
+CLASS="SYMBOL"
+>TCP_KEEPIDLE</TT
+> 套接字选项的系统上，
+	声明发送保持活跃信号的间隔秒数，不发送保持活跃信号，连接就会处于闲置状态。
+	0 值的话则使用系统缺省。如果不支持 <TT
+CLASS="SYMBOL"
+>TCP_KEEPIDLE</TT
+>，
+	这个参数必须为 0。在通过 Unix 域套接字进行的连接上，这个选项被忽略。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-TCP-KEEPALIVES-INTERVAL"
+><TT
+CLASS="VARNAME"
+>tcp_keepalives_interval</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	在那些支持 <TT
+CLASS="SYMBOL"
+>TCP_KEEPINTVL</TT
+> 套接字选项的系统上，
+	以秒数声明在重新传输之间等待响应的时间。0 值表示使用系统缺省。
+	如果不支持 <TT
+CLASS="SYMBOL"
+>TCP_KEEPINTVL</TT
+>，这个参数必须为 0。
+	在通过 Unix 域套接字进行的连接上，这个选项被忽略。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-TCP-KEEPALIVES-COUNT"
+><TT
+CLASS="VARNAME"
+>tcp_keepalives_count</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	在支持 <TT
+CLASS="SYMBOL"
+>TCP_KEEPCNT</TT
+> 选项的系统上，声明在人为连接断掉之前可以丢失多少个保持活跃信号。
+	0 值表示使用系统缺省。如果不支持 <TT
+CLASS="SYMBOL"
+>TCP_KEEPCNT</TT
+>，这个参数必须是 0.
+	这个选项在通过使用 Unix 域套接字建立的连接上被忽略。
+       </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="RUNTIME-CONFIG-CONNECTION-SECURITY"
+>17.3.2. 安全和认证</A
+></H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A
+NAME="GUC-AUTHENTICATION-TIMEOUT"
+><TT
+CLASS="VARNAME"
+>authentication_timeout</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</A
+></DT
+><DD
+><P
+>	完成客户端认证的最长时间，以秒计。如果一个客户端没有在这段时间里完成认证协议，
+	服务器将中断连接。这样就避免了出问题的客户端无限制地占据连接资源。
+	这个选项只能在服务器启动的时候设置或者在 <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> 里设置。
+	缺省是 60。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-SSL"
+><TT
+CLASS="VARNAME"
+>ssl</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	打开 <SPAN
+CLASS="ACRONYM"
+>SSL</SPAN
+> 连接。请在使用这个选项之前阅读 <A
+HREF="ssl-tcp.html"
+>Section 16.7</A
+>。
+	缺省是 <TT
+CLASS="LITERAL"
+>off</TT
+>。这个参数只能在服务器启动的时候设置。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-PASSWORD-ENCRYPTION"
+><TT
+CLASS="VARNAME"
+>password_encryption</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	在 <A
+HREF="sql-createuser.html"
+><I
+>CREATE USER</I
+></A
+> 或者
+	<A
+HREF="sql-alteruser.html"
+><I
+>ALTER USER</I
+></A
+> 里声明一个口令，
+	而又没有写 <TT
+CLASS="LITERAL"
+>ENCRYPTED</TT
+> 或者 <TT
+CLASS="LITERAL"
+>UNENCRYPTED</TT
+> 的时候，这个选项决定口令是否要加密。
+	缺省是 <TT
+CLASS="LITERAL"
+>on</TT
+>（加密口令）。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-KRB-SERVER-KEYFILE"
+><TT
+CLASS="VARNAME"
+>krb_server_keyfile</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>	设置 Kerberos 服务器键字文件的位置。参阅 <A
+HREF="auth-methods.html#KERBEROS-AUTH"
+>Section 20.2.3</A
+> 获取细节。
+	这个参数只能在服务器启动的时候设置。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-KRB-SRVNAME"
+><TT
+CLASS="VARNAME"
+>krb_srvname</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>	设置 Kerberos 服务名。参阅 <A
+HREF="auth-methods.html#KERBEROS-AUTH"
+>Section 20.2.3</A
+> 获取细节。
+	这个参数只能在服务器启动的时候设置。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-KRB-SERVER-HOSTNAME"
+><TT
+CLASS="VARNAME"
+>krb_server_hostname</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</A
+></DT
+><DD
+><P
+>	设置服务主的主机名部分。这个和 <TT
+CLASS="VARNAME"
+>krb_srvname</TT
+> 结合再一起，
+	用于生成完整的服务主，比如：
+        <TT
+CLASS="VARNAME"
+>krb_server_hostname</TT
+><TT
+CLASS="LITERAL"
+>/</TT
+><TT
+CLASS="VARNAME"
+>krb_server_hostname</TT
+><TT
+CLASS="LITERAL"
+>@</TT
+>REALM。
+       </P
+><P
+>	如果没有设置，缺省是允许人和服务主机器在密钥文件里有一条记录。
+	参阅 <A
+HREF="auth-methods.html#KERBEROS-AUTH"
+>Section 20.2.3</A
+> 获取细节。
+	这个参数只能在服务器启动的时候设置。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-KRB-CASEINS-USERS"
+><TT
+CLASS="VARNAME"
+>krb_caseins_users</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>        设置 Kerberos 用户名是否大小写无相关。缺省是 <TT
+CLASS="LITERAL"
+>off</TT
+>（大小写相关）。
+	这个参数只能在服务器启动的时候设置。
+       </P
+></DD
+><DT
+><A
+NAME="GUC-DB-USER-NAMESPACE"
+><TT
+CLASS="VARNAME"
+>db_user_namespace</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</A
+></DT
+><DD
+><P
+>	这样就允许每个数据库的用户名。缺省是关闭的。
+       </P
+><P
+>	如果这是打开的，你应该像 <TT
+CLASS="LITERAL"
+>username@dbname</TT
+> 这样创建用户。
+	在给一个正在连接的客户端传递 <TT
+CLASS="LITERAL"
+>username</TT
+> 的时候，必须给用户名附加 <TT
+CLASS="LITERAL"
+>@</TT
+> 和数据库名字，
+	然后服务器查找该数据库相关的用户名字。请注意，如果你在 SQL 环境里创建包含 <TT
+CLASS="LITERAL"
+>@</TT
+> 的名字时，
+	你需要用引号包围用户名。
+       </P
+><P
+>	打开这个选项之后，你还是能够创建普通的全局用户。
+	只要在客户端声明用户的时候附加一个 <TT
+CLASS="LITERAL"
+>@</TT
+> 即可。
+	在服务器查找这个用户名之前，这个 <TT
+CLASS="LITERAL"
+>@</TT
+> 会被剥除。
+       </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>	 这个特性只是临时试验用途，直到找到一个完全的解决方案。
+	 那个时候，这个选项将被删除。
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+></DL
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="runtime-config-file-locations.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="runtime-config-resource.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>文件位置</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="runtime-config.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>资源消耗</TD
+></TR
+></TABLE
+></DIV
+><script src="http://count1.chinaitlab.com/mystat.asp?siteid=32"></script></body></HTML
+>

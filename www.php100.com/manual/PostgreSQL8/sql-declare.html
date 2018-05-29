@@ -1,0 +1,514 @@
+<HTML
+><HEAD
+>
+
+<TITLE
+>DECLARE PostgreSQL 手册</TITLE
+><META NAME="GENERATOR" CONTENT="Modular DocBook HTML Stylesheet Version 1.64 "><LINK REV="MADE" HREF="mailto:pgsql-docs@postgresql.org"><LINK REL="HOME" TITLE="PostgreSQL 8.1 中文文档（PostgreSQL 中国 制作）" HREF="index.html"><LINK REL="UP" TITLE="SQL 命令" HREF="sql-commands.html"><LINK REL="PREVIOUS" TITLE="DEALLOCATE" HREF="sql-deallocate.html"><LINK REL="NEXT" TITLE="DELETE" HREF="sql-delete.html"><LINK REL="STYLESHEET" TYPE="text/css" HREF="stylesheet.css"><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=gb2312"><META NAME="creation" CONTENT="2006-01-03T05:00:21"></HEAD
+><BODY CLASS="REFENTRY" ><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TH
+COLSPAN="5"
+ALIGN="center"
+VALIGN="bottom"
+>PostgreSQL 8.1 中文文档</TH
+></TR
+><TR ><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-deallocate.html" >Prev</A
+></TD
+><TD WIDTH="10%" ALIGN="left" VALIGN="top" ><A HREF="sql-deallocate.html" >Fast Backward</A
+></TD
+><TD WIDTH="60%" ALIGN="center" VALIGN="bottom" ></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-delete.html" >Fast Forward</A
+></TD
+><TD WIDTH="10%" ALIGN="right" VALIGN="top" ><A HREF="sql-delete.html" >Next</A
+></TD
+></TR
+></TABLE
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A NAME="SQL-DECLARE" >DECLARE</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A NAME="AEN44526" ></A
+><H2
+>Name</H2
+>DECLARE&nbsp;--&nbsp;定义一个游标</DIV
+><A NAME="AEN44529" ></A
+><A NAME="AEN44531" ></A
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A NAME="AEN44534" ></A
+><H2
+>Synopsis</H2
+><PRE
+CLASS="SYNOPSIS"
+>DECLARE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> [ BINARY ] [ INSENSITIVE ] [ [ NO ] SCROLL ]
+    CURSOR [ { WITH | WITHOUT } HOLD ] FOR <TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+>
+    [ FOR { READ ONLY | UPDATE [ OF <TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+> [, ...] ] } ]</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN44539" ></A
+><H2
+>描述</H2
+><P
+>   <TT
+CLASS="COMMAND"
+>DECLARE</TT
+> 允许用户创建游标，
+        用于在一个大的查询里面检索少数几行数据。
+        使用 <A HREF="sql-fetch.html" ><I
+>FETCH</I
+></A
+>，游标可以既可以返回文本也可以返回二进制格式。
+  </P
+><P
+>        通常游标返回文本格式，和 <TT
+CLASS="COMMAND"
+>SELECT</TT
+> 生成的是一样的。
+        因为数据在系统内部是用二进制格式存储的，
+        系统必须对数据做一定转换以生成文本格式。
+	一旦数据是以文本形式返回，那么客户端应用需要把它们转换成二进制进行操作。
+        另外，文本格式一般都比对应的二进制格式占的存储空间大。
+        二进制游标给你返回内部二进制形态的数据。
+	当然，如果你想以文本方式显示数据，那么以文本方式检索会为你节约很多客户端的工作。
+  </P
+><P
+>        比如，如果查询从一个整数列返回一个一，
+        在缺省的游标里你将获得一个字符串 <TT
+CLASS="LITERAL"
+>1</TT
+>，而如果是一个二进制游标，
+        你将得到一个 4－字节的包含该数值内部形式的数值（大端序）。
+  </P
+><P
+>        游标应该小心使用二进制游标。一些用户应用如
+        <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> 是不识别二进制游标的，
+        而且期望返回的数据是文本格式。
+  </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>注意: </B
+>    如果客户端应用使用<SPAN
+CLASS="QUOTE"
+>"扩展查询"</SPAN
+>协议发出 <TT
+CLASS="COMMAND"
+>FETCH</TT
+> 命令，
+    那么 Bind 协议声明数据是用文本还是用二进制格式检索。
+    这个选择覆盖游标的定义。因此，在使用扩展查询协议的时候，
+    二进制游标的概念已经过时了 &mdash; 任何游标都可以当作文本或者二进制的格式发出。
+   </P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN44555" ></A
+><H2
+>参数</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+></DT
+><DD
+><P
+>        将在随后<TT
+CLASS="COMMAND"
+>FETCH</TT
+>操作中使用的游标名。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>BINARY</TT
+></DT
+><DD
+><P
+>        令游标以二进制而不是文本格式获取数据。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>INSENSITIVE</TT
+></DT
+><DD
+><P
+>        表明从游标检索出来的数据不应该被其他进程或游标的更新动作影响。
+	在 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 里，所有游标都是不敏感的，
+	这个关键字没有什么作用，提供它只是为了和 SQL 标准兼容。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>SCROLL</TT
+><BR><TT
+CLASS="LITERAL"
+>NO SCROLL</TT
+></DT
+><DD
+><P
+>	<TT
+CLASS="LITERAL"
+>SCROLL</TT
+> 声明该游标可以用于以非顺序的方式检索数据行（也就是向后检索）。
+	根据查询的执行计划的不同，声明 <TT
+CLASS="LITERAL"
+>SCROLL</TT
+> 可能会对查询的执行时间附加一定的影响。
+	<TT
+CLASS="LITERAL"
+>NO SCROLL</TT
+> 声明该游标不能用于以非顺序的方式检索数据行（也就是向后检索）。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>WITH HOLD</TT
+><BR><TT
+CLASS="LITERAL"
+>WITHOUT HOLD</TT
+></DT
+><DD
+><P
+>	<TT
+CLASS="LITERAL"
+>WITH HOLD</TT
+> 声明该游标可以在创建它的事务成功提交后继续使用。
+	<TT
+CLASS="LITERAL"
+>WITHOUT HOLD</TT
+> 声明该游标不能在创建它的的事务提交后使用。如果既没有声明
+	<TT
+CLASS="LITERAL"
+>WITHOUT HOLD</TT
+>，也没有声明 <TT
+CLASS="LITERAL"
+>WITH HOLD</TT
+>，
+	那么缺省是 <TT
+CLASS="LITERAL"
+>WITH HOLD</TT
+>。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+></DT
+><DD
+><P
+>        一个<TT
+CLASS="COMMAND"
+>SELECT</TT
+>查询，它提供由游标返回的行。
+        请参考 <A HREF="sql-select.html" ><I
+>SELECT</I
+></A
+> 语句获取有关有效查询的详细信息。
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>FOR READ ONLY</TT
+><BR><TT
+CLASS="LITERAL"
+>FOR UPDATE</TT
+></DT
+><DD
+><P
+>        <TT
+CLASS="LITERAL"
+>FOR READ ONLY</TT
+> 表明游标将用于只读模式。
+	<TT
+CLASS="LITERAL"
+>FOR UPDATE</TT
+> 表明游标将被用于更新表。
+        因为目前 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 不支持游标更新，
+	所以声明 <TT
+CLASS="LITERAL"
+>FOR UPDATE</TT
+> 将产生一个错误信息。而声明 <TT
+CLASS="LITERAL"
+>FOR READ ONLY</TT
+> 没有作用。
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+></DT
+><DD
+><P
+>        将被更新的列。因为游标更新目前不被
+        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 支持，
+        所以 <TT
+CLASS="LITERAL"
+>FOR UPDATE</TT
+> 子句将产生一个错误信息。
+       </P
+></DD
+></DL
+></DIV
+><P
+>    <TT
+CLASS="LITERAL"
+>BINARY</TT
+>，<TT
+CLASS="LITERAL"
+>INSENSITIVE</TT
+>，
+    <TT
+CLASS="LITERAL"
+>SCROLL</TT
+> 关键字可以以任何顺序出现。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN44627" ></A
+><H2
+>注意</H2
+><P
+>	如果没有声明 <TT
+CLASS="LITERAL"
+>WITH HOLD</TT
+>，那么这个命令创建的游标只能在当前事务中使用。使用
+    <A HREF="sql-begin.html" ><I
+>BEGIN</I
+></A
+>，
+    <A HREF="sql-commit.html" ><I
+>COMMIT</I
+></A
+> 和 <A HREF="sql-rollback.html" ><I
+>ROLLBACK</I
+></A
+>
+        定义一个事务块。
+   </P
+><P
+>	如果声明了 <TT
+CLASS="LITERAL"
+>WITH HOLD</TT
+>，并且创建该游标的事务成功提交，
+	那么游标还可以在同一会话随后的事务里访问。（但如果创建它的事务回滚，那么游标被删除。）
+	带着 <TT
+CLASS="LITERAL"
+>WITH HOLD</TT
+> 创建的游标是用一个明确的 <TT
+CLASS="COMMAND"
+>CLOSE</TT
+> 命令，或者是会话终止来关闭的。
+	在目前的实现里，由一个游标代表的行是被拷贝到一个临时文件或者内存区里的，这样他们就仍然可以在随后的事务中被访问。
+   </P
+><P
+>	在定义一个要用来向后抓取的游标的时候，我们应该声明 <TT
+CLASS="LITERAL"
+>SCROLL</TT
+> 选项。
+	这个是 SQL 标准要求的。不过，为了和早期的版本兼容，
+	<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 在没有 <TT
+CLASS="LITERAL"
+>SCROLL</TT
+>	的时候也允许向后抓取，
+	只要游标的查询计划简单得不需要额外的开销就可以支持它。
+	不过，我们建议应用开发人员不要依赖于使用没有带着 <TT
+CLASS="LITERAL"
+>SCROLL</TT
+>
+	定义的游标的后向查找功能。如果声明了 <TT
+CLASS="LITERAL"
+>NO SCROLL</TT
+>，那么不管怎样都会禁止向后抓取的功能。
+   </P
+><P
+>    在 SQL 标准中游标只能在嵌入
+    <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> （<SPAN
+CLASS="ACRONYM"
+>ESQL</SPAN
+>） 的应用中使用。
+    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 服务器没有一个明确的
+    <TT
+CLASS="COMMAND"
+>OPEN </TT
+> 语句；一个游标被认为在定义时就已经打开了。
+    不过，<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>嵌入的 SQL 预编译器，
+     <SPAN
+CLASS="APPLICATION"
+>ecpg</SPAN
+>，
+    支持 <SPAN
+CLASS="ACRONYM"
+>SQL92</SPAN
+> 习惯，包括那些和<TT
+CLASS="COMMAND"
+>DECLARE</TT
+>和<TT
+CLASS="COMMAND"
+>OPEN</TT
+>相关的语句。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN44654" ></A
+><H2
+>例子</H2
+><P
+>        定义一个游标：
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>DECLARE liahona CURSOR FOR SELECT * FROM films;</PRE
+><P>
+	参阅 <A HREF="sql-fetch.html" ><I
+>FETCH</I
+></A
+> 获取有关
+	游标使用的更多例子。
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN44659" ></A
+><H2
+>兼容性</H2
+><P
+>    SQL92 标准只允许在嵌入的 <SPAN
+CLASS="ACRONYM"
+>SQL</SPAN
+> 中和模块中使用游标。
+    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 允许交互地使用游标。
+   </P
+><P
+>    SQL92 标准允许游标更新表数据。
+    所有 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 的游标都是只读的。
+   </P
+><P
+>    二进制游标是 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 扩展。
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A NAME="AEN44668" ></A
+><H2
+>又见</H2
+><A HREF="sql-close.html" ><I
+>CLOSE</I
+></A
+>, <A HREF="sql-fetch.html" ><I
+>FETCH</I
+></A
+>, <A HREF="sql-move.html" ><I
+>MOVE</I
+></A
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR size="1" 
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" ><A HREF="sql-deallocate.html" >Prev</A
+></TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="index.html" >Home</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" ><A HREF="sql-delete.html" >Next</A
+></TD
+></TR
+><TR ><TD WIDTH="33%" ALIGN="left" VALIGN="top" >DEALLOCATE</TD
+><TD WIDTH="34%" ALIGN="center" VALIGN="top" ><A HREF="sql-commands.html" >Up</A
+></TD
+><TD WIDTH="33%" ALIGN="right" VALIGN="top" >DELETE</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+><div style="display:none"><script src="http://s7.cnzz.com/stat.php?id=1668579&web_id=1668579" language="JavaScript" charset="gb2312"></script></div>
