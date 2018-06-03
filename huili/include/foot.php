@@ -34,7 +34,8 @@
       </div>
     </div>
 
-	<center><p class="copy">&COPY; 2018 汇氏管家. 所有权利保留. 地址：山东省泰安高新区中天门大街1366号  邮箱：<a style="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;" href="mailto:bitsfox@126.com">bitsfox@126.com</a> </p></center>
+	<p class="copy">&COPY; 2018 汇氏管家. 所有权利保留. </p>
+	<p class="copy">地址：山东省泰安高新区中天门大街1366号  邮箱：<a style="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;" href="mailto:bitsfox@126.com">bitsfox@126.com</a> </p>
 
   </div>
 

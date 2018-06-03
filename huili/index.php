@@ -12,6 +12,7 @@
 if(!defined("FULL_PATH"))
 	define("FULL_PATH",substr(dirname(__FILE__),0,strlen(dirname(__FILE__))-strlen(strstr(dirname(__FILE__),"huili")))."huili".DIRECTORY_SEPARATOR);
 require_once(constant("FULL_PATH")."config/glob_new.php");	//全局常量及变量定义文件的引入
+require_once(constant("FULL_PATH")."config/glob_prev.php");
 include_once(constant("FULL_PATH")."include/head_doc.php"); //起始头文件的引入
 if(isset($_GET["selecter"]))
 {

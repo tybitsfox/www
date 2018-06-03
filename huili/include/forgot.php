@@ -12,6 +12,7 @@
 if(!defined("FULL_PATH"))
 	define("FULL_PATH",substr(dirname(__FILE__),0,strlen(dirname(__FILE__))-strlen(strstr(dirname(__FILE__),"huili")))."huili".DIRECTORY_SEPARATOR);
 require_once(constant("FULL_PATH")."config/glob_new.php");
+require_once(constant("FULL_PATH")."config/glob_prev.php");
 echo $OUT_HTML['LOGIN_HEAD'];
 $s1=sprintf($OUT_HTML['LOGIN_BODY_1g'],constant("WORK_PLACE")."include/forgot.php");
 echo $s1;

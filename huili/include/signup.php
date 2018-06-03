@@ -12,9 +12,10 @@
 if(!defined("FULL_PATH"))
 	define("FULL_PATH",substr(dirname(__FILE__),0,strlen(dirname(__FILE__))-strlen(strstr(dirname(__FILE__),"huili")))."huili".DIRECTORY_SEPARATOR);
 require_once(constant("FULL_PATH")."config/glob_new.php");
+require_once(constant("FULL_PATH")."config/glob_prev.php");
 require_once(constant("FULL_PATH")."lib/main.php");
 require_once(constant("FULL_PATH")."config/email.php");
-echo $OUT_HTML['LOGIN_HEAD'];
+echo $ALL_HTML['LOGIN_HEAD'];
 $s1=sprintf($OUT_HTML['VERF_BODY_1l'],constant("WORK_PLACE")."include/signup.php");
 echo $s1;
 if(!isset($_GET['code']))

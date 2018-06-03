@@ -12,8 +12,11 @@
 if(!defined("FULL_PATH"))
 	define("FULL_PATH",substr(dirname(__FILE__),0,strlen(dirname(__FILE__))-strlen(strstr(dirname(__FILE__),"huili")))."huili".DIRECTORY_SEPARATOR);
 if(!defined("WORK_PLACE"))
+{
 	require_once(constant("FULL_PATH")."config/glob_new.php");
-echo $OUT_HTML['MAIN_HEAD'];
+	require_once(constant("FULL_PATH")."config/glob_prev.php");
+}
+echo $ALL_HTML['MAIN_HEAD'];
 echo $EX_HTML['headbar1'];
 echo $EX_HTML['headbar2'];
 ?>
