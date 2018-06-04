@@ -15,7 +15,7 @@
     <div class="row">
       <div class="col-sm-3">
         <div class="foot-logo">
-          <img src='/huili/include/erwei.php' alt="汇氏管家"/>
+          <center><img src='/huili/include/erwei.php' alt="汇氏管家"/></center>
         </div>
       </div>
       <div class="col-sm-5">
@@ -27,15 +27,15 @@
         </ul>
       </div>
       <div class="col-sm-4">
-        <ul class="list-inline list-soc">
-          <li><a href="https://www.facebook.com/GreenbackInc" title="连接我们的微信"><i class="icon-wechat"></i></a></li>
-          <li><a href="https://twitter.com/greenback_inc" title="连接我们的QQ"><i class="icon-tqq"></i></a></li>
+        <!--<ul class="list-inline list-soc"> -->
+        <ul class="list-inline list-menu">
+          <li><a href="#" title="连接我们的微信"><i class="icon-wechat"></i></a></li>
+          <li><a href="#" title="连接我们的QQ"><i class="icon-tqq"></i></a></li>
         </ul>
       </div>
     </div>
 
-	<p class="copy">&COPY; 2018 汇氏管家. 所有权利保留. </p>
-	<p class="copy">地址：山东省泰安高新区中天门大街1366号  邮箱：<a style="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;" href="mailto:bitsfox@126.com">bitsfox@126.com</a> </p>
+	<center><p class="copy">&COPY; 2018 汇氏管家. 所有权利保留. 地址：山东省泰安高新区中天门大街1366号  邮箱：<a style="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;" href="mailto:bitsfox@126.com">bitsfox@126.com</a> </p></center>
 
   </div>
 

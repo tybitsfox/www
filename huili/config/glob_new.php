@@ -4,8 +4,8 @@
  @version		0.0.0.1
  @author		田勇 Alisa tybitsfox <tybitsfox@163.com>
  @license		GPLv2
-
 本文件是系统所需的全局变量和常量的定义文件
+<meta name='viewport' content='width=device-width, initial-scale=1.0'>
  **/
 ?>
 <?php
@@ -20,7 +20,7 @@ if(!defined("WORK_PLACE"))
 	define("DB_SET",constant("FULL_PATH")."config/db_set.php");
 }
 require_once(constant("DB_SET"));
-$s1="<!DOCTYPE html>\n<html><head><meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />\n<title>".$GLOB_DEF['TITLE']."</title>\n";
+$s1="<!DOCTYPE html>\n<html><head><meta charset=UTF-8' />\n<meta name='viewport' content='width=device-width, initial-scale=1.0'>\n<title>".$GLOB_DEF['TITLE']."</title>\n";
 $s2="<link rel='stylesheet' href='".constant('CSS_FONT')."'>\n<link rel='stylesheet' href='".constant("CSS_LOG")."'>";
 $s3="<script src='".constant("JS_FILEA")."'></script>\n<script src='".constant("JS_FILEB")."'></script></head>\n";
 $s4="<link rel='stylesheet' href='".constant('CSS_FONT')."'>\n<link rel='stylesheet' href='".constant("CSS_MAIN")."'>";
