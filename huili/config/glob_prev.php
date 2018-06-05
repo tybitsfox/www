@@ -115,7 +115,7 @@ $s1="<body class='loginpage'><div class='bg'><div class='loginbox'><form class='
 $s2="<div class='form-login form-box'><div class='side-head'><a href='".$GLOB_DEF['IDX']."'><img class='logo' src='".$GLOB_DEF['LOGO']."' alt='".$GLOB_DEF['LOGO_ALT']."'></a></div>\n";
 $OUT_HTML['LOGIN_BODY_1g']	=	$s1.$s2;	//需要指定action.
 //$OUT_HTML['LOGIN_BODY_ERR']	=	"<div class='alert alert-danger' role='alert'>%s</div>"; 这里并不需要，错误提示的实现在login类中完成。
-$s1="<div class='form-group'><label>邮箱</label><div class='form-suffix'><span class='icon-envelope picto'></span><input id='email' type='email' class='form-control first' name='email' value='' placeholder='Email' autocorrect='off' autocapitalize='none' autocomplete='username' required/></div></div>\n";
+$s1="<div class='form-group'><label>邮箱</label><div class='form-suffix'><span class='icon-envelope picto'></span><input id='email' type='email' class='form-control first' name='email' value='' placeholder='Email' autocorrect='off' required pattern='^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$' title='请输入有效的电子邮件地址' /></div></div>\n";
 $s2="<div class='form-group'><label>密码</label><div class='form-suffix'><span class='icon-key picto'></span><input id='password' type='password' class='form-control last' name='password' value='' placeholder='Password' autocomplete='current-password' required /></div></div>\n";
 $s3="<div class='form-group form-twocols'><div class='pass-reset'><a href='./forgot.php' class='btn-text'>是不是忘记密码了?</a></div></div>\n";
 $s4="<div class='form-group'><button type='submit' href='#' class='btn btn-primary btn-fat btn-block'>登 录</button></div>\n";
@@ -124,7 +124,7 @@ $OUT_HTML['LOGIN_BODY_2l']	=	$s1.$s2.$s3.$s4.$s5;	//仅登录界面使用
 $OUT_HTML['LOGIN_BODY_3g']	=	"</div></form></div></div><footer class='footer'><div class='inner'><div class='row'><div class='col-sm-12'><p class='copy'>&COPY; 2018 汇氏环境, Inc. 保留所有权利</p></div></div></div></footer>\n";
 $OUT_HTML['TAIL']	=	"</body></html>\n";
 $s1="<h5 class='text-center'>与我们保持联系！</h5><p class='intro'>我们会为您搭建一个提供或享受专业环境服务的平台.</p>";
-$s2="<div class='form-group'><label>Email</label><div class='form-suffix'><span class='icon-envelope picto'></span><input id='email' type='email' class='form-control' name='email' value='' placeholder='Your Email' autocorrect='off' autocapitalize='none' autocomplete='username' required/></div></div>";
+$s2="<div class='form-group'><label>Email</label><div class='form-suffix'><span class='icon-envelope picto'></span><input id='email' type='email' class='form-control' name='email' value='' placeholder='Your Email' autocorrect='off' required pattern='^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$' title='请输入有效的电子邮件地址' /></div></div>";
 $s3="<div class='form-group'><button href='#' type='submit' class='btn btn-primary btn-block btn-fat'>开始注册</button></div>";
 $s4="<p class='intro'>汇氏管家，品质服务的保证.</p><div class='form-group form-out text-center'><p>您已经拥有帐号? 请选择：<a href='./login.php' class='btn-text'>登 录</a></p></div>";
 $OUT_HTML['REG_NORMAL']	= $s1.$s2.$s3.$s4;
@@ -137,7 +137,7 @@ $s4="<div class='form-group'><div class='checkbox'><label><input type='checkbox'
 $s5="<div class='form-group form-delimited'><button type='submit' class='btn btn-primary btn-fat btn-block'>注 册</button></div>";
 $OUT_HTML['VERF_BODY_2l']	= $s1;		//需要指定邮箱名称
 $OUT_HTML['VERF_BODY_3l']	= $s2.$s3.$s4.$s5;
-$OUT_HTML['FORGOT_BODY_1l']	=	"<h5>忘记密码了?</h5>\n<p class='intro'>我们将发送一个重置密码的链接到您的邮箱.</p>\n<div class='form-group'>\n<label>邮箱地址</label><div class='form-suffix'>\n<span class='icon-envelope picto'></span><input type='email' class='form-control' name='email' value='' placeholder='Email' />\n</div></div><div class='form-group'><button class='btn btn-primary btn-fat btn-block'>重置密码</button></div>\n<div class='form-group form-out text-center'> <p>想起密码了? <a href='/huili/include/login.php' class='btn-text btn-backlogin'>登录</a></p></div>\n";
+$OUT_HTML['FORGOT_BODY_1l']	=	"<h5>忘记密码了?</h5>\n<p class='intro'>我们将发送一个重置密码的链接到您的邮箱.</p>\n<div class='form-group'>\n<label>邮箱地址</label><div class='form-suffix'>\n<span class='icon-envelope picto'></span><input type='email' class='form-control' name='email' value='' placeholder='Email' required pattern='^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$' title='请输入有效的电子邮件地址' />\n</div></div><div class='form-group'><button class='btn btn-primary btn-fat btn-block'>重置密码</button></div>\n<div class='form-group form-out text-center'> <p>想起密码了? <a href='/huili/include/login.php' class='btn-text btn-backlogin'>登录</a></p></div>\n";
 $OUT_HTML['FORGOT_AFTER']	= "<h5>重置马上完成!</h5><p class='intro'>我们给<strong>".$_POST["email"]."</strong>.发送了一封邮件，请查阅您的邮箱以完成密码重置.如果您的邮箱设置了过滤机制，请检查垃圾邮件目录下是否有我们的信件.</p>";
 //}}}
 //{{{下面定义的是总览界面（登录前）的html代码

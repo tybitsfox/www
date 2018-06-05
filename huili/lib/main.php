@@ -42,8 +42,8 @@ class loginn implements inter_sign
 		$ay=getdate(time());
 		$_SESSION['CURRENT']=$ay['year'];
 	}//}}}
-//{{{public function check_it($a,$b)
-	public function check_it($a,$b)
+//{{{private function check_it()
+	private function check_it()
 	{
 		global $DB_ADDR_TY,$DB_PORT_TY,$DB_NAME_TY,$DB_USER_TY,$DB_PWD_TY;
 		$i=intval($_SESSION['CURRENT']);
@@ -55,27 +55,17 @@ class loginn implements inter_sign
 		array_push($this->db,$DB_NAME_TY[$i]);
 		array_push($this->db,$DB_USER_TY[$i]);
 		array_push($this->db,$DB_PWD_TY[$i]);
-		$i=0;
-		if((strlen($a) < 4 || strlen($a) > 31) || (strlen($b) < 4 || strlen($b) > 31))
-			return 2; //邮箱名或密码长度错误
-		if(strchr($a,'@') == FALSE || strchr($a,'.') == FALSE )
-			return 3; //邮箱名格式错误
-		if((strchr($a,'(') != FALSE ) || (strchr($b,'(') != FALSE))
-			$i=1; //邮箱名或密码含有括号或者引号字符。
-		if((strchr($a,')') != FALSE ) || (strchr($b,')') != FALSE))
-			$i=1;
-		if((strchr($a,'\'') != FALSE ) || (strchr($b,'\'') != FALSE))
-			$i=1;
-		if((strchr($a,'"') != FALSE ) || (strchr($b,'"') != FALSE))
-			$i=1;
-		return $i;//返回0为正确
+		return 0;//返回0为正确
 	}//}}}
 //{{{public function signin()
 	public function signin()
 	{
-		$i=$this->check_it($this->usr,$this->pwd);
+		global $CURR_USR;
+		$i=$this->check_it();
 		if($i != 0)
 			return $i;
+		if(count($CURR_USR) > 0)
+			$CURR_USR=array();
 		$ay=array();
 		$this->conn=sprintf("SELECT * FROM auth WHERE user = '%s'",$this->usr);
 		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
@@ -89,9 +79,11 @@ class loginn implements inter_sign
 		mysqli_close($mysqli);
 		if(count($ay) != 1)
 			return 6; //wrong name
-		$str=base64_decode(base64_decode($ay[2]));
-		if($str != $this->pwd)
-			return 7;//wrong pwd
+		$str=md5($this->pwd);
+		if($str != $ay[0][2])
+			return 7;
+		$CURR_USR=$ay[0];
+		unset($ay);
 		return 0;
 	}//}}}
 //{{{public function signup()
@@ -110,13 +102,14 @@ class loginn implements inter_sign
 			array_push($ay,$row);
 		mysqli_free_result($res);
 		mysqli_close($mysqli);
-		if(count($ay) != 1)
-			$uid=1;
+		if(count($ay) == 0)
+			$uid=100000;
 		else
-			$uid=$ay[0];
-		$str1=base64_encode(base64_encode($this->pwd));
-		$str2=7;
-		$this->conn=fprintf("INSERT INTO auth(uid,user,pwd,priv) VALUES(%d,'%s','%s',%d)",$uid,$this->usr,$this->pwd,$str2);
+			$uid=intval($ay[0])+1;
+		$str1=md5($this->pwd);//pwd
+		$str2=7;//1,3,7,15,31,63,  priv
+		$str3=substr($this->usr,0,strpos($this->usr,'@')-1);//uname
+		$this->conn=fprintf("INSERT INTO auth(uid,email,uname,pwd,priv,lvl,sex,expr,coin,treasure,lastlogin,signup) VALUES(%d,'%s','%s','%s',%d,1,0,"",0,0,%d,%d)",$uid,$this->usr,$str3,$str1,$str2,time(),time());
 		$mysqli=mysql_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
 		if(mysqli_connect_errno())
 			return 5; //connect error
