@@ -168,5 +168,7 @@ class loginn implements inter_sign
 		}
 	}//}}}
 }//}}}
-
+//{{{
+//echo "<input id='email' type='test' name='email' value='' placeholder='邮箱' required autocomplete='off' pattern='^[a-zA-Z0-9_-^.]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$' title='邮箱格式：必须有@.等字符' />";
+//}}}
 ?>
