@@ -120,10 +120,23 @@ class loginn implements inter_sign
 		else
 			return 8;//regist error
 	}//}}}
-//{{{public function resets()
-	public function resets()
+//{{{public function resets($p)
+	public function resets($p)
 	{
-
+		$i=$this->check_it();
+		if($i != 0)
+			return $i;
+		$cona=sprintf("UPDATE auth SET pwd = '%s' WHERE email = '%s'",md5($p),$this->usr);
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
+		if(mysqli_connect_errno())
+			return 5; //connect error
+		mysqli_set_charset($mysqli,"utf8");
+		$res=mysqli_query($mysqli,$cona);
+		mysqli_close($mysqli);
+		if($res != TRUE)
+			return 9;
+		echo "<div class='alert alert-danger' role='alert'><strong>密码重置完成</strong> 请重新登录</div>";
+		return 0;
 	}//}}}
 //{{{public function err_msg($errno)
 	public function err_msg($errno)
@@ -155,13 +168,27 @@ class loginn implements inter_sign
 		case 8://注册失败
 			echo "<div class='alert alert-danger' role='alert'><strong>错误</strong>注册失败</div>";
 			break;
+		case 9://密码重置失败
+			echo "<div class='alert alert-danger' role='alert'><strong>错误</strong>密码重置失败</div>";
+			break;
 		default:
 			echo "<div class='alert alert-danger' role='alert'><strong>错误</strong>注册失败</div>";
 			break;
 		}
 	}//}}}
 }//}}}
-//{{{
-//echo "<input id='email' type='test' name='email' value='' placeholder='邮箱' required autocomplete='off' pattern='^[a-zA-Z0-9_-^.]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$' title='邮箱格式：必须有@.等字符' />";
-//}}}
+//{{{class tb_auth implements root_setting
+class tb_auth implements root_setting
+{
+	private $usr,$pwd,$db,$conn;
+//{{{public function __construct()
+	public function __construct()
+	{
+		if()
+	}//}}}
+
+}//}}}
+
+
+
 ?>
