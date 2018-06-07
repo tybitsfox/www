@@ -89,7 +89,7 @@ $SIG_HTML['MAIN_NAVTAB']="<section class='content'>\n
   <!-- Panel -->\n
   <div class='block'>\n
     <div class='panel shadow'>\n
-
+";
 
 //}}}
 
