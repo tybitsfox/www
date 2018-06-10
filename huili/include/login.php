@@ -25,7 +25,7 @@ if(isset($_POST["email"]) && isset($_POST["password"]))
 	if($i)
 		$a->err_msg($i);
 	else
-		echo "<script>setTimeout(\"window.location='../index.php'\",2);</script>";
+		echo "<script>setTimeout(\"window.location='./home.php'\",2);</script>";
 }
 echo $OUT_HTML['LOGIN_BODY_2l'];
 echo $OUT_HTML['LOGIN_BODY_3g'];

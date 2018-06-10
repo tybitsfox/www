@@ -241,7 +241,7 @@ class mixer
 		if($ga != intval($gg))
 			return false;
 		$gg=intval(date("U"))-$zone;
-		if(($gg > $ga) && ($gg < ($ga+1800))) //验证时间在半小时内
+		if(($gg >= $ga) && ($gg <= ($ga+1800))) //验证时间在半小时内
 			return true;
 		else
 			return false;

@@ -67,7 +67,7 @@ class loginn implements inter_sign
 		if(count($CURR_USR) > 0)
 			$CURR_USR=array();
 		$ay=array();
-		$this->conn=sprintf("SELECT * FROM auth WHERE user = '%s'",$this->usr);
+		$this->conn=sprintf("SELECT * FROM auth WHERE email = '%s'",$this->usr);
 		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
 		if(mysqli_connect_errno())
 			return 5; //connect error
@@ -80,7 +80,7 @@ class loginn implements inter_sign
 		if(count($ay) != 1)
 			return 6; //wrong name
 		$str=md5($this->pwd);
-		if($str != $ay[0][2])
+		if($str != $ay[0][3])
 			return 7;
 		$CURR_USR=$ay[0];
 		unset($ay);
@@ -94,7 +94,7 @@ class loginn implements inter_sign
 			return $i;
 		$ay=array();
 		$this->conn="SELECT uid FROM auth ORDER BY uid DESC LIMIT 1";
-		$mysqli=mysql_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
 		if(mysqli_connect_errno())
 			return 5; //connect error
 		$res=mysqli_query($mysqli,$this->conn);
@@ -109,8 +109,8 @@ class loginn implements inter_sign
 		$str1=md5($this->pwd);//pwd
 		$str2=7;//1,3,7,15,31,63,  priv
 		$str3=substr($this->usr,0,strpos($this->usr,'@')-1);//uname
-		$this->conn=fprintf("INSERT INTO auth(uid,email,uname,pwd,priv,lvl,sex,expr,coin,treasure,lastlogin,signup) VALUES(%d,'%s','%s','%s',%d,1,0,'',0,0,%d,%d)",$uid,$this->usr,$str3,$str1,$str2,time(),time());
-		$mysqli=mysql_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
+		$this->conn=sprintf("INSERT INTO auth(uid,email,uname,pwd,priv,lvl,sex,expr,coin,treasure,lastlogin,signup) VALUES(%d,'%s','%s','%s',%d,1,0,'',0,0,%d,%d)",$uid,$this->usr,$str3,$str1,$str2,time(),time());
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
 		if(mysqli_connect_errno())
 			return 5; //connect error
 		$res=mysqli_query($mysqli,$this->conn);
