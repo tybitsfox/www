@@ -23,11 +23,21 @@ DROP TABLE IF EXISTS `auth`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `auth` (
-  `uid` int(8) unsigned DEFAULT NULL COMMENT '用户ID',
-  `user` varchar(32) NOT NULL COMMENT '用户名',
-  `pwd` varchar(256) NOT NULL COMMENT '用户密码',
+  `uid` int(32) unsigned DEFAULT NULL COMMENT '用户ID',
+  `email` varchar(32) NOT NULL COMMENT '注册邮箱',
+  `uname` varchar(32) NOT NULL COMMENT '用户昵称',
+  `pwd` varchar(64) NOT NULL COMMENT '密码',
   `priv` int(8) unsigned NOT NULL COMMENT '权限',
-  PRIMARY KEY (`user`)
+  `lvl` int(8) unsigned NOT NULL COMMENT '等级',
+  `sex` int(8) unsigned NOT NULL COMMENT '性别',
+  `expr` varchar(64) DEFAULT NULL COMMENT '专业领域',
+  `coin` int(32) unsigned NOT NULL COMMENT '金币',
+  `treasure` int(32) unsigned NOT NULL COMMENT '财富值',
+  `lastlogin` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后登录时间',
+  `signup` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '注册时间',
+  PRIMARY KEY (`email`),
+  UNIQUE KEY `uid` (`uid`),
+  KEY `uid_name` (`uid`,`uname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -37,6 +47,7 @@ CREATE TABLE `auth` (
 
 LOCK TABLES `auth` WRITE;
 /*!40000 ALTER TABLE `auth` DISABLE KEYS */;
+INSERT INTO `auth` VALUES (100000,'tybitsfox@163.com','tybitsfox','471d6ebc35015802fa80ad8d4ebb9d57',7,1,0,'',0,0,'2018-06-10 06:50:03','2018-06-10 06:50:03'),(100001,'tyyyyt@163.com','tyyyyt','2694f8b0e3d3d17ff567c9ca072db75c',7,1,0,'',0,0,'2018-06-10 06:50:56','2018-06-10 06:50:56');
 /*!40000 ALTER TABLE `auth` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -48,14 +59,16 @@ DROP TABLE IF EXISTS `blog`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `blog` (
-  `buid` int(32) unsigned NOT NULL COMMENT '帖子ID',
+  `tuid` int(32) unsigned NOT NULL COMMENT '帖子ID',
   `idx` int(8) unsigned NOT NULL COMMENT '顺序号',
-  `title` varchar(256) NOT NULL COMMENT '帖子主题',
-  `uname` varchar(32) NOT NULL COMMENT '本层作者',
-  `fintime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发帖时间',
-  `piclink` varchar(256) DEFAULT NULL COMMENT '链接图片',
-  PRIMARY KEY (`buid`,`idx`),
-  KEY `uname_title` (`uname`,`title`(191))
+  `ttile` varchar(128) NOT NULL COMMENT '帖子主题',
+  `uname` varchar(32) NOT NULL COMMENT '作者',
+  `fintime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '发帖时间',
+  `ttext` text COMMENT '内容',
+  `piclink` varchar(256) DEFAULT NULL COMMENT '图片链接',
+  `uid` int(32) unsigned NOT NULL COMMENT '作者ID',
+  PRIMARY KEY (`tuid`,`idx`),
+  KEY `name_id` (`uname`,`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -69,37 +82,29 @@ LOCK TABLES `blog` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `member`
+-- Table structure for table `choose`
 --
 
-DROP TABLE IF EXISTS `member`;
+DROP TABLE IF EXISTS `choose`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `member` (
-  `uid` int(32) unsigned NOT NULL COMMENT '用户ID',
-  `uname` varchar(32) NOT NULL COMMENT '用户名',
-  `email` varchar(64) NOT NULL COMMENT '用户邮箱',
-  `pwd` varchar(256) NOT NULL COMMENT '用户密码',
-  `priv` int(8) unsigned NOT NULL COMMENT '权限',
-  `level` int(8) unsigned NOT NULL COMMENT '等级',
-  `sex` int(8) unsigned NOT NULL COMMENT '性别',
-  `expr` int(8) unsigned NOT NULL COMMENT '专业领域',
-  `coin` int(32) unsigned NOT NULL COMMENT '金币数',
-  `treasure` int(32) unsigned NOT NULL COMMENT '财富值',
-  `lastlogin` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后登录时间',
-  `signup` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '注册时间',
-  PRIMARY KEY (`email`),
-  KEY `uiduname` (`uid`,`uname`)
+CREATE TABLE `choose` (
+  `uid` int(32) unsigned NOT NULL COMMENT '用户id',
+  `mid` int(32) unsigned NOT NULL COMMENT '模块id',
+  `mname` varchar(16) NOT NULL COMMENT '模块名称',
+  `mlink` varchar(128) NOT NULL COMMENT '模块连接',
+  `micon` varchar(128) NOT NULL COMMENT '模块图标',
+  PRIMARY KEY (`uid`,`mid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `member`
+-- Dumping data for table `choose`
 --
 
-LOCK TABLES `member` WRITE;
-/*!40000 ALTER TABLE `member` DISABLE KEYS */;
-/*!40000 ALTER TABLE `member` ENABLE KEYS */;
+LOCK TABLES `choose` WRITE;
+/*!40000 ALTER TABLE `choose` DISABLE KEYS */;
+/*!40000 ALTER TABLE `choose` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -111,4 +116,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-05-23 23:21:10
+-- Dump completed on 2018-06-10 23:32:40

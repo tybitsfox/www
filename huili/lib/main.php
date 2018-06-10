@@ -60,12 +60,10 @@ class loginn implements inter_sign
 //{{{public function signin()
 	public function signin()
 	{
-		global $CURR_USR;
+		$_SESSION['CURR_USR']=array();
 		$i=$this->check_it();
 		if($i != 0)
 			return $i;
-		if(count($CURR_USR) > 0)
-			$CURR_USR=array();
 		$ay=array();
 		$this->conn=sprintf("SELECT * FROM auth WHERE email = '%s'",$this->usr);
 		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
@@ -82,16 +80,29 @@ class loginn implements inter_sign
 		$str=md5($this->pwd);
 		if($str != $ay[0][3])
 			return 7;
-		$CURR_USR=$ay[0];
+		$_SESSION['CURR_USR']=array_merge($_SESSION['CURR_USR'],$ay[0]);
 		unset($ay);
 		return 0;
 	}//}}}
 //{{{public function signup()
 	public function signup()
 	{
+		$_SESSION['CURR_USR']=array();
 		$i=$this->check_it($this->usr,$this->pwd);
 		if($i != 0)
 			return $i;
+		$ay=array();
+		$this->conn=sprintf("SELECT email FROM auth WHERE email = '%s'",$this->usr);
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
+		if(mysqli_connect_errno())
+			return 5;
+		$res=mysqli_query($mysqli,$this->conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($mysqli);
+		if(count($ay) !=0 )
+			return 10;
 		$ay=array();
 		$this->conn="SELECT uid FROM auth ORDER BY uid DESC LIMIT 1";
 		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
@@ -105,18 +116,23 @@ class loginn implements inter_sign
 		if(count($ay) == 0)
 			$uid=100000;
 		else
-			$uid=intval($ay[0])+1;
+			$uid=intval($ay[0][0])+1;
 		$str1=md5($this->pwd);//pwd
 		$str2=7;//1,3,7,15,31,63,  priv
-		$str3=substr($this->usr,0,strpos($this->usr,'@')-1);//uname
-		$this->conn=sprintf("INSERT INTO auth(uid,email,uname,pwd,priv,lvl,sex,expr,coin,treasure,lastlogin,signup) VALUES(%d,'%s','%s','%s',%d,1,0,'',0,0,%d,%d)",$uid,$this->usr,$str3,$str1,$str2,time(),time());
+		$str3=substr($this->usr,0,strpos($this->usr,'@'));//uname
+		$str4=date("Y-m-d H:i:s",time());
+		$ay=array($uid,$this->usr,$str3,$str1,$str2,1,0,'',0,0,$str4,$str4);
+		$this->conn=sprintf("INSERT INTO auth(uid,email,uname,pwd,priv,lvl,sex,expr,coin,treasure,lastlogin,signup) VALUES(%d,'%s','%s','%s',%d,1,0,'',0,0,now(),now())",$uid,$this->usr,$str3,$str1,$str2);
 		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
 		if(mysqli_connect_errno())
 			return 5; //connect error
 		$res=mysqli_query($mysqli,$this->conn);
 		mysqli_close($mysqli);
 		if($res == TRUE)
+		{
+			$_SESSION['CURR_USR']=array_merge($_SESSION['CURR_USR'],$ay);
 			return 0;
+		}
 		else
 			return 8;//regist error
 	}//}}}
@@ -171,11 +187,15 @@ class loginn implements inter_sign
 		case 9://密码重置失败
 			echo "<div class='alert alert-danger' role='alert'><strong>错误</strong>密码重置失败</div>";
 			break;
+		case 10://用户已经注册
+			echo "<div class='alert alert-danger' role='alert'><strong>错误</strong>该邮箱已注册</div>";
+			break;
 		default:
 			echo "<div class='alert alert-danger' role='alert'><strong>错误</strong>注册失败</div>";
 			break;
 		}
 	}//}}}
+
 }//}}}
 //{{{class tb_auth implements root_setting
 class tb_auth implements root_setting
@@ -301,6 +321,36 @@ class tb_auth implements root_setting
 			echo "error!";
 			break;
 		}
+	}//}}}
+}//}}}
+//{{{class signed_db	BASE CLAS
+class signed_db
+{
+	public $usr,$pwd,$db,$conn;
+//{{{public function __construct()
+	public function __construct()
+	{
+		if(!isset($_SESSION['CURRENT']))
+			$this->get_cur_year();
+	}//}}}
+//{{{public function __destruct()
+	public function __destruct()
+	{}//}}}
+//{{{public function get_cur_year()
+	public function get_cur_year()
+	{
+		$ay=array();
+		$ay=getdate(time());
+		$_SESSION['CURRENT']=$ay['year'];
+	}//}}}
+}//}}}
+//{{{class tb_choose extends signed_db
+class tb_choose extends signed_db
+{
+//{{{public function get_db()
+	public function get_db()
+	{
+		return parent::$db;
 	}//}}}
 }//}}}
 
