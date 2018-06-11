@@ -6,15 +6,23 @@ $SIGNED_DEF['WRAP_TIL1']	=	"切换导航";
 $SIGNED_DEF['WRAP_TIL2']	=	"菜单";
 $SIGNED_DEF['LMENU_LINK1']	=	constant('WORK_PLACE')."include/home.php";
 $SIGNED_DEF['USER_NAME']	=	"tybitsfox";	//这个将来要被session变量替换
+$SIGNED_PAGE['ONE']		=	md5('profile');
+$SIGNED_PAGE['TWO']		=	md5('password');
+$SIGNED_PAGE['THR']		=	md5('account');
+$SIGNED_PAGE['FUR']		=	md5('invite');
+$SIGNED_PAGE['FIV']		=	md5('collaborate');
+$SIGNED_PAGE['SIX']		=	md5('security');
+$SIGNED_PAGE['SEV']		=	md5('share');
+$SIGNED_PAGE['EIG']		=	md5('signout');
 $SIGNED_DEF['PROFILE']	=	array(
-		array($SIGNED_DEF['LINK']."?select=".md5('profile'),"个人信息"),
-		array($SIGNED_DEF['LINK']."?select=".md5('password'),"密码"),
-		array($SIGNED_DEF['LINK']."?select=".md5('account'),"账户"),
-		array($SIGNED_DEF['LINK']."?select=".md5('invite'),"邀请好友"),
-		array($SIGNED_DEF['LINK']."?select=".md5('collaborate'),"我的合作"),
-		array($SIGNED_DEF['LINK']."?select=".md5('security'),"安全"),
-		array($SIGNED_DEF['LINK']."?select=".md5('share'),"分享"),
-		array($SIGNED_DEF['LINK']."?select=".md5('signout'),"退出帐号"));
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['ONE'],"个人信息"),
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['TWO'],"密码"),
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['THR'],"账户"),
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FUR'],"邀请好友"),
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV'],"我的合作"),
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['SIX'],"安全"),
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['SEV'],"分享"),
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['EIG'],"退出帐号"));
 //下面这个队列变量，将来要被数据库中的数据替代，用户选择的功能从数据库中读取，并显示出来
 $SIGNED_DEF['DASHBOARD']	=	array(
 		array($SIGNED_DEF['LINK']."?select=".md5('profile'),$SIGNED_DEF['USER_NAME'],"btn"),
@@ -28,7 +36,8 @@ $SIG_HTML['WRAP']	=	"<div id='wrapper' class='l-content-wrapper-sticky-footer'><
 //}}}
 //{{{LEFT_TOP	RIGHT_TOP
 $s1=strtoupper(substr($SIGNED_DEF['USER_NAME'],0,1));
-$SIG_HTML['LEFT_TOP1']	=	"<section class='side' id='sidebar'><!-- Header --><a href='".$SIGNED_DEF['HOME_LINK']."'><div class='side-head'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></div></a><!-- User Menu --><div class='side-user'><div class='dropdown'><a href='".$SIGNED_DEF['DASHBOARD'][0][0]."' class='".$SIGNED_DEF['DASHBOARD'][0][2]."'><div class='usercircle'>".$s1."</div><strong>".$SIGNED_DEF['DASHBOARD'][0][1]."</strong><br/></a></div></div>";
+$SIG_HTML['LEFT_TOP1']	=	"<section class='side' id='sidebar'><!-- Header --><a href='".$SIGNED_DEF['HOME_LINK']."'><div class='side-head'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></div></a><!-- User Menu --><div class='side-user'><div class='dropdown'><a href='".$SIGNED_DEF['DASHBOARD'][0][0]."' class='".$SIGNED_DEF['DASHBOARD'][0][2]."'><div class='usercircle'>%s</div><strong> %s</strong><br/></a></div></div>";
+//$SIG_HTML['LEFT_TOP1']	=	"<section class='side' id='sidebar'><!-- Header --><a href='".$SIGNED_DEF['HOME_LINK']."'><div class='side-head'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></div></a><!-- User Menu --><div class='side-user'><div class='dropdown'><a href='".$SIGNED_DEF['DASHBOARD'][0][0]."' class='".$SIGNED_DEF['DASHBOARD'][0][2]."'><div class='usercircle'>".$s1."</div><strong>".$SIGNED_DEF['DASHBOARD'][0][1]."</strong><br/></a></div></div>";
 $SIG_HTML['LEFT_TOP2'] = "<!-- Navigation --><nav><div><ul class='list-unstyled list-nav left-nav'><li><a class='".$SIGNED_DEF['DASHBOARD'][1][2]."' href='".$SIGNED_DEF['DASHBOARD'][1][0]."'>".$SIGNED_DEF['DASHBOARD'][1][1]."</a></li>";
 $SIG_HTML['LEFT_REP1']	= "<li><a href='".$SIGNED_DEF['DASHBOARD'][2][0]."' class='".$SIGNED_DEF['DASHBOARD'][2][2]."'>".$SIGNED_DEF['DASHBOARD'][2][1]."<i class='icon-gear'></i><span class='left-nav'>tyyyyt@163.com</span></a></li>";
 $SIG_HTML['LEFT_REP2']	= "<li><a href='".$SIGNED_DEF['DASHBOARD'][3][0]."' class='".$SIGNED_DEF['DASHBOARD'][3][2]."'>".$SIGNED_DEF['DASHBOARD'][3][1]."<i class='icon-plus'></i></a></li>";

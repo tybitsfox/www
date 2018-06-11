@@ -343,15 +343,80 @@ class signed_db
 		$ay=getdate(time());
 		$_SESSION['CURRENT']=$ay['year'];
 	}//}}}
+//{{{public function check_it()
+	public function check_it()
+	{
+		global $DB_ADDR_TY,$DB_PORT_TY,$DB_NAME_TY,$DB_USER_TY,$DB_PWD_TY;
+		$i=intval($_SESSION['CURRENT']);
+		if(!isset($DB_ADDR_TY[$i]))
+			return 4; //选择的年份没有数据
+		$this->db=array();
+		array_push($this->db,$DB_ADDR_TY[$i]);
+		array_push($this->db,$DB_PORT_TY[$i]);
+		array_push($this->db,$DB_NAME_TY[$i]);
+		array_push($this->db,$DB_USER_TY[$i]);
+		array_push($this->db,$DB_PWD_TY[$i]);
+		return 0;//返回0为正确
+	}//}}}
 }//}}}
 //{{{class tb_choose extends signed_db
 class tb_choose extends signed_db
 {
-//{{{public function get_db()
-	public function get_db()
+//{{{public function get_db($u)
+	public function get_db($u)
 	{
-		return parent::$db;
+		$ay=array();
+		$i=parent::check_it();
+		if($i != 0)
+			return $ay; 
+		$db=array();
+//		$db=parent::$db;
+/*		$conn=sprintf("SELECT * FROM  choose WHERE uid = %d",$u);
+		$mysqli=mysqli_connect($ay[0],$ay[3],$ay[4],$ay[2],$ay[1]);
+		if(mysqli_connect_errno())
+			return $ay;
+		mysqli_set_charset($mysqli,"utf8");
+		$res=mysqli_query($mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($mysqli);*/
+		return $ay; 
 	}//}}}
+//{{{public function add_db($a)
+	public function add_db($a)
+	{
+		$i=parent::check_it();
+		if($i != 0 )
+			return $i;
+		$db=array();
+		$db=parent::$db;
+		$conn=sprintf("SELECT * FROM choose WHERE uid = '%d' AND mid = '%d'",$a[0],$a[1]);
+		$mysqli=mysqli_connect($ay[0],$ay[3],$ay[4],$ay[2],$ay[1]);
+		if(mysqli_connect_errno())
+			return 1;
+		$ay=array();
+		mysqli_set_charset($mysqli,"utf8");
+		$res=mysqli_query($mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($mysqli);
+		if(count($ay) != 0)
+			return 2;
+		$conn=sprintf("INSERT INTO choose(uid,mid,mname,mlink,micon) VALUES(%d,%d,'%s','%s','%s')",$a[0],$a[1],$a[2],$a[3],$a[4]);
+		$mysqli=mysqli_connect($ay[0],$ay[3],$ay[4],$ay[2],$ay[1]);
+		if(mysqli_connect_errno())
+			return 1;
+		mysqli_set_charset($mysqli,"utf8");
+		$res=mysqli_query($mysqli,$conn);
+		mysqli_close($mysqli);
+		if($res == TRUE)
+			return 0;
+		else
+			return 3;
+	}//}}}
+
 }//}}}
 
 ?>
