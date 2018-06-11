@@ -366,13 +366,13 @@ class tb_choose extends signed_db
 	public function get_db($u)
 	{
 		$ay=array();
-		$i=parent::check_it();
+		$i=$this->check_it();
 		if($i != 0)
-			return $ay; 
-		$db=array();
-//		$db=parent::$db;
-/*		$conn=sprintf("SELECT * FROM  choose WHERE uid = %d",$u);
-		$mysqli=mysqli_connect($ay[0],$ay[3],$ay[4],$ay[2],$ay[1]);
+			return $ay;
+		$by=array();
+		$by=$this->db;
+		$conn=sprintf("SELECT * FROM  choose WHERE uid = %d",$u);
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
 		if(mysqli_connect_errno())
 			return $ay;
 		mysqli_set_charset($mysqli,"utf8");
@@ -380,7 +380,7 @@ class tb_choose extends signed_db
 		while($row=mysqli_fetch_row($res))
 			array_push($ay,$row);
 		mysqli_free_result($res);
-		mysqli_close($mysqli);*/
+		mysqli_close($mysqli);
 		return $ay; 
 	}//}}}
 //{{{public function add_db($a)
