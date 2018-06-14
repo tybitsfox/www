@@ -40,6 +40,7 @@ $SIG_HTML['LEFT_TOP1']	=	"<section class='side' id='sidebar'><!-- Header --><a h
 //$SIG_HTML['LEFT_TOP1']	=	"<section class='side' id='sidebar'><!-- Header --><a href='".$SIGNED_DEF['HOME_LINK']."'><div class='side-head'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></div></a><!-- User Menu --><div class='side-user'><div class='dropdown'><a href='".$SIGNED_DEF['DASHBOARD'][0][0]."' class='".$SIGNED_DEF['DASHBOARD'][0][2]."'><div class='usercircle'>".$s1."</div><strong>".$SIGNED_DEF['DASHBOARD'][0][1]."</strong><br/></a></div></div>";
 $SIG_HTML['LEFT_TOP2'] = "<!-- Navigation --><nav><div><ul class='list-unstyled list-nav left-nav'><li><a class='".$SIGNED_DEF['DASHBOARD'][1][2]."' href='".$SIGNED_DEF['DASHBOARD'][1][0]."'>".$SIGNED_DEF['DASHBOARD'][1][1]."</a></li>";
 $SIG_HTML['LEFT_REP1']	= "<li><a href='".$SIGNED_DEF['DASHBOARD'][2][0]."' class='".$SIGNED_DEF['DASHBOARD'][2][2]."'>".$SIGNED_DEF['DASHBOARD'][2][1]."<i class='icon-gear'></i><span class='left-nav'>tyyyyt@163.com</span></a></li>";
+$SIG_HTML['LEFT_REP']	= "<li><a href='%s' class='with-name'>%s<i class='%s'></i></a></li>";
 $SIG_HTML['LEFT_REP2']	= "<li><a href='".$SIGNED_DEF['DASHBOARD'][3][0]."' class='".$SIGNED_DEF['DASHBOARD'][3][2]."'>".$SIGNED_DEF['DASHBOARD'][3][1]."<i class='icon-plus'></i></a></li>";
 $SIG_HTML['LEFT_TOP3']	=	"</ul></nav></section>";
 $SIG_HTML['RIGHT_TOP1']	=	"<section class='content'><ol id='main_bread_crumb' class='breadcrumb'><li>主页</li></ol><div class='inner' id='modal_container' >";

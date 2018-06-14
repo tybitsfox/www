@@ -8,7 +8,7 @@ require_once(constant("FULL_PATH")."config/glob_signed.php");
 require_once(constant("FULL_PATH")."lib/main.php");
 echo $ALL_HTML['LOGIN_HEAD']."<body>";
 /// check login
-if(count($_SESSION['CURR_USR']) != 12 )
+if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 12))
 	die("没有授权，禁止登录"."count=".count($_SESSION['CURR_USR']));
 ////////////////////////
 $ta=new tb_choose();
@@ -24,9 +24,20 @@ if(!isset($_POST['select']))
 	$st=sprintf($SIG_HTML['LEFT_TOP1'],$s2,$s1);
 	echo $st;
 	echo $SIG_HTML['LEFT_TOP2'];
-
-	echo $SIG_HTML['LEFT_REP1'];
-	echo $SIG_HTML['LEFT_REP2'];
+	$j=count($cy);
+	for($i=0;$i<$j;$i++)
+	{
+		$dy=array();
+		$dy=$cy[$i];
+		$st=sprintf($SIG_HTML['LEFT_REP'],$dy[3],$dy[2],$dy[4]);
+		echo $st;
+	}
+	if($j <= 5)
+	{
+		echo $SIG_HTML['LEFT_REP2'];
+	}
+//	echo $SIG_HTML['LEFT_REP1'];
+//	echo $SIG_HTML['LEFT_REP2'];
 	echo $SIG_HTML['LEFT_TOP3'];
 	echo $SIG_HTML['RIGHT_TOP1'];
 	echo $SIG_HTML['RIGHT_TOP2'];
