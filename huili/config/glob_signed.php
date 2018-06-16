@@ -1,6 +1,7 @@
 <?php
 $SIGNED_DEF['LOGO']	=	constant('WORK_PLACE')."images/logo/logo.png5.png";
-$SIGNED_DEF['HOME_LINK']	=	constant("WORK_PLACE")."include/home.php";
+$SIGNED_DEF['PICADD']	=	constant('WORK_PLACE')."images/logo/picto-connect-widget.png";
+$SIGNED_DEF['LINK']	=	constant("WORK_PLACE")."include/home.php";
 $SIGNED_DEF['LOGO_ALT']	=	"汇氏环境";
 $SIGNED_DEF['WRAP_TIL1']	=	"切换导航";
 $SIGNED_DEF['WRAP_TIL2']	=	"菜单";
@@ -14,6 +15,7 @@ $SIGNED_PAGE['FIV']		=	md5('collaborate');
 $SIGNED_PAGE['SIX']		=	md5('security');
 $SIGNED_PAGE['SEV']		=	md5('share');
 $SIGNED_PAGE['EIG']		=	md5('signout');
+$SIGNED_PAGE['ADD']		=	md5('adding');
 $SIGNED_DEF['PROFILE']	=	array(
 		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['ONE'],"个人信息"),
 		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['TWO'],"密码"),
@@ -28,7 +30,7 @@ $SIGNED_DEF['DASHBOARD']	=	array(
 		array($SIGNED_DEF['LINK']."?select=".md5('profile'),$SIGNED_DEF['USER_NAME'],"btn"),
 		array($SIGNED_DEF['LINK'],"导航栏","active"),
 		array($SIGNED_DEF['LINK']."?select=".md5('huanping'),"环评咨询","with-name"),
-		array($SIGNED_DEF['LINK']."?select=".md5('adding'),"添加功能","btn-addmerchant"));
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['ADD'],"添加功能","btn-addmerchant"));
 $SIGNED_DEF['PICTO_PNG']	=	constant('WORK_PLACE')."images/logo/picto-empty.png";
 $SIGNED_DEF['TOP_TEXT1']	=	"我们还没同步您的关注的业务模块<br>请在此选择您感兴趣的业务模块以加入到关注中";
 //{{{wrapper&head
@@ -110,6 +112,9 @@ $SIG_HTML['RIGHT_TOP_REP']	=	"
   </div> <!-- End Connect Widget -->
 </div> <!-- End Connect Widget in Overlay -->
 ";
+$SIG_HTML['RIGHT_ADD1']	=	"<div class='center-items'>\n<!-- Connect Widget -->\n<div class='connect'>\n<div class='picto animated'>\n<img src='".$SIGNED_DEF['PICADD']."' alt='连接应用模块'/>\n</div>\n<p class='intro'>选择您感兴趣的应用模块.</p>\n<ul class='list-inline list-connect'>\n";
+$SIG_HTML['RIGHT_ADD_REP']	=	"<li class='animatedalt animated'>\n<a href='%s'>\n<div class='vendor'>\n<i class='%s'></i></div><div class='btn btn-primary withlasticon'>选择<i class='icon-plus'></i></div></a></li>";
+$SIG_HTML['RIGHT_ADD2'] = "</ul></div></div>";
 $SIG_HTML['RIGHT_TOP3']	=	"</div></section></div></body></html>";
 //}}}
 //{{{LEFT_PROFILE

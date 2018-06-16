@@ -106,6 +106,32 @@ LOCK TABLES `choose` WRITE;
 /*!40000 ALTER TABLE `choose` DISABLE KEYS */;
 /*!40000 ALTER TABLE `choose` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `fixedmod`
+--
+
+DROP TABLE IF EXISTS `fixedmod`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `fixedmod` (
+  `mid` int(32) unsigned NOT NULL COMMENT '模块id',
+  `mname` varchar(16) NOT NULL COMMENT '模块名称',
+  `mlink` varchar(128) NOT NULL COMMENT '模块链接',
+  `micon` varchar(128) NOT NULL COMMENT '模块图标',
+  PRIMARY KEY (`mid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `fixedmod`
+--
+
+LOCK TABLES `fixedmod` WRITE;
+/*!40000 ALTER TABLE `fixedmod` DISABLE KEYS */;
+INSERT INTO `fixedmod` VALUES (1,'环评咨询','/huili/include/home.php','icon-gear'),(2,'环境工程','/huili/include/home.php','icon-truck'),(4,'环境监测','/huili/include/home.php','icon-flask'),(8,'项目验收','/huili/include/home.php','icon-pagelines'),(16,'清洁生产','/huili/include/home.php','icon-recycle'),(32,'危废服务','/huili/include/home.php','icon-fire'),(64,'应急预案','/huili/include/home.php','icon-calendar-check-o'),(128,'排污申报','/huili/include/home.php','icon-pencil'),(256,'企业名录','/huili/include/home.php','icon-book'),(512,'环境案例','/huili/include/home.php','icon-snapchat-ghost'),(1024,'技术动态','/huili/include/home.php','icon-joomla'),(2048,'环境法规','/huili/include/home.php','icon-wpforms'),(4096,'资料下载','/huili/include/home.php','icon-download'),(8192,'专家团队','/huili/include/home.php','icon-group'),(16384,'监控平台','/huili/include/home.php','icon-desktop'),(32768,'交流互动','/huili/include/home.php','icon-cchat');
+/*!40000 ALTER TABLE `fixedmod` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -116,4 +142,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-10 23:32:40
+-- Dump completed on 2018-06-16 20:45:26

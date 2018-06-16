@@ -323,7 +323,7 @@ class tb_auth implements root_setting
 		}
 	}//}}}
 }//}}}
-//{{{class signed_db	BASE CLAS
+//{{{class signed_db	BASE CLASS
 class signed_db
 {
 	public $usr,$pwd,$db,$conn;
@@ -416,7 +416,68 @@ class tb_choose extends signed_db
 		else
 			return 3;
 	}//}}}
-
 }//}}}
+//{{{class tb_fixedmod extends signed_db
+class tb_fixedmod extends signed_db
+{
+//{{{public function get_db($m)	if $m is null then get all
+	public function get_db($m)
+	{
+		$ay=array();
+		$i=$this->check_it();
+		if($i != 0)
+			return $ay;
+		if(is_null($m))
+			$conn="SELECT * FROM fixedmod";
+		else
+			$conn=sprintf("SELECT * FROM fixedmod WHERE mid = %d",intval($m));
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
+		if(mysqli_connect_errno())
+			return $ay;
+		mysqli_set_charset($mysqli,"utf8");
+		$res=mysqli_query($mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($mysqli);
+		return $ay;
+	}//}}}
+//{{{public function add_db($a)
+	public function add_db($a)
+	{
+		$i=$this->check_it();
+		if($i != 0)
+			return $i;
+		if( is_null($a) || (count($a) != 4))
+			return 1;
+		$conn=sprintf("SELECT mid from fixedmod ORDER BY mid DESC");
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
+		if(mysqli_connect_errno())
+			return 2;
+		$ay=array();
+		mysqli_set_charset($mysqli,"utf8");
+		$res=mysqli_query($mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($mysqli);
+		$i=intval($ay[0][0])+1;
+		if($i > 268435456) //2^28
+			return 3;
+		$conn=sprintf("INSERT INTO fixedmod(mid,mname,mlink,micon) VALUES(%d,'%s','%s','%s')",$a[0],$a[1],$a[2],$a[3]);
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
+		if(mysqli_connect_errno())
+			return 2;
+		mysqli_set_charset($mysqli,"utf8");
+		$res=mysqli_query($mysqli,$conn);
+		mysqli_close($mysqli);
+		if($res == TRUE)
+			return 0;
+		else
+			return 6;
+	}//}}}
+}//}}}
+
+
 
 ?>
