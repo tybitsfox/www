@@ -91,9 +91,11 @@ DROP TABLE IF EXISTS `choose`;
 CREATE TABLE `choose` (
   `uid` int(32) unsigned NOT NULL COMMENT '用户id',
   `mid` int(32) unsigned NOT NULL COMMENT '模块id',
+  `cid` varchar(32) NOT NULL COMMENT '元素类id',
   `mname` varchar(16) NOT NULL COMMENT '模块名称',
-  `mlink` varchar(128) NOT NULL COMMENT '模块连接',
-  `micon` varchar(128) NOT NULL COMMENT '模块图标',
+  `mlink` varchar(128) NOT NULL COMMENT '模块链接',
+  `mclass` varchar(16) NOT NULL COMMENT '元素类名称',
+  `micon` varchar(32) NOT NULL COMMENT '模块图标',
   PRIMARY KEY (`uid`,`mid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -142,4 +144,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-16 20:45:26
+-- Dump completed on 2018-06-18 10:47:16

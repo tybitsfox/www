@@ -386,13 +386,13 @@ class tb_choose extends signed_db
 //{{{public function add_db($a)
 	public function add_db($a)
 	{
-		$i=parent::check_it();
+		$i=$this->check_it();
 		if($i != 0 )
 			return $i;
-		$db=array();
-		$db=parent::$db;
+		//$db=array();
+		//$db=parent::$db;
 		$conn=sprintf("SELECT * FROM choose WHERE uid = '%d' AND mid = '%d'",$a[0],$a[1]);
-		$mysqli=mysqli_connect($ay[0],$ay[3],$ay[4],$ay[2],$ay[1]);
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
 		if(mysqli_connect_errno())
 			return 1;
 		$ay=array();
@@ -404,8 +404,8 @@ class tb_choose extends signed_db
 		mysqli_close($mysqli);
 		if(count($ay) != 0)
 			return 2;
-		$conn=sprintf("INSERT INTO choose(uid,mid,mname,mlink,micon) VALUES(%d,%d,'%s','%s','%s')",$a[0],$a[1],$a[2],$a[3],$a[4]);
-		$mysqli=mysqli_connect($ay[0],$ay[3],$ay[4],$ay[2],$ay[1]);
+		$conn=sprintf("INSERT INTO choose(uid,mid,cid,mname,mlink,mclass,micon) VALUES(%d,%d,'%s','%s','%s','%s','%s')",$a[0],$a[1],$a[2],$a[3],$a[4],$a[5],$a[6]);
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
 		if(mysqli_connect_errno())
 			return 1;
 		mysqli_set_charset($mysqli,"utf8");

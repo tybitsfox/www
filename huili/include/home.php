@@ -7,6 +7,38 @@ require_once(constant("FULL_PATH")."config/glob_new.php");  //全局常量及变
 require_once(constant("FULL_PATH")."config/glob_signed.php");
 require_once(constant("FULL_PATH")."lib/main.php");
 echo $ALL_HTML['LOGIN_HEAD']."<body>";
+echo "<script>
+var liaa=[['".$SIGNED_DEF['DASHBOARD'][1][3]."','".''."'],['".$SIGNED_DEF['DASHBOARD'][2][3]."','".$SIGNED_PAGE['ADD']."']];";
+$j=count($SIGNED_DEF['MODULE']);
+for($i=0;$i<$j;$i++)
+{
+	$k=sprintf("%d",$i+2);
+	echo "liaa[".$k."]=['".$SIGNED_DEF['MODULE'][$i][3]."','".$SIGNED_DEF['MODULE'][$i][5]."'];";
+}
+echo "
+function chlinkfunc()
+{
+	var str=window.document.location.href.toString();
+	var b=str.split('=');
+	if(typeof(b[1]) == 'string')
+	{
+		var i;
+		for(i=0;i<liaa.length;i++)
+		{
+			if(liaa[i][1] == b[1])
+			{
+				document.getElementById(liaa[i][0]).className='btn-addmerchant active';
+				break;
+			}
+		}
+		if(i >= liaa.length)
+			document.getElementById(liaa[0][0]).className='active';
+	}
+	else
+		document.getElementById(liaa[0][0]).className='active';
+}
+window.onload=chlinkfunc;
+</script>";
 /// check login
 if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 12))
 	die("没有授权，禁止登录"."count=".count($_SESSION['CURR_USR']));
@@ -15,9 +47,6 @@ $ta=new tb_choose();
 $u=$_SESSION['CURR_USR'][0]; //uid
 $cy=array();
 $cy=$ta->get_db($u);
-$tb=new tb_fixedmod();
-$xy=array();
-$xy=$tb->get_db();
 echo $SIG_HTML['WRAP'];
 if(!isset($_GET['select']))
 {
@@ -31,15 +60,14 @@ if(!isset($_GET['select']))
 	{
 		$dy=array();
 		$dy=$cy[$i];
-		$st=sprintf($SIG_HTML['LEFT_REP'],$dy[3],$dy[2],$dy[4]);
+		$st=sprintf($SIG_HTML['LEFT_REP'],$dy[2],$dy[4],$dy[5],$dy[3],$dy[6]);
 		echo $st;
 	}
 	if($j <= 5)
 	{
-		echo $SIG_HTML['LEFT_REP2'];
+		$st=sprintf($SIG_HTML['LEFT_REP'],$SIGNED_DEF['DASHBOARD'][2][3],$SIGNED_DEF['DASHBOARD'][2][0],$SIGNED_DEF['DASHBOARD'][2][2],$SIGNED_DEF['DASHBOARD'][2][1],$SIGNED_DEF['DASHBOARD'][2][4]);
+		echo $st;
 	}
-//	echo $SIG_HTML['LEFT_REP1'];
-//	echo $SIG_HTML['LEFT_REP2'];
 	echo $SIG_HTML['LEFT_TOP3'];
 	echo $SIG_HTML['RIGHT_TOP1'];
 	echo $SIG_HTML['RIGHT_TOP2'];
@@ -88,12 +116,12 @@ else
 		echo $SIG_HTML['LEFT_TOP3'];
 		echo $SIG_HTML['RIGHT_TOP1'];
 		echo $SIG_HTML['RIGHT_ADD1'];
-		$j=count($xy);
+		$j=count($SIGNED_DEF['MODULE']);
 		for($i=0;$i<$j;$i++)
 		{
 			$dy=array();
-			$dy=$xy[$i];
-			$st=sprintf($SIG_HTML['RIGHT_ADD_REP'],$dy[2],$dy[3]);
+			$dy=$SIGNED_DEF['MODULE'][$i];
+			$st=sprintf($SIG_HTML['RIGHT_ADD_REP'],$dy[0],$dy[4],$dy[1]);
 			echo $st;
 		}
 		echo $SIG_HTML['RIGHT_ADD2'];
@@ -102,14 +130,6 @@ else
 	default:
 		break;
 	}
-/*	echo $SIG_HTML['LEFT_TOP2'];
-	echo $SIG_HTML['LEFT_REP1'];
-	echo $SIG_HTML['LEFT_REP2'];
-	echo $SIG_HTML['LEFT_TOP3'];
-	echo $SIG_HTML['RIGHT_TOP1'];
-	echo $SIG_HTML['RIGHT_TOP2'];
-	echo $SIG_HTML['RIGHT_TOP_REP'];
-	echo $SIG_HTML['RIGHT_TOP3']; */
 }
 ?>
 
