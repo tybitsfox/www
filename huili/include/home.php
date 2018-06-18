@@ -37,6 +37,34 @@ function chlinkfunc()
 	else
 		document.getElementById(liaa[0][0]).className='active';
 }
+function set_min(u)
+{
+	var ay;
+	var str=document.getElementById('upmodule');
+	if(str.length == 0)
+		ay=array();
+	else
+		ay=str.value.split(',');
+	var i,st;
+	i=u.length-1;
+	st=u.substring(6,i);
+	var a=document.getElementById(u).className.toString();
+	if(a.match('plus'))
+	{
+		document.getElementById(u).className='icon-minus';
+		document.getElementById(u).style='color:#455f6c';
+		ay.push(st);
+	}
+	else
+	{
+		document.getElementById(u).className='icon-plus';
+		document.getElementById(u).style='color:#fff';
+		i=ay.indexOf(st);
+		ay.splice(i,1);
+	}
+	str.value=ay;
+}
+//color:#455f6c,#3eae48
 window.onload=chlinkfunc;
 </script>";
 /// check login
@@ -71,7 +99,17 @@ if(!isset($_GET['select']))
 	echo $SIG_HTML['LEFT_TOP3'];
 	echo $SIG_HTML['RIGHT_TOP1'];
 	echo $SIG_HTML['RIGHT_TOP2'];
-	echo $SIG_HTML['RIGHT_TOP_REP'];
+	echo $SIG_HTML['RIGHT_TOP_REPB'];
+	$j=count($SIGNED_DEF['MODULE']);
+	for($i=0;$i<$j;$i++)
+	{
+		$dy=array();
+		$dy=$SIGNED_DEF['MODULE'][$i];
+		$sc=$dy[3]."a";
+		$st=sprintf($SIG_HTML['RIGHT_TOP_REP'],$sc,$dy[4],$dy[1],$sc);
+		echo $st;
+	}
+	echo $SIG_HTML['RIGHT_TOP_REPE'];
 	echo $SIG_HTML['RIGHT_TOP3'];
 }
 else
@@ -106,12 +144,13 @@ else
 		{
 			$dy=array();
 			$dy=$cy[$i];
-			$st=sprintf($SIG_HTML['LEFT_REP'],$dy[3],$dy[2],$dy[4]);
+			$st=sprintf($SIG_HTML['LEFT_REP'],$dy[2],$dy[4],$dy[5],$dy[3],$dy[6]);
 			echo $st;
 		}
 		if($j <= 5)
 		{
-			echo $SIG_HTML['LEFT_REP2'];
+			$st=sprintf($SIG_HTML['LEFT_REP'],$SIGNED_DEF['DASHBOARD'][2][3],$SIGNED_DEF['DASHBOARD'][2][0],$SIGNED_DEF['DASHBOARD'][2][2],$SIGNED_DEF['DASHBOARD'][2][1],$SIGNED_DEF['DASHBOARD'][2][4]);
+			echo $st;
 		}
 		echo $SIG_HTML['LEFT_TOP3'];
 		echo $SIG_HTML['RIGHT_TOP1'];
@@ -121,7 +160,8 @@ else
 		{
 			$dy=array();
 			$dy=$SIGNED_DEF['MODULE'][$i];
-			$st=sprintf($SIG_HTML['RIGHT_ADD_REP'],$dy[0],$dy[4],$dy[1]);
+			$sc=$dy[3]."a";
+			$st=sprintf($SIG_HTML['RIGHT_ADD_REP'],$sc,$dy[4],$dy[1],$sc);
 			echo $st;
 		}
 		echo $SIG_HTML['RIGHT_ADD2'];

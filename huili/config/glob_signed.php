@@ -32,6 +32,7 @@ $SIGNED_PAGE['GJ13']		=	md5('xiazai');
 $SIGNED_PAGE['GJ14']		=	md5('zhuanjia');
 $SIGNED_PAGE['GJ15']		=	md5('pingtai');
 $SIGNED_PAGE['GJ16']		=	md5('weibo');
+$SIGNED_PAGE['UPD']		=	md5('update');
 
 $SIGNED_DEF['PROFILE']	=	array(
 		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['ONE'],"个人信息"),
@@ -79,79 +80,18 @@ $SIG_HTML['LEFT_TOP1']	=	"<section class='side' id='sidebar'><!-- Header --><a h
 $SIG_HTML['LEFT_TOP2'] = "<!-- Navigation --><nav><div><ul class='list-unstyled list-nav left-nav'><li><a id='chlink00' class='".$SIGNED_DEF['DASHBOARD'][1][2]."' href='".$SIGNED_DEF['DASHBOARD'][1][0]."'>".$SIGNED_DEF['DASHBOARD'][1][1]."</a></li>";
 //左边已选择模块及模块添加链接显示代码
 $SIG_HTML['LEFT_REP']	= "<li><a id='%s' href='%s' class='%s'>%s<i class='%s'></i></a></li>";
-//临时测试用，将被上面的代码替代
-$SIG_HTML['LEFT_REP2']	= "<li><a id='".$SIGNED_DEF['DASHBOARD'][2][3]."'  href='".$SIGNED_DEF['DASHBOARD'][2][0]."' class='".$SIGNED_DEF['DASHBOARD'][2][2]."'>".$SIGNED_DEF['DASHBOARD'][2][1]."<i class='icon-plus'></i></a></li>";
+//左边导航栏结束显示代码
 $SIG_HTML['LEFT_TOP3']	=	"</ul></nav></section>";
+//右边抬头显示代码
 $SIG_HTML['RIGHT_TOP1']	=	"<section class='content'><ol id='main_bread_crumb' class='breadcrumb'><li>主页</li></ol><div class='inner' id='modal_container' >";
+
 $SIG_HTML['RIGHT_TOP2']	=	"<div class='tab-content'><div role='tabpanel' class='tab-pane tab-pane-naked active' id='latestorders'><section><div class='orders-empty panel'><img class='picto' src='".$SIGNED_DEF['PICTO_PNG']."' alt='空'><p>".$SIGNED_DEF['TOP_TEXT1']."</p><a href='#' class='btn btn-primary btn-connectmore withlasticon'>添加<i class='icon-plus'></i></a></div></section></div></div>";
-$SIG_HTML['RIGHT_TOP_REP']	=	"
-<div class='connect-overlay'>
-  <a href='#' class='btn-closeoverlay btn-closeconnectmore'><i class='icon-x'></i></a>
-  <!-- Connect Widget -->
-  <div class='connect intro'>
-    <div class='picto'>
-      <img src='./assets/images/picto-connect-widget-dark.png' alt='Connect Vendors'/>
-    </div>
-    <p class='intro'>Please select a vendor below and connect your account to access purchase history.</p>
-    <ul class='list-inline list-connect'>
-    <li class='animatedalt animated'>
-      <a href='/app/connects/alaska'>
-        <div class='vendor'>
-          <i class='icon-alaska'></i>
-        </div>
-        <div class='btn btn-primary withlasticon'>Connect<i class='icon-plus'></i></div>
-      </a>
-    </li>
-    <li class='animatedalt animated'>
-      <a href='/app/connects/amazon'>
-        <div class='vendor'>
-          <i class='icon-amazon'></i>
-        </div>
-        <div class='btn btn-primary withlasticon'>Connect<i class='icon-plus'></i></div>
-      </a>
-    </li>
-    <li class='animatedalt animated'>
-      <a href='/app/connects/apple'>
-        <div class='vendor'>
-          <i class='icon-apple'></i>
-        </div>
-        <div class='btn btn-primary withlasticon'>Connect<i class='icon-plus'></i></div>
-      </a>
-    </li>
-    <li class='animatedalt animated'>
-      <a href='/app/connects/bestbuy'>
-        <div class='vendor'>
-          <i class='icon-bestbuy'></i>
-        </div>
-        <div class='btn btn-primary withlasticon'>Connect<i class='icon-plus'></i></div>
-      </a>
-    </li>
-    <li class='animatedalt animated'>
-      <a href='/app/connects/delta'>
-        <div class='vendor'>
-          <i class='icon-delta'></i>
-        </div>
-        <div class='btn btn-primary withlasticon'>Connect<i class='icon-plus'></i></div>
-      </a>
-    </li>
-    <li class='animatedalt animated'>
-      <a href='/app/connects/ebay'>
-        <div class='vendor'>
-          <i class='icon-ebay'></i>
-        </div>
-        <div class='btn btn-primary withlasticon'>Connect<i class='icon-plus'></i></div>
-      </a>
-    </li>
-</ul>
-    <div class='connect-close'>
-      <a href='#' class='btn-text btn-closeconnectmore'>Not now.</a>
-    </div>
-  </div> <!-- End Connect Widget -->
-</div> <!-- End Connect Widget in Overlay -->
-";
+$SIG_HTML['RIGHT_TOP_REPB'] =	"<div class='connect-overlay'>\n<a href='#' class='btn-closeoverlay btn-closeconnectmore'><i class='icon-x'></i></a>\n<!-- Connect Widget -->\n<div class='connect intro'>\n<div class='picto'>\n<img src='/huili/images/logo/picto-connect-widget-dark.png' alt='连接模块'/>\n</div>\n<p class='intro'>请选择您感兴趣的应用模块.</p>\n<ul class='list-inline list-connect'>\n";
+$SIG_HTML['RIGHT_TOP_REPE']	=	"</ul>\n<div class='connect-close'>\n<a href='#' class='btn-text btn-closeconnectmore'>暂时不选.</a>\n</div>\n</div> <!-- End Connect Widget -->\n</div> <!-- End Connect Widget in Overlay -->\n";
+$SIG_HTML['RIGHT_TOP_REP']	=	"<li class='animatedalt animated'>\n<a href='javascript:;' onclick='set_min(\"%s\");'>\n<div class='vendor'>\n<i class='%s'></i>\n</div>\n<div class='btn btn-primary withlasticon'>%s<i id='%s' class='icon-plus'></i></div>\n</a></li>\n";
 $SIG_HTML['RIGHT_ADD1']	=	"<div class='center-items'>\n<!-- Connect Widget -->\n<div class='connect'>\n<div class='picto animated'>\n<img src='".$SIGNED_DEF['PICADD']."' alt='连接应用模块'/>\n</div>\n<p class='intro'>选择您感兴趣的应用模块.</p>\n<ul class='list-inline list-connect'>\n";
-$SIG_HTML['RIGHT_ADD_REP']	=	"<li class='animatedalt animated'>\n<a href='%s'>\n<div class='vendor'>\n<i class='%s'></i></div><div class='btn btn-primary withlasticon'>%s<i class='icon-plus'></i></div></a></li>";
-$SIG_HTML['RIGHT_ADD2'] = "</ul></div></div>";
+$SIG_HTML['RIGHT_ADD_REP']	=	"<li class='animatedalt animated'>\n<a href='javascript:;' onclick='set_min(\"%s\");'>\n<div class='vendor'>\n<i class='%s'></i></div><div class='btn btn-primary withlasticon'>%s<i id='%s' class='icon-plus'></i></div></a></li>";
+$SIG_HTML['RIGHT_ADD2'] = "</ul><form method='post' action='/huili/include/home.php?select=".$SIGNED_PAGE['ADD']."'><br><button type='submit' class='btn btn-primary'>更新选择 <i class='icon-ok'></i></button><input type='hidden' value='' name='upmodule' id='upmodule'><p>".$_POST['upmodule']."</p></form></div></div>";
 $SIG_HTML['RIGHT_TOP3']	=	"</div></section></div></body></html>";
 //}}}
 //{{{LEFT_PROFILE
