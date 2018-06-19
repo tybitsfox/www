@@ -72,7 +72,7 @@ $SIGNED_DEF['TOP_TEXT1']	=	"我们还没同步您的关注的业务模块<br>请
 //{{{wrapper&head
 $SIG_HTML['WRAP']	=	"<div id='wrapper' class='l-content-wrapper-sticky-footer'><div><div class='alert-offset-side'><!--react-empty: 2--></div></div><div class='mobile-bar'><div class='logobox'><a href='".$SIGNED_DEF['HOME_LINK']."'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></a></div><div class='mobile-menu'><button type='button' class='navbar-toggle'><span class='sr-only'>".$SIGNED_DEF['WRAP_TIL1']."</span><span class='title'>".$SIGNED_DEF['WRAP_TIL2']."</span><span class='bars'><span class='icon-bar icon-bar1'></span><span class='icon-bar icon-bar2'></span><span class='icon-bar icon-bar3'></span></span></button></div></div>";
 //}}}
-//{{{LEFT_TOP	RIGHT_TOP
+//{{{LEFT_TOP	RIGHT_TOP MODULE_ADD
 $s1=strtoupper(substr($SIGNED_DEF['USER_NAME'],0,1));
 //左边导航栏logo及个人设置链接显示代码
 $SIG_HTML['LEFT_TOP1']	=	"<section class='side' id='sidebar'><!-- Header --><a href='".$SIGNED_DEF['HOME_LINK']."'><div class='side-head'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></div></a><!-- User Menu --><div class='side-user'><div class='dropdown'><a href='".$SIGNED_DEF['DASHBOARD'][0][0]."' class='".$SIGNED_DEF['DASHBOARD'][0][2]."'><div class='usercircle'>%s</div><strong> %s</strong><br/></a></div></div>";
@@ -84,14 +84,16 @@ $SIG_HTML['LEFT_REP']	= "<li><a id='%s' href='%s' class='%s'>%s<i class='%s'></i
 $SIG_HTML['LEFT_TOP3']	=	"</ul></nav></section>";
 //右边抬头显示代码
 $SIG_HTML['RIGHT_TOP1']	=	"<section class='content'><ol id='main_bread_crumb' class='breadcrumb'><li>主页</li></ol><div class='inner' id='modal_container' >";
-
+//右边默认界面及默认界面的展开代码
 $SIG_HTML['RIGHT_TOP2']	=	"<div class='tab-content'><div role='tabpanel' class='tab-pane tab-pane-naked active' id='latestorders'><section><div class='orders-empty panel'><img class='picto' src='".$SIGNED_DEF['PICTO_PNG']."' alt='空'><p>".$SIGNED_DEF['TOP_TEXT1']."</p><a href='#' class='btn btn-primary btn-connectmore withlasticon'>添加<i class='icon-plus'></i></a></div></section></div></div>";
 $SIG_HTML['RIGHT_TOP_REPB'] =	"<div class='connect-overlay'>\n<a href='#' class='btn-closeoverlay btn-closeconnectmore'><i class='icon-x'></i></a>\n<!-- Connect Widget -->\n<div class='connect intro'>\n<div class='picto'>\n<img src='/huili/images/logo/picto-connect-widget-dark.png' alt='连接模块'/>\n</div>\n<p class='intro'>请选择您感兴趣的应用模块.</p>\n<ul class='list-inline list-connect'>\n";
 $SIG_HTML['RIGHT_TOP_REPE']	=	"</ul>\n<div class='connect-close'>\n<a href='#' class='btn-text btn-closeconnectmore'>暂时不选.</a>\n</div>\n</div> <!-- End Connect Widget -->\n</div> <!-- End Connect Widget in Overlay -->\n";
 $SIG_HTML['RIGHT_TOP_REP']	=	"<li class='animatedalt animated'>\n<a href='javascript:;' onclick='set_min(\"%s\");'>\n<div class='vendor'>\n<i class='%s'></i>\n</div>\n<div class='btn btn-primary withlasticon'>%s<i id='%s' class='icon-plus'></i></div>\n</a></li>\n";
+//模块添加链接的显示代码
 $SIG_HTML['RIGHT_ADD1']	=	"<div class='center-items'>\n<!-- Connect Widget -->\n<div class='connect'>\n<div class='picto animated'>\n<img src='".$SIGNED_DEF['PICADD']."' alt='连接应用模块'/>\n</div>\n<p class='intro'>选择您感兴趣的应用模块.</p>\n<ul class='list-inline list-connect'>\n";
 $SIG_HTML['RIGHT_ADD_REP']	=	"<li class='animatedalt animated'>\n<a href='javascript:;' onclick='set_min(\"%s\");'>\n<div class='vendor'>\n<i class='%s'></i></div><div class='btn btn-primary withlasticon'>%s<i id='%s' class='icon-plus'></i></div></a></li>";
 $SIG_HTML['RIGHT_ADD2'] = "</ul><form method='post' action='/huili/include/home.php?select=".$SIGNED_PAGE['ADD']."'><br><button type='submit' class='btn btn-primary'>更新选择 <i class='icon-ok'></i></button><input type='hidden' value='' name='upmodule' id='upmodule'><p>".$_POST['upmodule']."</p></form></div></div>";
+//登录后界面的结束代码
 $SIG_HTML['RIGHT_TOP3']	=	"</div></section></div></body></html>";
 //}}}
 //{{{LEFT_PROFILE
