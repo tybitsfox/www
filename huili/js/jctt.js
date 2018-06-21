@@ -9,15 +9,15 @@ function chlinkfunc()
 		{
 			if(liaa[i][1] == b[1])
 			{
-				document.getElementById(liaa[i][0]).className='btn-addmerchant active';
+				document.getElementById(liaa[i][0]).className='liaa[i][2] active';
 				break;
 			}
 		}
 		if(i >= liaa.length)
-			document.getElementById(liaa[0][0]).className='active';
+			document.getElementById(liaa[0][0]).className='liaa[0][2] active';
 	}
 	else
-		document.getElementById(liaa[0][0]).className='active';
+		document.getElementById(liaa[0][0]).className='liaa[0][2] active';
 }
 function set_min(u)
 {

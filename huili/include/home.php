@@ -6,19 +6,6 @@ if(!defined("FULL_PATH"))
 require_once(constant("FULL_PATH")."config/glob_new.php");  //全局常量及变量定义文件的引入
 require_once(constant("FULL_PATH")."config/glob_signed.php");
 require_once(constant("FULL_PATH")."lib/main.php");
-echo $ALL_HTML['LOGIN_HEAD']."<body>";
-echo "<script>
-var liaa=[['".$SIGNED_DEF['DASHBOARD'][1][3]."','".''."'],['".$SIGNED_DEF['DASHBOARD'][2][3]."','".$SIGNED_PAGE['ADD']."']];";
-$j=count($SIGNED_DEF['MODULE']);
-for($i=0;$i<$j;$i++)
-{
-	$k=sprintf("%d",$i+2);
-	echo "liaa[".$k."]=['".$SIGNED_DEF['MODULE'][$i][3]."','".$SIGNED_DEF['MODULE'][$i][5]."'];";
-}
-echo "
-//color:#455f6c,#3eae48
-window.onload=chlinkfunc;
-</script>";
 /// check login
 if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 12))
 	die("没有授权，禁止登录"."count=".count($_SESSION['CURR_USR']));
@@ -41,12 +28,54 @@ if(isset($_POST['upmodule']))
 			$sb=array($_SESSION['CURR_USR'][0],$j,$SIGNED_DEF['MODULE'][$j][3],$SIGNED_DEF['MODULE'][$j][1],$SIGNED_DEF['MODULE'][$j][0],$SIGNED_DEF['MODULE'][$j][2],$SIGNED_DEF['MODULE'][$j][4]);
 			$ta->add_db($sb);
 		}
+//		unset($ta);
+//		unset($sa);
 	}
 }
 $ta=new tb_choose();
 $u=$_SESSION['CURR_USR'][0]; //uid
 $cy=array();
 $cy=$ta->get_db($u);
+$sa=array();
+for($i=0;$i<count($cy);$i++)
+	array_push($sa,$cy[$i][1]);//get mid
+$sss=array();
+$j=count($SIGNED_DEF['MODULE']);
+for($i=0;$i<$j;$i++)
+{
+	$vv=array();
+	$l=0;
+	$vv=$SIGNED_DEF['MODULE'][$i];
+	foreach($sa as $k)
+	{
+		if(intval($k) == intval($i))
+		{
+			$l=1;
+			break;
+		}
+	}
+	if($l == 0)
+		array_push($sss,$vv); //use sss to replace $SIGNED_DEF['MODULE'];
+	unset($vv);
+}
+unset($ta);
+unset($sa);
+
+echo $ALL_HTML['LOGIN_HEAD']."<body>";
+echo "<script>
+var liaa=[['".$SIGNED_DEF['DASHBOARD'][1][3]."','".''."','".''."'],['".$SIGNED_DEF['DASHBOARD'][2][3]."','".$SIGNED_PAGE['ADD']."','".$SIGNED_DEF['DASHBOARD'][2][2]."']];";
+//$j=count($SIGNED_DEF['MODULE']);
+$j=count($sss);
+for($i=0;$i<$j;$i++)
+{
+	$k=sprintf("%d",$i+2);
+	//echo "liaa[".$k."]=['".$SIGNED_DEF['MODULE'][$i][3]."','".$SIGNED_DEF['MODULE'][$i][5]."','".$SIGNED_DEF['MODULE'][$i][2]."'];";
+	echo "liaa[".$k."]=['".$sss[$i][3]."','".$sss[$i][5]."','".$sss[$i][2]."'];";
+}
+echo "
+//color:#455f6c,#3eae48
+window.onload=chlinkfunc;
+</script>";
 echo $SIG_HTML['WRAP'];
 if(!isset($_GET['select']))
 {
@@ -127,11 +156,12 @@ else
 		echo $SIG_HTML['LEFT_TOP3'];
 		echo $SIG_HTML['RIGHT_TOP1'];
 		echo $SIG_HTML['RIGHT_ADD1'];
-		$j=count($SIGNED_DEF['MODULE']);
+		//$j=count($SIGNED_DEF['MODULE']);
+		$j=count($sss);
 		for($i=0;$i<$j;$i++)
 		{
 			$dy=array();
-			$dy=$SIGNED_DEF['MODULE'][$i];
+			$dy=$sss[$i];
 			$sc=$dy[3]."a";
 			$st=sprintf($SIG_HTML['RIGHT_ADD_REP'],$sc,$dy[4],$dy[1],$sc);
 			echo $st;
