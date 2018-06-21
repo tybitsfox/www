@@ -92,7 +92,7 @@ $SIG_HTML['RIGHT_TOP_REP']	=	"<li class='animatedalt animated'>\n<a href='javasc
 //模块添加链接的显示代码
 $SIG_HTML['RIGHT_ADD1']	=	"<div class='center-items'>\n<!-- Connect Widget -->\n<div class='connect'>\n<div class='picto animated'>\n<img src='".$SIGNED_DEF['PICADD']."' alt='连接应用模块'/>\n</div>\n<p class='intro'>选择您感兴趣的应用模块.</p>\n<ul class='list-inline list-connect'>\n";
 $SIG_HTML['RIGHT_ADD_REP']	=	"<li class='animatedalt animated'>\n<a href='javascript:;' onclick='set_min(\"%s\");'>\n<div class='vendor'>\n<i class='%s'></i></div><div class='btn btn-primary withlasticon'>%s<i id='%s' class='icon-plus'></i></div></a></li>";
-$SIG_HTML['RIGHT_ADD2'] = "</ul><form method='post' action='/huili/include/home.php?select=".$SIGNED_PAGE['ADD']."'><br><button type='submit' class='btn btn-primary'>更新选择 <i class='icon-ok'></i></button><input type='hidden' value='' name='upmodule' id='upmodule'><p>".$_POST['upmodule']."</p></form></div></div>";
+$SIG_HTML['RIGHT_ADD2'] = "</ul><form method='post' action='/huili/include/home.php?select=".$SIGNED_PAGE['ADD']."'><br><button type='submit' class='btn btn-primary'>更新选择 <i class='icon-ok'></i></button><input type='hidden' value='' name='upmodule' id='upmodule'></form></div></div>";
 //登录后界面的结束代码
 $SIG_HTML['RIGHT_TOP3']	=	"</div></section></div></body></html>";
 //}}}

@@ -23,6 +23,26 @@ window.onload=chlinkfunc;
 if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 12))
 	die("没有授权，禁止登录"."count=".count($_SESSION['CURR_USR']));
 ////////////////////////
+if(isset($_POST['upmodule']))
+{
+	if(strlen($_POST['upmodule']) > 1)
+	{
+		if(strpos($_POST['upmodule'],',') == 0)
+			$str=substr($_POST['upmodule'],1);
+		else
+			$str=$_POST['upmodule'];
+		$ta=new tb_choose();
+		$sa=array();
+		$sa=explode(',',$str);
+		for($i=0;$i<count($sa);$i++)
+		{
+			unset($sb);
+			$j=intval($sa[$i])-2; //get index.
+			$sb=array($_SESSION['CURR_USR'][0],$j,$SIGNED_DEF['MODULE'][$j][3],$SIGNED_DEF['MODULE'][$j][1],$SIGNED_DEF['MODULE'][$j][0],$SIGNED_DEF['MODULE'][$j][2],$SIGNED_DEF['MODULE'][$j][4]);
+			$ta->add_db($sb);
+		}
+	}
+}
 $ta=new tb_choose();
 $u=$_SESSION['CURR_USR'][0]; //uid
 $cy=array();
