@@ -17,14 +17,16 @@ if(!defined("WORK_PLACE"))
 	define("CSS_LOG",constant("WORK_PLACE")."css/ffiin.css");
 	define("JS_FILEA",constant("WORK_PLACE")."js/jquery.min.js");
 	define("JS_FILEB",constant("WORK_PLACE")."js/core.aadddae364.js");
+	define("JS_FILEC",constant("WORK_PLACE")."js/jctt.js");
 	define("DB_SET",constant("FULL_PATH")."config/db_set.php");
 }
 require_once(constant("DB_SET"));
 $s1="<!DOCTYPE html>\n<html><head><meta charset='UTF-8' />\n<meta name='viewport' content='width=device-width, initial-scale=1.0'>\n<title>".$GLOB_DEF['TITLE']."</title>\n";
 $s2="<link rel='stylesheet' href='".constant('CSS_FONT')."'>\n<link rel='stylesheet' href='".constant("CSS_LOG")."'>";
-$s3="<script src='".constant("JS_FILEA")."'></script>\n<script src='".constant("JS_FILEB")."'></script></head>\n";
+$s3="<script src='".constant("JS_FILEA")."'></script>\n<script src='".constant("JS_FILEB")."'></script>\n";
 $s4="<link rel='stylesheet' href='".constant('CSS_FONT')."'>\n<link rel='stylesheet' href='".constant("CSS_MAIN")."'>";
-$ALL_HTML['LOGIN_HEAD']	=	$s1.$s2.$s3;		//这是注册，登录界面的标准头定义
-$ALL_HTML['MAIN_HEAD']	=	$s1.$s4.$s3."<body>";		//这是主界面的标准头定义
+$s5="<script src='".constant("JS_FILEC")."'></script>\n";
+$ALL_HTML['LOGIN_HEAD']	=	$s1.$s2.$s3.$s5."</head>";		//这是注册，登录界面的标准头定义
+$ALL_HTML['MAIN_HEAD']	=	$s1.$s4.$s3."</head><body>";		//这是主界面的标准头定义
 unset($s1);unset($s2);unset($s3);unset($s4);
 ?>
