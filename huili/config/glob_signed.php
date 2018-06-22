@@ -77,14 +77,13 @@ $s1=strtoupper(substr($SIGNED_DEF['USER_NAME'],0,1));
 //左边导航栏logo及个人设置链接显示代码
 $SIG_HTML['LEFT_TOP1']	=	"<section class='side' id='sidebar'><!-- Header --><a href='".$SIGNED_DEF['HOME_LINK']."'><div class='side-head'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></div></a><!-- User Menu --><div class='side-user'><div class='dropdown'><a href='".$SIGNED_DEF['DASHBOARD'][0][0]."' class='".$SIGNED_DEF['DASHBOARD'][0][2]."'><div class='usercircle'>%s</div><strong> %s</strong><br/></a></div></div><!-- Navigation --><nav>";
 //左边总导航栏显示代码
-$SIG_HTML['LEFT_TOP2'] = "<div><ul class='list-unstyled list-nav left-nav'><li><a id='chlink00' class='".$SIGNED_DEF['DASHBOARD'][1][2]."' href='".$SIGNED_DEF['DASHBOARD'][1][0]."'>".$SIGNED_DEF['DASHBOARD'][1][1]."</a></li>";
+$SIG_HTML['LEFT_TOP2'] = "<ul class='list-unstyled list-nav left-nav'><li><a id='chlink00' class='".$SIGNED_DEF['DASHBOARD'][1][2]."' href='".$SIGNED_DEF['DASHBOARD'][1][0]."'>".$SIGNED_DEF['DASHBOARD'][1][1]."</a></li>";
 //左边已选择模块及模块添加链接显示代码
 $SIG_HTML['LEFT_REP']	= "<li><a id='%s' href='%s' class='%s'>%s<i class='%s'></i></a></li>";
 //左边导航栏结束显示代码
 $SIG_HTML['LEFT_TOP3']	=	"</ul></nav></section>";
 //右边抬头显示代码
-$SIG_HTML['RIGHT_TOP1']	=	"<section class='content'><ol id='main_bread_crumb' class='breadcrumb'><li>主页</li></ol><div class='inner' id='modal_container' >";
-$SIG_HTML['RIGHT_TOP1A']	=	"<section class='content'><ol id='main_bread_crumb' class='breadcrumb'><li>%s</li></ol><div class='inner' id='modal_container' >";
+$SIG_HTML['RIGHT_TOP1']	=	"<section class='content'><ol id='main_bread_crumb' class='breadcrumb'><li>%s</li></ol><div class='inner' id='modal_container' >";
 //右边默认界面及默认界面的展开代码
 $SIG_HTML['RIGHT_TOP2']	=	"<div class='tab-content'><div role='tabpanel' class='tab-pane tab-pane-naked active' id='latestorders'><section><div class='orders-empty panel'><img class='picto' src='".$SIGNED_DEF['PICTO_PNG']."' alt='空'><p>".$SIGNED_DEF['TOP_TEXT1']."</p><a href='#' class='btn btn-primary btn-connectmore withlasticon'>添加<i class='icon-plus'></i></a></div></section></div></div>";
 $SIG_HTML['RIGHT_TOP_REPB'] =	"<div class='connect-overlay'>\n<a href='#' class='btn-closeoverlay btn-closeconnectmore'><i class='icon-x'></i></a>\n<!-- Connect Widget -->\n<div class='connect intro'>\n<div class='picto'>\n<img src='/huili/images/logo/picto-connect-widget-dark.png' alt='连接模块'/>\n</div>\n<p class='intro'>请选择您感兴趣的应用模块.</p>\n<ul class='list-inline list-connect'>\n";
@@ -100,14 +99,14 @@ $SIG_HTML['RIGHT_TOP3']	=	"</div></section></div></body></html>";
 //{{{LEFT_PROFILE
 $SIG_HTML['PROFILE1']	=	"
 	<ul class='list-unstyled list-nav'>\n
-	  <li><a href='/app/settings/profile'>个人信息</a></li>\n
-      <li><a href='/app/settings/password'>密码</a></li>\n
-      <li><a href='/app/settings/accounts'>账户</a></li>\n
-      <li><a href='/app/settings/invite'>邀请好友</a></li>\n
-      <li><a href='/app/settings/collaborate'>我的合作</a></li>\n
-      <li><a href='/app/settings/security'>安全</a></li>\n
-      <li><a href='/app/settings/developer'>分享</a></li>\n
-      <li><a href='/auth/signout'>退出账户</a></li>\n
+	  <li><a href='/app/settings/profile'>个人信息<i class='icon-address-book'></i></a></li>\n
+      <li><a href='/app/settings/password'>密码<i class='icon-key'></i></a></li>\n
+      <li><a href='/app/settings/accounts'>账户<i class='icon-envelope'></i></a></li>\n
+      <li><a href='/app/settings/invite'>邀请好友<i class='icon-user-plus'></i></a></li>\n
+      <li><a href='/app/settings/collaborate'>我的合作<i class='icon-earth'></i></a></li>\n
+      <li><a href='/app/settings/security'>安全<i class='icon-shield'></i></a></li>\n
+      <li><a href='/app/settings/developer'>分享<i class='icon-finder'></i></a></li>\n
+      <li><a href='/auth/signout'>退出账户<i class='icon-exit'></i></a></li>\n
     </ul>\n";
 $SIG_HTML['LEFT_MENU']	=	"<section class='side'><a href='".$SIGNED_DEF['HOME_LINK']."'><div class='side-head'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></div></a><div class='side-user'>\n<div class='dropdown'>\n<a href='".$SIGNED_DEF['LMENU_LINK1']."' class='btn'>\n<div class='usercircle'>T</div>\n<strong>".$SIGNED_DEF['USER_NAME']."</strong><br/>\n</a>\n</div>\n</div>\n<nav>\n<div class='addmerchant'>\n<a href='".$SIGNED_DEF['HOME_LINK']."' class='btn btn-text withfronticon'><i class='icon-arrow'></i>返回导航栏</a>\n</div>\n
 	<ul class='list-unstyled list-nav'>\n

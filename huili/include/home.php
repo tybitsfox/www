@@ -98,7 +98,8 @@ if(!isset($_GET['select']))
 		echo $st;
 	}
 	echo $SIG_HTML['LEFT_TOP3'];
-	echo $SIG_HTML['RIGHT_TOP1'];
+	$st=sprintf($SIG_HTML['RIGHT_TOP1'],"主页");
+	echo $st;
 	echo $SIG_HTML['RIGHT_TOP2'];
 	echo $SIG_HTML['RIGHT_TOP_REPB'];
 	$j=count($SIGNED_DEF['MODULE']);
@@ -122,12 +123,16 @@ else
 		include_once('./setting_pro.php');
 		break;
 	case $SIGNED_PAGE['TWO']:
+		include_once('./setting_pwd.php');
 		break;
 	case $SIGNED_PAGE['THR']:
+		include_once('./setting_account.php');
 		break;
 	case $SIGNED_PAGE['FUR']:
+		include_once('./setting_invite.php');
 		break;
 	case $SIGNED_PAGE['FIV']:
+		include_once('./setting_coll.php');
 		break;
 	case $SIGNED_PAGE['SIX']:
 		break;
@@ -155,9 +160,10 @@ else
 			echo $st;
 		}
 		echo $SIG_HTML['LEFT_TOP3'];
-		echo $SIG_HTML['RIGHT_TOP1'];
+		$st1="<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li>添加功能";
+		$st=sprintf($SIG_HTML['RIGHT_TOP1'],$st1);
+		echo $st;
 		echo $SIG_HTML['RIGHT_ADD1'];
-		//$j=count($SIGNED_DEF['MODULE']);
 		$j=count($sss);
 		for($i=0;$i<$j;$i++)
 		{

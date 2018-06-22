@@ -3,11 +3,17 @@
 		$st2=strtoupper(substr($st1,1,1));
 		$st=sprintf($SIG_HTML['LEFT_TOP1'],$st2,$st1);
 		echo $st;
-		echo $SIG_HTML['PROFILE1'];
-		echo $SIG_HTML['LEFT_TOP2'];
+		echo "<div class='addmerchant'><a class='btn btn-text withfronticon' href='".$SIGNED_DEF['DASHBOARD'][1][0]."'><i class='icon-arrow_left'></i>".$SIGNED_DEF['DASHBOARD'][1][1]."</a></div>";
+		echo "<ul class='list-unstyled list-nav'>\n";
+$j=count($SIGNED_DEF['PROFILE']);
+for($i=0;$i<$j;$i++)
+{
+	$st=sprintf("<li><a href='%s'>%s<i class='%s'></i></a></li>\n",$SIGNED_DEF['PROFILE'][$i][0],$SIGNED_DEF['PROFILE'][$i][1],$SIGNED_DEF['PROFILE'][$i][2]);
+	echo $st;
+}
 		echo $SIG_HTML['LEFT_TOP3'];
 		$st2="<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li><a href='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['ONE']."'>设置</a></li><li>个人信息";
-		$st1=sprintf($SIG_HTML['RIGHT_TOP1A'],$st2);
+		$st1=sprintf($SIG_HTML['RIGHT_TOP1'],$st2);
 		echo $st1;
 		echo "<div class='inner' id='modal_container' >\n<h2 class='sect first'>设置 / 个人信息</h2>\n<!-- Panel -->\n<div class='block'>\n<div class='panel shadow'>\n<div class='body body-settings'>\n<div class='inner-narrow'>\n<div class='intro-block'>\n<h3>您的个人信息设置</h3>\n</div>\n<form class='form form-horizontal form-boxed' method='post' action='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['ONE']."'>\n";
 		$st1="<div class='form-group'>\n<label>更新您的昵称</label>\n<div class='form-split'>\n<input name='nickname' id='nickname' class='form-control inlined' value='%s' required/>\n<button type='submit' class='btn btn-primary'>更新</button>\n</div>\n</div>\n</form>\n";
