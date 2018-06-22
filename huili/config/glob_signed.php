@@ -35,14 +35,14 @@ $SIGNED_PAGE['GJ16']		=	md5('weibo');
 $SIGNED_PAGE['UPD']		=	md5('update');
 
 $SIGNED_DEF['PROFILE']	=	array(
-		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['ONE'],"个人信息"),
-		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['TWO'],"密码"),
-		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['THR'],"账户"),
-		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FUR'],"邀请好友"),
-		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV'],"我的合作"),
-		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['SIX'],"安全"),
-		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['SEV'],"分享"),
-		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['EIG'],"退出帐号"));
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['ONE'],"个人信息","icon-address-book"),
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['TWO'],"密码","icon-key"),
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['THR'],"账户","icon-envelope"),
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FUR'],"邀请好友","icon-user-plus"),
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV'],"我的合作","icon-earth"),
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['SIX'],"安全","icon-shield"),
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['SEV'],"分享","icon-finder"),
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['EIG'],"退出帐号","icon-exit"));
 //下面这个队列变量，将来要被数据库中的数据替代，用户选择的功能从数据库中读取，并显示出来
 //子队列元素依次为：链接、链接名称、class、id、图标class
 $SIGNED_DEF['DASHBOARD']	=	array(
@@ -75,15 +75,16 @@ $SIG_HTML['WRAP']	=	"<div id='wrapper' class='l-content-wrapper-sticky-footer'><
 //{{{LEFT_TOP	RIGHT_TOP MODULE_ADD
 $s1=strtoupper(substr($SIGNED_DEF['USER_NAME'],0,1));
 //左边导航栏logo及个人设置链接显示代码
-$SIG_HTML['LEFT_TOP1']	=	"<section class='side' id='sidebar'><!-- Header --><a href='".$SIGNED_DEF['HOME_LINK']."'><div class='side-head'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></div></a><!-- User Menu --><div class='side-user'><div class='dropdown'><a href='".$SIGNED_DEF['DASHBOARD'][0][0]."' class='".$SIGNED_DEF['DASHBOARD'][0][2]."'><div class='usercircle'>%s</div><strong> %s</strong><br/></a></div></div>";
+$SIG_HTML['LEFT_TOP1']	=	"<section class='side' id='sidebar'><!-- Header --><a href='".$SIGNED_DEF['HOME_LINK']."'><div class='side-head'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></div></a><!-- User Menu --><div class='side-user'><div class='dropdown'><a href='".$SIGNED_DEF['DASHBOARD'][0][0]."' class='".$SIGNED_DEF['DASHBOARD'][0][2]."'><div class='usercircle'>%s</div><strong> %s</strong><br/></a></div></div><!-- Navigation --><nav>";
 //左边总导航栏显示代码
-$SIG_HTML['LEFT_TOP2'] = "<!-- Navigation --><nav><div><ul class='list-unstyled list-nav left-nav'><li><a id='chlink00' class='".$SIGNED_DEF['DASHBOARD'][1][2]."' href='".$SIGNED_DEF['DASHBOARD'][1][0]."'>".$SIGNED_DEF['DASHBOARD'][1][1]."</a></li>";
+$SIG_HTML['LEFT_TOP2'] = "<div><ul class='list-unstyled list-nav left-nav'><li><a id='chlink00' class='".$SIGNED_DEF['DASHBOARD'][1][2]."' href='".$SIGNED_DEF['DASHBOARD'][1][0]."'>".$SIGNED_DEF['DASHBOARD'][1][1]."</a></li>";
 //左边已选择模块及模块添加链接显示代码
 $SIG_HTML['LEFT_REP']	= "<li><a id='%s' href='%s' class='%s'>%s<i class='%s'></i></a></li>";
 //左边导航栏结束显示代码
 $SIG_HTML['LEFT_TOP3']	=	"</ul></nav></section>";
 //右边抬头显示代码
 $SIG_HTML['RIGHT_TOP1']	=	"<section class='content'><ol id='main_bread_crumb' class='breadcrumb'><li>主页</li></ol><div class='inner' id='modal_container' >";
+$SIG_HTML['RIGHT_TOP1A']	=	"<section class='content'><ol id='main_bread_crumb' class='breadcrumb'><li>%s</li></ol><div class='inner' id='modal_container' >";
 //右边默认界面及默认界面的展开代码
 $SIG_HTML['RIGHT_TOP2']	=	"<div class='tab-content'><div role='tabpanel' class='tab-pane tab-pane-naked active' id='latestorders'><section><div class='orders-empty panel'><img class='picto' src='".$SIGNED_DEF['PICTO_PNG']."' alt='空'><p>".$SIGNED_DEF['TOP_TEXT1']."</p><a href='#' class='btn btn-primary btn-connectmore withlasticon'>添加<i class='icon-plus'></i></a></div></section></div></div>";
 $SIG_HTML['RIGHT_TOP_REPB'] =	"<div class='connect-overlay'>\n<a href='#' class='btn-closeoverlay btn-closeconnectmore'><i class='icon-x'></i></a>\n<!-- Connect Widget -->\n<div class='connect intro'>\n<div class='picto'>\n<img src='/huili/images/logo/picto-connect-widget-dark.png' alt='连接模块'/>\n</div>\n<p class='intro'>请选择您感兴趣的应用模块.</p>\n<ul class='list-inline list-connect'>\n";
@@ -92,11 +93,22 @@ $SIG_HTML['RIGHT_TOP_REP']	=	"<li class='animatedalt animated'>\n<a href='javasc
 //模块添加链接的显示代码
 $SIG_HTML['RIGHT_ADD1']	=	"<div class='center-items'>\n<!-- Connect Widget -->\n<div class='connect'>\n<div class='picto animated'>\n<img src='".$SIGNED_DEF['PICADD']."' alt='连接应用模块'/>\n</div>\n<p class='intro'>选择您感兴趣的应用模块.</p>\n<ul class='list-inline list-connect'>\n";
 $SIG_HTML['RIGHT_ADD_REP']	=	"<li class='animatedalt animated'>\n<a href='javascript:;' onclick='set_min(\"%s\");'>\n<div class='vendor'>\n<i class='%s'></i></div><div class='btn btn-primary withlasticon'>%s<i id='%s' class='icon-plus'></i></div></a></li>";
-$SIG_HTML['RIGHT_ADD2'] = "</ul><form method='post' action='/huili/include/home.php?select=".$SIGNED_PAGE['ADD']."'><br><button type='submit' class='btn btn-primary'>更新选择 <i class='icon-ok'></i></button><input type='hidden' value='' name='upmodule' id='upmodule'></form></div></div>";
+$SIG_HTML['RIGHT_ADD2'] = "</ul><form method='post' action='/huili/include/home.php'><br><button type='submit' class='btn btn-primary'>更新选择 <i class='icon-ok'></i></button><input type='hidden' value='' name='upmodule' id='upmodule'></form></div></div>";
 //登录后界面的结束代码
 $SIG_HTML['RIGHT_TOP3']	=	"</div></section></div></body></html>";
 //}}}
 //{{{LEFT_PROFILE
+$SIG_HTML['PROFILE1']	=	"
+	<ul class='list-unstyled list-nav'>\n
+	  <li><a href='/app/settings/profile'>个人信息</a></li>\n
+      <li><a href='/app/settings/password'>密码</a></li>\n
+      <li><a href='/app/settings/accounts'>账户</a></li>\n
+      <li><a href='/app/settings/invite'>邀请好友</a></li>\n
+      <li><a href='/app/settings/collaborate'>我的合作</a></li>\n
+      <li><a href='/app/settings/security'>安全</a></li>\n
+      <li><a href='/app/settings/developer'>分享</a></li>\n
+      <li><a href='/auth/signout'>退出账户</a></li>\n
+    </ul>\n";
 $SIG_HTML['LEFT_MENU']	=	"<section class='side'><a href='".$SIGNED_DEF['HOME_LINK']."'><div class='side-head'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></div></a><div class='side-user'>\n<div class='dropdown'>\n<a href='".$SIGNED_DEF['LMENU_LINK1']."' class='btn'>\n<div class='usercircle'>T</div>\n<strong>".$SIGNED_DEF['USER_NAME']."</strong><br/>\n</a>\n</div>\n</div>\n<nav>\n<div class='addmerchant'>\n<a href='".$SIGNED_DEF['HOME_LINK']."' class='btn btn-text withfronticon'><i class='icon-arrow'></i>返回导航栏</a>\n</div>\n
 	<ul class='list-unstyled list-nav'>\n
 	  <li><a href='/app/settings/profile'>个人信息</a></li>\n
@@ -126,6 +138,9 @@ $SIG_HTML['MAIN_MENU']="<section class='content'>\n
                 </div>\n
                 <form class='form form-horizontal form-boxed' method='post' action='/app/settings/profile/identity'>\n
                     <input type='hidden' value='b9524312-d7e6-41d7-93b3-b0645c5646cd' name='authenticityToken' />\n
+                        <div class='alert alert-success alert-inline' role='alert'>
+                            个人信息已经更新
+                        </div>					
                     <div class='form-group'>\n
                       <label>更新您的昵称</label>\n
                       <div class='form-split'>\n

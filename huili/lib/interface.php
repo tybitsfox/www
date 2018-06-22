@@ -14,7 +14,7 @@ interface inter_sign
 interface root_setting
 {
 	public function add($ay);			//添加记录
-	public function edit($ay,$org);		//编辑
+	public function edit($ay);			//编辑
 	public function del($ay);			//删除
 	public function err_msg($errno);	//错误提示
 }

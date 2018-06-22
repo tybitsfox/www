@@ -119,6 +119,7 @@ else
 	switch($s1)
 	{
 	case $SIGNED_PAGE['ONE']:
+		include_once('./setting_pro.php');
 		break;
 	case $SIGNED_PAGE['TWO']:
 		break;

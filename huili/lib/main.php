@@ -235,10 +235,9 @@ class tb_auth implements root_setting
 //{{{public function add($ay)
 	public function add($ay)
 	{
-		global $CURR_USR;
 		if(count($ay) != 9) //email,uname,pwd,priv,lvl,sex,expr,coin,treasure
 			return 5;		//添加记录的信息缺失
-		if(count($CURR_USR) == 0)
+		if(count($_SESSION['CURR_USR']) == 0)
 			return 2;		//需重新登录
 		$i=$this->check_it();
 		if($i != 0)
@@ -280,11 +279,35 @@ class tb_auth implements root_setting
 		else
 			return 6;	//记录添加失败！
 	}//}}}
-//{{{public function edit($ay,$org)
-	public function edit($ay,$org)
-	{//auth表禁止编辑！so～
-		echo "auth表中用户昵称和密码可由用户自行修改，其余信息禁止编辑";
-		return;
+//{{{public function edit($ay)
+	public function edit($ay)
+	{//auth表只允许编辑：邮箱、密码、昵称！so～
+		if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 12))
+			return 2;//need relogin
+		$i=$this->check_it();
+		if($i != 0)
+			return $i;
+		switch(intval($ay[0]))
+		{//need ay's format: ay[0]=action code,ay[1] update for
+		case 0://uname
+			$st1="UPDATE auth SET uname = '".$ay[1]."' WHERE uid = ".$_SESSION['CURR_USR'][0];
+			break;
+		case 1://password
+			$st1="UPDATE auth SET pwd = '".md5($ay[1])."' WHERE uid = ".$_SESSION['CURR_USR'][0];
+			break;
+		case 2://email
+			$st1="UPDATE auth SET email = '".$ay[1]."' WHERE uid = ".$_SESSION['CURR_USR'][0];
+			break;
+		}
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
+		if(mysqli_connect_errno())
+			return 3;//connect error
+		$res=mysqli_query($mysqli,$st1);
+		mysqli_close($mysqli);
+		if($res == TRUE)
+			return 0;//success
+		else
+			return 6;//edit failure
 	}//}}}
 //{{{public function del($ay)
 	public function del($ay)
