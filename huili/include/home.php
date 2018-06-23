@@ -135,10 +135,14 @@ else
 		include_once('./setting_coll.php');
 		break;
 	case $SIGNED_PAGE['SIX']:
+		include_once('./setting_secu.php');
 		break;
 	case $SIGNED_PAGE['SEV']:
+		include_once('./setting_share.php');
 		break;
 	case $SIGNED_PAGE['EIG']:
+		unset($_SESSION['CURR_USR']);
+		echo "<script>window.location='../index.php';</script>";
 		break;
 	case $SIGNED_PAGE['ADD']:
 		$st1=$_SESSION['CURR_USR'][2];

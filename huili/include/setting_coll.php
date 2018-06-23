@@ -20,8 +20,8 @@ for($i=0;$i<$j;$i++)
             <div class='panel shadow'>
                 <!-- Nav tabs -->
                 <ul class='nav nav-tabs nav-tabs-hor' role='tablist'>
-                        <li role='presentation' class='active'><a href='#share' aria-controls='share' role='tab' data-toggle='tab' data-history-enabled>Share Your Accounts</a></li>
-                        <li role='presentation' class=''><a href='#sharedwith' aria-controls='sharedwith' role='tab' data-toggle='tab' data-history-enabled>Accounts Shared With You</a></li>
+                        <li role='presentation' class='active'><a href='#share' aria-controls='share' role='tab' data-toggle='tab' data-history-enabled>我邀请的合作</a></li>
+                        <li role='presentation' class=''><a href='#sharedwith' aria-controls='sharedwith' role='tab' data-toggle='tab' data-history-enabled>邀请我的合作</a></li>
                 </ul>
                 <div class='body'>                
                     <div class='body body-settings'>
@@ -32,7 +32,7 @@ for($i=0;$i<$j;$i++)
                                     <div class='inner-narrow inner-midnarrow'>
 
     <div class='intro-block intro-block-slim'>
-        <p>Invite someone to view your Greenback accounts.</p>
+        <p>我邀请的合作伙伴.</p>
     </div>
 
                 <div class='nav-vendors'>
@@ -40,12 +40,12 @@ for($i=0;$i<$j;$i++)
                     <ul class='nav nav-tabs nav-tabs-vertical' role='tablist'>
                             <li role='presentation' class=''>
                                 <a href='#vendor-amazon' aria-controls='amazon' role='tab' data-toggle='tab'>
-                                    <i class='icon-amazon-short'></i><span>Amazon.com</span>
+                                    <i class='icon-truck'></i><span>专家团队</span>
                                 </a>
                             </li>
                             <li role='presentation' class='active'>
                                 <a href='#vendor-github' aria-controls='github' role='tab' data-toggle='tab'>
-                                    <i class='icon-amazon-short'></i><span>Amazon.com</span>
+                                    <i class='icon-user'></i><span>业务伙伴</span>
                                 </a>
 							</li>
                     </ul>
@@ -55,13 +55,17 @@ for($i=0;$i<$j;$i++)
                             <div role='tabpanel' class='tab-pane' id='vendor-amazon'>
                                     <div class='shareblock'>
                                         <div class='shareblock-head shareblock-head-light'>
-                                            <p class='shareblock-account'><span class='light'>Account:</span> <strong><span class='account-truncated'>tyyyyt@163.com</span></strong></p>
-                                            <a href='/app/accounts/6adgokW5xo/edit?tab=collaborators' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='#modal-shareaccount'><i class='icon-plus'></i> Share Account</a>
+                                            <p class='shareblock-account'><span class='light'>合作伙伴:</span> <strong><span class='account-truncated'>周洁</span></strong></p>
+                                            <a href='/app/accounts/6adgokW5xo/edit?tab=collaborators' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='#modal-shareaccount'><i class='icon-pencil'></i> 开始交流</a>
+                                        </div>
+                                        <div class='shareblock-head shareblock-head-light'>
+                                            <p class='shareblock-account'><span class='light'>合作伙伴:</span> <strong><span class='account-truncated'>孙国在</span></strong></p>
+                                            <a href='/app/accounts/6adgokW5xo/edit?tab=collaborators' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='#modal-shareaccount'><i class='icon-pencil'></i> 开始交流</a>
                                         </div>
 
                                         <div class='shareblock-body'>
                                             <ul class='list-unstyled list-shares'>
-                                                        <p>There are no collaborators for this account </p>
+                                                        <p>这个账户没有更多的合作伙伴 </p>
                                             </ul>
                                         </div>
                                     </div>
@@ -70,13 +74,21 @@ for($i=0;$i<$j;$i++)
                             <div role='tabpanel' class='tab-pane active' id='vendor-github'>
                                     <div class='shareblock'>
                                         <div class='shareblock-head shareblock-head-light'>
-                                            <p class='shareblock-account'><span class='light'>账户:</span> <strong><span class='account-truncated'>tyyyyt@163.com</span></strong></p>
-                                            <a href='/app/accounts/6adgokW5xo/edit?tab=collaborators' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='#modal-shareaccount'><i class='icon-plus'></i> 分享账户</a>
+                                            <p class='shareblock-account'><span class='light'>单位:</span> <strong><span class='account-truncated'>山东汇宇环境</span></strong></p>
+                                            <a href='/app/accounts/6adgokW5xo/edit?tab=collaborators' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='#modal-shareaccount'><i class='icon-pencil'></i> 交流分享</a>
+                                        </div>
+                                        <div class='shareblock-head shareblock-head-light'>
+                                            <p class='shareblock-account'><span class='light'>单位:</span> <strong><span class='account-truncated'>山东汇力环保</span></strong></p>
+                                            <a href='/app/accounts/6adgokW5xo/edit?tab=collaborators' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='#modal-shareaccount'><i class='icon-pencil'></i> 交流分享</a>
+                                        </div>
+                                        <div class='shareblock-head shareblock-head-light'>
+                                            <p class='shareblock-account'><span class='light'>单位:</span> <strong><span class='account-truncated'>河北清源水务</span></strong></p>
+                                            <a href='/app/accounts/6adgokW5xo/edit?tab=collaborators' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='#modal-shareaccount'><i class='icon-pencil'></i> 交流分享</a>
                                         </div>
 
                                         <div class='shareblock-body'>
                                             <ul class='list-unstyled list-shares'>
-                                                        <p>There are no collaborators for this account </p>
+                                                        <p>努力添加更多的业务伙伴 </p>
                                             </ul>
                                         </div>
                                     </div>
