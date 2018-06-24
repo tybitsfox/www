@@ -23,21 +23,20 @@ DROP TABLE IF EXISTS `auth`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `auth` (
-  `uid` int(32) unsigned DEFAULT NULL COMMENT '用户ID',
+  `uid` int(32) unsigned NOT NULL COMMENT '用户ID',
   `email` varchar(32) NOT NULL COMMENT '注册邮箱',
-  `uname` varchar(32) NOT NULL COMMENT '用户昵称',
+  `uname` varchar(32) NOT NULL COMMENT '昵称',
   `pwd` varchar(64) NOT NULL COMMENT '密码',
   `priv` int(8) unsigned NOT NULL COMMENT '权限',
   `lvl` int(8) unsigned NOT NULL COMMENT '等级',
   `sex` int(8) unsigned NOT NULL COMMENT '性别',
-  `expr` varchar(64) DEFAULT NULL COMMENT '专业领域',
+  `expr` int(32) unsigned NOT NULL COMMENT '经验值',
   `coin` int(32) unsigned NOT NULL COMMENT '金币',
   `treasure` int(32) unsigned NOT NULL COMMENT '财富值',
-  `lastlogin` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后登录时间',
   `signup` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '注册时间',
+  `lastlogin` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最后登录时间',
   PRIMARY KEY (`email`),
-  UNIQUE KEY `uid` (`uid`),
-  KEY `uid_name` (`uid`,`uname`)
+  UNIQUE KEY `uid` (`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -47,7 +46,7 @@ CREATE TABLE `auth` (
 
 LOCK TABLES `auth` WRITE;
 /*!40000 ALTER TABLE `auth` DISABLE KEYS */;
-INSERT INTO `auth` VALUES (100000,'tybitsfox@163.com','tybitsfox','471d6ebc35015802fa80ad8d4ebb9d57',7,1,0,'',0,0,'2018-06-10 06:50:03','2018-06-10 06:50:03'),(100001,'tyyyyt@163.com','tyyyyt','2694f8b0e3d3d17ff567c9ca072db75c',7,1,0,'',0,0,'2018-06-10 06:50:56','2018-06-10 06:50:56');
+INSERT INTO `auth` VALUES (100001,'tybitsfox@126.com','tybitsfox','471d6ebc35015802fa80ad8d4ebb9d57',7,1,0,0,0,0,'2018-06-24 12:31:16','2018-06-24 12:31:16'),(100000,'tyyyyt@163.com','tyyyyt','2694f8b0e3d3d17ff567c9ca072db75c',7,1,0,0,0,0,'2018-06-24 10:17:35','2018-06-24 10:17:35');
 /*!40000 ALTER TABLE `auth` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -106,6 +105,7 @@ CREATE TABLE `choose` (
 
 LOCK TABLES `choose` WRITE;
 /*!40000 ALTER TABLE `choose` DISABLE KEYS */;
+INSERT INTO `choose` VALUES (100000,13,'chlink15','专家团队','/huili/include/home.php?select=6a2d41d1162de70c080291760c4b0974','with-name','icon-group'),(100000,14,'chlink16','监控平台','/huili/include/home.php?select=03142410d7285f00e4363e005783c83a','with-name','icon-desktop'),(100000,15,'chlink17','交流互动','/huili/include/home.php?select=749ab3b68632680660d776891751e812','with-name','icon-cchat'),(100001,0,'chlink2','环评咨询','/huili/include/home.php?select=1f9663b32af87ecdd1c19ef047309f44','with-name','icon-gear'),(100001,8,'chlink10','企业名录','/huili/include/home.php?select=f7b9c1d04ceffa29cc51a3fef6765dad','with-name','icon-book'),(100001,13,'chlink15','专家团队','/huili/include/home.php?select=6a2d41d1162de70c080291760c4b0974','with-name','icon-group'),(100001,14,'chlink16','监控平台','/huili/include/home.php?select=03142410d7285f00e4363e005783c83a','with-name','icon-desktop'),(100001,15,'chlink17','交流互动','/huili/include/home.php?select=749ab3b68632680660d776891751e812','with-name','icon-cchat');
 /*!40000 ALTER TABLE `choose` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -134,6 +134,35 @@ LOCK TABLES `fixedmod` WRITE;
 INSERT INTO `fixedmod` VALUES (1,'环评咨询','/huili/include/home.php','icon-gear'),(2,'环境工程','/huili/include/home.php','icon-truck'),(4,'环境监测','/huili/include/home.php','icon-flask'),(8,'项目验收','/huili/include/home.php','icon-pagelines'),(16,'清洁生产','/huili/include/home.php','icon-recycle'),(32,'危废服务','/huili/include/home.php','icon-fire'),(64,'应急预案','/huili/include/home.php','icon-calendar-check-o'),(128,'排污申报','/huili/include/home.php','icon-pencil'),(256,'企业名录','/huili/include/home.php','icon-book'),(512,'环境案例','/huili/include/home.php','icon-snapchat-ghost'),(1024,'技术动态','/huili/include/home.php','icon-joomla'),(2048,'环境法规','/huili/include/home.php','icon-wpforms'),(4096,'资料下载','/huili/include/home.php','icon-download'),(8192,'专家团队','/huili/include/home.php','icon-group'),(16384,'监控平台','/huili/include/home.php','icon-desktop'),(32768,'交流互动','/huili/include/home.php','icon-cchat');
 /*!40000 ALTER TABLE `fixedmod` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `security`
+--
+
+DROP TABLE IF EXISTS `security`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `security` (
+  `uid` int(32) unsigned NOT NULL COMMENT '用户id',
+  `lastlog` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最后登录时间',
+  `signed` int(8) unsigned DEFAULT NULL COMMENT '签到',
+  `lgip` varchar(32) NOT NULL COMMENT '登录ip',
+  `lgsys` varchar(32) NOT NULL COMMENT '登录端系统',
+  `lgbrow` varchar(32) NOT NULL COMMENT '浏览器',
+  `trust` int(8) NOT NULL COMMENT '设备可信',
+  `perm` int(8) NOT NULL COMMENT '权限',
+  KEY `uid` (`uid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `security`
+--
+
+LOCK TABLES `security` WRITE;
+/*!40000 ALTER TABLE `security` DISABLE KEYS */;
+/*!40000 ALTER TABLE `security` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -144,4 +173,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-18 10:47:16
+-- Dump completed on 2018-06-25  0:29:53
