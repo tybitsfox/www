@@ -8,6 +8,8 @@
 $j=count($SIGNED_DEF['PROFILE']);
 for($i=0;$i<$j;$i++)
 {
+	if(($i == 7) && ($_SESSION['CURR_USR'][0] > 100001))
+		continue;
 	$st=sprintf("<li><a href='%s'>%s<i class='%s'></i></a></li>\n",$SIGNED_DEF['PROFILE'][$i][0],$SIGNED_DEF['PROFILE'][$i][1],$SIGNED_DEF['PROFILE'][$i][2]);
 	echo $st;
 }
@@ -19,19 +21,19 @@ for($i=0;$i<$j;$i++)
 		$st1="<div class='form-group'>\n
               <label class='col-sm-4 control-label'>输入原密码</label>\n
               <div class='col-sm-8'>\n
-                <input type='password' name='curpwd' id='curpwd' class='form-control' autocomplete='current-password' required />\n
+                <input type='password' name='curpwd' id='curpwd' class='form-control' placeholder='原密码' required />\n
               </div>\n
             </div>\n
             <div class='form-group form-delimited'>\n
               <label class='col-sm-4 control-label'>输入新密码</label>\n
               <div class='col-sm-8'>\n
-                <input type='password' name='newpwd' id='newpwd'  class='form-control' autocomplete='new-password' required/>\n
+                <input type='password' name='newpwd' id='newpwd'  class='form-control' placeholder='新密码' required autocomplete='off' pattern='(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*()+=?_-])(?=.*[0-9]).{8,32}' title='密码必须包含大小写字母、数字以及特殊符号例如：(!@$&*)' required/>\n
               </div>\n
             </div>\n
             <div class='form-group'>\n
               <label class='col-sm-4 control-label'>确认新密码</label>\n
               <div class='col-sm-8'>\n
-                <input type='password' name='cfmpwd' id='cfmpwd' class='form-control' autocomplete='new-password' required/>\n
+                <input type='password' name='cfmpwd' id='cfmpwd' class='form-control' placeholder='确认新密码' required/>\n
               </div>\n
             </div>\n
             <div class='foot'>\n

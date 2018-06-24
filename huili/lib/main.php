@@ -122,7 +122,7 @@ class loginn implements inter_sign
 		$str3=substr($this->usr,0,strpos($this->usr,'@'));//uname
 		$str4=date("Y-m-d H:i:s",time());
 		$ay=array($uid,$this->usr,$str3,$str1,$str2,1,0,'',0,0,$str4,$str4);
-		$this->conn=sprintf("INSERT INTO auth(uid,email,uname,pwd,priv,lvl,sex,expr,coin,treasure,lastlogin,signup) VALUES(%d,'%s','%s','%s',%d,1,0,'',0,0,now(),now())",$uid,$this->usr,$str3,$str1,$str2);
+		$this->conn=sprintf("INSERT INTO auth(uid,email,uname,pwd,priv,lvl,sex,expr,coin,treasure,lastlogin,signup) VALUES(%d,'%s','%s','%s',%d,1,0,0,0,0,now(),now())",$uid,$this->usr,$str3,$str1,$str2);
 		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
 		if(mysqli_connect_errno())
 			return 5; //connect error

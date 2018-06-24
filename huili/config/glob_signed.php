@@ -42,6 +42,7 @@ $SIGNED_DEF['PROFILE']	=	array(
 		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV'],"我的合作","icon-earth"),
 		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['SIX'],"安全","icon-shield"),
 		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['SEV'],"分享","icon-finder"),
+		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN'],"管理","icon-gear"),
 		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['EIG'],"退出帐号","icon-exit"));
 //下面这个队列变量，将来要被数据库中的数据替代，用户选择的功能从数据库中读取，并显示出来
 //子队列元素依次为：链接、链接名称、class、id、图标class

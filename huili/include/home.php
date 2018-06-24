@@ -28,8 +28,6 @@ if(isset($_POST['upmodule']))
 			$sb=array($_SESSION['CURR_USR'][0],$j,$SIGNED_DEF['MODULE'][$j][3],$SIGNED_DEF['MODULE'][$j][1],$SIGNED_DEF['MODULE'][$j][0],$SIGNED_DEF['MODULE'][$j][2],$SIGNED_DEF['MODULE'][$j][4]);
 			$ta->add_db($sb);
 		}
-//		unset($ta);
-//		unset($sa);
 	}
 }
 $ta=new tb_choose();
@@ -139,6 +137,9 @@ else
 		break;
 	case $SIGNED_PAGE['SEV']:
 		include_once('./setting_share.php');
+		break;
+	case $SIGNED_PAGE['NIN']:
+		include_once('./setting_admin.php');
 		break;
 	case $SIGNED_PAGE['EIG']:
 		unset($_SESSION['CURR_USR']);
