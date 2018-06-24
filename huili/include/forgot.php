@@ -18,7 +18,9 @@ $s1=sprintf($OUT_HTML['LOGIN_BODY_1g'],constant("WORK_PLACE")."include/forgot.ph
 echo $s1;
 if(isset($_POST['email']))
 {//这里要添加邮件发送代码
-	echo $OUT_HTML['FORGOT_AFTER'];
+	//echo $OUT_HTML['FORGOT_AFTER'];
+	$svv=sprintf($OUT_HTML['FORGOT_AFTER'],$_POST['email']);
+	echo $svv;
 }
 else
 	echo $OUT_HTML['FORGOT_BODY_1l'];

@@ -15,6 +15,7 @@ $SIGNED_PAGE['FIV']		=	md5('collaborate');
 $SIGNED_PAGE['SIX']		=	md5('security');
 $SIGNED_PAGE['SEV']		=	md5('share');
 $SIGNED_PAGE['EIG']		=	md5('signout');
+$SIGNED_PAGE['NIN']		=	md5('administrator');
 $SIGNED_PAGE['ADD']		=	md5('adding');
 $SIGNED_PAGE['GJ1']		=	md5('zixun');
 $SIGNED_PAGE['GJ2']		=	md5('gongcheng');
@@ -71,12 +72,12 @@ $SIGNED_DEF['MODULE']	= array(
 $SIGNED_DEF['PICTO_PNG']	=	constant('WORK_PLACE')."images/logo/picto-empty.png";
 $SIGNED_DEF['TOP_TEXT1']	=	"我们还没同步您的关注的业务模块<br>请在此选择您感兴趣的业务模块以加入到关注中";
 //{{{wrapper&head
-$SIG_HTML['WRAP']	=	"<div id='wrapper' class='l-content-wrapper-sticky-footer'><div><div class='alert-offset-side'><!--react-empty: 2--></div></div><div class='mobile-bar'><div class='logobox'><a href='".$SIGNED_DEF['HOME_LINK']."'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></a></div><div class='mobile-menu'><button type='button' class='navbar-toggle'><span class='sr-only'>".$SIGNED_DEF['WRAP_TIL1']."</span><span class='title'>".$SIGNED_DEF['WRAP_TIL2']."</span><span class='bars'><span class='icon-bar icon-bar1'></span><span class='icon-bar icon-bar2'></span><span class='icon-bar icon-bar3'></span></span></button></div></div>";
+$SIG_HTML['WRAP']	=	"<div id='wrapper' class='l-content-wrapper-sticky-footer'><div><div class='alert-offset-side'><!--react-empty: 2--></div></div><div class='mobile-bar'><div class='logobox'><a href='".$SIGNED_DEF['LINK']."'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></a></div><div class='mobile-menu'><button type='button' class='navbar-toggle'><span class='sr-only'>".$SIGNED_DEF['WRAP_TIL1']."</span><span class='title'>".$SIGNED_DEF['WRAP_TIL2']."</span><span class='bars'><span class='icon-bar icon-bar1'></span><span class='icon-bar icon-bar2'></span><span class='icon-bar icon-bar3'></span></span></button></div></div>";
 //}}}
 //{{{LEFT_TOP	RIGHT_TOP MODULE_ADD
 $s1=strtoupper(substr($SIGNED_DEF['USER_NAME'],0,1));
 //左边导航栏logo及个人设置链接显示代码
-$SIG_HTML['LEFT_TOP1']	=	"<section class='side' id='sidebar'><!-- Header --><a href='".$SIGNED_DEF['HOME_LINK']."'><div class='side-head'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></div></a><!-- User Menu --><div class='side-user'><div class='dropdown'><a href='".$SIGNED_DEF['DASHBOARD'][0][0]."' class='".$SIGNED_DEF['DASHBOARD'][0][2]."'><div class='usercircle'>%s</div><strong> %s</strong><br/></a></div></div><!-- Navigation --><nav>";
+$SIG_HTML['LEFT_TOP1']	=	"<section class='side' id='sidebar'><!-- Header --><a href='".$SIGNED_DEF['LINK']."'><div class='side-head'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></div></a><!-- User Menu --><div class='side-user'><div class='dropdown'><a href='".$SIGNED_DEF['DASHBOARD'][0][0]."' class='".$SIGNED_DEF['DASHBOARD'][0][2]."'><div class='usercircle'>%s</div><strong> %s</strong><br/></a></div></div><!-- Navigation --><nav>";
 //左边总导航栏显示代码
 $SIG_HTML['LEFT_TOP2'] = "<ul class='list-unstyled list-nav left-nav'><li><a id='chlink00' class='".$SIGNED_DEF['DASHBOARD'][1][2]."' href='".$SIGNED_DEF['DASHBOARD'][1][0]."'>".$SIGNED_DEF['DASHBOARD'][1][1]."</a></li>";
 //左边已选择模块及模块添加链接显示代码
@@ -109,7 +110,7 @@ $SIG_HTML['PROFILE1']	=	"
       <li><a href='/app/settings/developer'>分享<i class='icon-finder'></i></a></li>\n
       <li><a href='/auth/signout'>退出账户<i class='icon-exit'></i></a></li>\n
     </ul>\n";
-$SIG_HTML['LEFT_MENU']	=	"<section class='side'><a href='".$SIGNED_DEF['HOME_LINK']."'><div class='side-head'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></div></a><div class='side-user'>\n<div class='dropdown'>\n<a href='".$SIGNED_DEF['LMENU_LINK1']."' class='btn'>\n<div class='usercircle'>T</div>\n<strong>".$SIGNED_DEF['USER_NAME']."</strong><br/>\n</a>\n</div>\n</div>\n<nav>\n<div class='addmerchant'>\n<a href='".$SIGNED_DEF['HOME_LINK']."' class='btn btn-text withfronticon'><i class='icon-arrow'></i>返回导航栏</a>\n</div>\n
+$SIG_HTML['LEFT_MENU']	=	"<section class='side'><a href='".$SIGNED_DEF['LINK']."'><div class='side-head'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></div></a><div class='side-user'>\n<div class='dropdown'>\n<a href='".$SIGNED_DEF['LMENU_LINK1']."' class='btn'>\n<div class='usercircle'>T</div>\n<strong>".$SIGNED_DEF['USER_NAME']."</strong><br/>\n</a>\n</div>\n</div>\n<nav>\n<div class='addmerchant'>\n<a href='".$SIGNED_DEF['LINK']."' class='btn btn-text withfronticon'><i class='icon-arrow'></i>返回导航栏</a>\n</div>\n
 	<ul class='list-unstyled list-nav'>\n
 	  <li><a href='/app/settings/profile'>个人信息</a></li>\n
       <li><a href='/app/settings/password'>密码</a></li>\n

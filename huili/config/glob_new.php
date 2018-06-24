@@ -21,7 +21,8 @@ if(!defined("WORK_PLACE"))
 	define("DB_SET",constant("FULL_PATH")."config/db_set.php");
 }
 require_once(constant("DB_SET"));
-$s1="<!DOCTYPE html>\n<html><head><meta charset='UTF-8' />\n<meta name='viewport' content='width=device-width, initial-scale=1.0'>\n<title>".$GLOB_DEF['TITLE']."</title>\n";
+$GLB_TITLE	=	"山东汇氏集团-汇氏管家";
+$s1="<!DOCTYPE html>\n<html><head><meta charset='UTF-8' />\n<meta name='viewport' content='width=device-width, initial-scale=1.0'>\n<title>".$GLB_TITLE."</title>\n";
 $s2="<link rel='stylesheet' href='".constant('CSS_FONT')."'>\n<link rel='stylesheet' href='".constant("CSS_LOG")."'>";
 $s3="<script src='".constant("JS_FILEA")."'></script>\n<script src='".constant("JS_FILEB")."'></script>\n";
 $s4="<link rel='stylesheet' href='".constant('CSS_FONT')."'>\n<link rel='stylesheet' href='".constant("CSS_MAIN")."'>";

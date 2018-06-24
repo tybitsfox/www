@@ -9,6 +9,20 @@
  **/
 ?>
 <?php
+if(isset($_POST['trusted']) && isset($_POST['password']) && isset($_POST['new-password']) && isset($_POST['email-name']))
+{
+	if(strcmp($_POST['new-password'],$_POST['password']) == 0)
+	{
+		if(count($_POST['trusted']))
+		{
+			$i=30*24*60*60;
+			setcookie("huili_lgname",$_POST['email-name'],time()+$i);
+			setcookie("huili_lgpwd",base64_encode($_POST['password']),time()+$i);
+		}
+	}
+}
+?>
+<?php
 if(!defined("FULL_PATH"))
 	define("FULL_PATH",substr(dirname(__FILE__),0,strlen(dirname(__FILE__))-strlen(strstr(dirname(__FILE__),"huili")))."huili".DIRECTORY_SEPARATOR);
 require_once(constant("FULL_PATH")."config/glob_new.php");
@@ -36,6 +50,7 @@ if(isset($_POST['new-password']))
 	}
 	else
 	{
+
 		$a=new loginn($_POST['email-name'],$_POST['new-password']);
 		$j=$a->signup();
 		if($j > 0)
@@ -58,7 +73,9 @@ else
 		if(isset($_POST['email']))
 		{//这里是用户输入注册邮箱并点击确定后，邮件的发送提醒界面代码
 			$v=new mixer();
-			echo $OUT_HTML['REG_AFTER'];
+			//echo $OUT_HTML['REG_AFTER'];
+			$svv=sprintf($OUT_HTML['REG_AFTER'],$_POST['email']);
+			echo $svv;
 			$handle=fopen($GLOB_DEF['EMAIL'],"r");
 			$needle=$v->get_nedle();
 			while(!feof($handle))

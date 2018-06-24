@@ -10,7 +10,7 @@
 ?>
 <?php
 //{{{ 变量定义
-$GLOB_DEF['TITLE']	=	"山东汇氏集团-汇氏管家";
+//$GLOB_DEF['TITLE']	=	"山东汇氏集团-汇氏管家";
 $GLOB_DEF['IDX']	=	constant("WORK_PLACE")."index.php";
 $GLOB_DEF['LOGO']	=	constant("WORK_PLACE")."images/logo/logo.png5.png";
 $GLOB_DEF['LOGO_ALT']	=	"huishi group";
@@ -67,6 +67,7 @@ $GLOB_DEF['ENGIN_TITLE_3']	=	"汇氏管家随时为您解决环境问题";
 $GLOB_DEF['ENGIN_TITLE_4']	=	"了解更多";
 $GLOB_DEF['ENGIN_TITLE_IMG']	=	"/huili/images/logo/img-arrow-large.png";
 $GLOB_DEF['ENGIN_MSG_1']	=	"汇氏管家提供专业的服务";
+$GLOB_DEF['ENGIN_MSG_2']	=	"";
 $GLOB_DEF['ENGIN_MSG_3']	=	"如果您是一位环境方面的专家或者是一位富有经验的环境工作者，我们期待您的加入";
 $GLOB_DEF['ENGIN_MSG_4']	=	"联系我们";
 $GLOB_DEF['ENGIN_MSG_5']	=	"我们为您提供一个施展才华的平台.";
@@ -115,9 +116,9 @@ $s1="<body class='loginpage'><div class='bg'><div class='loginbox'><form class='
 $s2="<div class='form-login form-box'><div class='side-head'><a href='".$GLOB_DEF['IDX']."'><img class='logo' src='".$GLOB_DEF['LOGO']."' alt='".$GLOB_DEF['LOGO_ALT']."'></a></div>\n";
 $OUT_HTML['LOGIN_BODY_1g']	=	$s1.$s2;	//需要指定action.
 //$OUT_HTML['LOGIN_BODY_ERR']	=	"<div class='alert alert-danger' role='alert'>%s</div>"; 这里并不需要，错误提示的实现在login类中完成。
-$s1="<div class='form-group'><label>邮箱</label><div class='form-suffix'><span class='icon-envelope picto'></span><input id='email' type='email' class='form-control first' name='email' value='' placeholder='Email' autocorrect='off' required pattern='^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$' title='请输入有效的电子邮件地址' /></div></div>\n";
-$s2="<div class='form-group'><label>密码</label><div class='form-suffix'><span class='icon-key picto'></span><input id='password' type='password' class='form-control last' name='password' value='' placeholder='Password' autocomplete='current-password' required /></div></div>\n";
-$s3="<div class='form-group form-twocols'><div class='pass-reset'><a href='./forgot.php' class='btn-text'>是不是忘记密码了?</a></div></div>\n";
+$s1="<div class='form-group'><label>邮箱</label><div class='form-suffix'><span class='icon-envelope picto'></span><input id='email' type='email' class='form-control first' name='email' value='%s' placeholder='Email' autocorrect='off' required pattern='^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$' title='请输入有效的电子邮件地址' /></div></div>\n";
+$s2="<div class='form-group'><label>密码</label><div class='form-suffix'><span class='icon-key picto'></span><input id='password' type='password' class='form-control last' name='password' value='%s' placeholder='Password' autocomplete='current-password' required /></div></div>\n";
+$s3="<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' id='trusted' name='trusted' %s data-ninja-checkbox>相信此设备</label></div><div class='pass-reset'>  <a href='./forgot.php' class='btn-text'>是不是忘记密码了?</a></div></div>\n";
 $s4="<div class='form-group'><button type='submit' href='#' class='btn btn-primary btn-fat btn-block'>登 录</button></div>\n";
 $s5="<div class='form-group form-out'><p>您还没有帐号? <a href='./signup.php' class='btn-text'>注 册</a></p></div>\n";
 $OUT_HTML['LOGIN_BODY_2l']	=	$s1.$s2.$s3.$s4.$s5;	//仅登录界面使用
@@ -128,7 +129,7 @@ $s2="<div class='form-group'><label>Email</label><div class='form-suffix'><span 
 $s3="<div class='form-group'><button href='#' type='submit' class='btn btn-primary btn-block btn-fat'>开始注册</button></div>";
 $s4="<p class='intro'>汇氏管家，品质服务的保证.</p><div class='form-group form-out text-center'><p>您已经拥有帐号? 请选择：<a href='./login.php' class='btn-text'>登 录</a></p></div>";
 $OUT_HTML['REG_NORMAL']	= $s1.$s2.$s3.$s4;
-$OUT_HTML['REG_AFTER']	= "<h5>注册马上完成!</h5><p class='intro'>我们给<strong>".$_POST["email"]."</strong>.发送了一封邮件，请查阅您的邮箱以完成注册.如果您的邮箱设置了过滤机制，请检查垃圾邮件目录下是否有我们的信件.</p></div>";
+$OUT_HTML['REG_AFTER']	= "<h5>注册马上完成!</h5><p class='intro'>我们给<strong>%s</strong>.发送了一封邮件，请查阅您的邮箱以完成注册.如果您的邮箱设置了过滤机制，请检查垃圾邮件目录下是否有我们的信件.</p></div>";
 $OUT_HTML['VERF_BODY_1l']	=	preg_replace("/form-login/","form-signup",$OUT_HTML['LOGIN_BODY_1g']);
 $s1="<p class='intro'>注册邮箱：<strong>%s</strong></p><div class='form-group'><label>Name</label><div class='form-suffix'><span class='icon-lock picto'></span><input id='name' type='password' class='form-control first' placeholder='输入密码' name='new-password' value='' required title='密码必须包含大小写字母、数字以及特殊符号例如：(!@$&*)' /><input type='hidden' name='email-name' value='%s' /></div></div>";
 $s2="<div class='form-group'><label>Password</label><div class='form-suffix'><span class='icon-lock picto'></span><input id='password' type='password' class='form-control last' name='password' value='' placeholder='确认密码' required autocomplete='off' pattern='(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*()+=?_-])(?=.*[0-9]).{8,32}' title='密码必须包含大小写字母、数字以及特殊符号例如：(!@$&*)' />";
@@ -138,7 +139,7 @@ $s5="<div class='form-group form-delimited'><button type='submit' class='btn btn
 $OUT_HTML['VERF_BODY_2l']	= $s1;		//需要指定邮箱名称
 $OUT_HTML['VERF_BODY_3l']	= $s2.$s3.$s4.$s5;
 $OUT_HTML['FORGOT_BODY_1l']	=	"<h5>忘记密码了?</h5>\n<p class='intro'>我们将发送一个重置密码的链接到您的邮箱.</p>\n<div class='form-group'>\n<label>邮箱地址</label><div class='form-suffix'>\n<span class='icon-envelope picto'></span><input type='email' class='form-control' name='email' value='' placeholder='Email' required pattern='^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$' title='请输入有效的电子邮件地址' />\n</div></div><div class='form-group'><button class='btn btn-primary btn-fat btn-block'>重置密码</button></div>\n<div class='form-group form-out text-center'> <p>想起密码了? <a href='/huili/include/login.php' class='btn-text btn-backlogin'>登录</a></p></div>\n";
-$OUT_HTML['FORGOT_AFTER']	= "<h5>重置马上完成!</h5><p class='intro'>我们给<strong>".$_POST["email"]."</strong>.发送了一封邮件，请查阅您的邮箱以完成密码重置.如果您的邮箱设置了过滤机制，请检查垃圾邮件目录下是否有我们的信件.</p>";
+$OUT_HTML['FORGOT_AFTER']	= "<h5>重置马上完成!</h5><p class='intro'>我们给<strong>%s</strong>.发送了一封邮件，请查阅您的邮箱以完成密码重置.如果您的邮箱设置了过滤机制，请检查垃圾邮件目录下是否有我们的信件.</p>";
 //}}}
 //{{{下面定义的是总览界面（登录前）的html代码
 $EX_HTML['headbar1']	=	"<div class='mobile-bar'>\n<div class='logobox'>\n<a href='/huili/index.php' title='Huishi Home'>\n<img class='logo' src='/huili/images/logo/logo.png5.png' alt='Huishi'/>\n</a>\n</div>\n<div class='mobile-menu'>\n<button type='button' class='navbar-toggle btn-mobilemenu'>\n<span class='sr-only'>Toggle navigation</span>\n<span class='title'>菜单</span>\n<span class='bars'>\n<span class='icon-bar icon-bar1'></span>\n<span class='icon-bar icon-bar2'></span>\n<span class='icon-bar icon-bar3'></span>\n</span>\n</button>\n</div>\n</div>\n<div class='overlay'></div>\n<header class='header'>\n<nav class='navbar navbar-default'>\n<div class='container-fluid'>\n<div class='navbar-header'>\n<button type='button' class='navbar-toggle collapsed' data-toggle='collapse' data-target='#mobile-side' aria-expanded='false'>\n<span class='sr-only'>Toggle navigation</span>\n<span class='icon-bar'></span>\n<span class='icon-bar'></span>\n<span class='icon-bar'></span>\n</button>\n<a href='#' class='btn-closemenu'><i class='icon-x'></i></a>\n<a class='navbar-brand' href='/huili/index.php'><img src='/huili/images/logo/logo.png5.png' alt='Huishi'/></a>\n</div>";

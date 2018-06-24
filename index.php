@@ -72,13 +72,13 @@ mysqli_free_result($result);
 mysqli_close($conn);
 //echo "</td><td colspan=2 align=left valign=top><form name='form1' method='post' action='index.php'><table class='aaaa'><tr><td align=left width=100px><input type=hidden name=action value=search size=0>站内查询关键字：</td><td align=left width=160px><input type=text name=keyword size=20 /></td><td align=left><input type=submit value='查 询' /></td></tr><tr><td colspan=3>";
 echo "</td><td colspan=2 align=left valign=top><form name='form1' method='get' action='http://www.baidu.com/s' target=_blank><table class='aaaa'><tr><td align=left width=100px><input type=hidden name=action value=search size=0>站外搜索：</td><td align=left width=160px><input type=text name=word size=20 /></td><td align=left><input type=submit value='搜 索' />&nbsp;&nbsp;<input type=reset value='清空' /></td></tr><tr><td colspan=3>";
-if($_POST[action]=="search")
+/*if($_POST["action"]=="search")
 {
 	echo "查询结果：<br>";
 	$g=$_POST[keyword];
 	$msg=system("/var/www/sch $g",$ret);
 	//echo "$msg";
-}
+}*/
 echo "</td></tr></table></form> </td></tr></table>";
 echo "<a href='./chgmain_idx.php?usersel=old'>返回老版主页</a><br><br>";
 echo "<a href='./php-chunked-xhtml/index.html' target=_blank>PHP5手册</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./www.veryhuo.com/php/index.html>PHP4手册</a>";
