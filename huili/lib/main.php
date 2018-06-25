@@ -500,7 +500,16 @@ class tb_fixedmod extends signed_db
 			return 6;
 	}//}}}
 }//}}}
+//{{{class used_sign extends signed_db
+class used_sign extends signed_db
+{
+//{{{private function get_auth_secu($u)
+	private function get_auth_secu($u)
+	{
 
+	}//}}}
+
+}//}}}
 
 
 ?>
