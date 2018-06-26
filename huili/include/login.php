@@ -58,7 +58,14 @@ if(isset($_POST["email"]) && isset($_POST["password"]))
 	if($i)
 		$a->err_msg($i);
 	else
-		echo "<script>setTimeout(\"window.location='./home.php'\",2);</script>";
+	{
+		$ta=new used_sign();
+		$i=$ta->add_secu();
+		if($i == 0)
+			echo "<script>setTimeout(\"window.location='./home.php'\",2);</script>";
+		else
+			die($ta->err_msg($i));
+	}
 }
 //echo $OUT_HTML['LOGIN_BODY_2l'];
 $s1=sprintf($OUT_HTML['LOGIN_BODY_2l'],$cookname,$cookpwd,$cookchk);

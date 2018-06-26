@@ -501,14 +501,149 @@ class tb_fixedmod extends signed_db
 	}//}}}
 }//}}}
 //{{{class used_sign extends signed_db
+//登录用户的信息:uid(0),email(1),uname(2),pwd(3),priv(4),lvl(5),sex(6),expr(7),coin(8),treasure(9),signup(11),lastlogin(10)
+//security:uid(0),lastlog(1),signed(2),lgip(3),lgsys(4),lgbrow(5),trust(6),perm(7)
 class used_sign extends signed_db
 {
-//{{{private function get_auth_secu($u)
-	private function get_auth_secu($u)
+//{{{private function get_secu()
+	private function get_secu()
 	{
-
+		$_SESSION['USR_AGENT']=array();
+		$trust=0; //设备不可信
+		$perm=0;
+//		$conn="SELECT lastlog FROM security WHERE uid = ".$_SESSION['CURR_USR'][0]." ORDER BY lastlog DESC LIMIT 1";
+		if(isset($_COOKIE['huili_lgpwd']))
+		{
+			$trust=1;
+			$perm=7; //1: read ,2:write,3:local
+		}
+		$ds=date("y-m-d",$_SESSION['CURR_USR'][11]);
+		$dn=date("y-m-d",time());
+		if($dn > $ds)
+			$sig=0; //已经签到
+		else
+			$sig=1; //没有签到
+		$ay=array();
+		$ay=$this->get_agent();
+		$by=array($_SESSION['CURR_USR'][0],time(),$sig,$ay[2],$ay[0],$ay[1],$trust,$perm);
+		$_SESSION['USR_AGENT']=$by;
+		return $by;
+	}//}}}
+//{{{private function get_agent()
+	private function get_agent()
+	{
+		$ay=array();
+		$sname="";
+		$s=$_SERVER['HTTP_USER_AGENT'];
+		if(preg_match("/win/i",$s))
+		{//windows
+			if(preg_match("/nt 6.1/i",$s))
+				$sname="windows 7";
+			elseif(preg_match("/nt 10.0/i",$s))
+				$sname="windows 10";
+			elseif(preg_match("/nt 5.1/i",$s))
+				$sname="windows xp";
+			elseif(preg_match("/nt 6.2/i",$s))
+				$sname="windows 8";
+			elseif(preg_match("/nt 6.3/i",$s))
+				$sname="windows 2012";
+			else
+				$sname="老版本windows系统";
+		}
+		elseif(preg_match("/linux/i",$s))
+			$sname="GNU/linux操作系统";
+		elseif(preg_match("/android/i",$s))
+			$sname="Android系统";
+		elseif(preg_match("/ios/i",$s))
+			$sname="IOS系统";
+		elseif(preg_match("/mac/i",$s))
+			$sname="Mac操作系统";
+		elseif(preg_match("/unix/i",$s))
+			$sname="Unix操作系统";
+		elseif(preg_match("/bsd/i",$s))
+			$sname="Free/Net/OpenBSD操作系统";
+		else
+			$sname="其他操作系统";
+		$sbrower="未知浏览器";
+		if(preg_match("/msie/i",$s))
+			$sbrower="MSIE";
+		elseif(preg_match("/firefox/i",$s))
+			$sbrower="Firefox";
+		elseif(preg_match("/chrome/i",$s))
+			$sbrower="Chrome";
+		elseif(preg_match("/safari/i"))
+			$sbrower="Safari";
+		elseif(preg_match("/opera/i"))
+			$sbrower="Opera";
+		else
+			$sbrower="Other";
+		$ay[0]=$sname;$ay[1]=$sbrower;
+		$s=$_SERVER['REMOTE_ADDR'];
+		if(preg_match("/:/",$s))
+			$ay[2]="localhost";
+		else
+			$ay[2]=$s;
+		return $ay;
+	}//}}}
+//{{{public function update_auth()
+	public function update_auth()
+	{
+		$i=$this->check_it();
+		if($i != 0)
+			return $i;
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
+		if(mysqli_connect_errno())
+			return 2; //connect error
+		mysqli_set_charset($mysqli,"utf8");
+		$conn="UPDATE auth set lastlogin = now(),coin = coin+1 WHERE uid = ".$_SESSION['CURR_USR'][0];
+//		$conn=sprintf("UPDATE auth set lastlogin = %d,coin = coin+1 WHERE uid = %d",$_SESSION['CURR_USR'][0]);
+		$res=mysqli_query($mysqli,$conn);
+		mysqli_close($mysqli);
+		if($res == TRUE)
+			return 0;//success
+		else
+			return 1;//update error
+	}//}}}
+//{{{public function add_secu($a) 添加登录信息表（security）记录
+	public function add_secu()
+	{
+		$i=$this->check_it();
+		if($i != 0)
+			return $i;
+		$a=array();
+		$a=$this->get_secu();
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
+		if(mysqli_connect_errno())
+			return 2; //connect error
+		mysqli_set_charset($mysqli,"utf8");
+		$conn=sprintf("INSERT INTO security(uid,lastlog,signed,lgip,lgsys,lgbrow,trust,perm) VALUES(%d,now(),%d,'%s','%s','%s',%d,%d)",$a[0],$a[2],$a[3],$a[4],$a[5],$a[6],$a[7]);
+		$res=mysqli_query($mysqli,$conn);
+		mysqli_close($mysqli);
+		if($res == TRUE)
+			return 0;
+		else
+			return 5;//保存用户登录信息失败！
 	}//}}}
 
+//{{{public function err_msg($errno)
+	public function err_msg($errno)
+	{
+		switch($errno)
+		{
+		case 0:
+			return "成功!";
+		case 1://
+			return "更新用户基本信息失败";
+		case 2://
+			return "连接数据库失败";
+		case 3://
+			return "待保存的数据格式错误";
+		case 4://
+			return "选择的年份没有数据";
+		case 5://
+			return "保存用户登录信息失败";
+		}
+	}//}}}
 }//}}}
 
 
