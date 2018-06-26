@@ -501,11 +501,11 @@ class tb_fixedmod extends signed_db
 	}//}}}
 }//}}}
 //{{{class used_sign extends signed_db
-//登录用户的信息:uid(0),email(1),uname(2),pwd(3),priv(4),lvl(5),sex(6),expr(7),coin(8),treasure(9),signup(11),lastlogin(10)
+//登录用户的信息:uid(0),email(1),uname(2),pwd(3),priv(4),lvl(5),sex(6),expr(7),coin(8),treasure(9),signup(10),lastlogin(11)
 //security:uid(0),lastlog(1),signed(2),lgip(3),lgsys(4),lgbrow(5),trust(6),perm(7)
 class used_sign extends signed_db
 {
-//{{{private function get_secu()
+//{{{private function get_secu() 由当前会话信息生成的将要保存的信息
 	private function get_secu()
 	{
 		$_SESSION['USR_AGENT']=array();
@@ -519,7 +519,7 @@ class used_sign extends signed_db
 		}
 		$ds=date("y-m-d",$_SESSION['CURR_USR'][11]);
 		$dn=date("y-m-d",time());
-		if($dn > $ds)
+		if($dn <= $ds)
 			$sig=0; //已经签到
 		else
 			$sig=1; //没有签到
@@ -550,10 +550,10 @@ class used_sign extends signed_db
 			else
 				$sname="老版本windows系统";
 		}
-		elseif(preg_match("/linux/i",$s))
-			$sname="GNU/linux操作系统";
 		elseif(preg_match("/android/i",$s))
 			$sname="Android系统";
+		elseif(preg_match("/linux/i",$s))
+			$sname="GNU/linux操作系统";
 		elseif(preg_match("/ios/i",$s))
 			$sname="IOS系统";
 		elseif(preg_match("/mac/i",$s))
@@ -585,7 +585,7 @@ class used_sign extends signed_db
 			$ay[2]=$s;
 		return $ay;
 	}//}}}
-//{{{public function update_auth()
+//{{{public function update_auth() 更新auth表的函数
 	public function update_auth()
 	{
 		$i=$this->check_it();
@@ -595,8 +595,8 @@ class used_sign extends signed_db
 		if(mysqli_connect_errno())
 			return 2; //connect error
 		mysqli_set_charset($mysqli,"utf8");
-		$conn="UPDATE auth set lastlogin = now(),coin = coin+1 WHERE uid = ".$_SESSION['CURR_USR'][0];
-//		$conn=sprintf("UPDATE auth set lastlogin = %d,coin = coin+1 WHERE uid = %d",$_SESSION['CURR_USR'][0]);
+		$conn="UPDATE auth set lastlogin = '".date("Y-m-d H:i:s",$_SESSION['USR_AGENT'][1])."',coin = coin+1 WHERE uid = ".$_SESSION['CURR_USR'][0];
+//		$conn="UPDATE auth set lastlogin = now(),coin = coin+1 WHERE uid = ".$_SESSION['CURR_USR'][0];
 		$res=mysqli_query($mysqli,$conn);
 		mysqli_close($mysqli);
 		if($res == TRUE)
@@ -623,6 +623,25 @@ class used_sign extends signed_db
 			return 0;
 		else
 			return 5;//保存用户登录信息失败！
+	}//}}}
+//{{{public function get_secu_from_db() 从数据库中取得的用于在安全页面显示的4条记录函数
+	public function get_secu_from_db()
+	{
+		$ay=array();
+		$i=$this->check_it();
+		if($i != 0)
+			return $ay;
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
+		if(mysqli_connect_errno())
+			return $ay; //connect error
+		mysqli_set_charset($mysqli,"utf8");
+		$conn="SELECT * FROM security WHERE uid = ".$_SESSION['CURR_USR'][0]." ORDER BY lastlog DESC LIMIT 4";
+		$res=mysqli_query($mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($mysqli);
+		return $ay;
 	}//}}}
 
 //{{{public function err_msg($errno)

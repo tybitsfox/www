@@ -34,6 +34,7 @@ $SIGNED_PAGE['GJ14']		=	md5('zhuanjia');
 $SIGNED_PAGE['GJ15']		=	md5('pingtai');
 $SIGNED_PAGE['GJ16']		=	md5('weibo');
 $SIGNED_PAGE['UPD']		=	md5('update');
+$SIGNED_PAGE['THRR']	=	md5('qiandao');
 
 $SIGNED_DEF['PROFILE']	=	array(
 		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['ONE'],"个人信息","icon-address-book"),

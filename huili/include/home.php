@@ -124,6 +124,7 @@ else
 		include_once('./setting_pwd.php');
 		break;
 	case $SIGNED_PAGE['THR']:
+	case $SIGNED_PAGE['THRR']:
 		include_once('./setting_account.php');
 		break;
 	case $SIGNED_PAGE['FUR']:

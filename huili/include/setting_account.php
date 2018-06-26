@@ -1,4 +1,17 @@
 <?php
+if(isset($_GET['select']) && ($_GET['select'] == $SIGNED_PAGE['THRR']))
+{
+	$ta=new used_sign();
+	$i=$ta->update_auth();
+	if($i == 0)
+	{
+		$_SESSION['CURR_USR'][11]=date("Y-m-d H:i:s",$_SESSION['USR_AGENT'][1]);
+		$_SESSION['CURR_USR'][8]+=1;
+		$_SESSION['USR_AGENT'][2]=0;//已经签到
+	}
+}
+?>
+<?php
 		$st1=$_SESSION['CURR_USR'][2];
 		$st2=strtoupper(substr($st1,1,1));
 		$st=sprintf($SIG_HTML['LEFT_TOP1'],$st2,$st1);
@@ -29,7 +42,7 @@ for($i=0;$i<$j;$i++)
                     <p class='title'>等级</p>
                   </div>
                   <div class='account-info'>
-                    <p class='title'>13</p>
+                    <p class='title'>%d</p>
                   </div>
                 </li>
                 <li>
@@ -42,7 +55,7 @@ for($i=0;$i<$j;$i++)
                     <p class='title'>财富值</p>
                   </div>
                   <div class='account-info'>
-                    <p class='title'>187</p>
+                    <p class='title'>%d</p>
                   </div>
                 </li>
 				<li>
@@ -55,7 +68,7 @@ for($i=0;$i<$j;$i++)
                     <p class='title'>汇氏币</p>
                   </div>
                   <div class='account-info'>
-                    <p class='title'>200</p>
+                    <p class='title'>%d</p>
                   </div>
 				</li>
 				<li>
@@ -63,16 +76,16 @@ for($i=0;$i<$j;$i++)
                     <div class='vendor'>
                       <i class='icon-user'></i>
                     </div>
-                  </div>
- 	                <div class='account-action'>
-                   	  <a href='/app/accounts/6adgokW5xo/edit' class='btn btn-outline withlasticon'>签到<i class='icon-pencil'></i></a>
-                  	</div>
-				</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>";
-		echo $st1;
+                  </div> ";
+				  $st2=sprintf($st1,$_SESSION['CURR_USR'][5],$_SESSION['CURR_USR'][9],$_SESSION['CURR_USR'][8]);
+				  echo $st2;
+				  $st1="<div class='account-action'>
+                   	  <a href='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['THRR']."' class='btn %s btn-outline withlasticon'>%s<i class='icon-pencil'></i></a>
+                  	</div></li></ul></div></div></div></div>";
+				  if($_SESSION['USR_AGENT'][2] == 0)
+				  		$st2=sprintf($st1,"disabled","签到完成");
+				  else
+			  			$st2=sprintf($st1,"","签到");	  
+		echo $st2;
 		echo $SIG_HTML['RIGHT_TOP3'];
 ?>
