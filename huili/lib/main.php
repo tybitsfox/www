@@ -197,164 +197,17 @@ class loginn implements inter_sign
 	}//}}}
 
 }//}}}
-//{{{class tb_auth implements root_setting
-class tb_auth implements root_setting
-{
-	private $usr,$pwd,$db,$conn;
-//{{{public function __construct()
-	public function __construct()
-	{
-		if(!isset($_SESSION['CURRENT']))
-			$this->get_cur_year();
-	}//}}}
-//{{{public function __destruct()
-	public function __destruct()
-	{unset($this->user);unset($this->pwd);unset($this->db);unset($this->conn);}//}}}
-//{{{private function get_cur_year()
-	private function get_cur_year()
-	{
-		$ay=array();
-		$ay=getdate(time());
-		$_SESSION['CURRENT']=$ay['year'];
-	}//}}}
-//{{{private function check_it()
-	private function check_it()
-	{
-		global $DB_ADDR_TY,$DB_PORT_TY,$DB_NAME_TY,$DB_USER_TY,$DB_PWD_TY;
-		$i=intval($_SESSION['CURRENT']);
-		if(!isset($DB_ADDR_TY[$i]))
-			return 1; //选择的年份没有数据
-		$this->db=array();
-		array_push($this->db,$DB_ADDR_TY[$i]);
-		array_push($this->db,$DB_PORT_TY[$i]);
-		array_push($this->db,$DB_NAME_TY[$i]);
-		array_push($this->db,$DB_USER_TY[$i]);
-		array_push($this->db,$DB_PWD_TY[$i]);
-		return 0;//返回0为正确
-	}//}}}
-//{{{public function add($ay)
-	public function add($ay)
-	{
-		if(count($ay) != 9) //email,uname,pwd,priv,lvl,sex,expr,coin,treasure
-			return 5;		//添加记录的信息缺失
-		if(count($_SESSION['CURR_USR']) == 0)
-			return 2;		//需重新登录
-		$i=$this->check_it();
-		if($i != 0)
-			return $i;
-		$st1="SELECT * FROM auth WHERE email='".$ay[1]."'";
-		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
-		if(mysqli_connect_errno())
-			return 3; //连接数据库失败
-		$res=mysqli_query($mysqli,$st1);
-		$by=array();
-		while($row=mysqli_fetch_row($res))
-			array_push($by,$row);
-		mysqli_free_result($res);
-		mysqli_close($mysqli);
-		if(count($by) > 0)
-			return 4; //该邮箱已注册
-		$st1="SELECT uid FROM auth ORDER BY uid DESC LIMIT 1";
-		$by=array();
-		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
-		if(mysqli_connect_errno())
-			return 3; //连接数据库失败
-		$res=mysqli_query($mysqli,$st1);
-		while($row=mysqli_fetch_row($res))
-			array_push($by,$row);
-		mysqli_free_result($res);
-		mysqli_close($mysqli);
-		if(count($ay) == 0)
-			$uid=100000;
-		else
-			$uid=intval($by[0])+1;//get uid
-		$this->conn=fprintf("INSERT INTO auth(uid,email,uname,pwd,priv,lvl,sex,expr,coin,treasure,lastlogin,signup) VALUES(%d,'%s','%s','%s',%d,%d,%d,'%s',%d,%d,%d,%d)",$uid,$ay[0],$ay[1],$ay[2],$ay[3],$ay[4],$ay[5],$ay[6],$ay[7],$ay[8],time(),time());
-		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
-		if(mysqli_connect_errno())
-			return 3;//连接数据库失败
-		$res=mysqli_query($mysqli,$this->conn);
-		mysqli_close($mysqli);
-		if($res == TRUE)
-			return 0;	//success
-		else
-			return 6;	//记录添加失败！
-	}//}}}
-//{{{public function edit($ay)
-	public function edit($ay)
-	{//auth表只允许编辑：邮箱、密码、昵称！so～
-		if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 12))
-			return 2;//need relogin
-		$i=$this->check_it();
-		if($i != 0)
-			return $i;
-		switch(intval($ay[0]))
-		{//need ay's format: ay[0]=action code,ay[1] update for
-		case 0://uname
-			$st1="UPDATE auth SET uname = '".$ay[1]."' WHERE uid = ".$_SESSION['CURR_USR'][0];
-			break;
-		case 1://password
-			$st1="UPDATE auth SET pwd = '".md5($ay[1])."' WHERE uid = ".$_SESSION['CURR_USR'][0];
-			break;
-		case 2://email
-			$st1="UPDATE auth SET email = '".$ay[1]."' WHERE uid = ".$_SESSION['CURR_USR'][0];
-			break;
-		}
-		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
-		if(mysqli_connect_errno())
-			return 3;//connect error
-		$res=mysqli_query($mysqli,$st1);
-		mysqli_close($mysqli);
-		if($res == TRUE)
-			return 0;//success
-		else
-			return 6;//edit failure
-	}//}}}
-//{{{public function del($ay)
-	public function del($ay)
-	{//
-		echo "auth表的记录禁止被删除!";
-		return;
-	}//}}}
-//{{{public function err_msg($errno)
-	public function err_msg($errno)
-	{
-		switch($errno)
-		{
-		case 0:
-			break;
-		case 1://
-			echo "您选择的年份: ".$_SESSOIN['CURRENT']."年 没有数据.";
-			break;
-		case 2:
-			echo "您当前的操作没有权限，请重新登录";
-			break;
-		case 3:
-			echo "连接数据库失败";
-			break;
-		case 4:
-			echo "错误，该邮箱已被注册";
-			break;
-		case 5:
-			echo "待添加记录的信息不完善";
-			break;
-		case 6:
-			echo "添加记录失败！";
-			break;
-		default:
-			echo "error!";
-			break;
-		}
-	}//}}}
-}//}}}
+
 //{{{class signed_db	BASE CLASS
 class signed_db
 {
-	public $usr,$pwd,$db,$conn;
+	public $mysqli,$db,$err_no;
 //{{{public function __construct()
 	public function __construct()
 	{
 		if(!isset($_SESSION['CURRENT']))
 			$this->get_cur_year();
+		$this->err_no=$this->check_it();
 	}//}}}
 //{{{public function __destruct()
 	public function __destruct()
@@ -380,6 +233,20 @@ class signed_db
 		array_push($this->db,$DB_USER_TY[$i]);
 		array_push($this->db,$DB_PWD_TY[$i]);
 		return 0;//返回0为正确
+	}//}}}
+//{{{public function get_sqli()
+	public function get_sqli()
+	{
+		if($this->err_no)
+			return;
+		$this->mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
+		if(mysqli_connect_errno())
+		{
+			$this->err_no=1;
+			return; //connect error
+		}
+		mysqli_set_charset($this->mysqli,"utf8");
+		return;
 	}//}}}
 }//}}}
 //{{{class tb_choose extends signed_db
@@ -511,18 +378,18 @@ class used_sign extends signed_db
 		$_SESSION['USR_AGENT']=array();
 		$trust=0; //设备不可信
 		$perm=0;
-//		$conn="SELECT lastlog FROM security WHERE uid = ".$_SESSION['CURR_USR'][0]." ORDER BY lastlog DESC LIMIT 1";
 		if(isset($_COOKIE['huili_lgpwd']))
 		{
 			$trust=1;
 			$perm=7; //1: read ,2:write,3:local
 		}
-		$ds=date("y-m-d",$_SESSION['CURR_USR'][11]);
-		$dn=date("y-m-d",time());
-		if($dn <= $ds)
-			$sig=0; //已经签到
-		else
+		$ds=array();
+		$ds=explode(" ",$_SESSION['CURR_USR'][11]);
+		$dn=date("Y-m-d",time());
+		if($dn > $ds[0])
 			$sig=1; //没有签到
+		else
+			$sig=0; //已经签到
 		$ay=array();
 		$ay=$this->get_agent();
 		$by=array($_SESSION['CURR_USR'][0],time(),$sig,$ay[2],$ay[0],$ay[1],$trust,$perm);
@@ -591,16 +458,30 @@ class used_sign extends signed_db
 		$i=$this->check_it();
 		if($i != 0)
 			return $i;
+		$a=array();
+		$a=$this->get_secu();
+		if($a[2] == 0)//添加防止刷金币的代码
+			return 0;
 		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
 		if(mysqli_connect_errno())
 			return 2; //connect error
 		mysqli_set_charset($mysqli,"utf8");
-		$conn="UPDATE auth set lastlogin = '".date("Y-m-d H:i:s",$_SESSION['USR_AGENT'][1])."',coin = coin+1 WHERE uid = ".$_SESSION['CURR_USR'][0];
+		$exp=intval($_SESSION['CURR_USR'][7])+1;
+		$i=floor($exp/100)+1;
+		if($i > intval($_SESSION['CURR_USR'][5]))
+			$conn="UPDATE auth set lvl = ".$i.",expr = expr+1,coin = coin+1,lastlogin = '".date("Y-m-d H:i:s",$_SESSION['USR_AGENT'][1])."' WHERE uid = ".$_SESSION['CURR_USR'][0];
+		else
+			$conn="UPDATE auth set expr = expr+1,coin = coin+1,lastlogin = '".date("Y-m-d H:i:s",$_SESSION['USR_AGENT'][1])."' WHERE uid = ".$_SESSION['CURR_USR'][0];
 //		$conn="UPDATE auth set lastlogin = now(),coin = coin+1 WHERE uid = ".$_SESSION['CURR_USR'][0];
 		$res=mysqli_query($mysqli,$conn);
 		mysqli_close($mysqli);
 		if($res == TRUE)
+		{
+			if($i > intval($_SESSION['CURR_USR'][5]))
+				$_SESSION['CURR_USR'][5]=$i;
+			$_SESSION['curr_USR'][7]=$exp;
 			return 0;//success
+		}
 		else
 			return 1;//update error
 	}//}}}
@@ -664,6 +545,130 @@ class used_sign extends signed_db
 		}
 	}//}}}
 }//}}}
+//{{{class tb_invite extends signed_db 发送邀请所需数据库操作类
+class tb_invite extends signed_db
+{
+//{{{private function check_valid($e) 检查待邀请的邮箱的有效性，唯一性
+	private function check_valid($e)
+	{
+		if($this->err_no)
+			return;	//4 no data
+		if(!preg_match("/^(?:[a-z\d]+[_\-\+\.]?)*[a-z\d]+@(?:([a-z\d]+\-?)*[a-z\d]+\.)+([a-z]{2,})+$/i",$e))
+		{$this->err_no=11;return;} //11 format error
+		if($this->get_sqli())
+			return;//1 connect error
+		$conn="SELECT email FROM auth";
+		$ay=array();$i=0;
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+		{$ay[$i]=$row;$i+=1;}
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		foreach($ay as $a)
+		{
+			if($a == $e)
+			{$this->err_no=10;return;} //10 该邮箱已经注册
+		}
+		if($this->get_sqli())
+			return;//1 connect error
+		$conn="SELECT invemail FROM invite WHERE uid = ".$_SESSION['CURR_USR'][0];
+		$ay=array();$i=0;
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+		{$ay[$i]=$row;$i+=1;}
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		foreach($ay as $a)
+		{
+			if($a == $e)
+			{$this->err_no=12;return;} //12 该邮箱已经注册
+		}
+		$this->err_no=0;
+	}//}}}
+//{{{public function add_invite($u)
+	public function add_invite($u)
+	{
+		if($this->err_no)
+			return;
+		if(count($u) != 4)
+		{$this->err_no=2;return;} //2 参数错误
+		if($this->check_valid($u[1]))
+			return;
+		if($this->get_sqli())
+			return;
+		$conn=sprintf("INSERT INTO invite(uid,invemail,invbody,invited) VALUES (%d,'%s','%s',%d)",$u[0],$u[1],$u[2],$u[3]);
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == TRUE)
+			return;
+		else
+			$this->err_no=3;
+	}//}}}
+//{{{private function check_invite($e) 检查对方是否已经接受邀请
+	private function check_invite($e)
+	{
+		if($this->err_no)
+			return;
+		$conn="SELECT email FROM auth";
+		if($this->get_sqli())
+			return;
+		$ay=array();$i=0;
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+		{$ay[$i]=$row;$i+=1;}
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		foreach($ay as $a)
+		{
+			if($a == $e)
+				return;
+		}
+		$this->err_no=13;//还未接受邀请
+	}//}}}
 
+
+//{{{public function err_msg()
+	public function err_msg()
+	{
+		switch($this->err_no)
+		{
+		case 1:
+			return "连接数据库失败";
+		case 2:
+			return "参数错误！";
+		case 3:
+			return "添加记录失败";
+		case 4:
+			return "您选择的年份没有记录";
+		case 10:
+			return "邀请失败，该邮箱已经注册";
+		case 11:
+			return "您输入的不是有效的邮箱地址";
+		case 12:
+			return "该邮箱已经加入到您的邀请列表中";
+		case 13:
+			return "该邮箱尚未接受邀请";
+		}
+	}//}}}
+//{{{public function reset()  重置错误代码，重新调用相关函数，完成初始化
+	public function reset()
+	{
+		if(intval($this->err_no) >= 10)
+		{$this->err_no=0;return;}
+		switch($this->err_no)
+		{
+		case 1:
+			$this->get_sqli();
+			break;
+		case 2:
+		case 3:
+			$this->err_no=0;
+			break;
+		case 4:
+			$this->check_it();
+			break;
+		}
+	}//}}}
+}//}}}
 
 ?>
