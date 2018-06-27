@@ -1,4 +1,29 @@
 <?php
+$va=0;
+$str="";
+if(isset($_POST['email']) && isset($_POST['message']))
+{
+	$vb=$_POST['message']."欢迎访问汇氏管家";
+	$ay=array($_SESSION['CURR_USR'][0],$_POST['email'],$_POST['message'],0);
+	$ta=new tb_invite();
+	$ta->add_invite($ay);
+	if($ta->err_no)
+	{
+		$str=sprintf("<div class='alert alert-danger alert-inline' role='alert'>\n错误：%s</div>",$ta->err_msg($ta->err_no));
+		$va=1;
+	}
+	else
+	{//发送邮件
+		$mailcontent=$vb;
+		$mailtype="TXT";
+		$smtp=new smtp();
+		$smtp->sendmail($_POST['email'],"bitsfox@126.com","invite you to join huishi group",$mailcontent,$mailtype);
+		$va=1;
+		$str="<div class='alert alert-success alert-inline' role='alert'>\n邮件已经成功发送</div>";
+	}
+}
+?>
+<?php
 		$st1=$_SESSION['CURR_USR'][2];
 		$st2=strtoupper(substr($st1,1,1));
 		$st=sprintf($SIG_HTML['LEFT_TOP1'],$st2,$st1);
@@ -23,13 +48,16 @@ for($i=0;$i<$j;$i++)
         <div class='panel shadow'>
             <div class='body body-settings'>
                 <div class='inner-narrow'>
-                    <form class='form form-horizontal form-boxed' method='post' action='/app/invite/create'>
+                    <form class='form form-horizontal form-boxed' method='post' action='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FUR']."'>
                         <input type='hidden' value='6fd76a2b-3925-4579-a7ff-027428e8f385' name='authenticityToken' />
                         <div class='intro-block'>
                             <h3>邀请好友加入汇氏</h3>
                             <p>喜欢汇氏环境? 帮助我们向您的朋友推荐这个平台.</p>
-                        </div>
-                        <div class='form-group'>
+                        </div>";
+						echo $st1;
+				 if($va == 1)
+				 {echo "<div class='alert alert-danger alert-inline' role='alert'>\ntesttest</div>";}
+                  $st1="<div class='form-group'>
                             <label class='col-sm-4 control-label'>好友的邮箱地址</label>
                             <div class='col-sm-8'>
                                 <input type='email' name='email' id='email' class='form-control inlined' placeholder='邮箱地址' tabindex=1 required>
