@@ -555,32 +555,34 @@ class tb_invite extends signed_db
 			return;	//4 no data
 		if(!preg_match("/^(?:[a-z\d]+[_\-\+\.]?)*[a-z\d]+@(?:([a-z\d]+\-?)*[a-z\d]+\.)+([a-z]{2,})+$/i",$e))
 		{$this->err_no=11;return;} //11 format error
-		if($this->get_sqli())
+		$this->get_sqli();
+		if($this->err_no)
 			return;//1 connect error
 		$conn="SELECT email FROM auth";
 		$ay=array();$i=0;
 		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
-		{$ay[$i]=$row;$i+=1;}
+		{$ay[$i]=$row[0];$i+=1;}
 		mysqli_free_result($res);
 		mysqli_close($this->mysqli);
 		foreach($ay as $a)
 		{
-			if($a == $e)
+			if(strcasecmp($a,$e) == 0)
 			{$this->err_no=10;return;} //10 该邮箱已经注册
 		}
-		if($this->get_sqli())
+		$this->get_sqli();
+		if($this->err_no)
 			return;//1 connect error
 		$conn="SELECT invemail FROM invite WHERE uid = ".$_SESSION['CURR_USR'][0];
 		$ay=array();$i=0;
 		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
-		{$ay[$i]=$row;$i+=1;}
+		{$ay[$i]=$row[0];$i+=1;}
 		mysqli_free_result($res);
 		mysqli_close($this->mysqli);
 		foreach($ay as $a)
 		{
-			if($a == $e)
+			if(strcasecmp($a,$e) == 0)
 			{$this->err_no=12;return;} //12 该邮箱已经注册
 		}
 		$this->err_no=0;
@@ -592,9 +594,8 @@ class tb_invite extends signed_db
 			return;
 		if(count($u) != 4)
 		{$this->err_no=2;return;} //2 参数错误
-		if($this->check_valid($u[1]))
-			return;
-		if($this->get_sqli())
+		$this->check_valid($u[1]);
+		if($this->err_no)
 			return;
 		$conn=sprintf("INSERT INTO invite(uid,invemail,invbody,invited) VALUES (%d,'%s','%s',%d)",$u[0],$u[1],$u[2],$u[3]);
 		$res=mysqli_query($this->mysqli,$conn);
@@ -607,10 +608,12 @@ class tb_invite extends signed_db
 //{{{private function check_invite($e) 检查对方是否已经接受邀请
 	private function check_invite($e)
 	{
+		$this->reset();
 		if($this->err_no)
 			return;
 		$conn="SELECT email FROM auth";
-		if($this->get_sqli())
+		$this->get_sqli();
+		if($this->err_no)
 			return;
 		$ay=array();$i=0;
 		$res=mysqli_query($this->mysqli,$conn);
@@ -621,11 +624,44 @@ class tb_invite extends signed_db
 		foreach($ay as $a)
 		{
 			if($a == $e)
+			{
+				$this->update_invite($e);
 				return;
+			}
 		}
 		$this->err_no=13;//还未接受邀请
 	}//}}}
-
+//{{{public function get_invite()
+	public function get_invite()
+	{
+		$ay=array();
+		$this->reset();
+		if($this->err_no)
+			return $ay;
+		$this->get_sqli();
+		if($this->err_no)
+			return $ay;
+		$conn="SELECT * FROM invite WHERE uid = ".$_SESSION['CURR_USR'][0]." ORDER BY idx DESC LIMIT 6";
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}
+//{{{public function update_invite($e)
+	public function update_invite($e)
+	{
+		$this->reset();
+		if($this->err_no)
+			return;
+		$this->get_sqli();
+		if($this->err_no)
+			return;
+		$conn="UPDATE invite set invited = 1 WHERE uid = ".$_SESSION['CURR_USR'][0]." AND invemail = '".$e."'";
+		mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+	}//}}}
 
 //{{{public function err_msg()
 	public function err_msg()
@@ -653,21 +689,10 @@ class tb_invite extends signed_db
 //{{{public function reset()  重置错误代码，重新调用相关函数，完成初始化
 	public function reset()
 	{
-		if(intval($this->err_no) >= 10)
-		{$this->err_no=0;return;}
-		switch($this->err_no)
-		{
-		case 1:
-			$this->get_sqli();
-			break;
-		case 2:
-		case 3:
-			$this->err_no=0;
-			break;
-		case 4:
+		if($this->err_no == 4)
 			$this->check_it();
-			break;
-		}
+		else
+			$this->err_no=0;
 	}//}}}
 }//}}}
 

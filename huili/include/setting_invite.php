@@ -9,7 +9,7 @@ if(isset($_POST['email']) && isset($_POST['message']))
 	$ta->add_invite($ay);
 	if($ta->err_no)
 	{
-		$str=sprintf("<div class='alert alert-danger alert-inline' role='alert'>\n错误：%s</div>",$ta->err_msg($ta->err_no));
+		$str=sprintf("<div class='alert alert-danger alert-inline' role='alert'>\n错误：%s</div>",$ta->err_msg());
 		$va=1;
 	}
 	else
@@ -22,6 +22,12 @@ if(isset($_POST['email']) && isset($_POST['message']))
 		$str="<div class='alert alert-success alert-inline' role='alert'>\n邮件已经成功发送</div>";
 	}
 }
+unset($ta);
+$ayy=array();
+$ta=new tb_invite();
+$ayy=$ta->get_invite();
+//$st1="count: ".count($ayy)."err_no is:".$ta->err_no;
+//die($st1);
 ?>
 <?php
 		$st1=$_SESSION['CURR_USR'][2];
@@ -56,7 +62,7 @@ for($i=0;$i<$j;$i++)
                         </div>";
 						echo $st1;
 				 if($va == 1)
-				 {echo "<div class='alert alert-danger alert-inline' role='alert'>\ntesttest</div>";}
+				 {echo $str;}
                   $st1="<div class='form-group'>
                             <label class='col-sm-4 control-label'>好友的邮箱地址</label>
                             <div class='col-sm-8'>
@@ -89,15 +95,26 @@ for($i=0;$i<$j;$i++)
                                     <th></th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                        <tr>
-                                            <td>tybitsfox@126.com</td>
-                                            <td>无</td>
+                            <tbody>";
+							echo $st1;
+                                 $st1= "<tr>
+                                            <td>%s</td>
+                                            <td>%s</td>
                                             <td>
-                                                <a href='#' data-resend-link='/app/invite/2149/resend'>重新发送</a>
+                                                %s
                                             </td>
-                                        </tr>
-                            </tbody>
+                                        </tr>";
+							$j=count($ayy);
+							for($i=0;$i<$j;$i++)
+							{
+								if($ayy[$i][4] == 0)//未接受
+								{$st3="等待接受";$st4="<a href='#' data-resend-link='/app/invite/2149/resend'>重新发送</a>";}
+								else
+								{$st3="是";$st4="";}
+								$st2=sprintf($st1,$ayy[$i][2],$st3,$st4);
+								echo $st2;
+							}
+                     $st1="</tbody>
                         </table>
                     </div>
                 </div>
