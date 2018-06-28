@@ -46,7 +46,7 @@ CREATE TABLE `auth` (
 
 LOCK TABLES `auth` WRITE;
 /*!40000 ALTER TABLE `auth` DISABLE KEYS */;
-INSERT INTO `auth` VALUES (100001,'tybitsfox@126.com','tybitsfox','471d6ebc35015802fa80ad8d4ebb9d57',7,1,0,199,199,3,'2018-06-24 12:31:16','2018-06-26 04:32:23'),(100000,'tyyyyt@163.com','tyyyyt','2694f8b0e3d3d17ff567c9ca072db75c',7,2,0,100,100,3,'2018-06-24 10:17:35','2018-06-27 01:47:48');
+INSERT INTO `auth` VALUES (100001,'tybitsfox@126.com','tybitsfox','471d6ebc35015802fa80ad8d4ebb9d57',7,1,0,199,199,3,'2018-06-24 12:31:16','2018-06-26 04:32:23'),(100000,'tyyyyt@163.com','tyyyyt','2694f8b0e3d3d17ff567c9ca072db75c',7,2,0,101,101,3,'2018-06-24 10:17:35','2018-06-28 10:41:48');
 /*!40000 ALTER TABLE `auth` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -143,12 +143,14 @@ DROP TABLE IF EXISTS `invite`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `invite` (
+  `idx` int(32) NOT NULL AUTO_INCREMENT COMMENT '自增量id',
   `uid` int(32) unsigned NOT NULL COMMENT '用户id',
   `invemail` varchar(32) NOT NULL COMMENT '受邀邮箱',
   `invbody` text NOT NULL COMMENT '邀请内容',
   `invited` int(4) unsigned NOT NULL COMMENT '是否接受',
-  PRIMARY KEY (`uid`,`invemail`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  PRIMARY KEY (`uid`,`invemail`),
+  KEY `idx` (`idx`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -157,6 +159,7 @@ CREATE TABLE `invite` (
 
 LOCK TABLES `invite` WRITE;
 /*!40000 ALTER TABLE `invite` DISABLE KEYS */;
+INSERT INTO `invite` VALUES (2,100000,'bitsfox@126.com','welcome to visit huishi group!',0),(1,100000,'tybitsfox@126.com','hello world',0),(3,100000,'tyyyyt@163.com','欢迎加入',0);
 /*!40000 ALTER TABLE `invite` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -186,7 +189,7 @@ CREATE TABLE `security` (
 
 LOCK TABLES `security` WRITE;
 /*!40000 ALTER TABLE `security` DISABLE KEYS */;
-INSERT INTO `security` VALUES (100000,'2018-06-27 00:33:51',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 00:48:04',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 01:20:02',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 01:25:46',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 01:43:45',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 01:47:37',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 02:42:37',0,'localhost','GNU/linux操作系统','Firefox',1,7);
+INSERT INTO `security` VALUES (100000,'2018-06-27 00:33:51',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 00:48:04',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 01:20:02',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 01:25:46',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 01:43:45',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 01:47:37',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 02:42:37',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 10:41:42',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 10:46:17',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 11:48:46',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 11:53:52',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 11:59:14',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 12:03:02',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 12:05:54',0,'192.168.1.101','Android系统','Chrome',1,7),(100000,'2018-06-28 12:07:27',0,'192.168.1.101','Android系统','Chrome',1,7),(100000,'2018-06-28 12:15:31',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 12:37:38',0,'localhost','GNU/linux操作系统','Firefox',1,7);
 /*!40000 ALTER TABLE `security` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -199,4 +202,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-28 14:55:36
+-- Dump completed on 2018-06-28 23:57:59
