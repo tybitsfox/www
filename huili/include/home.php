@@ -6,6 +6,7 @@ if(!defined("FULL_PATH"))
 require_once(constant("FULL_PATH")."config/glob_new.php");  //全局常量及变量定义文件的引入
 require_once(constant("FULL_PATH")."config/glob_signed.php");
 require_once(constant("FULL_PATH")."lib/main.php");
+require_once(constant("FULL_PATH")."config/email.php");
 /// check login
 if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 12))
 	die("没有授权，禁止登录"."count=".count($_SESSION['CURR_USR']));
