@@ -49,4 +49,8 @@ for($i=0;$i<$j;$i++)
 	echo $SIG_HTML['RIGHT_TOP3']; */
 //}}}
 ?>
-
+<div>
+                        <label class='check'>
+                            <input type='checkbox' name='check_1' checked class='switch' ic-post-to='/api/v1/accounts/6adgokW5xo/suspend_auto_sync' ic-json-request='true' ic-json-flash='.account_automatic_syncing' />
+                            Automatic Syncing</label>
+                    </div>
