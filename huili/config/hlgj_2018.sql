@@ -46,7 +46,7 @@ CREATE TABLE `auth` (
 
 LOCK TABLES `auth` WRITE;
 /*!40000 ALTER TABLE `auth` DISABLE KEYS */;
-INSERT INTO `auth` VALUES (100001,'tybitsfox@126.com','tybitsfox','471d6ebc35015802fa80ad8d4ebb9d57',7,1,0,199,199,3,'2018-06-24 12:31:16','2018-06-26 04:32:23'),(100000,'tyyyyt@163.com','tyyyyt','2694f8b0e3d3d17ff567c9ca072db75c',7,2,0,101,101,3,'2018-06-24 10:17:35','2018-06-28 10:41:48');
+INSERT INTO `auth` VALUES (100001,'tybitsfox@126.com','tybitsfox','471d6ebc35015802fa80ad8d4ebb9d57',7,1,0,199,199,3,'2018-06-24 12:31:16','2018-06-26 04:32:23'),(100000,'tyyyyt@163.com','tyyyyt','2694f8b0e3d3d17ff567c9ca072db75c',7,2,0,102,102,3,'2018-06-24 10:17:35','2018-06-29 01:45:58');
 /*!40000 ALTER TABLE `auth` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -110,6 +110,89 @@ INSERT INTO `choose` VALUES (100000,13,'chlink15','专家团队','/huili/include
 UNLOCK TABLES;
 
 --
+-- Table structure for table `company`
+--
+
+DROP TABLE IF EXISTS `company`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `company` (
+  `uid` int(32) unsigned NOT NULL COMMENT '企业id',
+  `name` varchar(48) NOT NULL COMMENT '企业名称',
+  `img` varchar(128) NOT NULL COMMENT '图片链接',
+  `industry` varchar(32) NOT NULL COMMENT '所属行业',
+  `iid` int(8) unsigned NOT NULL COMMENT '行业id',
+  `intro` varchar(256) NOT NULL COMMENT '企业简介',
+  `addr` varchar(48) NOT NULL COMMENT '企业地址',
+  `phone` varchar(12) NOT NULL COMMENT '联系电话',
+  PRIMARY KEY (`uid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `company`
+--
+
+LOCK TABLES `company` WRITE;
+/*!40000 ALTER TABLE `company` DISABLE KEYS */;
+/*!40000 ALTER TABLE `company` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `conn_me`
+--
+
+DROP TABLE IF EXISTS `conn_me`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `conn_me` (
+  `uid` int(32) unsigned NOT NULL COMMENT '用户id',
+  `cid` int(32) unsigned NOT NULL COMMENT '合作者id',
+  `ctype` int(4) unsigned NOT NULL COMMENT '合作者类型',
+  PRIMARY KEY (`uid`,`cid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `conn_me`
+--
+
+LOCK TABLES `conn_me` WRITE;
+/*!40000 ALTER TABLE `conn_me` DISABLE KEYS */;
+/*!40000 ALTER TABLE `conn_me` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `expert`
+--
+
+DROP TABLE IF EXISTS `expert`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `expert` (
+  `uid` int(32) unsigned NOT NULL COMMENT '用户ID',
+  `comp` varchar(48) NOT NULL COMMENT '单位',
+  `phone` varchar(12) NOT NULL COMMENT '电话',
+  `major` varchar(32) NOT NULL COMMENT '所属专业',
+  `intro` varchar(128) NOT NULL COMMENT '个人简介',
+  `img` varchar(128) NOT NULL COMMENT '照片连接',
+  `name` varchar(12) NOT NULL COMMENT '姓名',
+  `mid` int(8) unsigned NOT NULL COMMENT '专业id',
+  PRIMARY KEY (`uid`),
+  KEY `mid_name` (`mid`,`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `expert`
+--
+
+LOCK TABLES `expert` WRITE;
+/*!40000 ALTER TABLE `expert` DISABLE KEYS */;
+/*!40000 ALTER TABLE `expert` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `fixedmod`
 --
 
@@ -159,7 +242,7 @@ CREATE TABLE `invite` (
 
 LOCK TABLES `invite` WRITE;
 /*!40000 ALTER TABLE `invite` DISABLE KEYS */;
-INSERT INTO `invite` VALUES (2,100000,'bitsfox@126.com','welcome to visit huishi group!',0),(1,100000,'tybitsfox@126.com','hello world',0),(3,100000,'tyyyyt@163.com','欢迎加入',0);
+INSERT INTO `invite` VALUES (2,100000,'bitsfox@126.com','welcome to visit huishi group!',0),(1,100000,'tybitsfox@126.com','hello world',0),(3,100000,'tyyyyt@163.com','欢迎加入',1);
 /*!40000 ALTER TABLE `invite` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -189,7 +272,7 @@ CREATE TABLE `security` (
 
 LOCK TABLES `security` WRITE;
 /*!40000 ALTER TABLE `security` DISABLE KEYS */;
-INSERT INTO `security` VALUES (100000,'2018-06-27 00:33:51',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 00:48:04',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 01:20:02',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 01:25:46',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 01:43:45',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 01:47:37',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 02:42:37',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 10:41:42',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 10:46:17',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 11:48:46',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 11:53:52',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 11:59:14',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 12:03:02',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 12:05:54',0,'192.168.1.101','Android系统','Chrome',1,7),(100000,'2018-06-28 12:07:27',0,'192.168.1.101','Android系统','Chrome',1,7),(100000,'2018-06-28 12:15:31',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 12:37:38',0,'localhost','GNU/linux操作系统','Firefox',1,7);
+INSERT INTO `security` VALUES (100000,'2018-06-27 00:33:51',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 00:48:04',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 01:20:02',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 01:25:46',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 01:43:45',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 01:47:37',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-27 02:42:37',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 10:41:42',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 10:46:17',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 11:48:46',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 11:53:52',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 11:59:14',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 12:03:02',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 12:05:54',0,'192.168.1.101','Android系统','Chrome',1,7),(100000,'2018-06-28 12:07:27',0,'192.168.1.101','Android系统','Chrome',1,7),(100000,'2018-06-28 12:15:31',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-28 12:37:38',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-29 00:51:22',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-29 01:30:26',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-29 01:31:23',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-29 01:40:09',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-29 01:40:47',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-29 01:41:29',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-29 01:42:28',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-29 01:44:57',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-29 01:46:19',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-29 02:58:09',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-29 03:01:27',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-29 05:37:23',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-29 05:42:44',0,'192.168.101.158','Android系统','Chrome',0,0),(100000,'2018-06-29 05:44:27',0,'192.168.101.158','Android系统','Chrome',1,7),(100000,'2018-06-29 06:19:41',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-06-29 06:36:37',0,'192.168.101.158','Android系统','Chrome',1,7),(100000,'2018-06-29 07:41:06',0,'192.168.101.158','Android系统','Chrome',1,7),(100000,'2018-06-29 07:41:55',0,'localhost','GNU/linux操作系统','Firefox',1,7);
 /*!40000 ALTER TABLE `security` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -202,4 +285,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-28 23:57:59
+-- Dump completed on 2018-06-29 15:43:08

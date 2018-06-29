@@ -22,6 +22,15 @@ if(isset($_POST['email']) && isset($_POST['message']))
 		$str="<div class='alert alert-success alert-inline' role='alert'>\n邮件已经成功发送</div>";
 	}
 }
+else
+{
+	if(isset($_GET['index']))
+	{
+		unset($ta);
+		$ta=new tb_invite();
+		$ta->check_invite($_GET['index']);
+	}
+}
 unset($ta);
 $ayy=array();
 $ta=new tb_invite();
@@ -108,7 +117,8 @@ for($i=0;$i<$j;$i++)
 							for($i=0;$i<$j;$i++)
 							{
 								if($ayy[$i][4] == 0)//未接受
-								{$st3="等待接受";$st4="<a href='#' data-resend-link='/app/invite/2149/resend'>重新发送</a>";}
+								{$st3="等待接受";$st4="<a href='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FUR']."&index=".$ayy[$i][0]."'>重新发送</a>";}
+//								{$st3="等待接受";$st4="<a href='#' data-resend-link='/huili/test/js_test/j01.php'>重新发送</a>";}
 								else
 								{$st3="是";$st4="";}
 								$st2=sprintf($st1,$ayy[$i][2],$st3,$st4);

@@ -605,25 +605,42 @@ class tb_invite extends signed_db
 		else
 			$this->err_no=3;
 	}//}}}
-//{{{private function check_invite($e) 检查对方是否已经接受邀请
-	private function check_invite($e)
+//{{{public function check_invite($e) 检查对方是否已经接受邀请
+	public function check_invite($e)
 	{
 		$this->reset();
 		if($this->err_no)
 			return;
+		$conn="SELECT invemail FROM invite WHERE idx = ".$e;
+		$this->get_sqli();
+		if($this->err_no)
+			return;
+		$res=mysqli_query($this->mysqli,$conn);
+		$row=mysqli_fetch_row($res);
+		if(is_null($row))
+		{
+			mysqli_free_result($res);
+			mysqli_close($this->mysqli);
+			$this->err_no=14; //no result
+			return;
+		}
+		$mail=$row[0];
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
 		$conn="SELECT email FROM auth";
+		unset($row);
 		$this->get_sqli();
 		if($this->err_no)
 			return;
 		$ay=array();$i=0;
 		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
-		{$ay[$i]=$row;$i+=1;}
+		{$ay[$i]=$row[0];$i+=1;}
 		mysqli_free_result($res);
 		mysqli_close($this->mysqli);
 		foreach($ay as $a)
 		{
-			if($a == $e)
+			if(strcasecmp($a,$mail) == 0)
 			{
 				$this->update_invite($e);
 				return;
@@ -649,8 +666,8 @@ class tb_invite extends signed_db
 		mysqli_close($this->mysqli);
 		return $ay;
 	}//}}}
-//{{{public function update_invite($e)
-	public function update_invite($e)
+//{{{private function update_invite($e)
+	private function update_invite($e)
 	{
 		$this->reset();
 		if($this->err_no)
@@ -658,7 +675,7 @@ class tb_invite extends signed_db
 		$this->get_sqli();
 		if($this->err_no)
 			return;
-		$conn="UPDATE invite set invited = 1 WHERE uid = ".$_SESSION['CURR_USR'][0]." AND invemail = '".$e."'";
+		$conn="UPDATE invite set invited = 1 WHERE idx = ".$e;
 		mysqli_query($this->mysqli,$conn);
 		mysqli_close($this->mysqli);
 	}//}}}
@@ -684,6 +701,8 @@ class tb_invite extends signed_db
 			return "该邮箱已经加入到您的邀请列表中";
 		case 13:
 			return "该邮箱尚未接受邀请";
+		case 14:
+			return "取得记录失败！";
 		}
 	}//}}}
 //{{{public function reset()  重置错误代码，重新调用相关函数，完成初始化
