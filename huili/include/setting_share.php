@@ -14,17 +14,17 @@ for($i=0;$i<$j;$i++)
 	echo $st;
 }
 		echo $SIG_HTML['LEFT_TOP3'];
-		$st2="<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li><a href='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['ONE']."'>设置</a></li><li>分享";
+		$st2="<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li><a href='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['ONE']."'>设置</a></li><li>认证";
 		$st1=sprintf($SIG_HTML['RIGHT_TOP1'],$st2);
 		echo $st1;
-		echo "<div class='inner' id='modal_container' >\n<h2 class='sect first'>设置 / 分享</h2>\n";
+		echo "<div class='inner' id='modal_container' >\n<h2 class='sect first'>设置 / 认证</h2>\n";
 		$st1=" <div class='block'>
     <div class='panel shadow'>
       <div class='body body-settings'>
         <div class='inner-narrow'>
             <div class='intro-block'>
-                <h3>Create a Personal Access Token</h3>
-                <p>Build your own personal apps with our API</p>
+                <h3>通过身份认证，进入我们的专家和服务团队</h3>
+                <p>身份认证保证您的付出必有收获</p>
             </div>
             <form class='form form-horizontal form-boxed' method='post' action='/app/settings/developer'>
                <input type='hidden' value='f89b27a9-ad93-416f-bf2b-20005646fb68' name='authenticityToken' />
@@ -34,6 +34,10 @@ for($i=0;$i<$j;$i++)
                        <input name='name' id='name' class='form-control inlined' placeholder='Name (to remember what token is for)' required/>
                        <button type='submit' class='btn btn-primary'>Create Token</button>
                    </div>
+				   <div class='form-split'><br>
+					<input type='file' name='file' id='file' class='inputfile' onchange='onchg(this)' accept='image/*' />
+					<label for='file' class='btn btn-success'>选择文件</label><span id='vvvv'></span>
+				   </div>
                </div>
             </form>
             <br/>
@@ -45,5 +49,43 @@ for($i=0;$i<$j;$i++)
     </div>
   </div>";
 		echo $st1;
+echo "<style type='text/css'>
+.inputfile1{opacity:0;}
+.inputfile{
+    width: 0.1px; 
+    height: 0.1px; 
+    opacity: 0; 
+    overflow: hidden; 
+    position: absolute; 
+    z-index: -1;
+}
+</style>
+<script>
+function onchg(obj)
+{
+//	var newsrc=getObjectURL(obj.files[0]);
+	var newsrc=obj.files[0];
+	var a=document.getElementById('name');
+	//a.innerHTML=newsrc.name;
+	a.value=newsrc.name;
+}
+</script>
+";		
 		echo $SIG_HTML['RIGHT_TOP3'];
+/*
+$('.inputfile').on('change','input[type=file]',function(){
+    var filePath=$(this).val();
+    if(filePath.indexOf('jpg')!=-1 || filePath.indexOf('png')!=-1){
+        $('#fileerrorTip').html('').hide();
+        var arr=filePath.split('\\');
+        var fileName=arr[arr.length-1];
+        $('#showFileName').html(fileName);
+    }else{
+        $('#showFileName').html('');
+        $('#fileerrorTip').html('您未上传文件，或者您上传文件类型有误！').show();
+        return false 
+    }
+})
+
+*/
 ?>
