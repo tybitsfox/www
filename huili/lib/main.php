@@ -1032,16 +1032,130 @@ class tb_expert extends signed_db
 			return "认证失败！该帐户已通过认证";
 		case 6:
 			return "您输入的字段长度过长";
-		case 12:
-			return "该邮箱已经加入到您的邀请列表中";
-		case 13:
-			return "该邮箱尚未接受邀请";
-		case 14:
-			return "取得记录失败！";
+		default:
+			return "未知错误！";
 		}
 	}//}}}
-
 }//}}}
-
+//{{{class tb_company extends signed_db
+class tb_company extends signed_db
+{
+//{{{public function add_company($e)
+	public function add_company($e)
+	{
+		$this->check_len($e);
+		if($this->err_no)
+			return; //2,6
+		$this->reset();
+		if($this->err_no)
+			return;	//4
+		$this->get_sqli();
+		if($this->err_no)
+			return;//1
+		$conn="SELECT name FROM company WHERE uid = ".$e[0];
+		$res=mysqli_query($this->mysqli,$conn);
+		$row=mysqli_fetch_row($res);
+		if($row != NULL)
+		{
+			mysqli_free_result($res);
+			mysqli_close($this->mysqli);
+			$this->err_no=5; //confirmed error
+			return;
+		}
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		$this->get_sqli();
+		if($this->err_no)
+			return; //1
+		$conn=sprintf("INSERT INTO company(uid,name,img,industry,iid,intro,addr,phone,confirmed) VALUES(%s,'%s','%s','%s',%s,'%s','%s','%s',0)",$e[0],$e[1],$e[2],$e[3],$e[4],$e[5],$e[6],$e[7]);
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == TRUE)
+			return;
+		else
+			$this->err_no=3;
+	}//}}}
+//{{{public function get_company($e)    e[0]=0:by uid;e[0]=1:by mid confirmed;e[0]=2:by mid not confirmed;e[0]=3 by confirmed;e[0]=4 by not confirmed
+	public function get_company($e)
+	{
+		$ay=array();
+		if(count($e) != 2)
+		{$this->err_no=2;return;} //2
+		$this->reset();
+		if($this->err_no)
+			return $ay;
+		$this->get_sqli();
+		if($this->err_no)
+			return $ay;
+		switch(intval($e[0]))
+		{
+		case 0: //by uid
+			$conn="SELECT * FROM company WHERE uid = ".$e[1];
+			break;
+		case 1://by iid and confirmed
+			$conn="SELECT * FROM company WHERE (iid & ".$e[1].") != 0 AND confirmed = 1";
+			break;
+		case 2: //by iid not confirmed
+			$conn="SELECT * FROM company WHERE (iid & ".$e[1].") != 0 AND confirmed = 0";
+			break;
+		case 3://only confirmed
+			$conn="SELECT * FROM company WHERE confirmed = 1";
+			break;
+		case 4://only not confirmed
+			$conn="SELECT * FROM company WHERE confirmed = 0";
+			break;
+		default://select all
+			$conn="SELECT * FROM company";
+			break;
+		}
+		mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}
+//{{{private function check_len($e)  输入的合法性检查
+	private function check_len($e)
+	{//only check string length
+		if(count($e) != 8)
+		{$this->err_no=2;return;} //2 参数错误
+		if(strlen($e[1]) >= 48)
+		{$this->err_no=6;return;}
+		if(strlen($e[2]) >= 128)
+		{$this->err_no=6;return;}
+		if(strlen($e[3]) >= 32)
+		{$this->err_no=6;return;}
+		if(strlen($e[4]) >= 8)
+		{$this->err_no=6;return;}
+		if(strlen($e[5]) >= 256)
+		{$this->err_no=6;return;}
+		if(strlen($e[6]) >= 48)
+		{$this->err_no=6;return;}
+		if(strlen($e[7]) >= 12)
+		{$this->err_no=6;return;}
+	}//}}}
+//{{{public function err_msg()
+	public function err_msg()
+	{
+		switch($this->err_no)
+		{
+		case 1:
+			return "连接数据库失败";
+		case 2:
+			return "参数错误！";
+		case 3:
+			return "添加记录失败";
+		case 4:
+			return "您选择的年份没有记录";
+		case 5:
+			return "认证失败！该帐户已通过认证";
+		case 6:
+			return "您输入的字段长度过长";
+		default:
+			return "未知错误！";
+		}
+	}//}}}
+}//}}}
 
 ?>

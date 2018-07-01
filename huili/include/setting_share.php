@@ -31,8 +31,35 @@ if(isset($_POST['name'])) //专家认证
 	else
 		$err_str="上传头像图片失败！";
 }
+//名称(0),地址（1），电话（2），简介（3），所属（4），图片（5）  <-显示顺序
+//uid(0),名称(1),图片（2），所属行业（3），行业id(4),简介(5),地址(6),电话(7),认证标志(8)  <-数据库字段顺序
+//1:污水处理，2：化工，3：电力，4：仪器设备，5：环境治理，6：其他行业
 elseif(isset($_POST['comp'])) //团队认证
-{}
+{
+	$act=array("","active");
+	$u[0]=$_SESSION['CURR_USR'][0];	//UID
+	$u[1]=$_POST['comp'];		//名称
+	$u[2]=$ph.$_FILES['file1']['name'];		//图片
+	$u[3]=" ";					//所属行业
+	$u[4]=0;
+	for($i=0;$i<count($_POST['trusted']);$i++)
+		$u[4]+=intval($_POST['trusted'][$i]); //行业id
+	$u[5]=$_POST['intro'];	//简介
+	$u[6]=$_POST['danwei'];	//地址
+	$u[7]=$_POST['phone'];	//电话
+	$ta=new tb_company();
+	$ta->add_company($u);
+	if($ta->err_no)
+		$err_str=$ta->err_msg();
+	else
+	{
+		$err_str="认证已提交，请等待管理员核实";
+		if($_FILES['file1']['tmp_name'])
+			move_uploaded_file($_FILES['file1']['tmp_name'],"../images/upload/".$_FILES['file1']['name']);
+		else
+			$err_str="认证已提交，图片上传失败！";
+	}
+}
 
 ?>
 <?php
@@ -96,8 +123,8 @@ for($i=0;$i<$j;$i++)
                                         </div>
                                         <div class='shareblock-head shareblock-head-light'>
 											<p class='shareblock-account'><span class='light'>您的专业</span><div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='1' data-ninja-checkbox>污水处理</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='2' data-ninja-checkbox>废气处理</label></div></div>
-											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='3' data-ninja-checkbox>噪音治理</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='4' data-ninja-checkbox>环境工程</label></div></div>
-											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='5' data-ninja-checkbox>项目评审</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='6' data-ninja-checkbox>法律事务</label></div></div></p>
+											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='4' data-ninja-checkbox>噪音治理</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='8' data-ninja-checkbox>环境工程</label></div></div>
+											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='16' data-ninja-checkbox>项目评审</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='32' data-ninja-checkbox>法律事务</label></div></div></p>
                                         </div>
                                         <div class='shareblock-head shareblock-head-light'>
                                             <p class='shareblock-account'>
@@ -114,7 +141,7 @@ for($i=0;$i<$j;$i++)
 					echo $st1;
 					$st1="<!-- my add -->
                             <div role='tabpanel' class='tab-pane ' id='vendor-github'>
-								<form name='form2' method='post' action='#' enctype='multipart/form-data'>
+								<form name='form2' method='post' action='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['SEV']."' enctype='multipart/form-data'>
                                     <div class='shareblock'>
                                         <div class='shareblock-head shareblock-head-light'>
                                             <p class='shareblock-account'><input name='comp' id='comp' class='form-control inlined' placeholder='公司名称' required/></p>
@@ -126,17 +153,17 @@ for($i=0;$i<$j;$i++)
                                             <p class='shareblock-account'><input name='phone' id='phone' class='form-control inlined' placeholder='公司电话' required/></p>
                                         </div>
                                         <div class='shareblock-head shareblock-head-light'>
-                                            <p class='shareblock-account'><textarea name='intro' id='intri' class='form-control custom-message-input inlined' placeholder='公司简介' required tabindex=2></textarea></p>
+                                            <p class='shareblock-account'><textarea name='intro' id='intro' class='form-control custom-message-input inlined' placeholder='公司简介' required tabindex=2></textarea></p>
                                         </div>
                                         <div class='shareblock-head shareblock-head-light'>
-											<p class='shareblock-account'><span class='light'>所属行业</span><div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' id='trusted' name='trusted' checked data-ninja-checkbox>污水处理</label></div><div class='checkbox'><label><input type='checkbox' id='trusted' name='trusted' data-ninja-checkbox>化工行业</label></div></div>
-											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' id='trusted' name='trusted' checked data-ninja-checkbox>电力行业</label></div><div class='checkbox'><label><input type='checkbox' id='trusted' name='trusted' data-ninja-checkbox>仪器设备</label></div></div>
-											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' id='trusted' name='trusted' checked data-ninja-checkbox>环境治理</label></div><div class='checkbox'><label><input type='checkbox' id='trusted' name='trusted' data-ninja-checkbox>其他行业</label></div></div></p>
+											<p class='shareblock-account'><span class='light'>所属行业</span><div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='1' data-ninja-checkbox>污水处理</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='2' data-ninja-checkbox>化工行业</label></div></div>
+											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='4' data-ninja-checkbox>电力行业</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='8' data-ninja-checkbox>仪器设备</label></div></div>
+											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='16' data-ninja-checkbox>环境治理</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='32' data-ninja-checkbox>其他行业</label></div></div></p>
                                         </div>
                                         <div class='shareblock-head shareblock-head-light'>
                                             <p class='shareblock-account'>
-											<input type='file' name='file' id='file' class='inputfile' onchange='onchg(this)' accept='image/*' />
-											<label for='file' class='btn btn-success'>上传图片</label>&nbsp;<span id='vvvv'class='light'>请选择适合做logo的图片</span></p>
+											<input type='file' name='file1' id='file1' class='inputfile' onchange='onchg1(this)' accept='image/*' />
+											<label for='file1' class='btn btn-success'>上传图片</label>&nbsp;<span id='vvva'class='light'>请选择适合做logo的图片</span></p>
                                         </div>
                                         <div class='shareblock-body'><br>
                       							<center> <button type='submit' class='btn btn-primary'>提交申请</button></center>
@@ -161,11 +188,15 @@ echo "<style type='text/css'>
 <script>
 function onchg(obj)
 {
-//	var newsrc=getObjectURL(obj.files[0]);
 	var newsrc=obj.files[0];
 	var a=document.getElementById('vvvv');
 	a.innerHTML=newsrc.name;
-//	a.value=newsrc.name;
+}
+function onchg1(obj)
+{
+	var newsrc=obj.files[0];
+	var a=document.getElementById('vvva');
+	a.innerHTML=newsrc.name;
 }
 </script>";		
 
