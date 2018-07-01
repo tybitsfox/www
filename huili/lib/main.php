@@ -88,7 +88,7 @@ class loginn implements inter_sign
 	public function signup()
 	{
 		$_SESSION['CURR_USR']=array();
-		$i=$this->check_it($this->usr,$this->pwd);
+		$i=$this->check_it();
 		if($i != 0)
 			return $i;
 		$ay=array();
@@ -123,6 +123,58 @@ class loginn implements inter_sign
 		$str4=date("Y-m-d H:i:s",time());
 		$ay=array($uid,$this->usr,$str3,$str1,$str2,1,0,'',0,0,$str4,$str4);
 		$this->conn=sprintf("INSERT INTO auth(uid,email,uname,pwd,priv,lvl,sex,expr,coin,treasure,lastlogin,signup) VALUES(%d,'%s','%s','%s',%d,1,0,0,0,0,now(),now())",$uid,$this->usr,$str3,$str1,$str2);
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
+		if(mysqli_connect_errno())
+			return 5; //connect error
+		$res=mysqli_query($mysqli,$this->conn);
+		mysqli_close($mysqli);
+		if($res == TRUE)
+		{
+			$_SESSION['CURR_USR']=array_merge($_SESSION['CURR_USR'],$ay);
+			return 0;
+		}
+		else
+			return 8;//regist error
+	}//}}}
+//{{{public function add($u,$p)
+	public function add($u,$p)
+	{
+		$_SESSION['CURR_USR']=array();
+		$i=$this->check_it();
+		if($i != 0)
+			return $i;
+		$ay=array();
+		$this->conn=sprintf("SELECT email FROM auth WHERE email = '%s'",$u);
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
+		if(mysqli_connect_errno())
+			return 5;
+		$res=mysqli_query($mysqli,$this->conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($mysqli);
+		if(count($ay) !=0 )
+			return 10;
+		$ay=array();
+		$this->conn="SELECT uid FROM auth ORDER BY uid DESC LIMIT 1";
+		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
+		if(mysqli_connect_errno())
+			return 5; //connect error
+		$res=mysqli_query($mysqli,$this->conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($mysqli);
+		if(count($ay) == 0)
+			$uid=100000;
+		else
+			$uid=intval($ay[0][0])+1;
+		$str1=md5($p);//pwd
+		$str2=7;//1,3,7,15,31,63,  priv
+		$str3=substr($u,0,strpos($u,'@'));//uname
+		$str4=date("Y-m-d H:i:s",time());
+		$ay=array($uid,$u,$str3,$str1,$str2,1,0,'',0,0,$str4,$str4);
+		$this->conn=sprintf("INSERT INTO auth(uid,email,uname,pwd,priv,lvl,sex,expr,coin,treasure,lastlogin,signup) VALUES(%d,'%s','%s','%s',%d,1,0,0,0,0,now(),now())",$uid,$u,$str3,$str1,$str2);
 		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
 		if(mysqli_connect_errno())
 			return 5; //connect error
@@ -397,6 +449,14 @@ class signed_db
 		}
 		mysqli_set_charset($this->mysqli,"utf8");
 		return;
+	}//}}}
+//{{{public function reset()  重置错误代码，重新调用相关函数，完成初始化
+	public function reset()
+	{
+		if($this->err_no == 4)
+			$this->check_it();
+		else
+			$this->err_no=0;
 	}//}}}
 }//}}}
 
@@ -856,14 +916,132 @@ class tb_invite extends signed_db
 			return "取得记录失败！";
 		}
 	}//}}}
-//{{{public function reset()  重置错误代码，重新调用相关函数，完成初始化
-	public function reset()
-	{
-		if($this->err_no == 4)
-			$this->check_it();
-		else
-			$this->err_no=0;
-	}//}}}
 }//}}}
+//{{{class tb_expert extends signed_db	专家表操作类
+class tb_expert extends signed_db
+{
+//{{{public function add_expert($e)
+	public function add_expert($e)
+	{
+		$this->check_len($e);
+		if($this->err_no)
+			return; //2,6
+		$this->reset();
+		if($this->err_no)
+			return;	//4
+		$this->get_sqli();
+		if($this->err_no)
+			return;//1
+		$conn=sprintf("SELECT comp FROM expert WHERE uid = %s",$e[0]);
+		$res=mysqli_query($this->mysqli,$conn);
+		$row=mysqli_fetch_row($res);
+		if($row != NULL)
+		{
+			mysqli_free_result($res);
+			mysqli_close($this->mysqli);
+			$this->err_no=5;//confirmed error
+			return;
+		}
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		$this->get_sqli();
+		if($this->err_no)
+			return;//1
+		$conn=sprintf("INSERT INTO expert(uid,comp,phone,major,intro,img,name,mid,confirmed) VALUES(%s,'%s','%s','%s','%s','%s','%s',%s,0)",$e[0],$e[1],$e[2],$e[3],$e[4],$e[5],$e[6],$e[7]);
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == TRUE)
+			return;
+		else
+			$this->err_no=3;		
+	}//}}}
+//{{{public function get_expert($e)	e[0]=0:by uid;e[0]=1:by mid confirmed;e[0]=2:by mid not confirmed;e[0]=3 by confirmed;e[0]=4 by not confirmed
+	public function get_expert($e)
+	{
+		$ay=array();
+		if(count($e) != 2)
+		{$this->err_no=2;return;} //2
+		$this->reset();
+		if($this->err_no)
+			return $ay;
+		$this->get_sqli();
+		if($this->err_no)
+			return $ay;
+		switch(intval($e[0]))
+		{
+		case 0://按uid取得
+			$conn="SELECT * FROM expert WHERE uid = ".$e[1];
+			break;
+		case 1://按专业和取得认证
+			$conn="SELECT * FROM expert WHERE (mid & ".$e[1].") != 0 AND confirmed = 1";
+			break;
+		case 2://按专业和未取得认证
+			$conn="SELECT * FROM expert WHERE (mid & ".$e[1].") != 0 AND confirmed = 0";
+			break;
+		case 3://已被认证的
+			$conn="SELECT * FROM expert WHERE confirmed = 1";
+			break;
+		case 4://未被认证的
+			$conn="SELECT * FROM expert WHERE confirmed = 0";
+			break;
+		default:
+			$conn="SELECT * FROM expert";  //select all
+			break;
+		}
+		mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}
+//{{{private function check_len($e)  输入的合法性检查
+	private function check_len($e)
+	{//only check string length
+		if(count($e) != 8)
+		{$this->err_no=2;return;} //2 参数错误
+		if(strlen($e[1]) >= 48)
+		{$this->err_no=6;return;}
+		if(strlen($e[2]) >= 12)
+		{$this->err_no=6;return;}
+		if(strlen($e[3]) >= 32)
+		{$this->err_no=6;return;}
+		if(strlen($e[4]) >= 128)
+		{$this->err_no=6;return;}
+		if(strlen($e[5]) >= 128)
+		{$this->err_no=6;return;}
+		if(strlen($e[6]) >= 12)
+		{$this->err_no=6;return;}
+		if(strlen($e[7]) >= 8)
+		{$this->err_no=6;return;}
+	}//}}}
+//{{{public function err_msg()
+	public function err_msg()
+	{
+		switch($this->err_no)
+		{
+		case 1:
+			return "连接数据库失败";
+		case 2:
+			return "参数错误！";
+		case 3:
+			return "添加记录失败";
+		case 4:
+			return "您选择的年份没有记录";
+		case 5:
+			return "认证失败！该帐户已通过认证";
+		case 6:
+			return "您输入的字段长度过长";
+		case 12:
+			return "该邮箱已经加入到您的邀请列表中";
+		case 13:
+			return "该邮箱尚未接受邀请";
+		case 14:
+			return "取得记录失败！";
+		}
+	}//}}}
+
+}//}}}
+
 
 ?>

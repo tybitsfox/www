@@ -1,4 +1,41 @@
 <?php
+//uid(0),姓名(1)，单位(2)，电话(3)，简介(4)，专业(5),头像(6)   <-显示顺序
+//uid(0),单位(1)，电话(2)，所属行业（先空）(3)，个人简介(4)，头像(5)，姓名(6)，专业id(7)，认证标志(8)  <-数据库字段顺序
+//1:污水处理,2:废气处理,4:噪音,8:环境工程,16:项目评审，32:法律事务
+$act=array("active","");
+$err_str="完成认证，进入我们的专家团队";
+$u=array();
+$ph=constant('WORK_PLACE')."images/upload/";
+if(isset($_POST['name'])) //专家认证
+{
+	$u[0]=$_SESSION['CURR_USR'][0];	//uid
+	$u[1]=$_POST['danwei'];			//单位
+	$u[2]=$_POST['phone'];			//电话
+	$u[3]=" ";						//所属行业
+	$u[4]=$_POST['intro'];			//个人简历
+	$u[5]=$ph.$_FILES['file']['name'];//头像
+	if($_FILES['file']['tmp_name'])
+	{
+		move_uploaded_file($_FILES['file']['tmp_name'],"../images/upload/".$_FILES['file']['name']);
+		$u[6]=$_POST['name'];			//姓名
+		$u[7]=0;
+		for($i=0;$i<count($_POST['trusted']);$i++)
+			$u[7]+=intval($_POST['trusted'][$i]); //get skill
+		$ta=new tb_expert();
+		$ta->add_expert($u);
+		if($ta->err_no)
+			$err_str=$ta->err_msg();
+		else
+			$err_str="认证已提交，请等待管理员核实";
+	}
+	else
+		$err_str="上传头像图片失败！";
+}
+elseif(isset($_POST['comp'])) //团队认证
+{}
+
+?>
+<?php
 		$st1=$_SESSION['CURR_USR'][2];
 		$st2=strtoupper(substr($st1,1,1));
 		$st=sprintf($SIG_HTML['LEFT_TOP1'],$st2,$st1);
@@ -18,36 +55,97 @@ for($i=0;$i<$j;$i++)
 		$st1=sprintf($SIG_HTML['RIGHT_TOP1'],$st2);
 		echo $st1;
 		echo "<div class='inner' id='modal_container' >\n<h2 class='sect first'>设置 / 认证</h2>\n";
-		$st1=" <div class='block'>
-    <div class='panel shadow'>
-      <div class='body body-settings'>
-        <div class='inner-narrow'>
-            <div class='intro-block'>
-                <h3>通过身份认证，进入我们的专家和服务团队</h3>
-                <p>身份认证保证您的付出必有收获</p>
-            </div>
-            <form class='form form-horizontal form-boxed' method='post' action='/app/settings/developer'>
-               <input type='hidden' value='f89b27a9-ad93-416f-bf2b-20005646fb68' name='authenticityToken' />
-               <div class='form-group'>
-                   <label>Token Name</label>
-                   <div class='form-split'>
-                       <input name='name' id='name' class='form-control inlined' placeholder='Name (to remember what token is for)' required/>
-                       <button type='submit' class='btn btn-primary'>Create Token</button>
-                   </div>
-				   <div class='form-split'><br>
-					<input type='file' name='file' id='file' class='inputfile' onchange='onchg(this)' accept='image/*' />
-					<label for='file' class='btn btn-success'>选择文件</label><span id='vvvv'></span>
-				   </div>
-               </div>
-            </form>
-            <br/>
-            <div class='intro-block intro-block-slim'>
-                <a href='/app/settings/security'>View your personal access tokens</a>
-            </div>
-        </div>
-    </div>
-    </div>
-  </div>";
+        $st1="<div class='block'><div class='panel shadow'>
+		<!-- Tab 1 -->
+              <div class='inner-narrow inner-midnarrow'>
+   					 <div class='intro-block intro-block-slim'>
+				        <p>".$err_str."</p>
+				    </div>
+              		<div class='nav-vendors'>
+                    <!-- Vendor nav -->
+                    <ul class='nav nav-tabs nav-tabs-vertical' role='tablist'>
+                            <li role='presentation' class='%s'>
+                                <a href='#vendor-amazon' aria-controls='amazon' role='tab' data-toggle='tab'>
+                                    <i class='icon-truck'></i><span>专家认证</span>
+                                </a>
+                            </li>
+                            <li role='presentation' class='%s'>
+                                <a href='#vendor-github' aria-controls='github' role='tab' data-toggle='tab'>
+                                    <i class='icon-user'></i><span>团队认证</span>
+                                </a>
+							</li>
+                    </ul>";
+		$st2=sprintf($st1,$act[0],$act[1]);
+		echo $st2;
+              $st1="<!-- Vendor Panes -->
+                    <div class='tab-content tab-content-vertical'>
+                            <div role='tabpanel' class='tab-pane active' id='vendor-amazon'>
+								<form name='form1' method='post' action='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['SEV']."' enctype='multipart/form-data'>
+                                    <div class='shareblock'>
+                                        <div class='shareblock-head shareblock-head-light'>
+                                            <p class='shareblock-account'><input name='name' id='name' class='form-control inlined' placeholder='您的真实姓名' required/></p>
+                                        </div>
+                                        <div class='shareblock-head shareblock-head-light'>
+                                            <p class='shareblock-account'><input name='danwei' id='danwei' class='form-control inlined' placeholder='您就职的单位' required/></p>
+                                        </div>
+                                        <div class='shareblock-head shareblock-head-light'>
+                                            <p class='shareblock-account'><input name='phone' id='phone' class='form-control inlined' placeholder='您的电话' required/></p>
+                                        </div>
+                                        <div class='shareblock-head shareblock-head-light'>
+                                            <p class='shareblock-account'><textarea name='intro' id='intro' class='form-control custom-message-input inlined' placeholder='您的个人简介' required tabindex=2></textarea></p>
+                                        </div>
+                                        <div class='shareblock-head shareblock-head-light'>
+											<p class='shareblock-account'><span class='light'>您的专业</span><div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='1' data-ninja-checkbox>污水处理</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='2' data-ninja-checkbox>废气处理</label></div></div>
+											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='3' data-ninja-checkbox>噪音治理</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='4' data-ninja-checkbox>环境工程</label></div></div>
+											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='5' data-ninja-checkbox>项目评审</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='6' data-ninja-checkbox>法律事务</label></div></div></p>
+                                        </div>
+                                        <div class='shareblock-head shareblock-head-light'>
+                                            <p class='shareblock-account'>
+											<input type='file' name='file' id='file' class='inputfile' onchange='onchg(this)' accept='image/*' />
+											<label for='file' class='btn btn-success'>上传图片</label>&nbsp;<span id='vvvv'class='light'>请选择适合做头像的图片</span></p>
+                                        </div>
+
+                                        <div class='shareblock-body'><br>
+                      							<center> <button type='submit' class='btn btn-primary'>提交申请</button></center>
+                                        </div>
+                                    </div>
+								</form>
+                            </div>";
+					echo $st1;
+					$st1="<!-- my add -->
+                            <div role='tabpanel' class='tab-pane ' id='vendor-github'>
+								<form name='form2' method='post' action='#' enctype='multipart/form-data'>
+                                    <div class='shareblock'>
+                                        <div class='shareblock-head shareblock-head-light'>
+                                            <p class='shareblock-account'><input name='comp' id='comp' class='form-control inlined' placeholder='公司名称' required/></p>
+                                        </div>
+                                        <div class='shareblock-head shareblock-head-light'>
+                                            <p class='shareblock-account'><input name='danwei' id='danwei' class='form-control inlined' placeholder='公司地址' required/></p>
+                                        </div>
+                                        <div class='shareblock-head shareblock-head-light'>
+                                            <p class='shareblock-account'><input name='phone' id='phone' class='form-control inlined' placeholder='公司电话' required/></p>
+                                        </div>
+                                        <div class='shareblock-head shareblock-head-light'>
+                                            <p class='shareblock-account'><textarea name='intro' id='intri' class='form-control custom-message-input inlined' placeholder='公司简介' required tabindex=2></textarea></p>
+                                        </div>
+                                        <div class='shareblock-head shareblock-head-light'>
+											<p class='shareblock-account'><span class='light'>所属行业</span><div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' id='trusted' name='trusted' checked data-ninja-checkbox>污水处理</label></div><div class='checkbox'><label><input type='checkbox' id='trusted' name='trusted' data-ninja-checkbox>化工行业</label></div></div>
+											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' id='trusted' name='trusted' checked data-ninja-checkbox>电力行业</label></div><div class='checkbox'><label><input type='checkbox' id='trusted' name='trusted' data-ninja-checkbox>仪器设备</label></div></div>
+											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' id='trusted' name='trusted' checked data-ninja-checkbox>环境治理</label></div><div class='checkbox'><label><input type='checkbox' id='trusted' name='trusted' data-ninja-checkbox>其他行业</label></div></div></p>
+                                        </div>
+                                        <div class='shareblock-head shareblock-head-light'>
+                                            <p class='shareblock-account'>
+											<input type='file' name='file' id='file' class='inputfile' onchange='onchg(this)' accept='image/*' />
+											<label for='file' class='btn btn-success'>上传图片</label>&nbsp;<span id='vvvv'class='light'>请选择适合做logo的图片</span></p>
+                                        </div>
+                                        <div class='shareblock-body'><br>
+                      							<center> <button type='submit' class='btn btn-primary'>提交申请</button></center>
+                                        </div>
+                                    </div>
+								</form>	
+                            </div>
+                    </div>
+				</div></div>";
 		echo $st1;
 echo "<style type='text/css'>
 .inputfile1{opacity:0;}
@@ -65,27 +163,11 @@ function onchg(obj)
 {
 //	var newsrc=getObjectURL(obj.files[0]);
 	var newsrc=obj.files[0];
-	var a=document.getElementById('name');
-	//a.innerHTML=newsrc.name;
-	a.value=newsrc.name;
+	var a=document.getElementById('vvvv');
+	a.innerHTML=newsrc.name;
+//	a.value=newsrc.name;
 }
-</script>
-";		
-		echo $SIG_HTML['RIGHT_TOP3'];
-/*
-$('.inputfile').on('change','input[type=file]',function(){
-    var filePath=$(this).val();
-    if(filePath.indexOf('jpg')!=-1 || filePath.indexOf('png')!=-1){
-        $('#fileerrorTip').html('').hide();
-        var arr=filePath.split('\\');
-        var fileName=arr[arr.length-1];
-        $('#showFileName').html(fileName);
-    }else{
-        $('#showFileName').html('');
-        $('#fileerrorTip').html('您未上传文件，或者您上传文件类型有误！').show();
-        return false 
-    }
-})
+</script>";		
 
-*/
+		echo $SIG_HTML['RIGHT_TOP3'];
 ?>
