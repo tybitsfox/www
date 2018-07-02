@@ -61,9 +61,8 @@ class base_login
 	{
 		if($this->err_no == 4)
 			$this->check_it();
-		else
-			$this->err_no=0;
-		$this->get_sqli();
+		if($this->err_no == 0)
+			$this->get_sqli();
 	}//}}}
 //{{{public function err_msg()
 	public function err_msg()
@@ -95,6 +94,12 @@ class base_login
 			return "删除记录失败";
 		case 13:
 			return "您要添加的模块已经存在";
+		case 14:
+			return "邮箱格式错误！";
+		case 15:
+			return "该邮箱已在您的邀请列表中";
+		case 16:
+			return "查找记录失败";
 
 		default:
 			return "未知错误！";
@@ -266,66 +271,457 @@ class tb_choose extends signed_db
 			$this->err_no=3;
 	}//}}}
 }//}}}
-//{{{class tb_fixedmod extends signed_db
-class tb_fixedmod extends signed_db
+//{{{class used_sign extends signed_db
+//登录用户的信息:uid(0),email(1),uname(2),pwd(3),priv(4),lvl(5),sex(6),expr(7),coin(8),treasure(9),signup(10),lastlogin(11)
+//security:uid(0),lastlog(1),signed(2),lgip(3),lgsys(4),lgbrow(5),trust(6),perm(7)
+class used_sign extends signed_db
 {
-//{{{public function get_db($m)	if $m is null then get all
-	public function get_db($m)
+//{{{private function get_secu() 由当前会话信息生成的将要保存的信息
+	private function get_secu()
+	{
+		$_SESSION['USR_AGENT']=array();
+		$trust=0; //设备不可信
+		$perm=0;
+		if(isset($_COOKIE['huili_lgpwd']))
+		{
+			$trust=1;
+			$perm=7; //1: read ,2:write,3:local
+		}
+		$ds=array();
+		$ds=explode(" ",$_SESSION['CURR_USR'][11]);
+		$dn=date("Y-m-d",time());
+		if($dn > $ds[0])
+			$sig=1; //没有签到
+		else
+			$sig=0; //已经签到
+		$ay=array();
+		$ay=$this->get_agent();
+		$by=array($_SESSION['CURR_USR'][0],time(),$sig,$ay[2],$ay[0],$ay[1],$trust,$perm);
+		$_SESSION['USR_AGENT']=$by;
+		return $by;
+	}//}}}
+//{{{private function get_agent()
+	private function get_agent()
 	{
 		$ay=array();
-		$i=$this->check_it();
-		if($i != 0)
-			return $ay;
-		if(is_null($m))
-			$conn="SELECT * FROM fixedmod";
+		$sname="";
+		$s=$_SERVER['HTTP_USER_AGENT'];
+		if(preg_match("/win/i",$s))
+		{//windows
+			if(preg_match("/nt 6.1/i",$s))
+				$sname="windows 7";
+			elseif(preg_match("/nt 10.0/i",$s))
+				$sname="windows 10";
+			elseif(preg_match("/nt 5.1/i",$s))
+				$sname="windows xp";
+			elseif(preg_match("/nt 6.2/i",$s))
+				$sname="windows 8";
+			elseif(preg_match("/nt 6.3/i",$s))
+				$sname="windows 2012";
+			else
+				$sname="老版本windows系统";
+		}
+		elseif(preg_match("/android/i",$s))
+			$sname="Android系统";
+		elseif(preg_match("/linux/i",$s))
+			$sname="GNU/linux操作系统";
+		elseif(preg_match("/ios/i",$s))
+			$sname="IOS系统";
+		elseif(preg_match("/mac/i",$s))
+			$sname="Mac操作系统";
+		elseif(preg_match("/unix/i",$s))
+			$sname="Unix操作系统";
+		elseif(preg_match("/bsd/i",$s))
+			$sname="Free/Net/OpenBSD操作系统";
 		else
-			$conn=sprintf("SELECT * FROM fixedmod WHERE mid = %d",intval($m));
-		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
-		if(mysqli_connect_errno())
-			return $ay;
-		mysqli_set_charset($mysqli,"utf8");
-		$res=mysqli_query($mysqli,$conn);
-		while($row=mysqli_fetch_row($res))
-			array_push($ay,$row);
-		mysqli_free_result($res);
-		mysqli_close($mysqli);
+			$sname="其他操作系统";
+		$sbrower="未知浏览器";
+		if(preg_match("/msie/i",$s))
+			$sbrower="MSIE";
+		elseif(preg_match("/firefox/i",$s))
+			$sbrower="Firefox";
+		elseif(preg_match("/chrome/i",$s))
+			$sbrower="Chrome";
+		elseif(preg_match("/safari/i"))
+			$sbrower="Safari";
+		elseif(preg_match("/opera/i"))
+			$sbrower="Opera";
+		else
+			$sbrower="Other";
+		$ay[0]=$sname;$ay[1]=$sbrower;
+		$s=$_SERVER['REMOTE_ADDR'];
+		if(preg_match("/:/",$s))
+			$ay[2]="localhost";
+		else
+			$ay[2]=$s;
 		return $ay;
 	}//}}}
-//{{{public function add_db($a)
-	public function add_db($a)
+//{{{public function update_auth() 更新auth表的函数
+	public function update_auth()
 	{
-		$i=$this->check_it();
-		if($i != 0)
-			return $i;
-		if( is_null($a) || (count($a) != 4))
-			return 1;
-		$conn=sprintf("SELECT mid from fixedmod ORDER BY mid DESC");
-		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
-		if(mysqli_connect_errno())
-			return 2;
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$a=array();
+		$a=$this->get_secu();
+		if($a[2] == 0)//添加防止刷金币的代码,没有错误代码
+			return;
+		$exp=intval($_SESSION['CURR_USR'][7])+1;
+		$i=floor($exp/100)+1;
+		if($i > intval($_SESSION['CURR_USR'][5]))
+			$conn="UPDATE auth set lvl = ".$i.",expr = expr+1,coin = coin+1,lastlogin = '".date("Y-m-d H:i:s",$_SESSION['USR_AGENT'][1])."' WHERE uid = ".$_SESSION['CURR_USR'][0];
+		else
+			$conn="UPDATE auth set expr = expr+1,coin = coin+1,lastlogin = '".date("Y-m-d H:i:s",$_SESSION['USR_AGENT'][1])."' WHERE uid = ".$_SESSION['CURR_USR'][0];
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == TRUE)
+		{
+			if($i > intval($_SESSION['CURR_USR'][5]))
+				$_SESSION['CURR_USR'][5]=$i;
+			$_SESSION['curr_USR'][7]=$exp;
+			return;//success
+		}
+		else
+			$this->err_no=11;//update error
+	}//}}}
+//{{{public function add_secu($a) 添加登录信息表（security）记录
+	public function add_secu()
+	{
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$a=array();
+		$a=$this->get_secu();
+		$conn=sprintf("INSERT INTO security(uid,lastlog,signed,lgip,lgsys,lgbrow,trust,perm) VALUES(%d,now(),%d,'%s','%s','%s',%d,%d)",$a[0],$a[2],$a[3],$a[4],$a[5],$a[6],$a[7]);
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == TRUE)
+			return;
+		else
+			$this->err_no=3;//保存用户登录信息失败！
+	}//}}}
+//{{{public function get_secu_from_db() 从数据库中取得的用于在安全页面显示的4条记录函数
+	public function get_secu_from_db()
+	{
 		$ay=array();
-		mysqli_set_charset($mysqli,"utf8");
-		$res=mysqli_query($mysqli,$conn);
+		$this->init_db();
+		if($this->err_no)
+			return $ay;
+		$conn="SELECT * FROM security WHERE uid = ".$_SESSION['CURR_USR'][0]." ORDER BY lastlog DESC LIMIT 4";
+		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
 			array_push($ay,$row);
 		mysqli_free_result($res);
-		mysqli_close($mysqli);
-		$i=intval($ay[0][0])+1;
-		if($i > 268435456) //2^28
-			return 3;
-		$conn=sprintf("INSERT INTO fixedmod(mid,mname,mlink,micon) VALUES(%d,'%s','%s','%s')",$a[0],$a[1],$a[2],$a[3]);
-		$mysqli=mysqli_connect($this->db[0],$this->db[3],$this->db[4],$this->db[2],$this->db[1]);
-		if(mysqli_connect_errno())
-			return 2;
-		mysqli_set_charset($mysqli,"utf8");
-		$res=mysqli_query($mysqli,$conn);
-		mysqli_close($mysqli);
-		if($res == TRUE)
-			return 0;
-		else
-			return 6;
+		mysqli_close($this->mysqli);
+		return $ay;
 	}//}}}
 }//}}}
-
-
+//{{{class tb_invite extends signed_db 发送邀请所需数据库操作类
+class tb_invite extends signed_db
+{
+//{{{private function check_valid($e) 检查待邀请的邮箱的有效性，唯一性
+	private function check_valid($e)
+	{
+		$this->init_db();
+		if($this->err_no)
+			return;	//4 no data
+		if(!preg_match("/^(?:[a-z\d]+[_\-\+\.]?)*[a-z\d]+@(?:([a-z\d]+\-?)*[a-z\d]+\.)+([a-z]{2,})+$/i",$e))
+		{$this->err_no=14;return;} //14 format error
+		$conn="SELECT email FROM auth";
+		$ay=array();$i=0;
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+		{$ay[$i]=$row[0];$i+=1;}
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		foreach($ay as $a)
+		{
+			if(strcasecmp($a,$e) == 0)
+			{$this->err_no=9;return;} //9 该邮箱已经注册
+		}
+		$this->init_db();
+		if($this->err_no)
+			return;//1 connect error
+		$conn="SELECT invemail FROM invite WHERE uid = ".$_SESSION['CURR_USR'][0];
+		$ay=array();$i=0;
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+		{$ay[$i]=$row[0];$i+=1;}
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		foreach($ay as $a)
+		{
+			if(strcasecmp($a,$e) == 0)
+			{$this->err_no=15;return;} //15 该邮箱已经邀请了
+		}
+		$this->err_no=0;
+	}//}}}
+//{{{public function add_invite($u)
+	public function add_invite($u)
+	{
+		if(count($u) != 4)
+		{$this->err_no=2;return;} //2 参数错误
+		$this->check_valid($u[1]);
+		if($this->err_no)
+			return;
+		$conn=sprintf("INSERT INTO invite(uid,invemail,invbody,invited) VALUES (%d,'%s','%s',%d)",$u[0],$u[1],$u[2],$u[3]);
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == TRUE)
+			return;
+		else
+			$this->err_no=3;
+	}//}}}
+//{{{public function check_invite($e) 检查对方是否已经接受邀请
+	public function check_invite($e)
+	{
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$conn="SELECT invemail FROM invite WHERE idx = ".$e;
+		$res=mysqli_query($this->mysqli,$conn);
+		$row=mysqli_fetch_row($res);
+		if(is_null($row))
+		{
+			mysqli_free_result($res);
+			mysqli_close($this->mysqli);
+			$this->err_no=16; //no result
+			return;
+		}
+		$mail=$row[0];
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		$conn="SELECT email FROM auth";
+		unset($row);
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$ay=array();$i=0;
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+		{$ay[$i]=$row[0];$i+=1;}
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		foreach($ay as $a)
+		{
+			if(strcasecmp($a,$mail) == 0)
+			{
+				$this->update_invite($e);
+				return;
+			}
+		}
+		$this->err_no=100;//还未接受邀请
+	}//}}}
+//{{{public function get_invite()
+	public function get_invite()
+	{
+		$ay=array();
+		$this->init_db();
+		if($this->err_no)
+			return $ay;
+		$conn="SELECT * FROM invite WHERE uid = ".$_SESSION['CURR_USR'][0]." ORDER BY idx DESC LIMIT 6";
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}
+//{{{private function update_invite($e)
+	private function update_invite($e)
+	{
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$conn="UPDATE invite set invited = 1 WHERE idx = ".$e;
+		mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+	}//}}}
+}//}}}
+//{{{class tb_expert extends signed_db	专家表操作类
+class tb_expert extends signed_db
+{
+//{{{public function add_expert($e)
+	public function add_expert($e)
+	{
+		$this->check_len($e);
+		if($this->err_no)
+			return; //2,6
+		$this->init_db();
+		if($this->err_no)
+			return;//1
+		$conn=sprintf("SELECT comp FROM expert WHERE uid = %s",$e[0]);
+		$res=mysqli_query($this->mysqli,$conn);
+		$row=mysqli_fetch_row($res);
+		if($row != NULL)
+		{
+			mysqli_free_result($res);
+			mysqli_close($this->mysqli);
+			$this->err_no=5;//confirmed error
+			return;
+		}
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		$this->get_sqli();
+		if($this->err_no)
+			return;//1
+		$conn=sprintf("INSERT INTO expert(uid,comp,phone,major,intro,img,name,mid,confirmed) VALUES(%s,'%s','%s','%s','%s','%s','%s',%s,0)",$e[0],$e[1],$e[2],$e[3],$e[4],$e[5],$e[6],$e[7]);
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == TRUE)
+			return;
+		else
+			$this->err_no=3;		
+	}//}}}
+//{{{public function get_expert($e)	e[0]=0:by uid;e[0]=1:by mid confirmed;e[0]=2:by mid not confirmed;e[0]=3 by confirmed;e[0]=4 by not confirmed
+	public function get_expert($e)
+	{
+		$ay=array();
+		if(count($e) != 2)
+		{$this->err_no=2;return $ay;} //2
+		$this->init_db();
+		if($this->err_no)
+			return $ay;
+		switch(intval($e[0]))
+		{
+		case 0://按uid取得
+			$conn="SELECT * FROM expert WHERE uid = ".$e[1];
+			break;
+		case 1://按专业和取得认证
+			$conn="SELECT * FROM expert WHERE (mid & ".$e[1].") != 0 AND confirmed = 1";
+			break;
+		case 2://按专业和未取得认证
+			$conn="SELECT * FROM expert WHERE (mid & ".$e[1].") != 0 AND confirmed = 0";
+			break;
+		case 3://已被认证的
+			$conn="SELECT * FROM expert WHERE confirmed = 1";
+			break;
+		case 4://未被认证的
+			$conn="SELECT * FROM expert WHERE confirmed = 0";
+			break;
+		default:
+			$conn="SELECT * FROM expert";  //select all
+			break;
+		}
+		mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}
+//{{{private function check_len($e)  输入的合法性检查
+	private function check_len($e)
+	{//only check string length
+		if(count($e) != 8)
+		{$this->err_no=2;return;} //2 参数错误
+		if(strlen($e[1]) >= 48)
+		{$this->err_no=6;return;}
+		if(strlen($e[2]) >= 12)
+		{$this->err_no=6;return;}
+		if(strlen($e[3]) >= 32)
+		{$this->err_no=6;return;}
+		if(strlen($e[4]) >= 128)
+		{$this->err_no=6;return;}
+		if(strlen($e[5]) >= 128)
+		{$this->err_no=6;return;}
+		if(strlen($e[6]) >= 12)
+		{$this->err_no=6;return;}
+		if(strlen($e[7]) >= 8)
+		{$this->err_no=6;return;}
+	}//}}}
+}//}}}
+//{{{class tb_company extends signed_db	团队表的操作类
+class tb_company extends signed_db
+{
+//{{{public function add_company($e)
+	public function add_company($e)
+	{
+		$this->check_len($e);
+		if($this->err_no)
+			return; //2,6
+		$this->init_db();
+		if($this->err_no)
+			return;//1
+		$conn="SELECT name FROM company WHERE uid = ".$e[0];
+		$res=mysqli_query($this->mysqli,$conn);
+		$row=mysqli_fetch_row($res);
+		if($row != NULL)
+		{
+			mysqli_free_result($res);
+			mysqli_close($this->mysqli);
+			$this->err_no=5; //confirmed error
+			return;
+		}
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		$this->get_sqli();
+		if($this->err_no)
+			return; //1
+		$conn=sprintf("INSERT INTO company(uid,name,img,industry,iid,intro,addr,phone,confirmed) VALUES(%s,'%s','%s','%s',%s,'%s','%s','%s',0)",$e[0],$e[1],$e[2],$e[3],$e[4],$e[5],$e[6],$e[7]);
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == TRUE)
+			return;
+		else
+			$this->err_no=3;
+	}//}}}
+//{{{public function get_company($e)    e[0]=0:by uid;e[0]=1:by mid confirmed;e[0]=2:by mid not confirmed;e[0]=3 by confirmed;e[0]=4 by not confirmed
+	public function get_company($e)
+	{
+		$ay=array();
+		if(count($e) != 2)
+		{$this->err_no=2;return $ay;} //2
+		$this->init_db();
+		if($this->err_no)
+			return $ay;
+		switch(intval($e[0]))
+		{
+		case 0: //by uid
+			$conn="SELECT * FROM company WHERE uid = ".$e[1];
+			break;
+		case 1://by iid and confirmed
+			$conn="SELECT * FROM company WHERE (iid & ".$e[1].") != 0 AND confirmed = 1";
+			break;
+		case 2: //by iid not confirmed
+			$conn="SELECT * FROM company WHERE (iid & ".$e[1].") != 0 AND confirmed = 0";
+			break;
+		case 3://only confirmed
+			$conn="SELECT * FROM company WHERE confirmed = 1";
+			break;
+		case 4://only not confirmed
+			$conn="SELECT * FROM company WHERE confirmed = 0";
+			break;
+		default://select all
+			$conn="SELECT * FROM company";
+			break;
+		}
+		mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}
+//{{{private function check_len($e)  输入的合法性检查
+	private function check_len($e)
+	{//only check string length
+		if(count($e) != 8)
+		{$this->err_no=2;return;} //2 参数错误
+		if(strlen($e[1]) >= 48)
+		{$this->err_no=6;return;}
+		if(strlen($e[2]) >= 128)
+		{$this->err_no=6;return;}
+		if(strlen($e[3]) >= 32)
+		{$this->err_no=6;return;}
+		if(strlen($e[4]) >= 8)
+		{$this->err_no=6;return;}
+		if(strlen($e[5]) >= 256)
+		{$this->err_no=6;return;}
+		if(strlen($e[6]) >= 48)
+		{$this->err_no=6;return;}
+		if(strlen($e[7]) >= 12)
+		{$this->err_no=6;return;}
+	}//}}}
+}//}}}
 ?>
