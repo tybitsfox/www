@@ -100,7 +100,6 @@ class base_login
 			return "该邮箱已在您的邀请列表中";
 		case 16:
 			return "查找记录失败";
-
 		default:
 			return "未知错误！";
 		}
@@ -229,8 +228,8 @@ class login extends base_login
 			$this->err_no=12;
 	}//}}}
 }//}}}
-//{{{class tb_choose extends signed_db
-class tb_choose extends signed_db
+//{{{class tb_choose extends base_login
+class tb_choose extends base_login
 {
 //{{{public function get_db($u)
 	public function get_db($u)
@@ -262,6 +261,9 @@ class tb_choose extends signed_db
 		mysqli_close($this->mysqli);
 		if(count($ay) != 0)
 		{$this->err_no=13;return;}
+		$this->init_db();
+		if($this->err_no)
+			return;
 		$conn=sprintf("INSERT INTO choose(uid,mid,cid,mname,mlink,mclass,micon) VALUES(%d,%d,'%s','%s','%s','%s','%s')",$a[0],$a[1],$a[2],$a[3],$a[4],$a[5],$a[6]);
 		$res=mysqli_query($this->mysqli,$conn);
 		mysqli_close($this->mysqli);
@@ -271,10 +273,10 @@ class tb_choose extends signed_db
 			$this->err_no=3;
 	}//}}}
 }//}}}
-//{{{class used_sign extends signed_db
+//{{{class used_sign extends base_login
 //登录用户的信息:uid(0),email(1),uname(2),pwd(3),priv(4),lvl(5),sex(6),expr(7),coin(8),treasure(9),signup(10),lastlogin(11)
 //security:uid(0),lastlog(1),signed(2),lgip(3),lgsys(4),lgbrow(5),trust(6),perm(7)
-class used_sign extends signed_db
+class used_sign extends base_login
 {
 //{{{private function get_secu() 由当前会话信息生成的将要保存的信息
 	private function get_secu()
@@ -384,7 +386,7 @@ class used_sign extends signed_db
 		else
 			$this->err_no=11;//update error
 	}//}}}
-//{{{public function add_secu($a) 添加登录信息表（security）记录
+//{{{public function add_secu() 添加登录信息表（security）记录
 	public function add_secu()
 	{
 		$this->init_db();
@@ -416,8 +418,8 @@ class used_sign extends signed_db
 		return $ay;
 	}//}}}
 }//}}}
-//{{{class tb_invite extends signed_db 发送邀请所需数据库操作类
-class tb_invite extends signed_db
+//{{{class tb_invite extends base_login 发送邀请所需数据库操作类
+class tb_invite extends base_login
 {
 //{{{private function check_valid($e) 检查待邀请的邮箱的有效性，唯一性
 	private function check_valid($e)
@@ -538,8 +540,8 @@ class tb_invite extends signed_db
 		mysqli_close($this->mysqli);
 	}//}}}
 }//}}}
-//{{{class tb_expert extends signed_db	专家表操作类
-class tb_expert extends signed_db
+//{{{class tb_expert extends base_login	专家表操作类
+class tb_expert extends base_login
 {
 //{{{public function add_expert($e)
 	public function add_expert($e)
@@ -631,8 +633,8 @@ class tb_expert extends signed_db
 		{$this->err_no=6;return;}
 	}//}}}
 }//}}}
-//{{{class tb_company extends signed_db	团队表的操作类
-class tb_company extends signed_db
+//{{{class tb_company extends base_login	团队表的操作类
+class tb_company extends base_login
 {
 //{{{public function add_company($e)
 	public function add_company($e)

@@ -5,12 +5,14 @@ if(!defined("FULL_PATH"))
     define("FULL_PATH",substr(dirname(__FILE__),0,strlen(dirname(__FILE__))-strlen(strstr(dirname(__FILE__),"huili")))."huili".DIRECTORY_SEPARATOR);
 require_once(constant("FULL_PATH")."config/glob_new.php");  //全局常量及变量定义文件的引入
 require_once(constant("FULL_PATH")."config/glob_signed.php");
-require_once(constant("FULL_PATH")."lib/main.php");
+//require_once(constant("FULL_PATH")."lib/main.php");
+require_once(constant("FULL_PATH")."lib/db_base.php");
 require_once(constant("FULL_PATH")."config/email.php");
 /// check login
 if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 12))
 	die("没有授权，禁止登录"."count=".count($_SESSION['CURR_USR']));
 ////////////////////////
+$err_string=$SIGNED_DEF['TOP_TEXT1'];
 if(isset($_POST['upmodule']))
 {
 	if(strlen($_POST['upmodule']) > 1)
@@ -28,6 +30,11 @@ if(isset($_POST['upmodule']))
 			$j=intval($sa[$i])-2; //get index.
 			$sb=array($_SESSION['CURR_USR'][0],$j,$SIGNED_DEF['MODULE'][$j][3],$SIGNED_DEF['MODULE'][$j][1],$SIGNED_DEF['MODULE'][$j][0],$SIGNED_DEF['MODULE'][$j][2],$SIGNED_DEF['MODULE'][$j][4]);
 			$ta->add_db($sb);
+			if($ta->err_no)
+			{
+				$err_string=$ta->err_msg();
+				break;
+			}
 		}
 	}
 }
@@ -35,6 +42,8 @@ $ta=new tb_choose();
 $u=$_SESSION['CURR_USR'][0]; //uid
 $cy=array();
 $cy=$ta->get_db($u);
+if($ta->err_no)
+	$err_string=$ta->err_msg();
 $sa=array();
 for($i=0;$i<count($cy);$i++)
 	array_push($sa,$cy[$i][1]);//get mid
@@ -99,7 +108,8 @@ if(!isset($_GET['select']))
 	echo $SIG_HTML['LEFT_TOP3'];
 	$st=sprintf($SIG_HTML['RIGHT_TOP1'],"主页");
 	echo $st;
-	echo $SIG_HTML['RIGHT_TOP2'];
+	$st=sprintf($SIG_HTML['RIGHT_TOP2'],$err_string);
+	echo $st;
 	echo $SIG_HTML['RIGHT_TOP_REPB'];
 	$j=count($SIGNED_DEF['MODULE']);
 	for($i=0;$i<$j;$i++)

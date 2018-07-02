@@ -40,8 +40,8 @@ if(!defined("FULL_PATH"))
 	define("FULL_PATH",substr(dirname(__FILE__),0,strlen(dirname(__FILE__))-strlen(strstr(dirname(__FILE__),"huili")))."huili".DIRECTORY_SEPARATOR);
 require_once(constant("FULL_PATH")."config/glob_new.php");
 require_once(constant("FULL_PATH")."config/glob_prev.php");
-require_once(constant("FULL_PATH")."lib/main.php");
-//global $GLOB_DEF,$OUT_HTML;
+//require_once(constant("FULL_PATH")."lib/main.php");
+require_once(constant("FULL_PATH")."lib/db_base.php");
 echo $ALL_HTML['LOGIN_HEAD'];
 $s1=sprintf($OUT_HTML['LOGIN_BODY_1g'],constant("WORK_PLACE")."include/login.php");
 echo $s1;
@@ -53,18 +53,18 @@ if(isset($_POST["email"]) && isset($_POST["password"]))
 		setcookie("huili_lgname","",time()-3600,"/",$domain,false);
 		setcookie("huili_lgpwd","",time()-3600,"/",$domain,false);
 	}
-	$a=new loginn($_POST["email"],$_POST["password"]);
-	$i=$a->signin();
-	if($i)
-		$a->err_msg($i);
+	$a=new login();
+	$a->signin($_POST["email"],$_POST["password"]);
+	if($a->err_no)
+		$a->err_msg();
 	else
 	{
 		$ta=new used_sign();
-		$i=$ta->add_secu();
-		if($i == 0)
+		$ta->add_secu();
+		if($ta->err_no == 0)
 			echo "<script>setTimeout(\"window.location='./home.php'\",2);</script>";
 		else
-			die($ta->err_msg($i));
+			die($ta->err_msg());
 	}
 }
 //echo $OUT_HTML['LOGIN_BODY_2l'];

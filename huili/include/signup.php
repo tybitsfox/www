@@ -27,7 +27,8 @@ if(!defined("FULL_PATH"))
 	define("FULL_PATH",substr(dirname(__FILE__),0,strlen(dirname(__FILE__))-strlen(strstr(dirname(__FILE__),"huili")))."huili".DIRECTORY_SEPARATOR);
 require_once(constant("FULL_PATH")."config/glob_new.php");
 require_once(constant("FULL_PATH")."config/glob_prev.php");
-require_once(constant("FULL_PATH")."lib/main.php");
+//require_once(constant("FULL_PATH")."lib/main.php");
+require_once(constant("FULL_PATH")."lib/db_base.php");
 require_once(constant("FULL_PATH")."config/email.php");
 echo $ALL_HTML['LOGIN_HEAD'];
 if(isset($_POST['new-password']))
@@ -51,10 +52,10 @@ if(isset($_POST['new-password']))
 	else
 	{
 
-		$a=new loginn($_POST['email-name'],$_POST['new-password']);
-		$j=$a->signup();
-		if($j > 0)
-			$a->err_msg($j);
+		$a=new login();
+		$a->signup($_POST['email-name'],$_POST['new-password']);
+		if($a->err_no)
+			$a->err_msg();
 		else
 		{
 			$s1=sprintf($OUT_HTML['VERF_BODY_1l'],constant("WORK_PLACE")."include/signup.php");
