@@ -72,7 +72,7 @@ elseif(isset($_POST['comp'])) //团队认证
 $j=count($SIGNED_DEF['PROFILE']);
 for($i=0;$i<$j;$i++)
 {
-	if(($i == 7) && ($_SESSION['CURR_USR'][0] > 100001))
+	if(($i == 5) && ($_SESSION['CURR_USR'][0] > 100001))
 		continue;
 	$st=sprintf("<li><a href='%s'>%s<i class='%s'></i></a></li>\n",$SIGNED_DEF['PROFILE'][$i][0],$SIGNED_DEF['PROFILE'][$i][1],$SIGNED_DEF['PROFILE'][$i][2]);
 	echo $st;

@@ -5,8 +5,8 @@ if(isset($_GET['index']))
 	if($_GET['index'] == 1)
 	{
 		$ta=new used_sign();
-		$i=$ta->update_auth();
-		if($i == 0)
+		$ta->update_auth();
+		if($ta->err_no == 0)
 		{
 			$_SESSION['CURR_USR'][11]=date("Y-m-d H:i:s",$_SESSION['USR_AGENT'][1]);
 			$_SESSION['CURR_USR'][8]+=1;
@@ -35,6 +35,8 @@ if(isset($_GET['index']))
 $j=count($SIGNED_DEF['PROFILE']);
 for($i=0;$i<$j;$i++)
 {
+	if(($i == 5) && ($_SESSION['CURR_USR'][0] > 100001))
+		continue;
 	$st=sprintf("<li><a href='%s'>%s<i class='%s'></i></a></li>\n",$SIGNED_DEF['PROFILE'][$i][0],$SIGNED_DEF['PROFILE'][$i][1],$SIGNED_DEF['PROFILE'][$i][2]);
 	echo $st;
 }
@@ -134,15 +136,15 @@ for($i=0;$i<$j;$i++)
 if(isset($_POST['nickname']))
 {
 	$ay=array(0,$_POST['nickname']);//0:uname,1:password,2:email
-	$ta=new tb_auth();
-	$i=$ta->edit($ay);
-	if($i == 0)
+	$ta=new login();
+	$ta->edit($ay);
+	if($ta->err_no == 0)
 	{
 		echo "<div class='alert alert-success alert-inline' role='alert'>\n昵称已经更新</div>\n";
 		$_SESSION['CURR_USR'][2]=$ay[1];
 	}
 	else
-		echo "<div class='alert alert-danger alert-inline' role='alert'>\n昵称更新失败 errno=".$i."</div>\n";
+		echo "<div class='alert alert-danger alert-inline' role='alert'>\n".$ta->err_msg()."</div>\n";
 	$st2=sprintf($st1,$ay[1]);
 	echo $st2;
 	unset($ay);
@@ -157,12 +159,15 @@ else
 if(isset($_POST['email']))
 {
 	$ay=array(2,$_POST['email']);//0:uname,1:password,2:email
-	$ta=new tb_auth();
-	$i=$ta->edit($ay);
-	if($i == 0)
+	$ta=new login();
+	$ta->edit($ay);
+	if($ta->err_no == 0)
+	{
 		echo "<div class='alert alert-success alert-inline' role='alert'>\n邮箱已经更新</div>\n";
+		$_SESSION['CURR_USR'][1]=$ay[1];
+	}
 	else
-		echo "<div class='alert alert-danger alert-inline' role='alert'>\n邮箱更新失败</div>\n";
+		echo "<div class='alert alert-danger alert-inline' role='alert'>\n".$ta->err_msg()."</div>\n";
 	$st2=sprintf($st1,$ay[1]);
 	echo $st2;
 	unset($ay);
@@ -219,16 +224,16 @@ if(isset($_POST['curpwd']) || isset($_POST['newpwd']) || isset($_POST['cfmpwd'])
 	}
 	else
 	{
-		if($_POST['newpwd'] != $_POST['cgmpwd'])
+		if($_POST['newpwd'] != $_POST['cfmpwd'])
 		{
 			echo "<div class='alert alert-danger alert-inline' role='alert'>\n两次密码不一致，请重新输入</div>\n";
 		}
 		else
 		{
 			$ay=array(1,$_POST['cfmpwd']);//0:uname,1:password,2:email
-			$ta=new tb_auth();
-			$i=$ta->edit($ay);
-			if($i == 0)
+			$ta=new login();
+			$ta->edit($ay);
+			if($ta->err_no == 0)
 			{
 				echo "<div class='alert alert-success alert-inline' role='alert'>\n密码已经更新</div>\n";
 				$_SESSION['CURR_USR'][3]=$ay[1];

@@ -45,6 +45,8 @@ require_once(constant("FULL_PATH")."lib/db_base.php");
 echo $ALL_HTML['LOGIN_HEAD'];
 $s1=sprintf($OUT_HTML['LOGIN_BODY_1g'],constant("WORK_PLACE")."include/login.php");
 echo $s1;
+if(isset($_SESSION['badtimes']) && ($_SESSION['badtimes'] >=3 ))
+	die("<div class='alert alert-danger' role='alert'><strong>错误</strong>登录被限制！</div>");
 if(isset($_POST["email"]) && isset($_POST["password"]))
 {
 	if(!isset($_POST['trusted']))
@@ -56,9 +58,18 @@ if(isset($_POST["email"]) && isset($_POST["password"]))
 	$a=new login();
 	$a->signin($_POST["email"],$_POST["password"]);
 	if($a->err_no)
-		$a->err_msg();
+	{
+		if(isset($_SESSION['badtimes']))
+			$_SESSION['badtimes']++;
+		else
+		{
+			$_SESSION['badtimes']=0;
+		}
+		echo "<div class='alert alert-danger' role='alert'><strong>错误</strong>".$a->err_msg()."</div>";
+	}
 	else
 	{
+		$_SESSION['badtimes']=0;
 		$ta=new used_sign();
 		$ta->add_secu();
 		if($ta->err_no == 0)

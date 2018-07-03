@@ -131,13 +131,6 @@ else
 	case $SIGNED_PAGE['ONE']:
 		include_once('./setting_pro.php');
 		break;
-	case $SIGNED_PAGE['TWO']:
-		include_once('./setting_pwd.php');
-		break;
-	case $SIGNED_PAGE['THR']:
-	case $SIGNED_PAGE['THRR']:
-		include_once('./setting_account.php');
-		break;
 	case $SIGNED_PAGE['FUR']:
 		include_once('./setting_invite.php');
 		break;

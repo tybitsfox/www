@@ -200,6 +200,16 @@ class login extends base_login
 			$st1="UPDATE auth SET pwd = '".md5($ay[1])."' WHERE uid = ".$_SESSION['CURR_USR'][0];
 			break;
 		case 2://email
+			$conn="SELECT uid FROM auth WHERE email = '".$ay[1]."'";
+			$res=mysqli_query($this->mysqli,$conn);
+			$row=mysqli_fetch_row($res);
+			mysqli_free_result($res);
+			mysqli_close($this->mysqli);
+			if(!is_null($row))
+			{$this->err_no=9;return;}
+			$this->init_db();
+			if($this->err_no)
+				return;
 			$st1="UPDATE auth SET email = '".$ay[1]."' WHERE uid = ".$_SESSION['CURR_USR'][0];
 			break;
 		default:
@@ -456,7 +466,7 @@ class tb_invite extends base_login
 			if(strcasecmp($a,$e) == 0)
 			{$this->err_no=15;return;} //15 该邮箱已经邀请了
 		}
-		$this->err_no=0;
+		$this->init_db();
 	}//}}}
 //{{{public function add_invite($u)
 	public function add_invite($u)
