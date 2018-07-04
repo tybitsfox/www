@@ -78,7 +78,7 @@ class base_login
 		case 4:
 			return "您选择的年份没有记录";
 		case 5:
-			return "认证失败！该帐户已通过认证";
+			return "申请失败！该帐户已申请认证";
 		case 6:
 			return "您输入的字段长度过长";
 		case 7:
@@ -577,7 +577,7 @@ class tb_expert extends base_login
 		$this->get_sqli();
 		if($this->err_no)
 			return;//1
-		$conn=sprintf("INSERT INTO expert(uid,comp,phone,major,intro,img,name,mid,confirmed) VALUES(%s,'%s','%s','%s','%s','%s','%s',%s,0)",$e[0],$e[1],$e[2],$e[3],$e[4],$e[5],$e[6],$e[7]);
+		$conn=sprintf("INSERT INTO expert(uid,category,name,addr,phone,major,intro,img,mid,confirmed) VALUES(%s,%s,'%s','%s','%s','%s','%s','%s',%s,0)",$e[0],$e[1],$e[2],$e[3],$e[4],$e[5],$e[6],$e[7],$e[8]);
 		$res=mysqli_query($this->mysqli,$conn);
 		mysqli_close($this->mysqli);
 		if($res == TRUE)
@@ -625,114 +625,19 @@ class tb_expert extends base_login
 //{{{private function check_len($e)  输入的合法性检查
 	private function check_len($e)
 	{//only check string length
-		if(count($e) != 8)
+		if(count($e) != 9)
 		{$this->err_no=2;return;} //2 参数错误
-		if(strlen($e[1]) >= 48)
+		if(strlen($e[2]) >= 32)
 		{$this->err_no=6;return;}
-		if(strlen($e[2]) >= 12)
+		if(strlen($e[3]) >= 48)
 		{$this->err_no=6;return;}
-		if(strlen($e[3]) >= 32)
+		if(strlen($e[4]) >= 12)
 		{$this->err_no=6;return;}
-		if(strlen($e[4]) >= 128)
+		if(strlen($e[5]) >= 32)
 		{$this->err_no=6;return;}
-		if(strlen($e[5]) >= 128)
+		if(strlen($e[6]) >= 256)
 		{$this->err_no=6;return;}
-		if(strlen($e[6]) >= 12)
-		{$this->err_no=6;return;}
-		if(strlen($e[7]) >= 8)
-		{$this->err_no=6;return;}
-	}//}}}
-}//}}}
-//{{{class tb_company extends base_login	团队表的操作类
-class tb_company extends base_login
-{
-//{{{public function add_company($e)
-	public function add_company($e)
-	{
-		$this->check_len($e);
-		if($this->err_no)
-			return; //2,6
-		$this->init_db();
-		if($this->err_no)
-			return;//1
-		$conn="SELECT name FROM company WHERE uid = ".$e[0];
-		$res=mysqli_query($this->mysqli,$conn);
-		$row=mysqli_fetch_row($res);
-		if($row != NULL)
-		{
-			mysqli_free_result($res);
-			mysqli_close($this->mysqli);
-			$this->err_no=5; //confirmed error
-			return;
-		}
-		mysqli_free_result($res);
-		mysqli_close($this->mysqli);
-		$this->get_sqli();
-		if($this->err_no)
-			return; //1
-		$conn=sprintf("INSERT INTO company(uid,name,img,industry,iid,intro,addr,phone,confirmed) VALUES(%s,'%s','%s','%s',%s,'%s','%s','%s',0)",$e[0],$e[1],$e[2],$e[3],$e[4],$e[5],$e[6],$e[7]);
-		$res=mysqli_query($this->mysqli,$conn);
-		mysqli_close($this->mysqli);
-		if($res == TRUE)
-			return;
-		else
-			$this->err_no=3;
-	}//}}}
-//{{{public function get_company($e)    e[0]=0:by uid;e[0]=1:by mid confirmed;e[0]=2:by mid not confirmed;e[0]=3 by confirmed;e[0]=4 by not confirmed
-	public function get_company($e)
-	{
-		$ay=array();
-		if(count($e) != 2)
-		{$this->err_no=2;return $ay;} //2
-		$this->init_db();
-		if($this->err_no)
-			return $ay;
-		switch(intval($e[0]))
-		{
-		case 0: //by uid
-			$conn="SELECT * FROM company WHERE uid = ".$e[1];
-			break;
-		case 1://by iid and confirmed
-			$conn="SELECT * FROM company WHERE (iid & ".$e[1].") != 0 AND confirmed = 1";
-			break;
-		case 2: //by iid not confirmed
-			$conn="SELECT * FROM company WHERE (iid & ".$e[1].") != 0 AND confirmed = 0";
-			break;
-		case 3://only confirmed
-			$conn="SELECT * FROM company WHERE confirmed = 1";
-			break;
-		case 4://only not confirmed
-			$conn="SELECT * FROM company WHERE confirmed = 0";
-			break;
-		default://select all
-			$conn="SELECT * FROM company";
-			break;
-		}
-		mysqli_query($this->mysqli,$conn);
-		while($row=mysqli_fetch_row($res))
-			array_push($ay,$row);
-		mysqli_free_result($res);
-		mysqli_close($this->mysqli);
-		return $ay;
-	}//}}}
-//{{{private function check_len($e)  输入的合法性检查
-	private function check_len($e)
-	{//only check string length
-		if(count($e) != 8)
-		{$this->err_no=2;return;} //2 参数错误
-		if(strlen($e[1]) >= 48)
-		{$this->err_no=6;return;}
-		if(strlen($e[2]) >= 128)
-		{$this->err_no=6;return;}
-		if(strlen($e[3]) >= 32)
-		{$this->err_no=6;return;}
-		if(strlen($e[4]) >= 8)
-		{$this->err_no=6;return;}
-		if(strlen($e[5]) >= 256)
-		{$this->err_no=6;return;}
-		if(strlen($e[6]) >= 48)
-		{$this->err_no=6;return;}
-		if(strlen($e[7]) >= 12)
+		if(strlen($e[7]) >= 128)
 		{$this->err_no=6;return;}
 	}//}}}
 }//}}}

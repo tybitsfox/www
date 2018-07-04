@@ -22,8 +22,8 @@ for($i=0;$i<$j;$i++)
             <div class='panel shadow'>
                 <!-- Nav tabs -->
                 <ul class='nav nav-tabs nav-tabs-hor' role='tablist'>
-                        <li role='presentation' class='active'><a href='#test1' aria-controls='share' role='tab' data-toggle='tab' data-history-enabled>我邀请的合作</a></li>
-                        <li role='presentation' class=''><a href='#test2' aria-controls='sharedwith' role='tab' data-toggle='tab' data-history-enabled>邀请我的合作</a></li>
+                        <li role='presentation' class='active'><a href='#test1' aria-controls='share' role='tab' data-toggle='tab' data-history-enabled>认证审核</a></li>
+                        <li role='presentation' class=''><a href='#test2' aria-controls='sharedwith' role='tab' data-toggle='tab' data-history-enabled>详细资料</a></li>
                 </ul>
                 <div class='body'>                
                     <div class='body body-settings'>
@@ -34,25 +34,35 @@ for($i=0;$i<$j;$i++)
                                     <div class='inner-narrow inner-midnarrow'>
 
     <div class='intro-block intro-block-slim'>
-        <p>我邀请的合作伙伴.</p>
+        <p>我管理界面.</p>
     </div>
 
                 <div class='nav-vendors'>
                     <!-- Vendor nav -->
                     <ul class='nav nav-tabs nav-tabs-vertical' role='tablist'>
-                            <li role='presentation' class=''>
+                            <li role='presentation' class='active'>
                                 <a href='#vendor-expert' role='tab' data-toggle='tab'>
-                                    <i class='icon-truck'></i><span>专家团队</span>
+                                    <i class='icon-user'></i><span>专家申请</span>
                                 </a>
                             </li>
-                            <li role='presentation' class='active'>
+                            <li role='presentation' class=''>
                                 <a href='#vendor-company' role='tab' data-toggle='tab'>
-                                    <i class='icon-user'></i><span>业务伙伴</span>
+                                    <i class='icon-group'></i><span>团队申请</span>
                                 </a>
 							</li>
                             <li role='presentation' class=''>
-                                <a href='#vendor-addexpert' role='tab' data-toggle='tab'>
-                                    <i class='icon-truck'></i><span>邀请专家</span>
+                                <a href='#vendor-exexpert' role='tab' data-toggle='tab'>
+                                    <i class='icon-smile'></i><span>现有专家</span>
+                                </a>
+                            </li>
+                            <li role='presentation' class=''>
+                                <a href='#vendor-excomp' role='tab' data-toggle='tab'>
+                                    <i class='icon-wechat'></i><span>现有团队</span>
+                                </a>
+                            </li>
+                            <li role='presentation' class=''>
+                                <a href='#vendor-user' role='tab' data-toggle='tab'>
+                                    <i class='icon-pencil'></i><span>账户管理</span>
                                 </a>
                             </li>
                     </ul>

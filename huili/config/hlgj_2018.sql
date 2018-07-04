@@ -46,7 +46,7 @@ CREATE TABLE `auth` (
 
 LOCK TABLES `auth` WRITE;
 /*!40000 ALTER TABLE `auth` DISABLE KEYS */;
-INSERT INTO `auth` VALUES (100002,'test1@163.com','test1','260be2fecdf89f88eab77128ef7511d3',7,1,0,0,0,0,'2018-07-03 01:57:20','2018-07-03 01:57:20'),(100003,'test2@163.com','test2','8d114dfc0aa6cbd20d74a573b9343e86',7,1,0,0,0,0,'2018-07-03 01:57:21','2018-07-03 01:57:21'),(100004,'test3@163.com','test3','ae71aca395893a68edfae00b2502b2ba',7,1,0,0,0,0,'2018-07-03 01:57:21','2018-07-03 01:57:21'),(100005,'test4@163.com','test4','294d6d199b92abdc07e6715956c67831',7,1,0,0,0,0,'2018-07-03 01:57:21','2018-07-03 01:57:21'),(100001,'tybitsfox@163.com','tybitsfox','2694f8b0e3d3d17ff567c9ca072db75c',7,1,0,0,0,0,'2018-07-03 01:37:49','2018-07-03 01:37:49'),(100000,'tyyyyt@163.com','tian','9a071c40a829eea19b90a5e011d64703',7,1,0,0,0,0,'2018-07-03 01:12:06','2018-07-03 01:12:06');
+INSERT INTO `auth` VALUES (100002,'test1@163.com','test1','260be2fecdf89f88eab77128ef7511d3',7,1,0,1,1,0,'2018-07-03 01:57:20','2018-07-04 05:58:19'),(100003,'test2@163.com','test2','8d114dfc0aa6cbd20d74a573b9343e86',7,1,0,0,0,0,'2018-07-03 01:57:21','2018-07-03 01:57:21'),(100004,'test3@163.com','test3','ae71aca395893a68edfae00b2502b2ba',7,1,0,0,0,0,'2018-07-03 01:57:21','2018-07-03 01:57:21'),(100005,'test4@163.com','test4','294d6d199b92abdc07e6715956c67831',7,1,0,0,0,0,'2018-07-03 01:57:21','2018-07-03 01:57:21'),(100001,'tybitsfox@163.com','tybitsfox','2694f8b0e3d3d17ff567c9ca072db75c',7,1,0,0,0,0,'2018-07-03 01:37:49','2018-07-03 01:37:49'),(100000,'tyyyyt@163.com','tian','9a071c40a829eea19b90a5e011d64703',7,1,0,0,0,0,'2018-07-03 01:12:06','2018-07-03 01:12:06');
 /*!40000 ALTER TABLE `auth` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -110,37 +110,6 @@ INSERT INTO `choose` VALUES (100000,2,'chlink4','环境监测','/huili/include/h
 UNLOCK TABLES;
 
 --
--- Table structure for table `company`
---
-
-DROP TABLE IF EXISTS `company`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `company` (
-  `uid` int(32) unsigned NOT NULL COMMENT '企业id',
-  `name` varchar(48) NOT NULL COMMENT '企业名称',
-  `img` varchar(128) NOT NULL COMMENT '图片链接',
-  `industry` varchar(32) NOT NULL COMMENT '所属行业',
-  `iid` int(8) unsigned NOT NULL COMMENT '行业id',
-  `intro` varchar(256) NOT NULL COMMENT '企业简介',
-  `addr` varchar(48) NOT NULL COMMENT '企业地址',
-  `phone` varchar(12) NOT NULL COMMENT '联系电话',
-  `confirmed` int(4) unsigned NOT NULL COMMENT '认证标志',
-  PRIMARY KEY (`uid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `company`
---
-
-LOCK TABLES `company` WRITE;
-/*!40000 ALTER TABLE `company` DISABLE KEYS */;
-INSERT INTO `company` VALUES (100004,'山东汇力环保科技公司','/huili/images/upload/b_04E2087C04B7C851.jpg',' ',24,'环境问题解决专家','泰安市长城路1366号','12393934',0);
-/*!40000 ALTER TABLE `company` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `conn_me`
 --
 
@@ -172,17 +141,18 @@ DROP TABLE IF EXISTS `expert`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `expert` (
-  `uid` int(32) unsigned NOT NULL COMMENT '用户ID',
-  `comp` varchar(48) NOT NULL COMMENT '单位',
+  `uid` int(32) unsigned NOT NULL COMMENT '用户id',
+  `category` int(4) unsigned NOT NULL COMMENT '类别',
+  `name` varchar(32) NOT NULL COMMENT '用户名',
+  `addr` varchar(48) NOT NULL COMMENT '单位或地址',
   `phone` varchar(12) NOT NULL COMMENT '电话',
-  `major` varchar(32) NOT NULL COMMENT '所属专业',
-  `intro` varchar(128) NOT NULL COMMENT '个人简介',
-  `img` varchar(128) NOT NULL COMMENT '照片连接',
-  `name` varchar(12) NOT NULL COMMENT '姓名',
-  `mid` int(8) unsigned NOT NULL COMMENT '专业id',
+  `major` varchar(32) NOT NULL COMMENT '行业或专业',
+  `intro` varchar(256) NOT NULL COMMENT '简介',
+  `img` varchar(128) NOT NULL COMMENT '图片链接',
+  `mid` int(32) unsigned NOT NULL COMMENT '专业id',
   `confirmed` int(4) unsigned NOT NULL COMMENT '认证标志',
   PRIMARY KEY (`uid`),
-  KEY `mid_name` (`mid`,`name`)
+  KEY `mid` (`mid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -192,7 +162,7 @@ CREATE TABLE `expert` (
 
 LOCK TABLES `expert` WRITE;
 /*!40000 ALTER TABLE `expert` DISABLE KEYS */;
-INSERT INTO `expert` VALUES (100002,'山东科技大学','18598231668',' ','博导，噪声专业','/huili/images/upload/b_3A1DBB2AF12B663F.jpg','张三',4,0),(100003,'山东农业大学','13325281234',' ','土壤化学，科技进步奖','/huili/images/upload/b_BBA180FECD8008D6.jpg','李四',24,0);
+INSERT INTO `expert` VALUES (100002,0,'张三','山东省科技大学','13561762896',' ','噪声治理，通风专业','/huili/images/upload/guest.png',20,0);
 /*!40000 ALTER TABLE `expert` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -252,6 +222,32 @@ INSERT INTO `invite` VALUES (8,100000,'bitsfox@126.com','hello bitsfox',0),(6,10
 UNLOCK TABLES;
 
 --
+-- Table structure for table `my_expert`
+--
+
+DROP TABLE IF EXISTS `my_expert`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `my_expert` (
+  `uid` int(32) unsigned NOT NULL COMMENT '用户uid',
+  `eid` int(32) unsigned NOT NULL COMMENT '专家uid',
+  `hlptimes` int(32) unsigned NOT NULL COMMENT '给予帮助的次数',
+  `badtimes` int(32) unsigned NOT NULL COMMENT '不满意的次数',
+  `totalpay` int(32) unsigned NOT NULL COMMENT '累计支付的币数',
+  PRIMARY KEY (`uid`,`eid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `my_expert`
+--
+
+LOCK TABLES `my_expert` WRITE;
+/*!40000 ALTER TABLE `my_expert` DISABLE KEYS */;
+/*!40000 ALTER TABLE `my_expert` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `security`
 --
 
@@ -277,7 +273,7 @@ CREATE TABLE `security` (
 
 LOCK TABLES `security` WRITE;
 /*!40000 ALTER TABLE `security` DISABLE KEYS */;
-INSERT INTO `security` VALUES (100000,'2018-07-03 01:15:40',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-03 01:16:08',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-03 01:18:24',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-03 01:34:40',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-03 01:38:38',0,'192.168.1.122','GNU/linux操作系统','Firefox',1,7),(100002,'2018-07-03 02:04:06',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100003,'2018-07-03 02:08:41',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100004,'2018-07-03 05:35:29',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100004,'2018-07-03 05:41:34',0,'localhost','GNU/linux操作系统','Firefox',0,0);
+INSERT INTO `security` VALUES (100000,'2018-07-03 01:15:40',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-03 01:16:08',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-03 01:18:24',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-03 01:34:40',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-03 01:38:38',0,'192.168.1.122','GNU/linux操作系统','Firefox',1,7),(100002,'2018-07-03 02:04:06',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100003,'2018-07-03 02:08:41',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100004,'2018-07-03 05:35:29',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100004,'2018-07-03 05:41:34',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-04 01:49:21',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-04 03:11:11',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-04 05:20:50',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-04 05:57:42',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100002,'2018-07-04 05:58:13',1,'localhost','GNU/linux操作系统','Firefox',1,7);
 /*!40000 ALTER TABLE `security` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -290,4 +286,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-07-03 20:44:54
+-- Dump completed on 2018-07-04 14:41:33
