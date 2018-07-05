@@ -45,7 +45,54 @@ if(isset($_GET['action']) && isset($_GET['vendor']))
 	$ven_act[intval($_GET['vendor'])]="active";
 }
 //}}}
+echo "<script>
+var total=".count($usr).";
+var liab = [];";
+
+for($i=0;$i<count($usr);$i++)
+	echo "liab[".$i."]=['".$usr[$i][0]."','".$usr[$i][1]."'];";
+echo "</script>";
 ?>
+<script>
+function gettay()
+{
+	var s=document.getElementById('dira02');
+	var v=s.onclick;
+	if(v == null)
+	{
+		s.onclick=function onclick(event) {gettby();};
+		s.setAttribute("style","color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;");
+		var a=document.getElementById('pgnum');
+		a.innerHTML="1";
+	}
+	else
+	{
+		var a=document.getElementById('sdsd');
+		a.innerHTML=v;
+	}
+}
+function gettby()
+{
+	var st=document.getElementById('pgnum');
+	if(Number(st.innerHTML) > 3)
+	{
+		var s=document.getElementById('dira02');
+	//	s.setAttribute("color","gray");
+	//	s.style.color="gray";
+		s.removeAttribute("style");
+	//	s.style.border-bottom="";
+		s.onclick='';
+	}
+	else
+	{
+		st.innerHTML=String(Number(st.innerHTML)+1);
+	}
+	var a=document.getElementById('sdsd');
+	a.innerHTML=st.innerHTML;
+	
+}
+</script>
+
 <?php
 //{{{ top fixed!
 		$st1=$_SESSION['CURR_USR'][2];
@@ -251,6 +298,14 @@ if(count($usr))
 		$st2=sprintf($st1,$usr[$i][1],$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&action=".$_SESSION['CURR_USR'][0]."&vendor=4");
 		echo $st2;
 	}
+								  $st1="<div class='shareblock-body'>
+									  		<div class='text-center'>
+                                                        <a id='dira01' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;' href='javascript:;' onclick='gettay();'>&lt;</a>&nbsp;&nbsp;<span id='pgnum'>1</span>&nbsp;&nbsp;<a id='dira02' style='color: #3EAE48; text-decoration: none;border-bottom: 1px solid #3EAE48;' href='javascript:;' onclick='gettby();'>&gt;</a>
+														<p id='sdsd'></p>
+											</div>
+                                        </div>";
+								  echo $st1;
+
 }
 else
 {
@@ -300,6 +355,7 @@ else
             </div>
     </div>";
 		echo $st1;
+
 		echo $SIG_HTML['RIGHT_TOP3'];
 ?>
 
