@@ -237,6 +237,21 @@ class login extends base_login
 		else
 			$this->err_no=12;
 	}//}}}
+//{{{public function get_usr() 取得所有注册的用户
+	public function get_usr()
+	{
+		$ay=array();
+		$this->init_db();
+		if($this->err_no)
+			return $ay;
+		$conn="SELECT * from auth";
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}
 }//}}}
 //{{{class tb_choose extends base_login
 class tb_choose extends base_login
@@ -615,7 +630,7 @@ class tb_expert extends base_login
 			$conn="SELECT * FROM expert";  //select all
 			break;
 		}
-		mysqli_query($this->mysqli,$conn);
+		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
 			array_push($ay,$row);
 		mysqli_free_result($res);

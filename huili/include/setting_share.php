@@ -53,7 +53,7 @@ elseif(isset($_POST['comp'])) //团队认证
 	$u[5]=" ";					//所属行业
 	$u[6]=$_POST['intro'];	//简介
 	$u[7]=$ph.$_FILES['file1']['name'];		//图片
-	if($_FILES['file']['tmp_name'])
+	if($_FILES['file1']['tmp_name'])
 		move_uploaded_file($_FILES['file1']['tmp_name'],"../images/upload/".$_FILES['file1']['name']);
 	else
 		$ii=1;
@@ -81,7 +81,7 @@ else	//默认开始的操作，查看当前帐号是否已经认证过了
 	if(count($ay)) //没有申请
 	{
 		$si="disabled";
-		if($ay[9])
+		if($ay[0][9])
 			$err_str="<div class='alert alert-success' role='alert'><strong>提示</strong>当前帐号已经得到认证</div>";
 		else
 			$err_str="<div class='alert alert-success' role='alert'><strong>提示</strong>当前帐号已经申请认证，等待确认</div>";
