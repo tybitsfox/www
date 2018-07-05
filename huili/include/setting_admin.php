@@ -6,6 +6,18 @@ $ven_act=array("active","","","","");	//纵向页标签及对应内容的显示�
 $exp=array();$term=array();				//待认证的专家和团队列表
 $xexp=array();$xterm=array();			//已认证的专家和团队列表
 $usr=array();							//当前注册帐号的列表
+$cnt=array(0,0,0,0,0);					//总的翻页次数
+$curr_pg=array(0,0,0,0,0);				//当前页号
+if(isset($_GET['vendor']))
+{
+	$i=intval($_GET['vendor']);
+	if(isset($_GET['preva']))
+		$curr_pg[$i]=intval($_GET['preva'])+1;
+	elseif(isset($_GET['nexta']))
+		$curr_pg[$i]=intval($_GET['nexta'])-1;
+	else
+		$curr_pg[$i]=0;
+}
 $ta=new tb_expert();
 $u=array();
 $u[0]=5;	//by not confirmed <-all
@@ -35,64 +47,33 @@ else
 		}
 	}
 	unset($ay);unset($ta);
+	$cnt[0]=floor(count($exp)/5);
+	if(count($exp)%5)
+		$cnt[0]++;
+	$cnt[1]=floor(count($term)/5);
+	if(count($term)%5)
+		$cnt[1]++;
+	$cnt[2]=floor(count($xexp)/5);
+	if(count($xexp)%5)
+		$cnt[2]++;
+	$cnt[3]=floor(count($xterm)/5);
+	if(count($xterm)%5)
+		$cnt[3]++;
 	$ta=new login();
 	$usr=$ta->get_usr();
+	$cnt[4]=floor(count($usr)/5);
+	if(count($usr)%5)
+		$cnt[4]++;
 }
 if(isset($_GET['action']) && isset($_GET['vendor']))
 {
-	$tab_act=array("","active");
+	if($_GET['action'] != 'true')
+		$tab_act=array("","active");
 	$ven_act=array("","","","","");
 	$ven_act[intval($_GET['vendor'])]="active";
 }
 //}}}
-echo "<script>
-var total=".count($usr).";
-var liab = [];";
-
-for($i=0;$i<count($usr);$i++)
-	echo "liab[".$i."]=['".$usr[$i][0]."','".$usr[$i][1]."'];";
-echo "</script>";
 ?>
-<script>
-function gettay()
-{
-	var s=document.getElementById('dira02');
-	var v=s.onclick;
-	if(v == null)
-	{
-		s.onclick=function onclick(event) {gettby();};
-		s.setAttribute("style","color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;");
-		var a=document.getElementById('pgnum');
-		a.innerHTML="1";
-	}
-	else
-	{
-		var a=document.getElementById('sdsd');
-		a.innerHTML=v;
-	}
-}
-function gettby()
-{
-	var st=document.getElementById('pgnum');
-	if(Number(st.innerHTML) > 3)
-	{
-		var s=document.getElementById('dira02');
-	//	s.setAttribute("color","gray");
-	//	s.style.color="gray";
-		s.removeAttribute("style");
-	//	s.style.border-bottom="";
-		s.onclick='';
-	}
-	else
-	{
-		st.innerHTML=String(Number(st.innerHTML)+1);
-	}
-	var a=document.getElementById('sdsd');
-	a.innerHTML=st.innerHTML;
-	
-}
-</script>
-
 <?php
 //{{{ top fixed!
 		$st1=$_SESSION['CURR_USR'][2];
@@ -177,11 +158,58 @@ if(count($exp))
                                             <p class='shareblock-account'><span class='light'>申请人:</span> <strong><span class='account-truncated'>%s</span></strong></p>
                                             <a href='%s' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='#modal-shareaccount'><i class='icon-pencil'></i> 详细资料</a>
                                         </div>";
-	for($i=0;$i<count($exp);$i++)
+	if(isset($_GET['nexta']))	//下翻页
 	{
-		$st2=sprintf($st1,$exp[$i][2],$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&action=".$_SESSION['CURR_USR'][0]."&vendor=0");
+		if($curr_pg[0]<($cnt[0]-1))
+			$curr_pg[0]++;
+	}
+	elseif(isset($_GET['preva'])) //上翻页
+	{
+		if($curr_pg[0] > 0)
+			$curr_pg[0]--;
+	}
+	$j=count($exp)-1;
+	for($i=0;$i<5;$i++)
+	{
+		$k=$i+$curr_pg[0]*5;
+		if($k>$j)
+			break;
+		$st2=sprintf($st1,$exp[$k][2],$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&action=".$exp[$k][0]."&vendor=0");
 		echo $st2;
 	}
+								  $st1="<div class='shareblock-body'>
+									  		<div class='text-center'>
+													<a href='%s' style='%s'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;%d&nbsp;&nbsp;&nbsp;<a href='%s' style='%s'>&gt;&gt;</a>
+											</div>
+                                        </div>";
+	if($curr_pg[0] == 0)
+	{
+		$sta1="color: gray; cursor: default; disabled: true;";
+		$sta4="javascript:;";
+		//$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&preva=".$curr_pg."&action=true&vendor=4";
+	}
+	else
+	{
+		$bb=intval($curr_pg[0])-1;
+		$sta1="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&preva=".$bb."&action=true&vendor=0";
+	}
+	if($curr_pg[0] == ($cnt[0]-1))
+	{
+		$sta2="color: gray; cursor: default; disabled: true;";
+		$sta3="javascript:;";
+		//$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&nexta=".$curr_pg."&action=true&vendor=4";
+	}
+	else
+	{
+		$bb=intval($curr_pg[0])+1;
+		$sta2="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&nexta=".$bb."&action=true&vendor=0";
+	}
+	$st2=sprintf($st1,$sta4,$sta1,intval($curr_pg[0])+1,$sta3,$sta2);
+								  echo $st2;
+
+
 }
 else
 {
@@ -293,19 +321,56 @@ if(count($usr))
                                             <p class='shareblock-account'><span class='light'>注册帐号:</span> <strong><span class='account-truncated'>%s</span></strong></p>
                                             <a href='%s' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='#modal-shareaccount'><i class='icon-pencil'></i> 详细资料</a>
                                         </div>";
-	for($i=0;$i<count($usr);$i++)
+	if(isset($_GET['nexta'])) //下翻页
 	{
-		$st2=sprintf($st1,$usr[$i][1],$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&action=".$_SESSION['CURR_USR'][0]."&vendor=4");
+		if($curr_pg[4]<($cnt[4]-1))
+			$curr_pg[4]++;
+	}
+	elseif(isset($_GET['preva']))//上翻页
+	{
+		if($curr_pg[4] > 0)
+			$curr_pg[4]--;
+	}
+	$j=count($usr)-1;
+	for($i=0;$i<5;$i++)
+	{
+		$k=$i+$curr_pg[4]*5;
+		if($k>$j)
+			break;
+		$st2=sprintf($st1,$usr[$k][1],$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&action=".$usr[$k][0]."&vendor=4");
 		echo $st2;
 	}
 								  $st1="<div class='shareblock-body'>
 									  		<div class='text-center'>
-                                                        <a id='dira01' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;' href='javascript:;' onclick='gettay();'>&lt;</a>&nbsp;&nbsp;<span id='pgnum'>1</span>&nbsp;&nbsp;<a id='dira02' style='color: #3EAE48; text-decoration: none;border-bottom: 1px solid #3EAE48;' href='javascript:;' onclick='gettby();'>&gt;</a>
-														<p id='sdsd'></p>
+													<a href='%s' style='%s'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;%d&nbsp;&nbsp;&nbsp;<a href='%s' style='%s'>&gt;&gt;</a>
 											</div>
                                         </div>";
-								  echo $st1;
-
+	if($curr_pg[4] == 0)
+	{
+		$sta1="color: gray; cursor: default; disabled: true;";
+		$sta4="javascript:;";
+		//$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&preva=".$curr_pg."&action=true&vendor=4";
+	}
+	else
+	{
+		$bb=intval($curr_pg[4])-1;
+		$sta1="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&preva=".$bb."&action=true&vendor=4";
+	}
+	if($curr_pg[4] == ($cnt[4]-1))
+	{
+		$sta2="color: gray; cursor: default; disabled: true;";
+		$sta3="javascript:;";
+		//$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&nexta=".$curr_pg."&action=true&vendor=4";
+	}
+	else
+	{
+		$bb=intval($curr_pg[4])+1;
+		$sta2="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&nexta=".$bb."&action=true&vendor=4";
+	}
+	$st2=sprintf($st1,$sta4,$sta1,intval($curr_pg[4])+1,$sta3,$sta2);
+								  echo $st2;
 }
 else
 {
