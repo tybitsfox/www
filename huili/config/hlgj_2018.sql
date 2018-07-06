@@ -46,7 +46,7 @@ CREATE TABLE `auth` (
 
 LOCK TABLES `auth` WRITE;
 /*!40000 ALTER TABLE `auth` DISABLE KEYS */;
-INSERT INTO `auth` VALUES (100002,'test1@163.com','test1','260be2fecdf89f88eab77128ef7511d3',7,1,0,1,1,0,'2018-07-03 01:57:20','2018-07-04 05:58:19'),(100003,'test2@163.com','test2','8d114dfc0aa6cbd20d74a573b9343e86',7,1,0,0,0,0,'2018-07-03 01:57:21','2018-07-03 01:57:21'),(100004,'test3@163.com','test3','ae71aca395893a68edfae00b2502b2ba',7,1,0,0,0,0,'2018-07-03 01:57:21','2018-07-03 01:57:21'),(100005,'test4@163.com','test4','294d6d199b92abdc07e6715956c67831',7,1,0,0,0,0,'2018-07-03 01:57:21','2018-07-03 01:57:21'),(100001,'tybitsfox@163.com','tybitsfox','2694f8b0e3d3d17ff567c9ca072db75c',7,1,0,0,0,0,'2018-07-03 01:37:49','2018-07-03 01:37:49'),(100000,'tyyyyt@163.com','tian','9a071c40a829eea19b90a5e011d64703',7,1,0,0,0,0,'2018-07-03 01:12:06','2018-07-03 01:12:06');
+INSERT INTO `auth` VALUES (100002,'test1@163.com','test1','260be2fecdf89f88eab77128ef7511d3',7,1,0,1,1,0,'2018-07-03 01:57:20','2018-07-04 05:58:19'),(100003,'test2@163.com','test2','8d114dfc0aa6cbd20d74a573b9343e86',7,1,0,1,1,0,'2018-07-03 01:57:21','2018-07-04 11:20:42'),(100004,'test3@163.com','test3','ae71aca395893a68edfae00b2502b2ba',7,1,0,0,0,0,'2018-07-03 01:57:21','2018-07-03 01:57:21'),(100005,'test4@163.com','test4','294d6d199b92abdc07e6715956c67831',7,1,0,0,0,0,'2018-07-03 01:57:21','2018-07-03 01:57:21'),(100006,'test5@163.com','test5','c198e96271965c83219549c2d8961a9b',7,1,0,0,0,0,'2018-07-05 13:51:03','2018-07-05 13:51:03'),(100007,'test6@163.com','test6','9c56b932f9aad6427aaa43aea215d83d',7,1,0,0,0,0,'2018-07-05 13:51:03','2018-07-05 13:51:03'),(100008,'test7@163.com','test7','1817399417998612cdca4a671771d60a',7,1,0,0,0,0,'2018-07-05 13:51:03','2018-07-05 13:51:03'),(100009,'test8@163.com','test8','bd969170781556ac46fd26fbd3f15e39',7,1,0,0,0,0,'2018-07-05 13:51:03','2018-07-05 13:51:03'),(100010,'test9@163.com','test9','b081fd85802d5708431149c13c6687f5',7,1,0,0,0,0,'2018-07-05 13:54:56','2018-07-05 13:54:56'),(100001,'tybitsfox@163.com','tybitsfox','2694f8b0e3d3d17ff567c9ca072db75c',7,1,0,0,0,0,'2018-07-03 01:37:49','2018-07-03 01:37:49'),(100000,'tyyyyt@163.com','tian','9a071c40a829eea19b90a5e011d64703',7,1,0,3,3,0,'2018-07-03 01:12:06','2018-07-06 01:36:37');
 /*!40000 ALTER TABLE `auth` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -110,6 +110,37 @@ INSERT INTO `choose` VALUES (100000,2,'chlink4','环境监测','/huili/include/h
 UNLOCK TABLES;
 
 --
+-- Table structure for table `company`
+--
+
+DROP TABLE IF EXISTS `company`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `company` (
+  `uid` int(32) unsigned NOT NULL COMMENT '企业id',
+  `name` varchar(48) NOT NULL COMMENT '企业名称',
+  `img` varchar(128) NOT NULL COMMENT '图片链接',
+  `industry` varchar(32) NOT NULL COMMENT '所属行业',
+  `iid` int(8) unsigned NOT NULL COMMENT '行业id',
+  `intro` varchar(256) NOT NULL COMMENT '企业简介',
+  `addr` varchar(48) NOT NULL COMMENT '企业地址',
+  `phone` varchar(12) NOT NULL COMMENT '联系电话',
+  `confirmed` int(4) unsigned NOT NULL COMMENT '认证标志',
+  PRIMARY KEY (`uid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `company`
+--
+
+LOCK TABLES `company` WRITE;
+/*!40000 ALTER TABLE `company` DISABLE KEYS */;
+INSERT INTO `company` VALUES (100004,'山东汇力环保科技公司','/huili/images/upload/b_04E2087C04B7C851.jpg',' ',24,'环境问题解决专家','泰安市长城路1366号','12393934',0);
+/*!40000 ALTER TABLE `company` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `conn_me`
 --
 
@@ -147,8 +178,8 @@ CREATE TABLE `expert` (
   `addr` varchar(48) NOT NULL COMMENT '单位或地址',
   `phone` varchar(12) NOT NULL COMMENT '电话',
   `major` varchar(32) NOT NULL COMMENT '行业或专业',
-  `intro` varchar(256) NOT NULL COMMENT '简介',
-  `img` varchar(128) NOT NULL COMMENT '图片链接',
+  `intro` text NOT NULL COMMENT '简介',
+  `img` varchar(256) NOT NULL COMMENT '图片链接',
   `mid` int(32) unsigned NOT NULL COMMENT '专业id',
   `confirmed` int(4) unsigned NOT NULL COMMENT '认证标志',
   PRIMARY KEY (`uid`),
@@ -162,7 +193,7 @@ CREATE TABLE `expert` (
 
 LOCK TABLES `expert` WRITE;
 /*!40000 ALTER TABLE `expert` DISABLE KEYS */;
-INSERT INTO `expert` VALUES (100002,0,'张三','山东省科技大学','13561762896',' ','噪声治理，通风专业','/huili/images/upload/guest.png',20,0);
+INSERT INTO `expert` VALUES (100002,0,'张三','山东省科技大学','13561762896',' ','噪声治理，通风专业','/huili/images/upload/guest.png',20,0),(100003,0,'李四','山东农业大学','18598231668',' ','土壤化学，博导','/huili/images/upload/b_BBA180FECD8008D6.jpg',72,0),(100004,1,'山东汇力环保科技公司','泰安市长城路1366号','4008851299',' ','环保设施运营，第三方监测，环评报告，项目审批','/huili/images/upload/b_3A1DBB2AF12B663F.jpg',24,0),(100005,1,'山东清源水务有限公司','泰安市南关大街381号','05386541237',' ','城市生活污水处理专家，在全国承接了多个城市的污水处理厂运营','/huili/images/upload/b_429D088E4A1B5497.jpg',1,0),(100006,0,'王五','泰安市环境保护局','8229843',' ','环保技术中心','/huili/images/upload/b_46A7ADCDD25470BC.jpg',48,0),(100007,0,'陈六','泰安市环境保护局','8877694',' ','生态科','/huili/images/upload/b_1B2160D98A528040.jpg',56,0),(100008,0,'周七','泰安市环境保护局','8877695',' ','中心化验室','/huili/images/upload/b_028939121CF7F801.jpg',64,0),(100009,0,'徐九','环科所','8877696',' ','环评项目','/huili/images/upload/b_04E2087C04B7C851.jpg',48,0),(100010,1,'深圳环宇设备仪器公司','深圳市创业大道1988号','18598231668',' ','改革开放以来，中国金融业发生了举世瞩目的变化。四十年来，中国逐渐建立起系统、完整的金融组织体系。作为金融业的资深从业者','/huili/images/upload/109.jpg',8,0);
 /*!40000 ALTER TABLE `expert` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -273,7 +304,7 @@ CREATE TABLE `security` (
 
 LOCK TABLES `security` WRITE;
 /*!40000 ALTER TABLE `security` DISABLE KEYS */;
-INSERT INTO `security` VALUES (100000,'2018-07-03 01:15:40',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-03 01:16:08',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-03 01:18:24',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-03 01:34:40',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-03 01:38:38',0,'192.168.1.122','GNU/linux操作系统','Firefox',1,7),(100002,'2018-07-03 02:04:06',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100003,'2018-07-03 02:08:41',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100004,'2018-07-03 05:35:29',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100004,'2018-07-03 05:41:34',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-04 01:49:21',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-04 03:11:11',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-04 05:20:50',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-04 05:57:42',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100002,'2018-07-04 05:58:13',1,'localhost','GNU/linux操作系统','Firefox',1,7);
+INSERT INTO `security` VALUES (100000,'2018-07-03 01:15:40',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-03 01:16:08',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-03 01:18:24',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-03 01:34:40',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-03 01:38:38',0,'192.168.1.122','GNU/linux操作系统','Firefox',1,7),(100002,'2018-07-03 02:04:06',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100003,'2018-07-03 02:08:41',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100004,'2018-07-03 05:35:29',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100004,'2018-07-03 05:41:34',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-04 01:49:21',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-04 03:11:11',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-04 05:20:50',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-04 05:57:42',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100002,'2018-07-04 05:58:13',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100002,'2018-07-04 11:15:26',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100002,'2018-07-04 11:17:33',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100002,'2018-07-04 11:19:36',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100003,'2018-07-04 11:20:37',1,'localhost','GNU/linux操作系统','Firefox',0,0),(100004,'2018-07-04 11:23:06',1,'localhost','GNU/linux操作系统','Firefox',0,0),(100005,'2018-07-04 11:48:20',1,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-04 11:52:38',1,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-04 11:56:48',1,'192.168.1.101','Android系统','Chrome',0,0),(100002,'2018-07-04 11:58:26',0,'192.168.1.101','Android系统','Chrome',0,0),(100000,'2018-07-04 12:46:18',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-04 13:53:58',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 00:04:41',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 00:37:57',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 01:48:38',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 01:53:55',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 01:56:38',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 02:11:55',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 02:19:50',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 02:21:25',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 02:28:08',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 02:36:55',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 02:39:39',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 02:41:04',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 02:43:27',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 02:52:24',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 02:59:25',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 02:59:33',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 07:06:21',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 07:08:08',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 09:06:27',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 11:40:00',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 12:41:09',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 13:18:05',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 13:33:45',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 13:35:56',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 13:39:37',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 13:51:12',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 13:55:02',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 14:12:20',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 14:17:02',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 15:00:36',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 15:02:52',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-05 15:28:47',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100006,'2018-07-05 15:30:17',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100007,'2018-07-05 15:31:49',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100008,'2018-07-05 15:33:08',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100009,'2018-07-05 15:34:39',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-05 15:36:23',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-06 00:41:06',1,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-06 00:56:14',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-06 01:04:24',1,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-06 01:36:29',1,'192.168.1.101','Android系统','Chrome',0,0),(100000,'2018-07-06 01:45:43',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-06 03:05:08',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100010,'2018-07-06 03:05:29',1,'localhost','GNU/linux操作系统','Firefox',0,0),(100010,'2018-07-06 03:13:11',1,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-06 03:15:22',0,'localhost','GNU/linux操作系统','Firefox',0,0),(100000,'2018-07-06 03:15:58',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-06 03:16:54',0,'192.168.1.101','Android系统','Chrome',1,7),(100000,'2018-07-06 06:23:26',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-06 06:25:43',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-06 06:46:09',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-06 07:53:05',0,'localhost','GNU/linux操作系统','Firefox',1,7),(100000,'2018-07-06 11:39:25',0,'localhost','GNU/linux操作系统','Firefox',1,7);
 /*!40000 ALTER TABLE `security` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -286,4 +317,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-07-04 14:41:33
+-- Dump completed on 2018-07-06 19:52:20

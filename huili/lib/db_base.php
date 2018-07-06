@@ -650,10 +650,58 @@ class tb_expert extends base_login
 		{$this->err_no=6;return;}
 		if(strlen($e[5]) >= 32)
 		{$this->err_no=6;return;}
-		if(strlen($e[6]) >= 256)
+		if(strlen($e[6]) >= 512)
 		{$this->err_no=6;return;}
-		if(strlen($e[7]) >= 128)
+		if(strlen($e[7]) >= 255)
 		{$this->err_no=6;return;}
 	}//}}}
+//{{{public function update_expert($e) 更新认证标志和图片的函数 e[0]=0:confirmed; e[0]=1:disconfirmed; e[0]=2:update pic
+	public function update_expert($e)
+	{
+		if(count($e)<2)
+		{$this->err_no=2;return;}
+		$this->init_db();
+		if($this->err_no)
+			return;
+		switch($e[0])
+		{
+		case 0://认证
+			$conn="UPDATE expert SET confirmed = 1 WHERE uid =".$e[1];
+			break;
+		case 1://解除认证
+			$conn="UPDATE expert SET confirmed = 0 WHERE uid =".$e[1];
+			break;
+		case 2://更改图片	e[0]=2;e[1]=uid,e[2]=new pic link
+			if(strlen($e[2]) >= 255)
+			{$this->err_no=6;return;}
+			$conn="SELECT img FROM expert WHERE uid =".$e[1];
+			$res=mysqli_query($this->mysqli,$conn);
+			$row=mysqli_fetch_row($res);
+			mysqli_free_result($res);
+			mysqli_close($this->mysqli);
+			$a=constant("FULL_PATH");
+			$defpath=substr($a,0,strpos($a,"huili")-1);
+			if($row != null)
+			{
+				$a=$defpath.$row[0];
+				unlink($a);
+			}
+			$a=$defpath."/huili/images/logo/guest.png";
+			$this->init_db();
+			if($this->err_no)
+				return;
+			$conn="UPDATE expert set img = '".$e[2]."' WHERE uid =".$e[1];
+			$res=mysqli_query($this->mysqli,$conn);
+			mysqli_close($this->mysqli);
+			if($res == TRUE)
+				return;
+			else
+			{
+				$this->err_no=11;
+				return;
+			}
+		}
+	}//}}}
+
 }//}}}
 ?>

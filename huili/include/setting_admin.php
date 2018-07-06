@@ -8,6 +8,16 @@ $xexp=array();$xterm=array();			//已认证的专家和团队列表
 $usr=array();							//当前注册帐号的列表
 $cnt=array(0,0,0,0,0);					//总的翻页次数
 $curr_pg=array(0,0,0,0,0);				//当前页号
+if(isset($_GET['accept']))
+{
+	if($_GET['accept'] == 'ok')
+	{
+		$ta=new tb_expert();
+
+	}
+	else
+	{}
+}
 if(isset($_GET['vendor']))
 {
 	$i=intval($_GET['vendor']);
@@ -540,8 +550,7 @@ else
                                                  <li><strong>电话：</strong>%s</li>
 												 <li><strong>专业：</strong>%s</li>
 												 <li><strong>简介：</strong>%s</li>
-                                            </ul>
-                                        </div>";
+                                            </ul>";
 if(isset($_GET['action']) && ($_GET['action'] != 'true'))
 {
 	$ay=array();
@@ -635,6 +644,13 @@ if(isset($_GET['action']) && ($_GET['action'] != 'true'))
 		{$stb1="姓名";$stb2="单位";}
 		$st2=sprintf($st1,$spic,$sname,$stb2,$saddr,$sphone,$stt,$sintro);
 		echo $st2;
+								  $st1="<div class='shareblock-body'>
+									  		<div class='text-center'>
+													<a href='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&action=".$_GET['action']."&vendor=".$_GET['vendor']."&accept=ok' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>通过认证</a>
+											</div>
+                                        </div>";
+								  echo $st1;
+		echo "</div>";
 	}
 }
 				//				  echo $st1;
