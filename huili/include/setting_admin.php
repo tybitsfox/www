@@ -158,15 +158,18 @@ if(count($exp))
                                             <p class='shareblock-account'><span class='light'>申请人:</span> <strong><span class='account-truncated'>%s</span></strong></p>
                                             <a href='%s' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='#modal-shareaccount'><i class='icon-pencil'></i> 详细资料</a>
                                         </div>";
-	if(isset($_GET['nexta']))	//下翻页
+	if(isset($_GET['vendor']) && ($_GET['vendor'] == 0)) //保证纵向页标签切换时，不会修改其他页标签下的curr_pg
 	{
-		if($curr_pg[0]<($cnt[0]-1))
-			$curr_pg[0]++;
-	}
-	elseif(isset($_GET['preva'])) //上翻页
-	{
-		if($curr_pg[0] > 0)
-			$curr_pg[0]--;
+		if(isset($_GET['nexta']))	//下翻页
+		{
+			if($curr_pg[0]<($cnt[0]-1))
+				$curr_pg[0]++;
+		}
+		elseif(isset($_GET['preva'])) //上翻页
+		{
+			if($curr_pg[0] > 0)
+				$curr_pg[0]--;
+		}
 	}
 	$j=count($exp)-1;
 	for($i=0;$i<5;$i++)
@@ -186,7 +189,6 @@ if(count($exp))
 	{
 		$sta1="color: gray; cursor: default; disabled: true;";
 		$sta4="javascript:;";
-		//$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&preva=".$curr_pg."&action=true&vendor=4";
 	}
 	else
 	{
@@ -194,11 +196,10 @@ if(count($exp))
 		$sta1="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
 		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&preva=".$bb."&action=true&vendor=0";
 	}
-	if($curr_pg[0] == ($cnt[0]-1))
+	if($curr_pg[0] >= ($cnt[0]-1))
 	{
 		$sta2="color: gray; cursor: default; disabled: true;";
 		$sta3="javascript:;";
-		//$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&nexta=".$curr_pg."&action=true&vendor=4";
 	}
 	else
 	{
@@ -208,8 +209,6 @@ if(count($exp))
 	}
 	$st2=sprintf($st1,$sta4,$sta1,intval($curr_pg[0])+1,$sta3,$sta2);
 								  echo $st2;
-
-
 }
 else
 {
@@ -234,11 +233,57 @@ if(count($term))
                                             <p class='shareblock-account'><span class='light'>申请团队:</span> <strong><span class='account-truncated'>%s</span></strong></p>
                                             <a href='%s' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='#modal-shareaccount'><i class='icon-pencil'></i> 详细资料</a>
                                         </div>";
-	for($i=0;$i<count($term);$i++)
+	if(isset($_GET['vendor']) && ($_GET['vendor'] == 1)) //保证纵向页标签切换时，不会修改其他页标签下的curr_pg
 	{
-		$st2=sprintf($st1,$term[$i][2],$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&action=".$_SESSION['CURR_USR'][0]."&vendor=1");
+		if(isset($_GET['nexta']))	//下翻页
+		{
+			if($curr_pg[1]<($cnt[1]-1))
+				$curr_pg[1]++;
+		}
+		elseif(isset($_GET['preva'])) //上翻页
+		{
+			if($curr_pg[1] > 0)
+				$curr_pg[1]--;
+		}
+	}
+	$j=count($term)-1;
+	for($i=0;$i<5;$i++)
+	{
+		$k=$i+$curr_pg[1]*5;
+		if($k>$j)
+			break;
+		$st2=sprintf($st1,$term[$k][2],$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&action=".$term[$k][0]."&vendor=1");
 		echo $st2;
 	}
+								  $st1="<div class='shareblock-body'>
+									  		<div class='text-center'>
+													<a href='%s' style='%s'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;%d&nbsp;&nbsp;&nbsp;<a href='%s' style='%s'>&gt;&gt;</a>
+											</div>
+                                        </div>";
+	if($curr_pg[1] == 0)
+	{
+		$sta1="color: gray; cursor: default; disabled: true;";
+		$sta4="javascript:;";
+	}
+	else
+	{
+		$bb=intval($curr_pg[1])-1;
+		$sta1="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&preva=".$bb."&action=true&vendor=1";
+	}
+	if($curr_pg[1] == ($cnt[1]-1))
+	{
+		$sta2="color: gray; cursor: default; disabled: true;";
+		$sta3="javascript:;";
+	}
+	else
+	{
+		$bb=intval($curr_pg[1])+1;
+		$sta2="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&nexta=".$bb."&action=true&vendor=1";
+	}
+	$st2=sprintf($st1,$sta4,$sta1,intval($curr_pg[1])+1,$sta3,$sta2);
+								  echo $st2;
 }
 else
 {
@@ -263,11 +308,57 @@ if(count($xexp))
                                             <p class='shareblock-account'><span class='light'>现有专家:</span> <strong><span class='account-truncated'>%s</span></strong></p>
                                             <a href='%s' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='#modal-shareaccount'><i class='icon-pencil'></i> 详细资料</a>
                                         </div>";
-	for($i=0;$i<count($xexp);$i++)
+	if(isset($_GET['vendor']) && ($_GET['vendor'] == 2)) //保证纵向页标签切换时，不会修改其他页标签下的curr_pg
 	{
-		$st2=sprintf($st1,$xexp[$i][2],$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&action=".$_SESSION['CURR_USR'][0]."&vendor=2");
+		if(isset($_GET['nexta']))	//下翻页
+		{
+			if($curr_pg[2]<($cnt[2]-1))
+				$curr_pg[2]++;
+		}
+		elseif(isset($_GET['preva'])) //上翻页
+		{
+			if($curr_pg[2] > 0)
+				$curr_pg[2]--;
+		}
+	}
+	$j=count($xexp)-1;
+	for($i=0;$i<5;$i++)
+	{
+		$k=$i+$curr_pg[2]*5;
+		if($k>$j)
+			break;
+		$st2=sprintf($st1,$xexp[$k][2],$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&action=".$xexp[$k][0]."&vendor=2");
 		echo $st2;
 	}
+								  $st1="<div class='shareblock-body'>
+									  		<div class='text-center'>
+													<a href='%s' style='%s'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;%d&nbsp;&nbsp;&nbsp;<a href='%s' style='%s'>&gt;&gt;</a>
+											</div>
+                                        </div>";
+	if($curr_pg[2] == 0)
+	{
+		$sta1="color: gray; cursor: default; disabled: true;";
+		$sta4="javascript:;";
+	}
+	else
+	{
+		$bb=intval($curr_pg[2])-1;
+		$sta1="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&preva=".$bb."&action=true&vendor=2";
+	}
+	if($curr_pg[2] == ($cnt[2]-1))
+	{
+		$sta2="color: gray; cursor: default; disabled: true;";
+		$sta3="javascript:;";
+	}
+	else
+	{
+		$bb=intval($curr_pg[2])+1;
+		$sta2="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&nexta=".$bb."&action=true&vendor=2";
+	}
+	$st2=sprintf($st1,$sta4,$sta1,intval($curr_pg[2])+1,$sta3,$sta2);
+								  echo $st2;
 }
 else
 {
@@ -292,9 +383,26 @@ if(count($xterm))
                                             <p class='shareblock-account'><span class='light'>现有团队:</span> <strong><span class='account-truncated'>%s</span></strong></p>
                                             <a href='%s' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='#modal-shareaccount'><i class='icon-pencil'></i> 详细资料</a>
                                         </div>";
-	for($i=0;$i<count($xterm);$i++)
+	if(isset($_GET['vendor']) && ($_GET['vendor'] == 3)) //保证纵向页标签切换时，不会修改其他页标签下的curr_pg
 	{
-		$st2=sprintf($st1,$xterm[$i][2],$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&action=".$_SESSION['CURR_USR'][0]."&vendor=3");
+		if(isset($_GET['nexta']))	//下翻页
+		{
+			if($curr_pg[3]<($cnt[3]-1))
+				$curr_pg[3]++;
+		}
+		elseif(isset($_GET['preva'])) //上翻页
+		{
+			if($curr_pg[3] > 0)
+				$curr_pg[3]--;
+		}
+	}
+	$j=count($xterm)-1;
+	for($i=0;$i<5;$i++)
+	{
+		$k=$i+$curr_pg[3]*5;
+		if($k>$j)
+			break;
+		$st2=sprintf($st1,$xterm[$k][2],$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&action=".$xterm[$k][0]."&vendor=3");
 		echo $st2;
 	}
 }
@@ -321,15 +429,18 @@ if(count($usr))
                                             <p class='shareblock-account'><span class='light'>注册帐号:</span> <strong><span class='account-truncated'>%s</span></strong></p>
                                             <a href='%s' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='#modal-shareaccount'><i class='icon-pencil'></i> 详细资料</a>
                                         </div>";
-	if(isset($_GET['nexta'])) //下翻页
+	if(isset($_GET['vendor']) && ($_GET['vendor'] == 4)) //保证纵向页标签切换时，不会修改其他页标签下的curr_pg
 	{
-		if($curr_pg[4]<($cnt[4]-1))
-			$curr_pg[4]++;
-	}
-	elseif(isset($_GET['preva']))//上翻页
-	{
-		if($curr_pg[4] > 0)
-			$curr_pg[4]--;
+		if(isset($_GET['nexta'])) //下翻页
+		{
+			if($curr_pg[4]<($cnt[4]-1))
+				$curr_pg[4]++;
+		}
+		elseif(isset($_GET['preva']))//上翻页
+		{
+			if($curr_pg[4] > 0)
+				$curr_pg[4]--;
+		}
 	}
 	$j=count($usr)-1;
 	for($i=0;$i<5;$i++)
@@ -400,8 +511,9 @@ else
     <div class='intro-block intro-block-slim'>
         <p>Accounts shared with you</p>
     </div>
-        <div class='flash-container'></div>
-        <!-- ic-src must be `whitespace` char, not null or / -->
+        <div class='flash-container'></div>";
+		echo $st1;
+        $st1="<!-- ic-src must be `whitespace` char, not null or / -->
         <div id='account-collaboration' ic-refresh ic-src=' ' class='ic-transition' ic-select-from-response='#account-collaboration'  ic-transition-duration='.1s'>
                     
     <div id='account_collaborations'>
@@ -410,9 +522,124 @@ else
             </div>
 
         </div>
-</div>  
-          
-</div>
+</div>";
+								  $st1="<div class='shareblock-body'>
+                                            <ul class='list-unstyled list-accounts'>
+                      							<li><div class='avatar'>
+								                        <div class='circle'>
+									                          <img src='%s' alt='您的头像'/>
+								                        </div>
+								                     </div>
+                    								 <div class='account-info'>
+								                        <p class='title'>
+								                            %s
+														</p>
+													 </div>
+												 </li>
+												 <li><strong>%s：</strong>%s</li>
+                                                 <li><strong>电话：</strong>%s</li>
+												 <li><strong>专业：</strong>%s</li>
+												 <li><strong>简介：</strong>%s</li>
+                                            </ul>
+                                        </div>";
+if(isset($_GET['action']) && ($_GET['action'] != 'true'))
+{
+	$ay=array();
+	switch($_GET['vendor'])
+	{
+	case 0://exp
+		foreach($exp as $e)
+		{
+			if($e[0] == $_GET['action'])
+			{$ay=$e;break;}
+		}
+		break;
+	case 1://term
+		foreach($term as $e)
+		{
+			if($e[0] == $_GET['action'])
+			{$ay=$e;break;}
+		}
+		break;
+	case 2://xexp
+		foreach($xexp as $e)
+		{
+			if($e[0] == $_GET['action'])
+			{$ay=$e;break;}
+		}
+		break;
+	case 3://xterm
+		foreach($xterm as $e)
+		{
+			if($e[0] == $_GET['action'])
+			{$ay=$e;break;}
+		}
+		break;
+	}
+	if(count($ay))
+	{
+		$sname=$ay[2];
+		$spic=$ay[7];
+		$sphone=$ay[4];
+		$saddr=$ay[3];
+		$sintro=$ay[6];
+		$smajor="";
+		$i=intval($ay[8]);
+		if($i & 1)
+			if($ay[1])
+				$smajor=$smajor."环境服务、";
+			else
+				$smajor="污水处理、";
+		if($i & 2)
+			if($ay[1])
+				$smajor=$smajor."仪器设备、";
+			else
+				$smajor=$smajor."废气处理、";
+		if($i & 4)
+			if($ay[1])
+				$smajor=$smajor."污水处理、";
+			else
+				$smajor=$smajor."噪音治理、";
+		if($i & 8)
+			if($ay[1])
+				$smajor=$smajor."石油化工、";
+			else
+				$smajor=$smajor."危废处理、";
+		if($i & 16)
+			if($ay[1])
+				$smajor=$smajor."食品药品、";
+			else
+				$smajor=$smajor."环境工程、";
+		if($i & 32)
+			if($ay[1])
+				$smajor=$smajor."餐饮服务、";
+			else
+				$smajor=$smajor."项目审批、";
+		if($i & 64)
+			if($ay[1])
+				$smajor=$smajor."畜禽养殖、";
+			else
+				$smajor=$smajor."化验分析、";
+		if($i & 128)
+			if($ay[1])
+				$smajor=$smajor."其他行业、";
+			else
+				$smajor=$smajor."法律事务、";
+		if(strlen($smajor))
+			$stt=substr($smajor,0,strlen($smajor)-strlen('、'));
+		else
+			$stt=" ";
+		if($ay[1])
+		{$stb1="单位";$stb2="地址";}
+		else
+		{$stb1="姓名";$stb2="单位";}
+		$st2=sprintf($st1,$spic,$sname,$stb2,$saddr,$sphone,$stt,$sintro);
+		echo $st2;
+	}
+}
+				//				  echo $st1;
+
+$st1="</div>
                                 </div>
                         </div>
                     </div>

@@ -132,7 +132,7 @@ for($i=0;$i<$j;$i++)
 		echo $st2;
               $st1="<!-- Vendor Panes -->
                     <div class='tab-content tab-content-vertical'>
-                            <div role='tabpanel' class='tab-pane active' id='vendor-amazon'>
+                            <div role='tabpanel' class='tab-pane ".$act[0]."' id='vendor-amazon'>
 								<form name='form1' method='post' action='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['SEV']."' enctype='multipart/form-data'>
                                     <div class='shareblock'>
                                         <div class='shareblock-head shareblock-head-light'>
@@ -167,7 +167,7 @@ for($i=0;$i<$j;$i++)
                             </div>";
 					echo $st1;
 					$st1="<!-- my add -->
-                            <div role='tabpanel' class='tab-pane ' id='vendor-github'>
+                            <div role='tabpanel' class='tab-pane ".$act[1]."' id='vendor-github'>
 								<form name='form2' method='post' action='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['SEV']."' enctype='multipart/form-data'>
                                     <div class='shareblock'>
                                         <div class='shareblock-head shareblock-head-light'>
@@ -183,9 +183,10 @@ for($i=0;$i<$j;$i++)
                                             <p class='shareblock-account'><textarea name='intro' id='intro' class='form-control custom-message-input inlined' placeholder='公司简介' required tabindex=2></textarea></p>
                                         </div>
                                         <div class='shareblock-head shareblock-head-light'>
-											<p class='shareblock-account'><span class='light'>所属行业</span><div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='1' data-ninja-checkbox>污水处理</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='2' data-ninja-checkbox>化工行业</label></div></div>
-											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='4' data-ninja-checkbox>电力行业</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='8' data-ninja-checkbox>仪器设备</label></div></div>
-											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='16' data-ninja-checkbox>环境治理</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='32' data-ninja-checkbox>其他行业</label></div></div></p>
+											<p class='shareblock-account'><span class='light'>所属行业</span><div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='1' data-ninja-checkbox>环境服务</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='2' data-ninja-checkbox>仪器设备</label></div></div>
+											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='4' data-ninja-checkbox>污水处理</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='8' data-ninja-checkbox>石油化工</label></div></div>
+											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='16' data-ninja-checkbox>食品药品</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='32' data-ninja-checkbox>餐饮服务</label></div></div></p>
+											<div class='form-group form-twocols'><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='64' data-ninja-checkbox>畜禽养殖</label></div><div class='checkbox'><label><input type='checkbox' name='trusted[]' value='128' data-ninja-checkbox>其他行业</label></div></div></p>
                                         </div>
                                         <div class='shareblock-head shareblock-head-light'>
                                             <p class='shareblock-account'>
