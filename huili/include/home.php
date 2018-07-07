@@ -9,7 +9,7 @@ require_once(constant("FULL_PATH")."config/glob_signed.php");
 require_once(constant("FULL_PATH")."lib/db_base.php");
 require_once(constant("FULL_PATH")."config/email.php");
 /// check login
-if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 12))
+if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 13))
 	die("没有授权，禁止登录"."count=".count($_SESSION['CURR_USR']));
 ////////////////////////
 $err_string=$SIGNED_DEF['TOP_TEXT1'];

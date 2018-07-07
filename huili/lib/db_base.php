@@ -132,6 +132,8 @@ class login extends base_login
 		$str=md5($p);
 		if($str != $ay[0][3])
 		{$this->err_no=8;return;} //pwd error
+		if(is_null($ay[0][12]))
+			$ay[0][12]=constant("DEF_IMG");
 		$_SESSION['CURR_USR']=array_merge($_SESSION['CURR_USR'],$ay[0]);
 		unset($ay);
 	}//}}}
@@ -170,7 +172,7 @@ class login extends base_login
 		$str3=substr($u,0,strpos($u,'@'));//uname
 		$str4=date("Y-m-d H:i:s",time());
 		$ay=array($uid,$u,$str3,$str1,$str2,1,0,'',0,0,$str4,$str4);
-		$conn=sprintf("INSERT INTO auth(uid,email,uname,pwd,priv,lvl,sex,expr,coin,treasure,lastlogin,signup) VALUES(%d,'%s','%s','%s',%d,1,0,0,0,0,now(),now())",$uid,$u,$str3,$str1,$str2);
+		$conn=sprintf("INSERT INTO auth(uid,email,uname,pwd,priv,lvl,sex,expr,coin,treasure,signup,lastlogin,imgpath) VALUES(%d,'%s','%s','%s',%d,1,0,0,0,0,now(),now(),'')",$uid,$u,$str3,$str1,$str2);
 		$this->init_db();
 		if($this->err_no)
 			return;
@@ -184,7 +186,7 @@ class login extends base_login
 //{{{public function edit($ay) 记录编辑 auth表只允许编辑：邮箱、密码、昵称！so～
 	public function edit($ay)
 	{
-		if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 12))
+		if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 13))
 		{$this->err_no=10;return;}
 		$this->init_db();
 		if($this->err_no)
@@ -211,6 +213,9 @@ class login extends base_login
 			if($this->err_no)
 				return;
 			$st1="UPDATE auth SET email = '".$ay[1]."' WHERE uid = ".$_SESSION['CURR_USR'][0];
+			break;
+		case 3://picimg
+			$st1="UPDATE auth SET imgpath ='".$ay[1]."' WHERE uid = ".$_SESSION['CURR_USR'][0];
 			break;
 		default:
 			$this->err_no=2;
@@ -299,7 +304,7 @@ class tb_choose extends base_login
 	}//}}}
 }//}}}
 //{{{class used_sign extends base_login
-//登录用户的信息:uid(0),email(1),uname(2),pwd(3),priv(4),lvl(5),sex(6),expr(7),coin(8),treasure(9),signup(10),lastlogin(11)
+//登录用户的信息:uid(0),email(1),uname(2),pwd(3),priv(4),lvl(5),sex(6),expr(7),coin(8),treasure(9),signup(10),lastlogin(11),imgpath(12)
 //security:uid(0),lastlog(1),signed(2),lgip(3),lgsys(4),lgbrow(5),trust(6),perm(7)
 class used_sign extends base_login
 {

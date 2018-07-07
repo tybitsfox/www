@@ -1,5 +1,7 @@
 <?php
+$uploadm="<span id='vvvv' class='light1'>请选择适合做头像的图片</span>";
 $act=array("active","","");
+//{{{
 if(isset($_GET['index']))
 {
 	if($_GET['index'] == 1)
@@ -17,11 +19,46 @@ if(isset($_GET['index']))
 	{
 		$act=array("","active","");
 	}
-	else
+	elseif($_GET['index'] == 3)
 	{
 		$act=array("","","active");
 	}
+	else //=4上传图片
+	{
+		if(isset($_FILES['filez']['tmp_name']))
+		{
+			$sname=constant('WORK_PLACE')."images/upload/".$_FILES['filez']['name'];
+			if(move_uploaded_file($_FILES['filez']['tmp_name'],"../images/upload/".$_FILES['filez']['name']))
+			{
+				if(strlen($sname) >= 255)
+					$uploadm="<span id='vvvv' class='light3'>图片上传错误文件名太长</span>";
+				else
+				{
+					$ta=new login();
+					$ay=array(3,$sname);
+					$ta->edit($ay);
+					if($ta->err_no)
+					{
+						unlink("../images/upload/".$_FILES['filez']['name']);
+						$uploadm="<span id='vvvv' class='light3'>头像保存错误请稍后再试</span>";
+					}
+					else
+					{
+						$_SESSION['CURR_USR'][12]=$sname;
+						$uploadm="<span id='vvvv' class='light2'>一一图片上传成功！一一</span>";
+					}
+				}
+			}
+			else
+				$uploadm="<span id='vvvv' class='light3'>图片上传错误稍后再试！</span>";
+			$ay=array(3,$sname);
+		}
+		else
+		{$uploadm="<span id='vvvv' class='light3'>图片上传错误请稍后再试</span>";}
+		$act=array("","active","");
+	}
 }
+//}}}
 ?>
 
 <?php
@@ -107,11 +144,11 @@ for($i=0;$i<$j;$i++)
                   </div>
 				</li>
 				<li>
-                  <div class='vendor-info'>
-                    <div class='vendor'>
-                      <i class='icon-user'></i>
-                    </div>
-                  </div>";
+                      <div class='avatar'>
+                        <div class='circle'>
+                          <img src='".$_SESSION['CURR_USR'][12]."' alt='汇氏'/>
+                        </div>
+                      </div>";
 		$st2=sprintf($st1,$act[0],$_SESSION['CURR_USR'][5],$_SESSION['CURR_USR'][9],$_SESSION['CURR_USR'][8]);
 		echo $st2;
 			$st1="<div class='account-action'>
@@ -155,7 +192,7 @@ else
 	echo $st2;
 }
 	echo "<div class='inner-narrow'><form class='form form-horizontal form-boxed' method='post' action='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['ONE']."&index=2'>\n";
-	$st1="<div class='form-group'>\n<label> </label>\n<div class='form-split'>\n<input type='email' name='email' id='email' placeholder='请输入新邮箱' class='form-control inlined'  value='%s' required/>\n<input type='submit' class='btn btn-primary' value='更新邮箱' />\n</div>\n</div>\n</form>\n</div>\n</div>\n</div>\n</div>";
+	$st1="<div class='form-group'>\n<label> </label>\n<div class='form-split'>\n<input type='email' name='email' id='email' placeholder='请输入新邮箱' class='form-control inlined'  value='%s' required/>\n<input type='submit' class='btn btn-primary' value='更新邮箱' />\n</div>\n</div>\n</form>\n</div>\n";
 if(isset($_POST['email']))
 {
 	$ay=array(2,$_POST['email']);//0:uname,1:password,2:email
@@ -177,6 +214,13 @@ else
 	$st2=sprintf($st1,"");
 	echo $st2;
 }
+	$st1="<div class='inner-narrow'><form class='form form-horizontal form-boxed' method='post' action='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['ONE']."&index=4' enctype='multipart/form-data'><div class='form-group'><label> </label><div class='form-split'>
+											<input type='file' name='filez' id='filez' class='inputfile' onchange='onchg(this)' accept='image/*' />
+											<label for='filez' class='btn btn-success'>选择头像</label>&nbsp;&nbsp;%s&nbsp;&nbsp;&nbsp;
+										<input type='submit' class='btn btn-primary' value='上传图片' /></div></div>	
+	</form></div></div></div></div>";
+	$st2=sprintf($st1,$uploadm);
+	echo $st2;
 //}}}
 //{{{ Tab 3	修改密码
 		$st1="				<!-- Tab 3 -->
@@ -247,6 +291,41 @@ if(isset($_POST['curpwd']) || isset($_POST['newpwd']) || isset($_POST['cfmpwd'])
 	echo $st1;
 
 //}}}
-		echo "</div></div></div></div>";
+//{{{ js and css
+	echo "</div></div></div></div>";
+echo "<style type='text/css'>
+.inputfile1{opacity:0;}
+.inputfile{
+    width: 0.1px; 
+    height: 0.1px; 
+    opacity: 0; 
+    overflow: hidden; 
+    position: absolute; 
+    z-index: -1;
+}
+.light1{display: inline-block; font-size: 14px; color:rgba(0,0,0,.55); padding-top:8px;}
+.light2{display: inline-block; font-size: 14px; color:rgba(0,100,0,.55); padding-top:8px;}
+.light3{display: inline-block; font-size: 14px; color:rgba(100,0,0,.55); padding-top:8px;}
+</style>
+<script>
+function onchg(obj)
+{
+	var newsrc=obj.files[0];
+	var a=document.getElementById('vvvv');
+	var st1='';
+	if(newsrc.name == null)
+	{
+		a.setAttribute('class','light3');
+		st1='选择头像错误请稍候再试';
+	}
+	else
+	{
+		a.setAttribute('class','light2');
+		st1='选择头像成功，准备上传';
+	}
+	a.innerHTML=st1;
+}
+</script>";		
 		echo $SIG_HTML['RIGHT_TOP3'];
+//}}}		
 ?>

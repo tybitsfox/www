@@ -19,6 +19,7 @@ if(!defined("WORK_PLACE"))
 	define("JS_FILEB",constant("WORK_PLACE")."js/core.aadddae364.js");
 	define("JS_FILEC",constant("WORK_PLACE")."js/jctt.js");
 	define("DB_SET",constant("FULL_PATH")."config/db_set.php");
+	define("DEF_IMG",constant("WORK_PLACE")."images/logo/guest.png");
 }
 require_once(constant("DB_SET"));
 $GLB_TITLE	=	"山东汇氏集团-汇氏管家";

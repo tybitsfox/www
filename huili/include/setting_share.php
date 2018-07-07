@@ -156,7 +156,7 @@ for($i=0;$i<$j;$i++)
                                         <div class='shareblock-head shareblock-head-light'>
                                             <p class='shareblock-account'>
 											<input type='file' name='file' id='file' class='inputfile' onchange='onchg(this)' accept='image/*' />
-											<label for='file' class='btn btn-success'>上传图片</label>&nbsp;<span id='vvvv'class='light'>请选择适合做头像的图片</span></p>
+											<label for='file' class='btn btn-success'>上传图片</label>&nbsp;<span id='vvvv' class='light'>请选择适合做头像的图片</span></p>
                                         </div>
 
                                         <div class='shareblock-body'><br>
