@@ -169,7 +169,7 @@ for($i=0;$i<$j;$i++)
 											<form class='form form-horizontal form-boxed' method='post' action='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['ONE']."&index=2'>";
 		$st2=sprintf($st1,$act[1]);
 		echo $st2;
-		$st1="<div class='form-group'>\n<label>  </label>\n<div class='form-split'>\n<input name='nickname' id='nickname' placeholder='输入新昵称' class='form-control inlined' value='%s' required/>\n<button type='submit' class='btn btn-primary'>更新昵称</button>\n</div>\n</div>\n</form></div>\n";
+		$st1="<div class='form-group'>\n<label>  </label>\n<div class='form-split'>\n<input name='nickname' id='nickname' placeholder='输入新昵称' class='form-control inlined' value='%s' required/>\n<button type='submit' class='btn btn-primary inlined'>更新昵称</button>\n</div>\n</div>\n</form></div>\n";
 if(isset($_POST['nickname']))
 {
 	$ay=array(0,$_POST['nickname']);//0:uname,1:password,2:email

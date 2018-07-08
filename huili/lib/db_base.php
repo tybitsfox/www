@@ -100,6 +100,18 @@ class base_login
 			return "该邮箱已在您的邀请列表中";
 		case 16:
 			return "查找记录失败";
+		case 17:
+			return "管理员帐号禁止删除";
+		case 18:
+			return "删除security表记录失败";
+		case 19:
+			return "删除invite表记录失败";
+		case 20:
+			return "删除choose表记录失败";
+		case 21:
+			return "删除expert表记录失败";
+		case 22:
+			return "删除auth表记录失败";
 		default:
 			return "未知错误！";
 		}
@@ -597,7 +609,7 @@ class tb_expert extends base_login
 		$this->get_sqli();
 		if($this->err_no)
 			return;//1
-		$conn=sprintf("INSERT INTO expert(uid,category,name,addr,phone,major,intro,img,mid,confirmed) VALUES(%s,%s,'%s','%s','%s','%s','%s','%s',%s,0)",$e[0],$e[1],$e[2],$e[3],$e[4],$e[5],$e[6],$e[7],$e[8]);
+		$conn=sprintf("INSERT INTO expert(uid,category,name,addr,phone,major,intro,mid,confirmed) VALUES(%s,%s,'%s','%s','%s','%s','%s',%s,0)",$e[0],$e[1],$e[2],$e[3],$e[4],$e[5],$e[6],$e[7]);
 		$res=mysqli_query($this->mysqli,$conn);
 		mysqli_close($this->mysqli);
 		if($res == TRUE)
@@ -645,7 +657,7 @@ class tb_expert extends base_login
 //{{{private function check_len($e)  输入的合法性检查
 	private function check_len($e)
 	{//only check string length
-		if(count($e) != 9)
+		if(count($e) != 8)
 		{$this->err_no=2;return;} //2 参数错误
 		if(strlen($e[2]) >= 32)
 		{$this->err_no=6;return;}
@@ -657,10 +669,8 @@ class tb_expert extends base_login
 		{$this->err_no=6;return;}
 		if(strlen($e[6]) >= 512)
 		{$this->err_no=6;return;}
-		if(strlen($e[7]) >= 255)
-		{$this->err_no=6;return;}
 	}//}}}
-//{{{public function update_expert($e) 更新认证标志和图片的函数 e[0]=0:confirmed; e[0]=1:disconfirmed; e[0]=2:update pic
+//{{{public function update_expert($e) 更新认证标志的函数 e[0]=0:confirmed; e[0]=1:disconfirmed;
 	public function update_expert($e)
 	{
 		if(count($e)<2)
@@ -676,37 +686,69 @@ class tb_expert extends base_login
 		case 1://解除认证
 			$conn="UPDATE expert SET confirmed = 0 WHERE uid =".$e[1];
 			break;
-		case 2://更改图片	e[0]=2;e[1]=uid,e[2]=new pic link
-			if(strlen($e[2]) >= 255)
-			{$this->err_no=6;return;}
-			$conn="SELECT img FROM expert WHERE uid =".$e[1];
-			$res=mysqli_query($this->mysqli,$conn);
-			$row=mysqli_fetch_row($res);
-			mysqli_free_result($res);
-			mysqli_close($this->mysqli);
-			$a=constant("FULL_PATH");
-			$defpath=substr($a,0,strpos($a,"huili")-1);
-			if($row != null)
-			{
-				$a=$defpath.$row[0];
-				unlink($a);
-			}
-			$a=$defpath."/huili/images/logo/guest.png";
-			$this->init_db();
-			if($this->err_no)
-				return;
-			$conn="UPDATE expert set img = '".$e[2]."' WHERE uid =".$e[1];
-			$res=mysqli_query($this->mysqli,$conn);
-			mysqli_close($this->mysqli);
-			if($res == TRUE)
-				return;
-			else
-			{
-				$this->err_no=11;
-				return;
-			}
+		default:
+			$this->err_no=2;
+			return;	
 		}
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == FALSE)
+			$this->err_no=3;
 	}//}}}
 
 }//}}}
+//{{{class global_mod extends base_login	全表操作的类
+class global_mod extends base_login
+{
+//{{{public function alter_user($e)	用户帐号的删除函数，该函数要清除数据库中所有涉及到该账户的记录信息
+	public function alter_user($e)
+	{
+		if(count($e) != 2)
+		{$this->err_no=2;return;} //2 参数错误
+		if($e[1] < 100002)
+		{$this->err_no=17;return;}//管理员账户不能删除
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$conn="DELETE FROM security WHERE uid =".$e[1];// security
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == FALSE)
+		{$this->err_no=18;return;}
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$conn="DELETE FROM invite WHERE uid=".$e[1];//invite
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == FALSE)
+		{$this->err_no=19;return;}
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$conn="DELETE FROM choose WHERE uid=".$e[1];//choose
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == FALSE)
+		{$this->err_no=20;return;}
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$conn="DELETE FROM expert WHERE uid=".$e[1];//expert
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == FALSE)
+		{$this->err_no=21;return;}
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$conn="DELETE FROM auth WHERE uid =".$e[1];//为防止意外，最后删除auth表
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == FALSE)
+		{$this->err_no=22;return;}
+	}//}}}
+
+}//}}}
+
 ?>

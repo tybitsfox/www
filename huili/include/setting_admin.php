@@ -1,6 +1,8 @@
 <?php
 //{{{ prepare
 $glb_msg="<p>我的管理界面</p>";			//提示字符串
+$mod_msg="<p>申请认证用户的详细资料</p>";
+$btn_txt="通过认证";
 $tab_act=array("active","");			//横向页标签活动状态
 $ven_act=array("active","","","","");	//纵向页标签及对应内容的显示状态
 $exp=array();$term=array();				//待认证的专家和团队列表
@@ -8,15 +10,47 @@ $xexp=array();$xterm=array();			//已认证的专家和团队列表
 $usr=array();							//当前注册帐号的列表
 $cnt=array(0,0,0,0,0);					//总的翻页次数
 $curr_pg=array(0,0,0,0,0);				//当前页号
+if(isset($_GET['vendor']))
+{
+	switch($_GET['vendor'])
+	{
+	case 0:
+	case 1:
+		break;
+	case 2:
+	case 3:
+		$mod_msg="<p>通过认证用户的详细资料</p>";
+		break;
+	case 4:
+		$mod_msg="<p>已注册账户的详细资料</p>";
+		break;
+	}
+}
 if(isset($_GET['accept']))
 {
 	if($_GET['accept'] == 'ok')
-	{
+	{//vendor=0,1添加，2,3取消
 		$ta=new tb_expert();
-
+		if($_GET['vendor'] < 2)
+			$ay=array(0,$_GET['action']);
+		else
+			$ay=array(1,$_GET['action']);
+		$ta->update_expert($ay);
+		if($ta->err_no)
+			$mod_msg="<div class='alert alert-warning' role='alert'><strong>错误</strong>".$ta->err_msg()."</div>";
+		else
+			$mod_msg="<div class='alert alert-success' role='alert'><strong>提示</strong>认证状态修改成功</div>";
 	}
-	else
-	{}
+	elseif($_GET['accept'] == 'xok')
+	{
+		$ta=new global_mod();
+		$ay=array(0,$_GET['action']);
+		$ta->alter_user($ay);
+		if($ta->err_no)
+			$mod_msg="<div class='alert alert-warning' role='alert'><strong>错误</strong>".$ta->err_msg()."</div>";
+		else
+			$mod_msg="<div class='alert alert-success' role='alert'><strong>提示</strong>当前账户删除成功</div>";
+	}
 }
 if(isset($_GET['vendor']))
 {
@@ -41,7 +75,7 @@ else
 	$x=0;$y=0;
 	foreach($ay as $a)
 	{
-		if($a[9] == 0)//未认证的
+		if($a[8] == 0)//未认证的
 		{
 			if($a[1] == 0) //expert
 				$exp[$x++]=$a;
@@ -497,7 +531,7 @@ else
 {
 								  $st1="<div class='shareblock-body'>
                                             <ul class='list-unstyled list-shares'>
-                                                        <p>没有认证的团队</p>
+                                                        <p>不可能！最少一个注册账户</p>
                                             </ul>
                                         </div>";
 								  echo $st1;
@@ -519,20 +553,10 @@ else
                                     <div class='inner-narrow inner-midnarrow'>
     
     <div class='intro-block intro-block-slim'>
-        <p>Accounts shared with you</p>
+        ".$mod_msg."
     </div>
         <div class='flash-container'></div>";
 		echo $st1;
-        $st1="<!-- ic-src must be `whitespace` char, not null or / -->
-        <div id='account-collaboration' ic-refresh ic-src=' ' class='ic-transition' ic-select-from-response='#account-collaboration'  ic-transition-duration='.1s'>
-                    
-    <div id='account_collaborations'>
-            <div  class='text-center'>
-                <span>You have not been added as a collaborator to any accounts yet.</span>
-            </div>
-
-        </div>
-</div>";
 								  $st1="<div class='shareblock-body'>
                                             <ul class='list-unstyled list-accounts'>
                       							<li><div class='avatar'>
@@ -584,77 +608,107 @@ if(isset($_GET['action']) && ($_GET['action'] != 'true'))
 			{$ay=$e;break;}
 		}
 		break;
+	case 4://usr
+		foreach($usr as $e)
+		{
+			if($e[0] == $_GET['action'])
+			{$ay=$e;break;}
+		}
+		break;
 	}
-	if(count($ay))
+	if($_GET['vendor'] <= 3)
+	{	
+		if($_GET['vendor'] > 1)
+			$btn_txt="解除认证";
+		else
+			$btn_txt="通过认证";
+		if(count($ay))
+		{
+			$sname=$ay[2];
+			//	$spic=$ay[7];
+			foreach($usr as $ru)
+			{
+				if(intval($ru[0]) == intval($ay[0]))
+				{$spic=$ru[12];break;}
+			}
+			if($spic == null)
+				$spic=constant("DEF_IMG");
+			$sphone=$ay[4];
+			$saddr=$ay[3];
+			$sintro=$ay[6];
+			$smajor="";
+			$i=intval($ay[7]);
+			if($i & 1)
+				if($ay[1])
+					$smajor=$smajor."环境服务、";
+				else
+					$smajor="污水处理、";
+			if($i & 2)
+				if($ay[1])
+					$smajor=$smajor."仪器设备、";
+				else
+					$smajor=$smajor."废气处理、";
+			if($i & 4)
+				if($ay[1])
+					$smajor=$smajor."污水处理、";
+				else
+					$smajor=$smajor."噪音治理、";
+			if($i & 8)
+				if($ay[1])
+					$smajor=$smajor."石油化工、";
+				else
+					$smajor=$smajor."危废处理、";
+			if($i & 16)
+				if($ay[1])
+					$smajor=$smajor."食品药品、";
+				else
+					$smajor=$smajor."环境工程、";
+			if($i & 32)
+				if($ay[1])
+					$smajor=$smajor."餐饮服务、";
+				else
+					$smajor=$smajor."项目审批、";
+			if($i & 64)
+				if($ay[1])
+					$smajor=$smajor."畜禽养殖、";
+				else
+					$smajor=$smajor."化验分析、";
+			if($i & 128)
+				if($ay[1])
+					$smajor=$smajor."其他行业、";
+				else
+					$smajor=$smajor."法律事务、";
+			if(strlen($smajor))
+				$stt=substr($smajor,0,strlen($smajor)-strlen('、'));
+			else
+				$stt=" ";
+			if($ay[1])
+			{$stb1="单位";$stb2="地址";}
+			else
+			{$stb1="姓名";$stb2="单位";}
+			$st2=sprintf($st1,$spic,$sname,$stb2,$saddr,$sphone,$stt,$sintro);
+			echo $st2;
+			$st1="<div class='shareblock-body'>
+				<div class='text-center'>
+				<a href='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&action=".$_GET['action']."&vendor=".$_GET['vendor']."&accept=ok' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>".$btn_txt."</a>
+				</div>
+				</div>";
+			echo $st1;
+			echo "</div>";
+		}
+	}
+	else //usr
 	{
-		$sname=$ay[2];
-		$spic=$ay[7];
-		$sphone=$ay[4];
-		$saddr=$ay[3];
-		$sintro=$ay[6];
-		$smajor="";
-		$i=intval($ay[8]);
-		if($i & 1)
-			if($ay[1])
-				$smajor=$smajor."环境服务、";
-			else
-				$smajor="污水处理、";
-		if($i & 2)
-			if($ay[1])
-				$smajor=$smajor."仪器设备、";
-			else
-				$smajor=$smajor."废气处理、";
-		if($i & 4)
-			if($ay[1])
-				$smajor=$smajor."污水处理、";
-			else
-				$smajor=$smajor."噪音治理、";
-		if($i & 8)
-			if($ay[1])
-				$smajor=$smajor."石油化工、";
-			else
-				$smajor=$smajor."危废处理、";
-		if($i & 16)
-			if($ay[1])
-				$smajor=$smajor."食品药品、";
-			else
-				$smajor=$smajor."环境工程、";
-		if($i & 32)
-			if($ay[1])
-				$smajor=$smajor."餐饮服务、";
-			else
-				$smajor=$smajor."项目审批、";
-		if($i & 64)
-			if($ay[1])
-				$smajor=$smajor."畜禽养殖、";
-			else
-				$smajor=$smajor."化验分析、";
-		if($i & 128)
-			if($ay[1])
-				$smajor=$smajor."其他行业、";
-			else
-				$smajor=$smajor."法律事务、";
-		if(strlen($smajor))
-			$stt=substr($smajor,0,strlen($smajor)-strlen('、'));
-		else
-			$stt=" ";
-		if($ay[1])
-		{$stb1="单位";$stb2="地址";}
-		else
-		{$stb1="姓名";$stb2="单位";}
-		$st2=sprintf($st1,$spic,$sname,$stb2,$saddr,$sphone,$stt,$sintro);
-		echo $st2;
-								  $st1="<div class='shareblock-body'>
-									  		<div class='text-center'>
-													<a href='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&action=".$_GET['action']."&vendor=".$_GET['vendor']."&accept=ok' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>通过认证</a>
-											</div>
-                                        </div>";
-								  echo $st1;
-		echo "</div>";
+		if(count($ay) == 13)
+		{
+			$st1="<div class='shareblock-body'><ul class='list-unstyled list-accounts'><li><div class='avatar'><div class='circle'><img src='%s' alt='您的头像'/></div></div><div class='account-info'>%s</div></li><li><div class='account-info'><strong>UID：</strong></div><div class='account-status'>%s</div></li><li><div class='account-info'><strong>昵称：</strong></div><div class='account-status'>%s</div></li><li><div class='account-info'><strong>等级：</strong></div><div class='account-status'>%s</div></li><li><div class='account-info'><strong>经验值：</strong></div><div class='account-status'>%s</div></li><li><div class='account-info'><strong>财富：</strong></div><div class='account-status'>%s</div></li><li><div class='account-info'><strong>金币：</strong></div><div class='account-status'>%s</div></li></ul><div class='shareblock-body'><div class='text-center'><a href='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&action=".$_GET['action']."&vendor=".$_GET['vendor']."&accept=xok' style='color: #AE3E48; text-decoration: none; border-bottom: 1px solid #AE3E48;'>删除当前帐号</a></div></div></div>";
+			if($ay[12] == null)
+				$ay[12]=constant("DEF_IMG");
+			$st2=sprintf($st1,$ay[12],$ay[1],$ay[0],$ay[2],$ay[5],$ay[7],$ay[9],$ay[8]);
+			echo $st2;
+		}
 	}
 }
-				//				  echo $st1;
-
 $st1="</div>
                                 </div>
                         </div>
