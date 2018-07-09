@@ -1,7 +1,7 @@
 <?php
 //http://phpqrcode.sourceforge.net/
 include("./phpqrcode.php");
-$QR=QRcode::png("http://192.168.1.117/huili/index.php",false,"H",6,2);
+$QR=QRcode::png("http://tybitsfox.6600.org:8008/huili/index.php",false,"H",6,2);
 $logo=imagecreatefrompng("../images/logo/mmexport1.png");
 $QR_width = imagesx($QR);      //二维码图片宽度
 $QR_height = imagesy($QR);     //二维码图片高度

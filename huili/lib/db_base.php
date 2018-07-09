@@ -797,6 +797,8 @@ class tb_my_expert extends base_login
 
 
 }//}}}
+
+////////////begin function//////////////////////////////
 //{{{function get_major($ay) $ay[0]=mid;$ay[1]=1 专家类型，=0 团队行业
 function get_major($ay) //$ay[0]=mid;$ay[1]=1 专家类型，=0 团队行业
 {
@@ -849,5 +851,44 @@ function get_major($ay) //$ay[0]=mid;$ay[1]=1 专家类型，=0 团队行业
 		$stt=" ";
 	return $stt;
 }//}}}
+//{{{function get_chk($e)	合作页面，判断checkbox状态的函数
+function get_chk($e)
+{
+	$ay=array("","","","","","","","");
+	if($e & 1)
+		$ay[0]="checked";
+	if($e & 2)
+		$ay[1]="checked";
+	if($e & 4)
+		$ay[2]="checked";
+	if($e & 8)
+		$ay[3]="checked";
+	if($e & 16)
+		$ay[4]="checked";
+	if($e & 32)
+		$ay[5]="checked";
+	if($e & 64)
+		$ay[6]="checked";
+	if($e & 128)
+		$ay[7]="checked";
+	return $ay;
+}//}}}
+//{{{function get_my_sel($i,$e) 取得用户选择的未合作专家或团队的队列
+//uid(0),category(1),name(2),addr(3),phone(4),major(5),intro(6),mid(7),imgpath(8)
+function get_my_sel($i,$e)
+{
+	if($i == 0) //未选择，提取全部记录
+		return $e;
+	$ay=array();
+	foreach($e as $a)
+	{
+		if($a[7] & $i)
+			array_push($ay,$a);
+	}
+	return $ay;
+}
+
+
+
 
 ?>

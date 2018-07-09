@@ -72,7 +72,7 @@ if($ta->err_no)
 	$glb_msg="<div class='alert alert-warning' role='alert'><strong>错误</strong>".$ta->err_msg()."</div>";
 else
 {
-	$x=0;$y=0;
+	$x=0;$y=0;$w=0;$z=0;
 	foreach($ay as $a)
 	{
 		if($a[8] == 0)//未认证的
@@ -85,9 +85,9 @@ else
 		else
 		{
 			if($a[1] == 0) //expert
-				$xexp[$x++]=$a;  //现有的专家
+				$xexp[$w++]=$a;  //现有的专家
 			else
-				$xterm[$y++]=$a;
+				$xterm[$z++]=$a;
 		}
 	}
 	unset($ay);unset($ta);
