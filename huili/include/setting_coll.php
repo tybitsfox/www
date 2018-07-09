@@ -1,6 +1,45 @@
 <?php
+$err_txt="<p>我邀请的合作伙伴.</p>";
 $tab_act=array("active","");
-$ven_act=array("active","");
+$ven_act=array("active","","","");
+$cnt=array(0,0,0,0,0);
+$curr_pg=array(0,0,0,0,0);
+$exp=array();
+$term=array();
+$xexp=array();
+$xterm=array();
+$esel1=0;
+$esel2=0;
+//{{{ 数据的取得及准备操作 
+if(isset($_POST['checkn']))
+{
+	foreach($_POST['checkn'] as $a)
+		$esel1+=$a;
+}
+$ta=new tb_my_expert();
+$a=1;$ay=array();
+$ay=$ta->get_my_expert($a);//查找所有没被当前用户添加的专家和团队
+//	$err_txt="<div class='alert alert-warning' role='alert'><strong>错误</strong>".$ta->err_msg()."</div>";
+foreach($ay as $b)
+{
+	if($b[1] == 0) //专家
+		array_push($xexp,$b);
+	else
+		array_push($xterm,$b);//团队
+}
+unset($ta);$ay=array();
+$ta=new tb_my_expert();
+$a=0;$ay=array();
+$ay=$ta->get_my_expert($a); //再取得已添加的专家团队
+foreach($ay as $b)
+{
+	if($b[1] == 1)
+		array_push($term,$b);
+	else
+		array_push($exp,$b);	
+}
+//}}}
+
 ?>
 <?php
 //{{{左边导航栏栏
@@ -44,7 +83,7 @@ for($i=0;$i<$j;$i++)
                                     <div class='inner-narrow inner-midnarrow'>   
 
     <div class='intro-block intro-block-slim'>
-        <p>我邀请的合作伙伴.</p>
+        ".$err_txt."
     </div>
 
                 <div class='nav-vendors'>
@@ -52,13 +91,23 @@ for($i=0;$i<$j;$i++)
                     <ul class='nav nav-tabs nav-tabs-vertical' role='tablist'>
                             <li role='presentation' class='".$ven_act[0]."'>
                                 <a href='#vendor-amazon' aria-controls='amazon' role='tab' data-toggle='tab'>
-                                    <i class='icon-truck'></i><span>专家团队</span>
+                                    <i class='icon-user'></i><span>专家团队</span>
                                 </a>
                             </li>
                             <li role='presentation' class='".$ven_act[1]."'>
                                 <a href='#vendor-github' aria-controls='github' role='tab' data-toggle='tab'>
-                                    <i class='icon-user'></i><span>业务伙伴</span>
+                                    <i class='icon-wechat'></i><span>业务伙伴</span>
                                 </a>
+							</li>
+							<li rele='presentation' class'".$ven_act[2]."'>
+								<a href='#vendor-search' aria-controls='search' role='tab' data-toggle='tab'>
+									<i class='icon-group'></i><span>查找专家</span>
+								</a>
+							</li>
+							<li rele='presentation' class'".$ven_act[3]."'>
+								<a href='#vendor-xsearch' aria-controls='xsearch' role='tab' data-toggle='tab'>
+									<i class='icon-airplane'></i><span>查找团队</span>
+								</a>
 							</li>
                     </ul>";
 //}}}
@@ -68,89 +117,114 @@ for($i=0;$i<$j;$i++)
                             <div role='tabpanel' class='tab-pane ".$ven_act[0]."' id='vendor-amazon'>
                                     <div class='shareblock'>
                                         <div class='shareblock'>
-<ul class='list-unstyled list-accounts'>
-                    <li>
-                      <div class='avatar'>
-                        <div class='circle'>
-                          <img src='/huili/images/logo/mmexport1.png' alt='汇氏'/>
-                        </div>
-                      </div>
-                      <div class='account-info'>
-                        <p class='title'>
-                            <strong>
-                              <a href='".$SIGNED_DEF['LINK']."'>汇氏管家</a>
-                            </strong>
-                            由
-                            <strong>
-                              <a href='".$SIGNED_DEF['LINK']."'>huishi group, Inc.</a>
-                            </strong>
-                        </p>
-                      </div>
-                      <div class='account-status'>
-                            <p class='desc'></p>
-                      </div>
-                      <div class='account-action'>
-                        <a href='#authorization".$i."' class='btn btn-outline' data-trigger='collapse'>详细信息</a>
-                      </div>
-                    </li>
-                    <li class='collapse' id='authorization".$i."'>
-                      <ul class='list-unstyled list-security'> <!-- start more info section -->
-                        <li>
-                          <p class='title'>授权</p>
-                          <p class='info'>%s</p>
-                        </li>
-                        <li>
-                          <p class='title'>浏览器</p>
-                          <p class='info'>%s</p>
-                        </li>
-                        <li>
-                          <p class='title'>操作系统</p>
-                          <p class='info'>%s</p>
-                        </li>
-                        <li>
-                          <p class='title'>地址</p>
-                          <div class='m-v-half'>
-                            <span>Location</span>
-                            <p class='info'>%s</p>
-                          </div>
-                        </li>
-                        <li>
-                          <p class='title'>可信设备</p>
-                          <p class='info'>%s</p>
-                        </li>
-                        <li>
-                          <p class='title'>允许的操作</p>
-                          <div class='info'>
-                            <ul class='list-unstyled'>
-                                <li><strong>%s</strong></li>
-                                <li><strong>Read/write your transactions</strong></li>
-                            </ul>
-                          </div>
-                        </li>
-</ul>
-
-                                        </div>
-                                        <div class='shareblock-head shareblock-head-light'>
-                                            <p class='shareblock-account'><span class='light'>合作伙伴:</span> <strong><span class='account-truncated'>孙国在</span></strong></p>
-                                            <a href='/app/accounts/6adgokW5xo/edit?tab=collaborators' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='#modal-shareaccount'><i class='icon-pencil'></i> 开始交流</a>
-                                        </div>
-                                        <div class='shareblock-head shareblock-head-light'>
-										<p>污水处理专业</p>
-										<div class='btn-shareaccount'>
-     <label class='check'><input type='checkbox' name='check_1'  class='switch' />污水处理</label>
-	 									</div></div>
-                                        <div class='shareblock-head shareblock-head-light'>
-										<p>废气处理专业</p>
-										<div class='btn-shareaccount'>
-<label class='check'><input type='checkbox' name='check_2'  class='switch' /></label> 
-	 									</div></div>
-                                        <div class='shareblock-body'>
-                                            <ul class='list-unstyled list-shares'>
-                                                        <p>这个账户没有更多的合作伙伴 </p>
-                                            </ul>
-                                        </div>
-                                    </div>
-                            </div>";
+<ul class='list-unstyled list-accounts'>";
+$st1="<li>
+          <div class='avatar'>
+              <div class='circle'>
+                    <img src='%s' alt='头像'/>
+              </div>
+          </div>
+          <div class='account-info'>
+              <p class='title'>
+                     <strong>姓名：</strong>%s
+              </p>
+          </div>
+          <div class='account-status'>
+              <p class='desc'></p>
+          </div>
+          <div class='account-action'>
+              <a href='#authorization%s' class='btn btn-outline' data-trigger='collapse'>详细信息</a>
+          </div>
+      </li>
+      <li class='collapse' id='authorization%s'>
+           <ul class='list-unstyled list-security'> <!-- start more info section -->
+                <li>
+                    <p class='title'>单位</p><p class='info'>%s</p>
+                </li>
+                <li>
+                    <p class='title'>专业</p><p class='info'>%s</p>
+                </li>
+                <li>
+                    <p class='title'>简介</p><p class='info'>%s</p>
+                </li>
+				<li>
+					<div class='text-center'><a href='#' style='color: #AE3E48; text-decoration: none; border-bottom: 1px solid #AE3E48;'>解除邀请</a></div>
+				</li>
+			</ul>
+		</li>";
+if(count($exp) > 0)
+{
+	//计算翻页
+	if(isset($_GET['vendor']) && ($_GET['vendor'] == 0)) //保证不被其他标签页干扰
+	{
+		if(isset($_GET['nexta'])) //下翻页
+		{
+			if($curr_pg[0]<($cnt[0]-1))
+				$curr_pg[0]++;
+		}
+		elseif(isset($_GET['preva'])) //上翻页
+		{
+			if($curr_pg[0] > 0)
+				$curr_pg[0]--;
+		}
+	}
+	//uid(0),category(1),name(2),addr(3),phone(4),major(5),intro(6),mid(7),imgpath(8)
+	$j=count($exp)-1;
+	for($i=0;$i<5;$i++)
+	{
+		$k=$i+$curr_pg[0]*5;
+		if($k>$j)
+			break;
+		$ay=array();
+		$ay=$exp[$k];
+		$cy=array($ay[7],1);
+		$s1=get_major($cy);
+		$st2=sprintf($st1,$ay[8],$ay[2],$i,$i,$ay[3],$s1,$ay[6]);
+		echo $st2;
+	}
+	echo "</ul>";
+	//显示翻页
+	$st1="<div class='shareblock-body'>
+		<div class='text-center'>
+		<a href='%s' style='%s'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;%d&nbsp;&nbsp;&nbsp;<a href='%s' style='%s'>&gt;&gt;</a>
+		</div>
+		</div>";
+	if($curr_pg[0] == 0)
+	{
+		$sta1="color: gray; cursor: default; disabled: true;";
+		$sta4="javascript:;";
+	}
+	else
+	{
+		$bb=intval($curr_pg[0])-1;
+		$sta1="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&preva=".$bb."&action=true&vendor=0";
+	}
+	if($curr_pg[0] >= ($cnt[0]-1))
+	{
+		$sta2="color: gray; cursor: default; disabled: true;";
+		$sta3="javascript:;";
+	}
+	else
+	{
+		$bb=intval($curr_pg[0])+1;
+		$sta2="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&nexta=".$bb."&action=true&vendor=0";
+	}
+	$st2=sprintf($st1,$sta4,$sta1,intval($curr_pg[0])+1,$sta3,$sta2);
+	echo $st2;
+}
+else
+{
+	  $st1="</ul><div class='shareblock-body'>
+            <ul class='list-unstyled list-shares'>
+	             <p>您还没有邀请的专家</p>
+            </ul>
+            </div>";
+	 echo $st1;
+}
+//	$err_txt="<div class='alert alert-warning' role='alert'><strong>提示：</strong>您还没邀请任何专家</div>";
+echo "</div></div></div>";
 //}}}
 //{{{纵向标签页 2内容	div -4	
 				echo"<!-- my add -->

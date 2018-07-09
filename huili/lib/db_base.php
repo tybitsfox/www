@@ -643,8 +643,16 @@ class tb_expert extends base_login
 		case 4://未被认证的
 			$conn="SELECT * FROM expert WHERE confirmed = 0";
 			break;
-		default:
+		case 5://取得全部记录
 			$conn="SELECT * FROM expert";  //select all
+			break;
+//		case 6://这是一个特殊查询，查询my_expert表中不存在而在expert表中存在的记录,即某个用户没有邀请的专家记录
+//			$conn="SELECT * FROM expert WHERE uid NOT IN (SELECT eid FROM my_expert WHERE uid =".$e[1].")";
+//			break;
+//		case 7://这是一个特殊查询，查询my_expert表和expert表中同时存在的记录,即某个用户没有邀请的专家记录
+//			$conn="SELECT * FROM expert WHERE uid IN (SELECT eid FROM my_expert WHERE uid =".$e[1].")";
+//			break;
+		default:
 			break;
 		}
 		$res=mysqli_query($this->mysqli,$conn);
@@ -749,6 +757,97 @@ class global_mod extends base_login
 		{$this->err_no=22;return;}
 	}//}}}
 
+}//}}}
+//{{{class tb_my_expert extends base_login	用户添加的专家，团队表
+class tb_my_expert extends base_login
+{
+//{{{public function add_my_expert($e)
+	public function add_my_expert($e)
+	{
+		if(count($e) != 2)
+		{$this->err_no=2;return;}
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$c="INSERT INTO my_expert(uid,eid,hlptimes,badtimes,totalpay) VALUES (%s,%s,0,0,0)";
+		$conn=sprintf($c,$e[0],$e[1]);
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->conn);
+		if($res == FALSE)
+			$this->err_no=3;
+	}//}}}
+//{{{public function get_my_expert($e) $e=0:取得所有邀请的账户,$e=1:取得所有未邀请的账户
+	public function get_my_expert($e)
+	{
+		$ay=array();
+		$this->init_db();
+		if($this->err_no)
+			return $ay;
+		if($e) //取得所有未邀请的账户信息
+			$conn="SELECT a.uid,a.category,a.name,a.addr,a.phone,a.major,a.intro,a.mid,b.imgpath from expert as a left join auth as b on a.uid=b.uid where a.confirmed = 1 and a.uid not in (select c.eid from my_expert as c where c.uid = ".$_SESSION['CURR_USR'][0].")";
+		else //=0 取得所有已邀请的账户信息
+			$conn="SELECT a.uid,a.category,a.name,a.addr,a.phone,a.major,a.intro,a.mid,b.imgpath from expert as a left join auth as b on a.uid=b.uid where a.confirmed = 1 and a.uid in (select c.eid from my_expert as c where c.uid = ".$_SESSION['CURR_USR'][0].")";
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}
+
+
+}//}}}
+//{{{function get_major($ay) $ay[0]=mid;$ay[1]=1 专家类型，=0 团队行业
+function get_major($ay) //$ay[0]=mid;$ay[1]=1 专家类型，=0 团队行业
+{
+	$smajor="";
+	if(count($ay) != 2)
+		return $smajor;
+	if($ay[0] & 1)
+		if($ay[1])
+			$smajor=$smajor."环境服务、";
+		else
+			$smajor="污水处理、";
+	if($ay[0] & 2)
+		if($ay[1])
+			$smajor=$smajor."仪器设备、";
+		else
+			$smajor=$smajor."废气处理、";
+	if($ay[0] & 4)
+		if($ay[1])
+			$smajor=$smajor."污水处理、";
+		else
+			$smajor=$smajor."噪音治理、";
+	if($ay[0] & 8)
+		if($ay[1])
+			$smajor=$smajor."石油化工、";
+		else
+			$smajor=$smajor."危废处理、";
+	if($ay[0] & 16)
+		if($ay[1])
+			$smajor=$smajor."食品药品、";
+		else
+			$smajor=$smajor."环境工程、";
+	if($ay[0] & 32)
+		if($ay[1])
+			$smajor=$smajor."餐饮服务、";
+		else
+			$smajor=$smajor."项目审批、";
+	if($ay[0] & 64)
+		if($ay[1])
+			$smajor=$smajor."畜禽养殖、";
+		else
+			$smajor=$smajor."化验分析、";
+	if($ay[0] & 128)
+		if($ay[1])
+			$smajor=$smajor."其他行业、";
+		else
+			$smajor=$smajor."法律事务、";
+	if(strlen($smajor))
+		$stt=substr($smajor,0,strlen($smajor)-strlen('、'));
+	else
+		$stt=" ";
+	return $stt;
 }//}}}
 
 ?>
