@@ -816,17 +816,17 @@ class tb_my_expert extends base_login
 		if($this->err_no)
 			return $cy;
 		//先取得邀请我的普通账户
-		$conn="SELECT a.eid,b.uname,b.imgpath FROM my_expert as a LEFT JOIN auth as b ON a.eid = b.uid WHERE a.uid =".$u." AND a.eid NOT IN (SELECT c.uid FROM expert as c)";
+		$conn="SELECT a.uid,b.uname,b.imgpath FROM my_expert as a LEFT JOIN auth as b ON a.uid = b.uid WHERE a.eid =".$u." AND a.uid NOT IN (SELECT c.uid FROM expert as c)";
 		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
-			array_push($ay,$row);				//元素队列的长度为2.表示为普通账户
+			array_push($ay,$row);				//元素队列的长度为3.表示为普通账户
 		mysqli_free_result($res);
 		mysqli_close($this->mysqli);
 		$this->init_db();
 		if($this->err_no)
 			return $cy;
 		//再取得邀请我的认证帐号
-		$conn="SELECT a.uid,a.category,a.name,a.addr,a.phone,a.major,a.intro,a.mid,b.imgpath FROM expert as a LEFT JOIN auth as b on a.uid = b.uid WHERE a.comfired = 1 AND a.uid IN (SELECT c.eid FROM my_expert as c WHERE c.uid =".$u.")";
+		$conn="SELECT a.uid,a.category,a.name,a.addr,a.phone,a.major,a.intro,a.mid,b.imgpath FROM expert as a LEFT JOIN auth as b on a.uid = b.uid WHERE a.confirmed = 1 AND a.uid IN (SELECT c.uid FROM my_expert as c WHERE c.eid =".$u.")";
 		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
 			array_push($ay,$row);				//元素队列的长度为9.表示为认证账户

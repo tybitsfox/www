@@ -4,8 +4,8 @@ $tab_act=array("active","");				//横向标签页的动态保存
 $ven_act=array("active","","","");			//纵向标签页的动态保存
 $glb_chk=array("","","","","","","","");	//专家选择按钮的动态保存
 $glb_chk1=array("","","","","","","","");	//团队选择按钮的动态保存
-$cnt=array(0,0,0,0);			//四个纵向标签页中每页的记录总条数	
-$curr_pg=array(0,0,0,0);		//四个纵向标签页中每页的当前翻页数记录
+$cnt=array(0,0,0,0,0);			//四个纵向标签页中每页的记录总条数	
+$curr_pg=array(0,0,0,0,0);		//四个纵向标签页中每页的当前翻页数记录
 $exp=array();					//已合作的专家队列
 $term=array();					//已合作的团队队列
 $xexp=array();					//所有未合作的专家队列
@@ -15,7 +15,7 @@ $sel_term=array();				//符合用户选择条件的未合作团队列表
 $esel1=0;						//未合作专家的筛选条件
 $esel2=0;						//未合作团队的筛选条件
 //{{{ 数据的取得及准备操作
-if((isset($_GET['action'])) && (isset($_GET['vendor'])))  //这个判断不是必须的，但会保证在apache2的运行日志中不会出现访问未定义变量的消息记录
+if(isset($_GET['action']))  //这个判断不是必须的，但会保证在apache2的运行日志中不会出现访问未定义变量的消息记录
 {//前置性影响的操作：查询，添加，删除。这些动作的处理要在读取数据之前进行。因为他们决定了读取数据的条件或者先要更新数据库才能读取
 //后置性操作：翻页，这个动作须在读取数据后进行。后置性操作必须依据取得的数据才能进一步操作。
 //所以，这里不能集中处理所有的动作，而要将上述两类操作分开。	
@@ -46,7 +46,16 @@ if((isset($_GET['action'])) && (isset($_GET['vendor'])))  //这个判断不是�
 			$err_msg='查找新的团队';
 		}
 	}
-	elseif($_GET['action'] != 'true')  //action=uid; 上面的操作和下面的操作不会并存的
+	elseif($_GET['action'] == 'true') //tab2 退出邀请
+	{
+		if(isset($_GET['iid']))
+		{
+			$ta=new tb_my_expert();
+			$ay=array($_GET['iid'],$_SESSION['CURR_USR'][0]);
+			$ta->drop_my_expert($ay);
+		}
+	}
+	else //action=uid; 上面的操作和下面的操作不会并存的
 	{
 		$ta=new tb_my_expert();	//通过vendor就可以直接判断出下面的操作了
 		if(intval($_GET['vendor']) > 1)//邀请或解除合作的动作
@@ -120,7 +129,30 @@ if(isset($_GET['vendor']))
 	}
 }//}}}
 //{{{tab 2 相关的操作  邀请我的，可以是普通账户，也可以是认证账户
-
+$my_ary=array();				//邀请我的队列
+$err_msg1="<span>您还未被邀请吗？通过认证才会得到邀请</span>";
+$ta=new tb_my_expert();
+$i=$_SESSION['CURR_USR'][0];
+$my_ary=$ta->get_invite_me($i);
+$idt=$ta->err_no;
+if($idt)
+	$err_msg1="<div class='alert alert-warning' role='alert'><strong>提示：</strong>".$ta->err_msg()."</div>";
+if(isset($_GET['action']) && ($_GET['action'] == 'true'))
+{
+	$cnt[4]=floor(count($my_ary)/5);
+	if(count($my_ary)%5)
+		$cnt[4]++;
+	if(isset($_GET['prevc']) || isset($_GET['nextc'])) //翻页按钮的动作
+	{
+		if(isset($_GET['prevc']))
+			$curr_pg[4]=intval($_GET['prevc'])+1;
+		else
+			$curr_pg[4]=intval($_GET['nextc'])-1;
+		if($curr_pg[4] >= $cnt[4])
+			$curr_pg[$i] = 0;
+	}
+	$tab_act=array("","active");	
+}
 //}}}
 ?>
 <?php
@@ -712,12 +744,139 @@ echo"<div role='tabpanel' class='tab-pane ".$tab_act[1]."' id='sharedwith'>
     		<div class='intro-block intro-block-slim'>
        			 <p>邀请你的合作</p>
 		    </div>";
-
-
-
+//{{{下面是新加的代码
+echo"<div class='shareblock'><ul class='list-unstyled list-accounts'>";
+$st1="<li>
+          <div class='avatar'>
+              <div class='circle'>
+                    <img src='%s' alt='头像'/>
+              </div>
+          </div>
+          <div class='account-info'>
+              <p class='title'>
+                     <strong>%s：</strong>%s
+              </p>
+          </div>
+          <div class='account-status'>
+              <p class='desc'></p>
+          </div>
+          <div class='account-action'>
+              <a href='#zation%s' class='btn btn-outline' data-trigger='collapse'>详细信息</a>
+          </div>
+      </li>
+      <li class='collapse' id='zation%s'>
+           <ul class='list-unstyled list-security'> <!-- start more info section -->
+                <li>
+                    <p class='title'>账户类型</p><p class='info'>%s</p>
+                </li>
+                <li>
+                    <p class='title'>%s</p><p class='info'>%s</p>
+                </li>
+                <li>
+                    <p class='title'>专业</p><p class='info'>%s</p>
+                </li>
+                <li>
+                    <p class='title'>简介</p><p class='info'>%s</p>
+                </li>
+				<li>
+					<div class='text-center'><a href='%s' style='color: #AE3E48; text-decoration: none; border-bottom: 1px solid #AE3E48;'>解除邀请</a></div>
+				</li>
+			</ul>
+		</li>";
+if($idt == 0)
+{
+	if(isset($_GET['nextc'])) //下翻页
+	{
+		if($curr_pg[4]<($cnt[4]-1))
+			$curr_pg[4]++;
+	}
+	elseif(isset($_GET['prevc'])) //上翻页
+	{
+		if($curr_pg[4] > 0)
+			$curr_pg[4]--;
+	}
+	$j=count($my_ary)-1;
+	for($i=0;$i<5;$i++)
+	{
+		$k=$i+$curr_pg[4]*5;
+		if($k>$j)
+			break;
+		$cy=array();
+		$ay=array();
+		$ay=$my_ary[$k];
+		if(count($ay) == 3) //普通账户
+		{
+			$cy[0]=$ay[2];//头像
+			$cy[1]="昵称";$cy[2]=$ay[1];//uname
+			$cy[3]=$i;$cy[4]=$i;
+			$cy[5]="普通账户";
+			$cy[6]="单位";$cy[7]="";
+			$cy[8]="";$cy[9]="";
+			$cy[10]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&action=true&iid=".$ay[0];
+		}
+		else
+		{
+			$cy[0]=$ay[8];//头像
+			if($ay[1])
+			{
+				$cy[1]="单位";$cy[5]="认证团队账户";
+				$cy[6]="地址";$cy[7]=$ay[3];
+				$dy=array($ay[7],1);
+				$cy[8]=get_major($dy);
+			}
+			else
+			{
+				$cy[1]="姓名";$cy[5]="认证专家账户";
+				$cy[6]="单位";$cy[7]=$ay[3];
+				$dy=array($ay[7],0);
+				$cy[8]=get_major($dy);
+			}
+			$cy[2]=$ay[2];
+			$cy[3]=$i;$cy[4]=$i;
+			$cy[9]=$ay[6];
+			$cy[10]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&action=true&iid=".$ay[0];
+		}
+		if($cy[0] == "")
+			$cy[0]=constant("DEF_IMG");
+		$st2=sprintf($st1,$cy[0],$cy[1],$cy[2],$cy[3],$cy[4],$cy[5],$cy[6],$cy[7],$cy[8],$cy[9],$cy[10]);
+		echo $st2;
+	}
+	echo"</ul>";
+	//显示翻页
+	$st1="<div class='shareblock-body'>
+		<div class='text-center'>
+		<a href='%s' style='%s'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;%d&nbsp;&nbsp;&nbsp;<a href='%s' style='%s'>&gt;&gt;</a>
+		</div>
+		</div>";
+	if($curr_pg[4] == 0)
+	{
+		$sta1="color: gray; cursor: default; disabled: true;";
+		$sta4="javascript:;";
+	}
+	else
+	{
+		$bb=intval($curr_pg[4])-1;
+		$sta1="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&prevc=".$bb."&action=true";
+	}
+	if($curr_pg[4] >= ($cnt[4]-1))
+	{
+		$sta2="color: gray; cursor: default; disabled: true;";
+		$sta3="javascript:;";
+	}
+	else
+	{
+		$bb=intval($curr_pg[4])+1;
+		$sta2="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&nextc=".$bb."&action=true";
+	}
+	$st2=sprintf($st1,$sta4,$sta1,intval($curr_pg[4])+1,$sta3,$sta2);
+	echo $st2;
+}
+echo"</div>";
+//}}}
    			echo"<div id='account_collaborations'>
-    		     <div  class='text-center'>
-        		 	<span>您还未被邀请吗？通过认证才会得到邀请</span>
+    		     <div  class='text-center'>".$err_msg1."
 		         </div>
    			</div>";
 		echo"</div>
