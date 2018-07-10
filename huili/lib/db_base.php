@@ -761,7 +761,7 @@ class global_mod extends base_login
 //{{{class tb_my_expert extends base_login	用户添加的专家，团队表
 class tb_my_expert extends base_login
 {
-//{{{public function add_my_expert($e)
+//{{{public function add_my_expert($e) //添加合作的响应函数
 	public function add_my_expert($e)
 	{
 		if(count($e) != 2)
@@ -771,6 +771,20 @@ class tb_my_expert extends base_login
 			return;
 		$c="INSERT INTO my_expert(uid,eid,hlptimes,badtimes,totalpay) VALUES (%s,%s,0,0,0)";
 		$conn=sprintf($c,$e[0],$e[1]);
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->conn);
+		if($res == FALSE)
+			$this->err_no=3;
+	}//}}}
+//{{{public function drop_my_expert($e) 解除合作的响应函数
+	public function drop_my_expert($e)
+	{
+		if(count($e) != 2)
+		{$this->err_no=2;return;}
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$conn="DELETE FROM my_expert WHERE uid = ".$e[0]." AND eid = ".$e[1];
 		$res=mysqli_query($this->mysqli,$conn);
 		mysqli_close($this->conn);
 		if($res == FALSE)
@@ -794,7 +808,32 @@ class tb_my_expert extends base_login
 		mysqli_close($this->mysqli);
 		return $ay;
 	}//}}}
-
+//{{{puclic function get_invite_me($u) 取得邀请我的队列
+	public function get_invite_me($u)
+	{
+		$ay=array();$cy=array();
+		$this->init_db();
+		if($this->err_no)
+			return $cy;
+		//先取得邀请我的普通账户
+		$conn="SELECT a.eid,b.uname,b.imgpath FROM my_expert as a LEFT JOIN auth as b ON a.eid = b.uid WHERE a.uid =".$u." AND a.eid NOT IN (SELECT c.uid FROM expert as c)";
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);				//元素队列的长度为2.表示为普通账户
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		$this->init_db();
+		if($this->err_no)
+			return $cy;
+		//再取得邀请我的认证帐号
+		$conn="SELECT a.uid,a.category,a.name,a.addr,a.phone,a.major,a.intro,a.mid,b.imgpath FROM expert as a LEFT JOIN auth as b on a.uid = b.uid WHERE a.comfired = 1 AND a.uid IN (SELECT c.eid FROM my_expert as c WHERE c.uid =".$u.")";
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);				//元素队列的长度为9.表示为认证账户
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;		
+	}//}}}
 
 }//}}}
 

@@ -28,10 +28,13 @@ if(isset($_GET['index']))
 		if(isset($_FILES['filez']['tmp_name']))
 		{
 			$sname=constant('WORK_PLACE')."images/upload/".$_FILES['filez']['name'];
+			$siz=intval($_FILES['filez']['size']);
 			if(move_uploaded_file($_FILES['filez']['tmp_name'],"../images/upload/".$_FILES['filez']['name']))
 			{
 				if(strlen($sname) >= 255)
 					$uploadm="<span id='vvvv' class='light3'>图片上传错误文件名太长</span>";
+				elseif($siz > 1024*80)
+					$uploadm="<span id='vvvv' class='light3'>图片太大，不能超过80k</span>";
 				else
 				{
 					$ta=new login();

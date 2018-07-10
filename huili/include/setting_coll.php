@@ -1,55 +1,69 @@
 <?php
 $err_msg='我的专家组';
-$tab_act=array("active","");
-$ven_act=array("active","","","");
-$glb_chk=array("","","","","","","","");
-$glb_chk1=array("","","","","","","","");
-$cnt=array(0,0,0,0,0);
-$curr_pg=array(0,0,0,0,0);
+$tab_act=array("active","");				//横向标签页的动态保存
+$ven_act=array("active","","","");			//纵向标签页的动态保存
+$glb_chk=array("","","","","","","","");	//专家选择按钮的动态保存
+$glb_chk1=array("","","","","","","","");	//团队选择按钮的动态保存
+$cnt=array(0,0,0,0);			//四个纵向标签页中每页的记录总条数	
+$curr_pg=array(0,0,0,0);		//四个纵向标签页中每页的当前翻页数记录
 $exp=array();					//已合作的专家队列
 $term=array();					//已合作的团队队列
 $xexp=array();					//所有未合作的专家队列
 $xterm=array();					//所有未合作的团队队列
 $sel_exp=array();				//符合用户选择条件的未合作专家队列
 $sel_term=array();				//符合用户选择条件的未合作团队列表
-$esel1=0;
-$esel2=0;
+$esel1=0;						//未合作专家的筛选条件
+$esel2=0;						//未合作团队的筛选条件
 //{{{ 数据的取得及准备操作
-if(isset($_GET['action']) && ($_GET['action'] == 'false'))
-{
-	if($_GET['vendor'] == 2)
+if((isset($_GET['action'])) && (isset($_GET['vendor'])))  //这个判断不是必须的，但会保证在apache2的运行日志中不会出现访问未定义变量的消息记录
+{//前置性影响的操作：查询，添加，删除。这些动作的处理要在读取数据之前进行。因为他们决定了读取数据的条件或者先要更新数据库才能读取
+//后置性操作：翻页，这个动作须在读取数据后进行。后置性操作必须依据取得的数据才能进一步操作。
+//所以，这里不能集中处理所有的动作，而要将上述两类操作分开。	
+	if($_GET['action'] == 'false') //=false 表示按下查询按钮的操作
 	{
-		if(isset($_POST['checkn']))
+		if(intval($_GET['vendor']) == 2) //标签页3,查询未邀请的专家
 		{
-			foreach($_POST['checkn'] as $a)
-				$esel1+=intval($a);
+			if(isset($_POST['checkn']))
+			{
+				foreach($_POST['checkn'] as $a)
+					$esel1+=intval($a);
+			}
+			else
+				$esel1=0;
+			$glb_chk=get_chk($esel1);
+			$err_msg='查找新的专家';
 		}
-		else
-			$esel1=0;
-		$tab_act=array("active","");
-		$ven_act=array("","","active","");
-		$glb_chk=get_chk($esel1);
-		$err_msg='查找新的专家';
+		if(intval($_GET['vendor']) == 3)//标签页4,查询未邀请的团队
+		{
+			if(isset($_POST['checkm']))
+			{
+				foreach($_POST['checkm'] as $a)
+					$esel2+=intval($a);
+			}
+			else
+				$esel2=0;
+			$glb_chk1=get_chk($esel2);
+			$err_msg='查找新的团队';
+		}
 	}
-	if($_GET['vendor'] == 3)
+	elseif($_GET['action'] != 'true')  //action=uid; 上面的操作和下面的操作不会并存的
 	{
-		if(isset($_POST['checkm']))
-		{
-			foreach($_POST['checkm'] as $a)
-				$esel2+=intval($a);
+		$ta=new tb_my_expert();	//通过vendor就可以直接判断出下面的操作了
+		if(intval($_GET['vendor']) > 1)//邀请或解除合作的动作
+		{//邀请
+			$ay=array($_SESSION['CURR_USR'][0],$_GET['action']);
+			$ta->add_my_expert($ay);
 		}
-		else
-			$esel2=0;
-		$tab_act=array("active","");
-		$ven_act=array("","","","active");
-		$glb_chk1=get_chk($esel2);
-		$err_msg='查找新的团队';
+		else	//解除
+		{
+			$ay=array($_SESSION['CURR_USR'][0],$_GET['action']);
+			$ta->drop_my_expert($ay);
+		}
 	}
 }
 $ta=new tb_my_expert();
 $a=1;$ay=array();
 $ay=$ta->get_my_expert($a);//查找所有没被当前用户添加的专家和团队
-//	$err_txt="<div class='alert alert-warning' role='alert'><strong>错误</strong>".$ta->err_msg()."</div>";
 //uid(0),category(1),name(2),addr(3),phone(4),major(5),intro(6),mid(7),imgpath(8)
 foreach($ay as $b)
 {
@@ -75,8 +89,39 @@ foreach($ay as $b)
 	else
 		array_push($exp,$b);	
 }
-//}}}
+//至此，数据取得完成，开始进行后置性操作：翻页的处理
+$cnt[0]=floor(count($exp)/5);
+if(count($exp)%5)
+	$cnt[0]++;
+$cnt[1]=floor(count($term)/5);
+if(count($term)%5)
+	$cnt[1]++;
+$cnt[2]=floor(count($sel_exp)/5);
+if(count($sel_exp)%5)
+	$cnt[2]++;
+$cnt[3]=floor(count($sel_term)/5);
+if(count($sel_term)%5)
+	$cnt[3]++;
+if(isset($_GET['vendor']))
+{
+	$ven_act=array("","","","");
+	$i=intval($_GET['vendor']);
+	if($i<0 || $i >3)
+		$i=0;	//防止越界
+	$ven_act[$i]='active';
+	if(isset($_GET['prevb']) || isset($_GET['nextb'])) //翻页按钮的动作
+	{
+		if(isset($_GET['prevb']))
+			$curr_pg[$i]=intval($_GET['prevb'])+1;
+		else
+			$curr_pg[$i]=intval($_GET['nextb'])-1;
+		if($curr_pg[$i] >= $cnt[$i])
+			$curr_pg[$i] = 0;
+	}
+}//}}}
+//{{{tab 2 相关的操作  邀请我的，可以是普通账户，也可以是认证账户
 
+//}}}
 ?>
 <?php
 //{{{左边导航栏栏
@@ -187,7 +232,7 @@ $st1="<li>
                     <p class='title'>简介</p><p class='info'>%s</p>
                 </li>
 				<li>
-					<div class='text-center'><a href='#' style='color: #AE3E48; text-decoration: none; border-bottom: 1px solid #AE3E48;'>解除邀请</a></div>
+					<div class='text-center'><a href='%s' style='color: #AE3E48; text-decoration: none; border-bottom: 1px solid #AE3E48;'>解除邀请</a></div>
 				</li>
 			</ul>
 		</li>";
@@ -196,12 +241,12 @@ if(count($exp) > 0)
 	//计算翻页
 	if(isset($_GET['vendor']) && ($_GET['vendor'] == 0)) //保证不被其他标签页干扰
 	{
-		if(isset($_GET['nexta'])) //下翻页
+		if(isset($_GET['nextb'])) //下翻页
 		{
 			if($curr_pg[0]<($cnt[0]-1))
 				$curr_pg[0]++;
 		}
-		elseif(isset($_GET['preva'])) //上翻页
+		elseif(isset($_GET['prevb'])) //上翻页
 		{
 			if($curr_pg[0] > 0)
 				$curr_pg[0]--;
@@ -218,7 +263,8 @@ if(count($exp) > 0)
 		$ay=$exp[$k];
 		$cy=array($ay[7],0);
 		$s1=get_major($cy);
-		$st2=sprintf($st1,$ay[8],$ay[2],$i,$i,$ay[3],$s1,$ay[6]);
+		$s2=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&action=".$ay[0]."&vendor=0";
+		$st2=sprintf($st1,$ay[8],$ay[2],$i,$i,$ay[3],$s1,$ay[6],$s2);
 		echo $st2;
 	}
 	echo "</ul>";
@@ -237,7 +283,7 @@ if(count($exp) > 0)
 	{
 		$bb=intval($curr_pg[0])-1;
 		$sta1="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
-		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&preva=".$bb."&action=true&vendor=0";
+		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&prevb=".$bb."&vendor=0";
 	}
 	if($curr_pg[0] >= ($cnt[0]-1))
 	{
@@ -248,7 +294,7 @@ if(count($exp) > 0)
 	{
 		$bb=intval($curr_pg[0])+1;
 		$sta2="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
-		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&nexta=".$bb."&action=true&vendor=0";
+		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&nextb=".$bb."&vendor=0";
 	}
 	$st2=sprintf($st1,$sta4,$sta1,intval($curr_pg[0])+1,$sta3,$sta2);
 	echo $st2;
@@ -301,7 +347,7 @@ $st1="<li>
                     <p class='title'>简介</p><p class='info'>%s</p>
                 </li>
 				<li>
-					<div class='text-center'><a href='#' style='color: #AE3E48; text-decoration: none; border-bottom: 1px solid #AE3E48;'>解除邀请</a></div>
+					<div class='text-center'><a href='%s' style='color: #AE3E48; text-decoration: none; border-bottom: 1px solid #AE3E48;'>解除邀请</a></div>
 				</li>
 			</ul>
 		</li>";
@@ -310,12 +356,12 @@ if(count($term) > 0)
 	//计算翻页
 	if(isset($_GET['vendor']) && ($_GET['vendor'] == 1)) //保证不被其他标签页干扰
 	{
-		if(isset($_GET['nexta'])) //下翻页
+		if(isset($_GET['nextb'])) //下翻页
 		{
 			if($curr_pg[1]<($cnt[1]-1))
 				$curr_pg[1]++;
 		}
-		elseif(isset($_GET['preva'])) //上翻页
+		elseif(isset($_GET['prevb'])) //上翻页
 		{
 			if($curr_pg[1] > 0)
 				$curr_pg[1]--;
@@ -332,7 +378,8 @@ if(count($term) > 0)
 		$ay=$term[$k];
 		$cy=array($ay[7],1);
 		$s1=get_major($cy);
-		$st2=sprintf($st1,$ay[8],$ay[2],$i,$i,$ay[3],$s1,$ay[6]);
+		$s2=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&action=".$ay[0]."&vendor=1";
+		$st2=sprintf($st1,$ay[8],$ay[2],$i,$i,$ay[3],$s1,$ay[6],$s2);
 		echo $st2;
 	}
 	echo "</ul>";
@@ -351,7 +398,7 @@ if(count($term) > 0)
 	{
 		$bb=intval($curr_pg[1])-1;
 		$sta1="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
-		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&preva=".$bb."&action=true&vendor=1";
+		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&preva=".$bb."&vendor=1";
 	}
 	if($curr_pg[1] >= ($cnt[1]-1))
 	{
@@ -362,7 +409,7 @@ if(count($term) > 0)
 	{
 		$bb=intval($curr_pg[1])+1;
 		$sta2="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
-		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&nexta=".$bb."&action=true&vendor=1";
+		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&nexta=".$bb."&vendor=1";
 	}
 	$st2=sprintf($st1,$sta4,$sta1,intval($curr_pg[1])+1,$sta3,$sta2);
 	echo $st2;
@@ -414,7 +461,7 @@ $st1="<li>
                     <p class='title'>简介</p><p class='info'>%s</p>
                 </li>
 				<li>
-					<div class='text-center'><a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>加入合作</a></div>
+					<div class='text-center'><a href='%s' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>加入合作</a></div>
 				</li>
 			</ul>
 		</li>";
@@ -423,12 +470,12 @@ if(count($sel_exp) > 0)
 	//计算翻页
 	if(isset($_GET['vendor']) && ($_GET['vendor'] == 2)) //保证不被其他标签页干扰
 	{
-		if(isset($_GET['nexta'])) //下翻页
+		if(isset($_GET['nextb'])) //下翻页
 		{
 			if($curr_pg[2]<($cnt[2]-1))
 				$curr_pg[2]++;
 		}
-		elseif(isset($_GET['preva'])) //上翻页
+		elseif(isset($_GET['prevb'])) //上翻页
 		{
 			if($curr_pg[2] > 0)
 				$curr_pg[2]--;
@@ -445,7 +492,8 @@ if(count($sel_exp) > 0)
 		$ay=$sel_exp[$k];
 		$cy=array($ay[7],0);
 		$s1=get_major($cy);
-		$st2=sprintf($st1,$ay[8],$ay[2],$i,$i,$ay[3],$s1,$ay[6]);
+		$s2=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&action=".$ay[0]."&vendor=2";
+		$st2=sprintf($st1,$ay[8],$ay[2],$i,$i,$ay[3],$s1,$ay[6],$s2);
 		echo $st2;
 	}
 	echo "</ul>";
@@ -464,7 +512,7 @@ if(count($sel_exp) > 0)
 	{
 		$bb=intval($curr_pg[2])-1;
 		$sta1="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
-		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&preva=".$bb."&action=true&vendor=3";
+		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&preva=".$bb."&vendor=3";
 	}
 	if($curr_pg[2] >= ($cnt[2]-1))
 	{
@@ -475,7 +523,7 @@ if(count($sel_exp) > 0)
 	{
 		$bb=intval($curr_pg[2])+1;
 		$sta2="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
-		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&nexta=".$bb."&action=true&vendor=3";
+		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&nexta=".$bb."&vendor=3";
 	}
 	$st2=sprintf($st1,$sta4,$sta1,intval($curr_pg[2])+1,$sta3,$sta2);
 	echo $st2;
@@ -484,7 +532,7 @@ else
 {
 	  $st1="</ul><div class='shareblock-body'>
             <ul class='list-unstyled list-shares'>
-	             <p>请按行业选择您需要的团队</p>
+	             <p>请按行业选择您需要的专家</p>
             </ul>
             </div>";
 	 echo $st1;
@@ -551,7 +599,7 @@ $st1="<li>
                     <p class='title'>简介</p><p class='info'>%s</p>
                 </li>
 				<li>
-					<div class='text-center'><a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>加入合作</a></div>
+					<div class='text-center'><a href='%s' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>加入合作</a></div>
 				</li>
 			</ul>
 		</li>";
@@ -560,12 +608,12 @@ if(count($sel_term) > 0)
 	//计算翻页
 	if(isset($_GET['vendor']) && ($_GET['vendor'] == 3)) //保证不被其他标签页干扰
 	{
-		if(isset($_GET['nexta'])) //下翻页
+		if(isset($_GET['nextb'])) //下翻页
 		{
 			if($curr_pg[3]<($cnt[3]-1))
 				$curr_pg[3]++;
 		}
-		elseif(isset($_GET['preva'])) //上翻页
+		elseif(isset($_GET['prevb'])) //上翻页
 		{
 			if($curr_pg[3] > 0)
 				$curr_pg[3]--;
@@ -582,7 +630,8 @@ if(count($sel_term) > 0)
 		$ay=$sel_term[$k];
 		$cy=array($ay[7],1);
 		$s1=get_major($cy);
-		$st2=sprintf($st1,$ay[8],$ay[2],$i,$i,$ay[3],$s1,$ay[6]);
+		$s2=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&action=".$ay[0]."&vendor=3";
+		$st2=sprintf($st1,$ay[8],$ay[2],$i,$i,$ay[3],$s1,$ay[6],$s2);
 		echo $st2;
 	}
 	echo "</ul>";
@@ -601,7 +650,7 @@ if(count($sel_term) > 0)
 	{
 		$bb=intval($curr_pg[3])-1;
 		$sta1="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
-		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&preva=".$bb."&action=true&vendor=3";
+		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&preva=".$bb."&vendor=3";
 	}
 	if($curr_pg[3] >= ($cnt[3]-1))
 	{
@@ -612,7 +661,7 @@ if(count($sel_term) > 0)
 	{
 		$bb=intval($curr_pg[3])+1;
 		$sta2="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
-		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&nexta=".$bb."&action=true&vendor=3";
+		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['FIV']."&nexta=".$bb."&vendor=3";
 	}
 	$st2=sprintf($st1,$sta4,$sta1,intval($curr_pg[3])+1,$sta3,$sta2);
 	echo $st2;
@@ -657,38 +706,24 @@ echo "</div></div></div></div>";
 //}}}
 
 //}}}
-//{{{横向标签页2	div -5								
-                            echo"<div role='tabpanel' class='tab-pane ".$tab_act[1]."' id='sharedwith'>
-                                    <div class='inner-narrow inner-midnarrow'>
-    
-    <div class='intro-block intro-block-slim'>
-        <p>Accounts shared with you</p>
-    </div>
-    
-<div id='account-collaboration-container'
-     class='ic-container' 
-     ic-on-success='successRefreshContainer(data, textStatus, xhr, 'account-collaboration-container')'
-     ic-on-error='errorRefreshContainer(xhr, 'account-collaboration-container')'>
-        <div class='flash-container'></div>
-        <!-- ic-src must be `whitespace` char, not null or / -->
-        <div id='account-collaboration' ic-refresh ic-src=' ' class='ic-transition' ic-select-from-response='#account-collaboration'  ic-transition-duration='.1s'>
-                    
-    <div id='account_collaborations'>
-            <div  class='text-center'>
-                <span>You have not been added as a collaborator to any accounts yet.</span>
-            </div>
+//{{{横向标签页2	div -6								
+echo"<div role='tabpanel' class='tab-pane ".$tab_act[1]."' id='sharedwith'>
+         <div class='inner-narrow inner-midnarrow'>
+    		<div class='intro-block intro-block-slim'>
+       			 <p>邀请你的合作</p>
+		    </div>";
 
-        </div>
-</div>    </div>
-          
-</div>
-                                </div>
-                        </div>
-                    </div>
-                </div>
-           </div> 
-    </div></div>";
+
+
+   			echo"<div id='account_collaborations'>
+    		     <div  class='text-center'>
+        		 	<span>您还未被邀请吗？通过认证才会得到邀请</span>
+		         </div>
+   			</div>";
+		echo"</div>
+     </div>";
 //}}}	 
+echo"</div></div></div></div></div></div>";
 echo"
             <script>
                 $('input[type='checkbox'].switch').checkbox({
