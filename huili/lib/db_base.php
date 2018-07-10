@@ -799,49 +799,51 @@ class tb_my_expert extends base_login
 }//}}}
 
 ////////////begin function//////////////////////////////
-//{{{function get_major($ay) $ay[0]=mid;$ay[1]=1 专家类型，=0 团队行业
-function get_major($ay) //$ay[0]=mid;$ay[1]=1 专家类型，=0 团队行业
+//{{{function get_major($ay) $ay[0]=mid;$ay[1]=0 专家类型，=1 团队行业
+function get_major($ay) //$ay[0]=mid;$ay[1]=0 专家类型，=1 团队行业
 {
 	$smajor="";
 	if(count($ay) != 2)
 		return $smajor;
-	if($ay[0] & 1)
-		if($ay[1])
+	$i=intval($ay[0]);
+	$j=intval($ay[1]);
+	if($i & 1)
+		if($j)
 			$smajor=$smajor."环境服务、";
 		else
 			$smajor="污水处理、";
-	if($ay[0] & 2)
-		if($ay[1])
+	if($i & 2)
+		if($j)
 			$smajor=$smajor."仪器设备、";
 		else
 			$smajor=$smajor."废气处理、";
-	if($ay[0] & 4)
-		if($ay[1])
+	if($i & 4)
+		if($j)
 			$smajor=$smajor."污水处理、";
 		else
 			$smajor=$smajor."噪音治理、";
-	if($ay[0] & 8)
-		if($ay[1])
+	if($i & 8)
+		if($j)
 			$smajor=$smajor."石油化工、";
 		else
 			$smajor=$smajor."危废处理、";
-	if($ay[0] & 16)
-		if($ay[1])
+	if($i & 16)
+		if($j)
 			$smajor=$smajor."食品药品、";
 		else
 			$smajor=$smajor."环境工程、";
-	if($ay[0] & 32)
-		if($ay[1])
+	if($i & 32)
+		if($j)
 			$smajor=$smajor."餐饮服务、";
 		else
 			$smajor=$smajor."项目审批、";
-	if($ay[0] & 64)
-		if($ay[1])
+	if($i & 64)
+		if($j)
 			$smajor=$smajor."畜禽养殖、";
 		else
 			$smajor=$smajor."化验分析、";
-	if($ay[0] & 128)
-		if($ay[1])
+	if($i & 128)
+		if($j)
 			$smajor=$smajor."其他行业、";
 		else
 			$smajor=$smajor."法律事务、";
@@ -877,9 +879,9 @@ function get_chk($e)
 //uid(0),category(1),name(2),addr(3),phone(4),major(5),intro(6),mid(7),imgpath(8)
 function get_my_sel($i,$e)
 {
-	if($i == 0) //未选择，提取全部记录
-		return $e;
 	$ay=array();
+	if($i == 0) //未选择，默认没有记录
+		return $ay;
 	foreach($e as $a)
 	{
 		if($a[7] & $i)

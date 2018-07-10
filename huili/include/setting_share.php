@@ -105,17 +105,17 @@ for($i=0;$i<$j;$i++)
         $st1="<div class='block'><div class='panel shadow'>
 		<!-- Tab 1 -->
               <div class='inner-narrow inner-midnarrow'>
-   					 <div class='intro-block intro-block-slim'>".$err_str."
+   					 <div id='tip_msg1' class='intro-block intro-block-slim'>".$err_str."
 				     </div>
               		<div class='nav-vendors'>
                     <!-- Vendor nav -->
                     <ul class='nav nav-tabs nav-tabs-vertical' role='tablist'>
-                            <li role='presentation' class='%s'>
+                            <li role='presentation' class='%s' onclick='chg_msg(1);'>
                                 <a href='#vendor-amazon' aria-controls='amazon' role='tab' data-toggle='tab'>
                                     <i class='icon-truck'></i><span>专家认证</span>
                                 </a>
                             </li>
-                            <li role='presentation' class='%s'>
+                            <li role='presentation' class='%s' onclick='chg_msg(2);'>
                                 <a href='#vendor-github' aria-controls='github' role='tab' data-toggle='tab'>
                                     <i class='icon-user'></i><span>团队认证</span>
                                 </a>

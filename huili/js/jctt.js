@@ -48,4 +48,40 @@ function set_min(u)
 	}
 	str.value=ay;
 }
+//下面的函数是个人设置-认证界面所用，用于在移动设备显示时提示当前的操作
+function chg_msg(i)
+{
+	var a=document.getElementById('tip_msg1');
+	var s=a.innerHTML;
+	if(s.match(/strong/i) == null)
+	{
+		if(i == 1)//专家
+			a.innerHTML='<p>专家认证申请</p>';
+		else
+			a.innerHTML='<p>团队认证申请</p>';
+	}
+}
+//下面的函数是个人设置-我的合作界面所用，用于在移动设备显示时提示当前的操作
+function chg_msg_coll(i)
+{
+	var a=document.getElementById('tip_msg2');
+	var s=a.innerHTML;
+	switch(i)
+	{
+	case 1:
+		a.innerHTML='<p>我的专家组</p>';
+		break;
+	case 2:
+		a.innerHTML='<p>我的合作团队</p>';
+		break;
+	case 3:
+		a.innerHTML='<p>查找新的专家</p>';
+		break;
+	case 4:
+		a.innerHTML='<p>查找新的团队</p>';
+		break;
+	default:
+		a.innerHTML='<p>我的合作伙伴</p>';
+	}
+}
 
