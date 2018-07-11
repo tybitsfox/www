@@ -98,7 +98,7 @@ if(!isset($_GET['select']))
 		$dy=array();
 		$dy=$cy[$i];
 	//	$st=sprintf($SIG_HTML['LEFT_REP'],$dy[2],$dy[4],$dy[5],$dy[3],$dy[6]);
-		$st=sprintf($SIG_HTML['LEFT_REP'],$dy[2],'#',$dy[5].' btn-connectmore',$dy[3],$dy[6]);
+		$st=sprintf($SIG_HTML['LEFT_REP'],$dy[2],'/huili/include/home.php',$dy[5].' btn-connectmore',$dy[3],$dy[6]);
 		echo $st;
 	}
 	if($j <= 10)
@@ -113,6 +113,8 @@ if(!isset($_GET['select']))
 	echo $st;
 	echo $SIG_HTML['RIGHT_TOP_REPB'];
 	$j=count($SIGNED_DEF['MODULE']);
+	if($j>3)
+		$j=3;
 	for($i=0;$i<$j;$i++)
 	{
 		$dy=array();
@@ -162,7 +164,8 @@ else
 		{
 			$dy=array();
 			$dy=$cy[$i];
-			$st=sprintf($SIG_HTML['LEFT_REP'],$dy[2],$dy[4],$dy[5],$dy[3],$dy[6]);
+	//		$st=sprintf($SIG_HTML['LEFT_REP'],$dy[2],$dy[4],$dy[5],$dy[3],$dy[6]);
+			$st=sprintf($SIG_HTML['LEFT_REP'],$dy[2],'/huili/include/home.php',$dy[5],$dy[3],$dy[6]);
 			echo $st;
 		}
 		if($j <= 5)
