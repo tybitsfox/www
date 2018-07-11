@@ -97,10 +97,11 @@ if(!isset($_GET['select']))
 	{
 		$dy=array();
 		$dy=$cy[$i];
-		$st=sprintf($SIG_HTML['LEFT_REP'],$dy[2],$dy[4],$dy[5],$dy[3],$dy[6]);
+	//	$st=sprintf($SIG_HTML['LEFT_REP'],$dy[2],$dy[4],$dy[5],$dy[3],$dy[6]);
+		$st=sprintf($SIG_HTML['LEFT_REP'],$dy[2],'#',$dy[5].' btn-connectmore',$dy[3],$dy[6]);
 		echo $st;
 	}
-	if($j <= 5)
+	if($j <= 10)
 	{
 		$st=sprintf($SIG_HTML['LEFT_REP'],$SIGNED_DEF['DASHBOARD'][2][3],$SIGNED_DEF['DASHBOARD'][2][0],$SIGNED_DEF['DASHBOARD'][2][2],$SIGNED_DEF['DASHBOARD'][2][1],$SIGNED_DEF['DASHBOARD'][2][4]);
 		echo $st;

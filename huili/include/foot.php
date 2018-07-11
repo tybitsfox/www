@@ -23,7 +23,7 @@
           <li><a href="/huili/index.php" title="您身边的环境专家，为您提供专业的服务">关于我们</a></li>
           <li><a href="/huili/include/terms.php" title="我们的承诺和服务条款">服务条款</a></li>
           <li><a href="/huili/include/privacy.php" title="有关隐私政策">隐私政策</a></li>
-          <li><a href="/huili/include/contact" title="我们的联系方式">联系我们</a></li>
+          <li><a href="/huili/index.php" title="我们的联系方式">联系我们</a></li>
         </ul>
       </div>
       <div class="col-sm-4">
