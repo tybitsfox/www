@@ -1,6 +1,7 @@
 <?php
 $headfile=$_SERVER["DOCUMENT_ROOT"]."/tools/js_learn/include/head_def.php";
 include_once($headfile);
+require_once("/var/www/huili/include/pinyin.php");
 ?>
 <script>
 function get_width()
@@ -28,13 +29,16 @@ function check_han()
 <?php
 if(isset($_POST['iname']))
 {
-	$st=$_POST['iname'];
+	$st1=$_POST['iname'];
+	$py=new pinyin();
+	$st=$py->getpy($st1,true);/*
 	if(preg_match("/^[\x{4e00}-\x{9fa5}]+$/u",$st))
 		echo"<div id='div2' style='margin-left:20px;'>全是中文</div>";
 	elseif(preg_match("/[\x{4e00}-\x{9fa5}]/u",$st))
 		echo"<div id='div2' style='margin-left:20px;'>包含中文</div>";
 	else
-		echo"<div id='div2' style='margin-left:20px;'>不含中文</div>";
+		echo"<div id='div2' style='margin-left:20px;'>不含中文</div>";*/
+	echo"<div id='div2' style='margin-left:20px;'>".$st."</div>";
 }
 else
 	echo "<div id='div2' style='margin-left:20px;'></div>";

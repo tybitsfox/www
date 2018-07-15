@@ -84,7 +84,14 @@ else	//默认开始的操作，查看当前帐号是否已经认证过了
 ?>
 <?php
 		$st1=$_SESSION['CURR_USR'][2];
-		$st2=strtoupper(substr($st1,1,1));
+	if(preg_match("/^[\x{4e00}-\x{9fa5}]/u",$st1))
+	{
+		$py=new pinyin();
+		$s3=$py->getpy($st1,true);
+		$st2=strtoupper(substr($s3,0,1));
+	}
+	else
+		$st2=strtoupper(substr($st1,0,1));
 		$st=sprintf($SIG_HTML['LEFT_TOP1'],$st2,$st1);
 		echo $st;
 		echo "<div class='addmerchant'><a class='btn btn-text withfronticon' href='".$SIGNED_DEF['DASHBOARD'][1][0]."'><i class='icon-arrow_left'></i>".$SIGNED_DEF['DASHBOARD'][1][1]."</a></div>";

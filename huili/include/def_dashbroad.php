@@ -1,7 +1,14 @@
 <?php
 //除设置外所有界面的导航栏设置均由文本见负责
 	$s1=$_SESSION['CURR_USR'][2];
-	$s2=strtoupper(substr($s1,0,1));
+	if(preg_match("/^[\x{4e00}-\x{9fa5}]/u",$s1))
+	{
+		$py=new pinyin();
+		$s3=$py->getpy($s1,true);
+		$s2=strtoupper(substr($s3,0,1));
+	}
+	else
+		$s2=strtoupper(substr($s1,0,1));
 	$st=sprintf($SIG_HTML['LEFT_TOP1'],$s2,$s1);
 	echo $st;
 	echo $SIG_HTML['LEFT_TOP2'];
