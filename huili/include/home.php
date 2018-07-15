@@ -8,6 +8,7 @@ require_once(constant("FULL_PATH")."config/glob_signed.php");
 //require_once(constant("FULL_PATH")."lib/main.php");
 require_once(constant("FULL_PATH")."lib/db_base.php");
 require_once(constant("FULL_PATH")."config/email.php");
+define("HOME_CALLED",$_SESSION['CURR_USR'][0]); //保证不会跨越本文件直接调用子模块
 /// check login
 if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 13))
 	die("没有授权，禁止登录"."count=".count($_SESSION['CURR_USR']));
@@ -56,6 +57,7 @@ window.onload=chlinkfunc;
 echo $SIG_HTML['WRAP'];
 if(!isset($_GET['select']))
 {
+	include_once('./def_dashbroad.php');
 	include_once('./def_login.php');
 }
 else
@@ -85,7 +87,12 @@ else
 		unset($_SESSION['CURR_USR']);
 		echo "<script>window.location='../index.php';</script>";
 		break;
+	case $SIGNED_PAGE['GJ1']://环评
+		include_once('./def_dashbroad.php');
+		include_once('./huanping.php');
+		break;
 	default:
+		include_once('./def_dashbroad.php');
 		include_once('./def_login.php');
 		break;
 	}
