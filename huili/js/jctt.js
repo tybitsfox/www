@@ -84,4 +84,9 @@ function chg_msg_coll(i)
 		a.innerHTML='<p>我的合作伙伴</p>';
 	}
 }
-
+//jquery 应用
+$(document).ready(function(){
+		$("#btslide1").click(function(){
+				$("#slide1").slideToggle("slow");
+				});
+		});
