@@ -10,6 +10,7 @@ function chlinkfunc()
 			if(liaa[i][1] == b[1])
 			{
 				document.getElementById(liaa[i][0]).className='liaa[i][2] active';
+				document.getElementById(liaa[i][0]).style.color='#3EAE48';
 				break;
 			}
 		}
