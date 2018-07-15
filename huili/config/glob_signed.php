@@ -71,7 +71,7 @@ $SIGNED_DEF['MODULE']	= array(
 		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ15'],"监控平台","with-name","chlink16","icon-desktop",$SIGNED_PAGE['GJ15']),
 		array($SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ16'],"交流互动","with-name","chlink17","icon-cchat",$SIGNED_PAGE['GJ16']));
 $SIGNED_DEF['PICTO_PNG']	=	constant('WORK_PLACE')."images/logo/picto-empty.png";
-$SIGNED_DEF['TOP_TEXT1']	=	"我们还没同步您的关注的业务模块<br>请在此选择您感兴趣的业务模块以加入到关注中";
+$SIGNED_DEF['TOP_TEXT1']	=	"请在此选择您感兴趣的业务模块以加入到导航栏中";
 //{{{wrapper&head
 $SIG_HTML['WRAP']	=	"<div id='wrapper' class='l-content-wrapper-sticky-footer'><div><div class='alert-offset-side'><!--react-empty: 2--></div></div><div class='mobile-bar'><div class='logobox'><a href='".$SIGNED_DEF['LINK']."'><img class='logo' src='".$SIGNED_DEF['LOGO']."' alt='".$SIGNED_DEF['LOGO_ALT']."'></a></div><div class='mobile-menu'><button type='button' class='navbar-toggle'><span class='sr-only'>".$SIGNED_DEF['WRAP_TIL1']."</span><span class='title'>".$SIGNED_DEF['WRAP_TIL2']."</span><span class='bars'><span class='icon-bar icon-bar1'></span><span class='icon-bar icon-bar2'></span><span class='icon-bar icon-bar3'></span></span></button></div></div>";
 //}}}

@@ -13,30 +13,25 @@ if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 13))
 	die("没有授权，禁止登录"."count=".count($_SESSION['CURR_USR']));
 ////////////////////////
 $err_string=$SIGNED_DEF['TOP_TEXT1'];
-if(isset($_POST['upmodule']))
+if(isset($_POST['checkx']))
 {
-	if(strlen($_POST['upmodule']) > 1)
+	$ta=new tb_choose();
+	$ta->del_by_uid();
+	if($ta->err_no)
+		die($ta->err_msg());
+	$j=count($_POST['checkx']);
+	$ay=array();
+	for($i=0;$i<$j;$i++)
 	{
-		if(strpos($_POST['upmodule'],',') == 0)
-			$str=substr($_POST['upmodule'],1);
-		else
-			$str=$_POST['upmodule'];
-		$ta=new tb_choose();
-		$sa=array();
-		$sa=explode(',',$str);
-		for($i=0;$i<count($sa);$i++)
-		{
-			unset($sb);
-			$j=intval($sa[$i])-2; //get index.
-			$sb=array($_SESSION['CURR_USR'][0],$j,$SIGNED_DEF['MODULE'][$j][3],$SIGNED_DEF['MODULE'][$j][1],$SIGNED_DEF['MODULE'][$j][0],$SIGNED_DEF['MODULE'][$j][2],$SIGNED_DEF['MODULE'][$j][4]);
-			$ta->add_db($sb);
-			if($ta->err_no)
-			{
-				$err_string=$ta->err_msg();
-				break;
-			}
-		}
+		unset($sb);
+		$k=intval($_POST['checkx'][$i]);
+		$sb=array($_SESSION['CURR_USR'][0],$k,$SIGNED_DEF['MODULE'][$k][3],$SIGNED_DEF['MODULE'][$k][1],$SIGNED_DEF['MODULE'][$k][0],$SIGNED_DEF['MODULE'][$k][2],$SIGNED_DEF['MODULE'][$k][4]);
+		array_push($ay,$sb);
 	}
+	$ta->add_db_group($ay);
+	if($ta->err_no)
+		die($ta->err_msg());
+	unset($ta);unset($ay);
 }
 $ta=new tb_choose();
 $u=$_SESSION['CURR_USR'][0]; //uid
@@ -47,17 +42,15 @@ if($ta->err_no)
 echo $ALL_HTML['LOGIN_HEAD']."<body>";
 echo "<script>
 var liaa=[['".$SIGNED_DEF['DASHBOARD'][1][3]."','".''."','".''."'],['".$SIGNED_DEF['DASHBOARD'][2][3]."','".$SIGNED_PAGE['ADD']."','".$SIGNED_DEF['DASHBOARD'][2][2]."']];";
-//$j=count($SIGNED_DEF['MODULE']);
 $j=count($cy);
 for($i=0;$i<$j;$i++)
 {
-	$st=substr($cy[$i][2],6);
-	$l=intval($st)-2;
+	$l=intval($cy[$i][1]);
 	$k=sprintf("%d",$i+2);
 	echo "liaa[".$k."]=['".$SIGNED_DEF['MODULE'][$l][3]."','".$SIGNED_DEF['MODULE'][$l][5]."','".$SIGNED_DEF['MODULE'][$l][2]."'];";
 }
-echo "
 //color:#455f6c,#3eae48
+echo "
 window.onload=chlinkfunc;
 </script>";
 echo $SIG_HTML['WRAP'];
@@ -91,43 +84,6 @@ else
 	case $SIGNED_PAGE['EIG']:
 		unset($_SESSION['CURR_USR']);
 		echo "<script>window.location='../index.php';</script>";
-		break;
-	case $SIGNED_PAGE['ADD']:
-		$st1=$_SESSION['CURR_USR'][2];
-		$st2=strtoupper(substr($st1,1,1));
-		$st=sprintf($SIG_HTML['LEFT_TOP1'],$st2,$st1);
-		echo $st;
-		echo $SIG_HTML['LEFT_TOP2'];
-		$j=count($cy);
-		for($i=0;$i<$j;$i++)
-		{
-			$dy=array();
-			$dy=$cy[$i];
-	//		$st=sprintf($SIG_HTML['LEFT_REP'],$dy[2],$dy[4],$dy[5],$dy[3],$dy[6]);
-			$st=sprintf($SIG_HTML['LEFT_REP'],$dy[2],'/huili/include/home.php',$dy[5],$dy[3],$dy[6]);
-			echo $st;
-		}
-		if($j <= 5)
-		{
-			$st=sprintf($SIG_HTML['LEFT_REP'],$SIGNED_DEF['DASHBOARD'][2][3],$SIGNED_DEF['DASHBOARD'][2][0],$SIGNED_DEF['DASHBOARD'][2][2],$SIGNED_DEF['DASHBOARD'][2][1],$SIGNED_DEF['DASHBOARD'][2][4]);
-			echo $st;
-		}
-		echo $SIG_HTML['LEFT_TOP3'];
-		$st1="<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li>添加功能";
-		$st=sprintf($SIG_HTML['RIGHT_TOP1'],$st1);
-		echo $st;
-		echo $SIG_HTML['RIGHT_ADD1'];
-		$j=count($sss);
-		for($i=0;$i<$j;$i++)
-		{
-			$dy=array();
-			$dy=$sss[$i];
-			$sc=$dy[3]."a";
-			$st=sprintf($SIG_HTML['RIGHT_ADD_REP'],$sc,$dy[4],$dy[1],$sc);
-			echo $st;
-		}
-		echo $SIG_HTML['RIGHT_ADD2'];
-		echo $SIG_HTML['RIGHT_TOP3'];
 		break;
 	default:
 		include_once('./def_login.php');

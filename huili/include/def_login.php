@@ -17,15 +17,29 @@
 	echo $st;
 	$st=sprintf($SIG_HTML['RIGHT_TOP2'],$err_string);
 	echo $st;
-	echo "</div><div id='slide1' class='inner' style='display:none;'><div class='orders-empty panel'>
-<div class='shareblock-headz shareblock-headz-light'><p>污水处理专业</p><div class='btn-shareaccount'>
-<label class='check'><input type='checkbox' name='checkn[]' value='1' class='switch' />污水处理</label></div></div>
-<div class='shareblock-headz shareblock-headz-light'><p>废气治理专业</p><div class='btn-shareaccount'>
-<label class='check'><input type='checkbox' name='checkn[]' value='2' class='switch' />废气治理</label></div></div>
-<div class='shareblock-headz shareblock-headz-light'><p>噪音治理专业</p><div class='btn-shareaccount'>
-<label class='check'><input type='checkbox' name='checkn[]' value='4' class='switch' />噪音治理</label></div></div>
-		
-		</div></div>";
+	echo "<form action='".$SIGNED_DEF['LINK']."' method='post'><div id='slide1' class='inner' style='display:none;'><div class='orders-empty panel'>";
+	$st="<div class='shareblock-headz shareblock-headz-light'><p>%s</p><div class='btn-shareaccount'><label class='check'><input type='checkbox' name='checkx[]' value='%d' class='switch' %s />%s</label></div></div>";
+	$j=count($SIGNED_DEF['MODULE']);
+	for($i=0;$i<$j;$i++)
+	{
+		$k=0;
+		foreach($cy as $c)
+		{
+			if($c[1] == $i)
+			{$k=1;break;}
+		}
+		if($k == 1)
+			$s2='checked';
+		else
+			$s2='';
+		$s1=sprintf($st,$SIGNED_DEF['MODULE'][$i][1],$i,$s2,$SIGNED_DEF['MODULE'][$i][1]);
+		echo $s1;
+	}
+echo "<div class='shareblock-body'><div class='text-center'><br>
+<button type='submit' class='btn btn-primary' id='ch001' name='ch001'>保存选择</button>
+</div></div></form></div>";
+
+	echo "</div></div>";
 /*	echo $SIG_HTML['RIGHT_TOP_REPB'];
 	$j=count($SIGNED_DEF['MODULE']);
 	if($j>3)

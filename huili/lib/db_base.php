@@ -314,6 +314,43 @@ class tb_choose extends base_login
 		else
 			$this->err_no=3;
 	}//}}}
+//{{{public function del_by_uid()
+	public function del_by_uid()
+	{
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$conn=sprintf("DELETE FROM choose WHERE uid= %s",$_SESSION['CURR_USR'][0]);
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == TRUE)
+			return;
+		else
+			$this->err_no=3;
+	}//}}}
+//{{{public function add_db_group($ay)
+	public function add_db_group($ay)
+	{
+		if((count($ay) <= 0) || (count($ay) >=13))
+			return;
+		$this->init_db();
+		if($this->err_no)
+			return;
+		for($i=0;$i<count($ay);$i++)
+		{
+			$a=array();
+			$a=$ay[$i];
+			$conn=sprintf("INSERT INTO choose(uid,mid,cid,mname,mlink,mclass,micon) VALUES(%d,%d,'%s','%s','%s','%s','%s')",$a[0],$a[1],$a[2],$a[3],$a[4],$a[5],$a[6]);
+			$res=mysqli_query($this->mysqli,$conn);
+			if($res == FALSE)
+			{
+				mysqli_close($this->mysqli);
+				$this->err_no=3;return;
+			}
+		}
+		mysqli_close($this->mysqli);
+	}
+//}}}
 }//}}}
 //{{{class used_sign extends base_login
 //登录用户的信息:uid(0),email(1),uname(2),pwd(3),priv(4),lvl(5),sex(6),expr(7),coin(8),treasure(9),signup(10),lastlogin(11),imgpath(12)
