@@ -1,7 +1,7 @@
 <?php
 $headfile=$_SERVER["DOCUMENT_ROOT"]."/tools/js_learn/include/head_def.php";
 include_once($headfile);
-require_once("/var/www/huili/include/pinyin.php");
+require_once("/var/www/huili/template/pinyin.php");
 ?>
 <script>
 function get_width()
