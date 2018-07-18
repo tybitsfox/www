@@ -69,6 +69,8 @@ if(isset($_POST["email"]) && isset($_POST["password"]))
 	}
 	else
 	{
+//添加-加我和我加的专家列表
+		get_invite();
 		$_SESSION['badtimes']=0;
 		$ta=new used_sign();
 		$ta->add_secu();

@@ -683,6 +683,9 @@ class tb_expert extends base_login
 		case 5://取得全部记录
 			$conn="SELECT * FROM expert";  //select all
 			break;
+		case 6://按uid和取得认证
+			$conn="SELECT * FROM expert WHERE confirmed = 1 AND uid = ".$e[1];
+			break;
 //		case 6://这是一个特殊查询，查询my_expert表中不存在而在expert表中存在的记录,即某个用户没有邀请的专家记录
 //			$conn="SELECT * FROM expert WHERE uid NOT IN (SELECT eid FROM my_expert WHERE uid =".$e[1].")";
 //			break;
@@ -964,8 +967,50 @@ function get_my_sel($i,$e)
 			array_push($ay,$a);
 	}
 	return $ay;
-}
-
+}//}}}
+//{{{function get_invite()
+//$_SESSION['GLO_VAR'] 说明：0：表示当前账户是否是认证账户，== 0？不是：是；元素1：保存了所有我邀请的专家队列；元素2：保存了
+function get_invite()
+{
+	$_SESSION['GLO_VAR'][0]=0;
+	$_SESSION['GLO_VAR'][1]=array();
+	$_SESSION['GLO_VAR'][2]=array();
+	$ta=new tb_expert();
+	$ay=array();$cy=array(6,$_SESSION['CURR_USR'][0]);
+	$ay=$ta->get_expert($cy);
+	if($ta->err_no)
+		die("<div class='alert alert-danger' role='alert'><strong>错误</strong>".$ta->err_msg()."</div>");
+	$_SESSION['GLO_VAR'][0]=count($ay);
+	unset($ta);
+	$ta=new tb_my_expert();
+	$ay=array();$cy=array();
+	$u=0;
+	$ay=$ta->get_my_expert($u);
+	if($ta->err_no)
+		die("<div class='alert alert-danger' role='alert'><strong>错误</strong>".$ta->err_msg()."</div>");
+	foreach($ay as $a)
+	{
+		$x=array($a[0],$a[1],$a[2]); //只要uid,类别，名称
+		array_push($cy,$x);
+	}
+	array_merge($_SESSION['GLO_VAR'][1],$cy); //1 保存了所有我邀请的专家队列
+	if($_SESSION['GLO_VAR'][0] == 0)
+		return; //不是专家的话，不会有下面的操作了
+	$u=$_SESSION['CURR_USR'][0];
+	$ay=array();$cy=array();
+	$ay=$ta->get_invite_me($u);
+	if($ta->err_no)
+		die("<div class='alert alert-danger' role='alert'><strong>错误</strong>".$ta->err_msg()."</div>");
+	foreach($ay as $a)
+	{
+		if(count($a) == 3) //普通账户
+			$x=array($a[0],2,$a[1]);
+		else
+			$x=array($a[0],$a[1],$a[2]);
+		array_push($cy,$x);
+	}
+	array_merge($_SESSION['GLO_VAR'][2],$cy);//2 保存了邀请我的队列
+}//}}}
 
 
 

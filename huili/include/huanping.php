@@ -1,18 +1,13 @@
 <?php
 //{{{ init
-if(!defined("HOME_CALLED"))
+if(!defined("HOME_CALLED") || !isset($_SESSION['GLO_VAR']))
 	die("access denied!");
+//{{{ format define	
 $shwmsg=array(
 		array('恭贺汇氏管家吉日上线！','恭祝汇氏管家上线大吉，一家网站，两份收益，朋友三番四次光顾，五福临门照耀，六六大顺生意，七仙过海帮你，八面玲珑客户满门，九九归一成功，十全十美的人生！','/huili/images/logo/0210140GB7.jpg','temp/msg000.txt'),
 		array('十三届全国人大常委会第四次会议在京举行','7月9日，十三届全国人大常委会第四次会议在北京人民大会堂举行。栗战书委员长主持会议并作全国人大常委会执法检查组关于检查大气污染防治法实施情况的报告。','/huili/images/logo/W020180710688862012139.jpg','temp/msg001.txt'),
 		array('省环保厅举行两法启动仪','省环保厅举行《山东省环境保护厅群众反映和监控发现的环境污染问题整改落实情况随机抽查办法》和《山东省排污许可制执行情况监督检查办法》 启动仪式','/huili/images/logo/W020180706695142506931.jpg','temp/msg003.txt')
 		);
-$pg_sel=array(
-		array("active","coll","tab1","icon-user","我邀请的团队","您还没有合作的专家或团队"),
-		array("","invit","tab2","icon-group","邀请我的团队","通过认证获取他人的邀请"),
-		array("","blog","tab3","icon-finder","发布公告","这里添加编辑框"),
-		);
-
 $ft0="<div role='tabpanel' class='tab-pane %s' id='%s'>
 		<div class='inner-narrow inner-midnarrow'>
 		    <div class='intro-block intro-block-slim'>
@@ -51,8 +46,53 @@ $ft4="                  <div class='shareblock-head shareblock-head-light'>
                             	<a href='#' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='%s'><i class='icon-pencil'></i> 开始交流</a>
                         </div>"; //需要输入：专家或团队提示、专家或团队名称、data-target    div+0
 $ft5="</div></div></div></div>";     //div-4
+//}}}
+//{{{ data dispose
+//下面的队列，第一个元素表示横向标签页的活动状态，后面两个表示帮助页面的纵向标签页的状态及信息
+$pg_sel=array(array("active",""),
+		array("active","coll","tab1","icon-user","我邀请的团队","您还没有合作的专家或团队"),
+		array("","invit","tab2","icon-group","邀请我的团队","通过认证获取他人的邀请"),
+		);
+//		array("","blog","tab3","icon-finder","发布公告","这里添加编辑框"),
+//三个需要处理的动作：1、发送对话消息；2、上翻页；3、下翻页；这三个动作还要配合具体的标签页来处理。
+//定义通过GET传送的参数：（1）上翻页：pageup ->；（2）下翻页：pagedown <-； （3）发送消息：sendmsg；（4）当前标签页：curpage；
+$pgcnt=array(array(0,0),array(0,0),array(0,0));//元素队列中第一个元素表示项目展示页面，后两个元素表示第二页面纵向标签页的状态。元素第一项表示总的页数，第二项表示当前显示的页数,
+if(isset($_GET['curpage']))
+{
+	$p=$_GET['curpage'];
+	if(($p < 0) || ($p > 2))
+		$p=0;
+	if($p == 0)
+		$pg_sel[0][0]="active";
+	else
+	{
+		$pg_sel[$p][0]="active";
+		$pg_sel[0][1]="active";
+	}
+	if(isset($_GET['pageup'])) //上翻页
+		$pgcnt[$p][1]++;
+	elseif(isset($_GET['pagedown'])) //下
+		$pgcnt[$p][1]--;
+	
+}
+else //default
+{
+	$pg_sel[0][0]="active";
+	$pg_sel[1][0]="active";
+}
+//首先查找当前账户是否为专家账户,如果是则只读取聊天信息表，否则读取我的专家表，列出所有可对话的专家团队
+//使用新的session变量，一减少数据库的访问
+//$_SESSION['GLO_VAR']: 0->是否专家，
+$gay=array();$ay=array();
+if($_SESSION['GLO_VAR'][0]) //是专家
+{
+//	$ta=new 
+}
+else
+{}
 
-//}}}	
+//}}}
+//}}}
 ?>
 <?php
 //{{{标签页的代码  div+1  div+7
@@ -62,9 +102,9 @@ $st1=sprintf($SIG_HTML['RIGHT_TOP1'],$st2);				//section+1;div+1
 echo $st1;
 echo"<div class='inner' id='modal_container' ><div class='block'><div class='panel shadow'><ul class='nav nav-tabs nav-tabs-hor' role='tablist'>";
 $st1="<li role='presentation' class='%s'><a href='%s' aria-controls='share' role='tab' data-toggle='tab'>%s</a></li>";
-$st2=sprintf($st1,'active','#huanping','项目展示');
+$st2=sprintf($st1,$pg_sel[0][0],'#huanping','项目展示');
 echo $st2;
-$st2=sprintf($st1,'','#gethelp','寻求帮助');
+$st2=sprintf($st1,$pg_sel[0][1],'#gethelp','寻求帮助');
 echo $st2;
 echo"</ul><div class='body'><div class='body body-settings'><div class='tab-content'>";
 //}}}
@@ -86,16 +126,20 @@ for($i=0;$i<count($shwmsg);$i++)
 echo"</ul></div>";
 //}}}
 //{{{ 第二页的代码  div+0
-$st=sprintf($ft0,"","gethelp");
+$st=sprintf($ft0,$pg_sel[0][1],"gethelp");
 echo $st;
 foreach($pg_sel as $a)
 {
+	if(count($a)<3)
+		continue;
 	$st=sprintf($ft1,$a[0],$a[1],$a[2],$a[3],$a[4]);
 	echo $st;
 }
 echo $ft2;
 foreach($pg_sel as $a)
 {
+	if(count($a)<3)
+		continue;
 	$st=sprintf($ft3,$a[0],$a[1]);
 	echo $st;
 	$st=sprintf($ft4a,$a[5]);
@@ -141,9 +185,6 @@ $(document).ready(function(){
 					break;
 				case "tab2":
 					y.innerHTML="邀请我的客户或团队";
-					break;
-				case "tab3":
-					y.innerHTML="发布公告";
 					break;
 				}
 				});
