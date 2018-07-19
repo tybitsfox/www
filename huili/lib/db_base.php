@@ -876,6 +876,91 @@ class tb_my_expert extends base_login
 	}//}}}
 
 }//}}}
+//{{{class tb_talkmsg extends base_login  贴吧模式的用户交流类
+class tb_talkmsg extends base_login
+{
+//{{{private function range_array(&$u) //序列化,该函数保证第一个uid小于第二个uid
+	private function range_array(&$u)
+	{
+		if(count($u) != 4)
+		{$this->err_no=2;return 0;}
+		$i=$u[0];$r=0;
+		if($u[0] > $u[1])
+		{
+			$u[0]=$u[1];$u[1]=$i;
+			$i=$u[5];$u[5]=$u[6];$u[6]=$i; //保证该函数在更新操作时一样使用
+			$r=1;
+		}
+		$this->init_db();
+		return $r;
+	}//}}}
+//{{{public function add_msg(&$u) 添加记录,因涉及到可能对传入队列的调整，因此需要传地址参数
+	public function add_msg(&$u)
+	{//传入的参数队列：uid,uid,wthmod,msg
+		$this->range_array($u);
+		if($this->err_no)
+			return;
+		$str="INSERT INTO talkmsg(lid,bid,tdate,msg,wthmod,lrd,brd) VALUES(%d,%d,now(),'%s',%d,0,0)";
+		$conn=sprintf($str,$u[0],$u[1],$u[3],$u[2]);
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == FALSE)
+			$this->err_no=3;
+	}//}}}
+//{{{public function update_msg(&$u) 更新记录的读取次数
+	public function update_msg(&$u)
+	{//传入的参数队列：uid,uid,wthmod,msg
+		$i=$this->range_array($u);
+		if($this->err_no)
+			return $i;
+		if($i == 0) //没有改变，第一个uid是发起者，
+			$conn="UPDATE talkmsg SET lrd = lrd+1 WHERE lid = ".$u[0]." AND bid = ".$u[1]." AND wthmod = ".$u[2];
+		else
+			$conn="UPDATE talkmsg SET brd = brd+1 WHERE lid = ".$u[0]." AND bid = ".$u[1]." AND wthmod = ".$u[2];
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == FALSE)
+			$this->err_no=11;
+		return $i;
+	}//}}}
+//{{{public function get_msg(&$u)	取得指定的记录
+	public function get_msg(&$u)
+	{//传入的参数队列：uid,uid,wthmod,msg
+		$ay=array();
+		$i=$this->update_msg($u);
+		if($this->err_no)
+			return $ay;
+		$this->init_db();
+		if($this->err_no)
+			return $ay;
+		if($i == 0)
+			$conn="SELECT * FROM talkmsg WHERE lid = ".$u[0]." AND bid = ".$u[1]." AND wthmod = ".$u[2]." AND lrd < 10";
+		else
+			$conn="SELECT * FROM talkmsg WHERE lid = ".$u[0]." AND bid = ".$u[1]." AND wthmod = ".$u[2]." AND brd < 10";
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}
+//{{{public function delete_msg(&$u) 删除指定的记录
+	public function delete_msg(&$u)
+	{//传入的参数队列：uid,uid,wthmod,msg
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$conn="DELETE FROM talkmsg WHERE lrd > 9 AND brd > 9";
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == FALSE)
+			$this->err_no=12;		
+	}//}}}
+
+}//}}}
+
+
+
 
 ////////////begin function//////////////////////////////
 //{{{function get_major($ay) $ay[0]=mid;$ay[1]=0 专家类型，=1 团队行业
