@@ -1078,7 +1078,7 @@ function get_invite()
 		$x=array($a[0],$a[1],$a[2]); //只要uid,类别，名称
 		array_push($cy,$x);
 	}
-	array_merge($_SESSION['GLO_VAR'][1],$cy); //1 保存了所有我邀请的专家队列
+	$_SESSION['GLO_VAR'][1]=array_merge($_SESSION['GLO_VAR'][1],$cy); //1 保存了所有我邀请的专家队列
 	if($_SESSION['GLO_VAR'][0] == 0)
 		return; //不是专家的话，不会有下面的操作了
 	$u=$_SESSION['CURR_USR'][0];
@@ -1094,7 +1094,7 @@ function get_invite()
 			$x=array($a[0],$a[1],$a[2]);
 		array_push($cy,$x);
 	}
-	array_merge($_SESSION['GLO_VAR'][2],$cy);//2 保存了邀请我的队列
+	$_SESSION['GLO_VAR'][2]=array_merge($_SESSION['GLO_VAR'][2],$cy);//2 保存了邀请我的队列
 }//}}}
 
 

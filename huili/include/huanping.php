@@ -42,8 +42,8 @@ $ft4b="					 <div class='shareblock-body'>
 						 </div></div></div>";//需要输入：前翻页链接、前翻页链接样式、页码、后翻页链接、链接样式 div-2
 
 $ft4="                  <div class='shareblock-head shareblock-head-light'>
-							<p class='shareblock-account'><span class='light'>现有专家:</span> <strong><span class='account-truncated'>%s</span></strong></p>
-                            	<a href='#' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' data-target='%s'><i class='icon-pencil'></i> 开始交流</a>
+							<p class='shareblock-account'><span class='light'>%s</span> <strong><span class='account-truncated'>%s</span></strong></p>
+                            	<a href='#' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' weclick='%s'><i class='icon-pencil'></i> 开始交流</a>
                         </div>"; //需要输入：专家或团队提示、专家或团队名称、data-target    div+0
 $ft5="</div></div></div></div>";     //div-4
 //}}}
@@ -83,14 +83,34 @@ else //default
 //首先查找当前账户是否为专家账户,如果是则只读取聊天信息表，否则读取我的专家表，列出所有可对话的专家团队
 //使用新的session变量，一减少数据库的访问
 //$_SESSION['GLO_VAR']: 0->是否专家，
-$gay=array();$ay=array();
-if($_SESSION['GLO_VAR'][0]) //是专家
+$gay=array();$i=0;$cy=array();
+for($j=1;$j<3;$j++)
 {
-//	$ta=new 
+	$gby=array();
+	$cy=$_SESSION['GLO_VAR'][$j];
+	foreach($cy as $a)
+	{
+		$ay=array();
+		$ay[0]=$a[0]; //uid
+		switch($a[1])
+		{
+			case 0://专家
+				$ay[1]="专家姓名：";
+				break;
+			case 1://团队
+				$ay[1]="团队名称：";
+				break;
+			case 2://普通帐号
+				$ay[1]="普通账户：";
+				break;
+		}
+		$ay[2]=$a[2];//姓名或名称
+		$ay[3]="mxx".$j.$i;$i++;  //weclick
+		array_push($gby,$ay);
+	}
+	array_push($gay,$gby);
 }
-else
-{}
-
+$gayc=array('javascript:;','color: gray; cursor: default; disabled: true;','1','javascript:;','color: gray; cursor: default; disabled: true;');
 //}}}
 //}}}
 ?>
@@ -136,14 +156,30 @@ foreach($pg_sel as $a)
 	echo $st;
 }
 echo $ft2;
+$i=0;
 foreach($pg_sel as $a)
 {
 	if(count($a)<3)
 		continue;
 	$st=sprintf($ft3,$a[0],$a[1]);
 	echo $st;
-	$st=sprintf($ft4a,$a[5]);
-	echo $st;
+	if(count($gay[$i]) == 0)
+	{
+		$st=sprintf($ft4a,$a[5]);
+		echo $st;
+	}
+	else
+	{//这里添加ft4的循环
+		$c=array();$c=$gay[$i];
+		foreach($c as $b)
+		{
+			$st=sprintf($ft4,$b[1],$b[2],$b[3]);
+			echo $st;	
+		}
+		$st=sprintf($ft4b,$gayc[0],$gayc[1],$gayc[2],$gayc[3],$gayc[4]);
+		echo $st;
+	}
+	$i++;
 }
 echo $ft5;
 //}}}
