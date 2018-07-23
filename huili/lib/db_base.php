@@ -5,6 +5,7 @@ if(!defined("FULL_PATH"))
 	define("FULL_PATH",substr(dirname(__FILE__),0,strlen(dirname(__FILE__))-strlen(strstr(dirname(__FILE__),"huili")))."huili".DIRECTORY_SEPARATOR);
 if(!defined("WORK_PLACE"))
 	require_once(constant("FULL_PATH")."config/glob_new.php");
+require_once(constant("FULL_PATH")."template/pinyin.php");
 
 //{{{class base_login   BASE CLASS
 class base_login
@@ -146,6 +147,16 @@ class login extends base_login
 		{$this->err_no=8;return;} //pwd error
 		if(is_null($ay[0][12]))
 			$ay[0][12]=constant("DEF_IMG");
+		$s1=$ay[0][2];
+		if(preg_match("/^[\x{4e00}-\x{9fa5}]/u",$s1))
+		{
+			$py=new pinyin();
+			$s3=$py->getpy($s1,true);
+			$s2=strtoupper(substr($s3,0,1));
+		}
+		else
+			$s2=strtoupper(substr($s1,0,1));
+		$ay[0][13]=$s2; //2018-7-23添加，将昵称的开头字母保存至_SESSION['CURR_USR'][13]
 		$_SESSION['CURR_USR']=array_merge($_SESSION['CURR_USR'],$ay[0]);
 		unset($ay);
 	}//}}}
@@ -198,7 +209,7 @@ class login extends base_login
 //{{{public function edit($ay) 记录编辑 auth表只允许编辑：邮箱、密码、昵称！so～
 	public function edit($ay)
 	{
-		if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 13))
+		if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 14))
 		{$this->err_no=10;return;}
 		$this->init_db();
 		if($this->err_no)
@@ -236,7 +247,20 @@ class login extends base_login
 		$res=mysqli_query($this->mysqli,$st1);
 		mysqli_close($this->mysqli);
 		if($res == TRUE)
+		{//2018-7-23 成功的话修改session变量的昵称和首字母
+			$_SESSION['CURR_USR'][2]=$ay[1];
+			$s1=$ay[1];
+			if(preg_match("/^[\x{4e00}-\x{9fa5}]/u",$s1))
+			{
+				$py=new pinyin();
+				$s3=$py->getpy($s1,true);
+				$s2=strtoupper(substr($s3,0,1));
+			}
+			else
+				$s2=strtoupper(substr($s1,0,1));
+			$_SESSION['CURR_USR'][13]=$s2;
 			return;//success
+		}
 		else
 			$this->err_no=11;//edit failure
 	}//}}}
@@ -923,7 +947,7 @@ class tb_talkmsg extends base_login
 			$this->err_no=11;
 		return $i;
 	}//}}}
-//{{{public function get_msg(&$u)	取得指定的记录
+//{{{public function get_msg(&$u)	取得指定的记录 这是取指定的两个对话者相互的对话。
 	public function get_msg(&$u)
 	{//传入的参数队列：uid,uid,wthmod,msg
 		$ay=array();
@@ -940,6 +964,30 @@ class tb_talkmsg extends base_login
 		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
 			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}
+//{{{public function get_msg_by_id() 取当前用户所有的新对话
+	public function get_msg_by_id()
+	{//传出：有新消息的用户uid数组
+		$ay=array();$cy=array();
+		$this->init_db();
+		if($this->err_no)
+			return $cy;
+		$conn="SELECT bid FROM talkmsg WHERE lid = ".$_SESSION['CURR_USR'][0]." AND lrd = 0";
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row[0]);
+		mysqli_free_result($res);
+//		mysqli_close($this->mysqli);
+		$conn="SELECT lid FROM talkmsg WHERE bid = ".$_SESSION['CURR_USR'][0]." AND brd = 0";
+//		$this->init_db();
+//		if($this->err_no)
+//			return $cy;
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row[0]);
 		mysqli_free_result($res);
 		mysqli_close($this->mysqli);
 		return $ay;

@@ -42,10 +42,11 @@ $ft4b="					 <div class='shareblock-body'>
 						 </div></div></div>";//需要输入：前翻页链接、前翻页链接样式、页码、后翻页链接、链接样式 div-2
 
 $ft4="                  <div class='shareblock-head shareblock-head-light'>
-							<p class='shareblock-account'><span class='light'>%s</span> <strong><span class='account-truncated'>%s</span></strong></p>
+							<p class='shareblock-account'><span class='light'>%s</span> <strong><span class='account-truncated'>%s</span></strong>%s</p>
                             	<a href='#' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' weclick='%s'><i class='icon-pencil'></i> 开始交流</a>
-                        </div>"; //需要输入：专家或团队提示、专家或团队名称、data-target    div+0
+                        </div>"; //需要输入：专家或团队提示、专家或团队名称、新消息标志、weclick    div+0
 $ft5="</div></div></div></div>";     //div-4
+$hipchat=" <span class='icon-hipchat'></span>";
 //}}}
 //{{{ data dispose
 //下面的队列，第一个元素表示横向标签页的活动状态，后面两个表示帮助页面的纵向标签页的状态及信息

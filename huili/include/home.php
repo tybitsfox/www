@@ -8,10 +8,10 @@ require_once(constant("FULL_PATH")."config/glob_signed.php");
 //require_once(constant("FULL_PATH")."lib/main.php");
 require_once(constant("FULL_PATH")."lib/db_base.php");
 require_once(constant("FULL_PATH")."config/email.php");
-require_once(constant("FULL_PATH")."template/pinyin.php");
+//require_once(constant("FULL_PATH")."template/pinyin.php");
 define("HOME_CALLED",$_SESSION['CURR_USR'][0]); //保证不会跨越本文件直接调用子模块
 /// check login
-if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 13))
+if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 14))
 	die("没有授权，禁止登录"."count=".count($_SESSION['CURR_USR']));
 ////////////////////////
 $err_string=$SIGNED_DEF['TOP_TEXT1'];

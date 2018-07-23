@@ -685,7 +685,7 @@ if(isset($_GET['action']) && ($_GET['action'] != 'true'))
 	}
 	else //usr
 	{
-		if(count($ay) == 13)
+		if(count($ay) == 14)
 		{
 			$st1="<div class='shareblock-body'><ul class='list-unstyled list-accounts'><li><div class='avatar'><div class='circle'><img src='%s' alt='您的头像'/></div></div><div class='account-info'>%s</div></li><li><div class='account-info'><strong>UID：</strong></div><div class='account-status'>%s</div></li><li><div class='account-info'><strong>昵称：</strong></div><div class='account-status'>%s</div></li><li><div class='account-info'><strong>等级：</strong></div><div class='account-status'>%s</div></li><li><div class='account-info'><strong>经验值：</strong></div><div class='account-status'>%s</div></li><li><div class='account-info'><strong>财富：</strong></div><div class='account-status'>%s</div></li><li><div class='account-info'><strong>金币：</strong></div><div class='account-status'>%s</div></li></ul><div class='shareblock-body'><div class='text-center'><a href='".$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['NIN']."&action=".$_GET['action']."&vendor=".$_GET['vendor']."&accept=xok' style='color: #AE3E48; text-decoration: none; border-bottom: 1px solid #AE3E48;'>删除当前帐号</a></div></div></div>";
 			if($ay[12] == null)

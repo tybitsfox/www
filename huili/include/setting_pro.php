@@ -167,7 +167,7 @@ if(isset($_POST['nickname']))
 	if($ta->err_no == 0)
 	{
 		echo "<div class='alert alert-success alert-inline' role='alert'>\n昵称已经更新</div>\n";
-		$_SESSION['CURR_USR'][2]=$ay[1];
+	//	$_SESSION['CURR_USR'][2]=$ay[1];
 	}
 	else
 		echo "<div class='alert alert-danger alert-inline' role='alert'>\n".$ta->err_msg()."</div>\n";
