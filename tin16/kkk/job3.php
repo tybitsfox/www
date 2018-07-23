@@ -11,11 +11,11 @@ echo "
     <tbody align='center'>
         <tr>
             <td bgcolor='#99ccff' width='100'>职业名称</td>
-            <td bgcolor='#99ccff' colspan='7'><strong>ゆうしゃ[勇者]</strong></td>
+            <td bgcolor='#99ccff' colspan='7'><strong>勇者</strong></td>
         </tr>
         <tr>
             <td bgcolor='#99ccff'>转职条件</td>
-            <td colspan='7'>主角在バトルマスター、けんじゃ、レンジャー、スーパースター<br />
+            <td colspan='7'>主角在战斗专家、贤者、游侠、超级明星<br/>
             四种高级职业中，只需修满其中一种即可转职；其他人必须修满这4个高级职业。</td>
         </tr>
         <tr>
@@ -46,50 +46,50 @@ echo "
         <tr>
             <td bgcolor='#000000' colspan='2'><font color='#ffd700' size='2'>★</font></td>
             <td colspan='2'>-</td>
-            <td colspan='2'>むらゆうしゃ[村庄勇者]</td>
-            <td colspan='2'>アストロン</td>
+            <td colspan='2'>村庄勇者</td>
+            <td colspan='2'>钢化(Ironize)</td>
         </tr>
         <tr>
             <td bgcolor='#000000' colspan='2'><font color='#ffd700' size='2'>★★</font></td>
             <td colspan='2'>7场战斗</td>
-            <td colspan='2'>まちゆうしゃ[城镇勇者]</td>
-            <td colspan='2'>いてつくはどう</td>
+            <td colspan='2'>城镇勇者</td>
+            <td colspan='2'>冻结波动(Nullify)</td>
         </tr>
         <tr>
             <td bgcolor='#000000' colspan='2'><font color='#ffd700' size='2'>★★★</font></td>
             <td colspan='2'>12场战斗</td>
-            <td colspan='2'>しまゆうしゃ[岛屿勇者]</td>
-            <td colspan='2'>ライデイン</td>
+            <td colspan='2'>岛屿勇者</td>
+            <td colspan='2'>元气弹(Zap)</td>
         </tr>
         <tr>
             <td bgcolor='#000000' colspan='2'><font color='#ffd700' size='2'>★★★★</font></td>
             <td colspan='2'>20场战斗</td>
-            <td colspan='2'>くにゆうしゃ[国家勇者]</td>
-            <td colspan='2'>ギガデイン</td>
+            <td colspan='2'>国家勇者</td>
+            <td colspan='2'>强闪电(Lightning)</td>
         </tr>
         <tr>
             <td bgcolor='#000000' colspan='2'><font color='#ffd700' size='2'>★★★★★</font></td>
             <td colspan='2'>20场战斗</td>
-            <td colspan='2'>たいりくゆうしゃ[大陆勇者]</td>
-            <td colspan='2'>めいそう</td>
+            <td colspan='2'>大陆勇者</td>
+            <td colspan='2'>冥想(Meditate)</td>
         </tr>
         <tr>
             <td bgcolor='#000000' colspan='2'><font color='#ffd700' size='2'>★★★★★★</font></td>
             <td colspan='2'>30场战斗</td>
-            <td colspan='2'>せかいのゆうしゃ[世界勇者]</td>
-            <td colspan='2'>ギガスラッシュ</td>
+            <td colspan='2'>世界勇者</td>
+            <td colspan='2'>强力斩(GigaSlash)</td>
         </tr>
         <tr>
             <td bgcolor='#000000' colspan='2'><font color='#ffd700' size='2'>★★★★★★★</font></td>
             <td colspan='2'>30场战斗</td>
-            <td colspan='2'>しんのゆうしゃ[真的勇者]</td>
-            <td colspan='2'>ジゴスパーク</td>
+            <td colspan='2'>真的勇者</td>
+            <td colspan='2'>地狱雷霆(GigaSpar)</td>
         </tr>
         <tr>
             <td bgcolor='#000000' colspan='2'><font color='#ffd700' size='2'>★★★★★★★★</font></td>
             <td colspan='2'>30场战斗</td>
-            <td colspan='2'>うちゅうヒーロー[宇宙英雄]</td>
-            <td colspan='2'>ミナデイン</td>
+            <td colspan='2'>宇宙英雄</td>
+            <td colspan='2'>合体(MegaZap)</td>
         </tr>
         <tr>
             <td colspan='8'><font color='#ff0000'>修满8颗星后，MAXMP额外增加40点，战斗时每回合自动回复HP80</font></td>
@@ -103,7 +103,7 @@ echo "
             防御：★★★★☆<br />
             智力：★★★★<br />
             速度：★★★★<br />
-            点评：标准的&ldquo;万金油&rdquo;职业了，被称作为&ldquo;希望之星&rdquo;的职业。可说是本作综合实力最强的职业，单从能力来讲，和圣骑士、魔法战士的星数加起来差不多，不过当勇者修练到6星时，就有在战斗中回复HP的能力，这一点很好狠强大（打隐藏世界Boss时就有优势了），可说是越战越勇。特技方面，历代的勇者都擅长雷属性的魔法和特技，这次也不例外，可以修得所有的雷咒文和两个极强的雷属性特技（ギガスラッシュ和ジゴスパーク）；此外还有两个很实用的辅助特技&mdash;&mdash;冻气波动（いてつくはどう，有利状态解除）和冥想（めいそう，自身回复500HP）；究极技为合体咒文ミナディン，由于四个人一回合只能用一次，所以用处不大。要修得勇者的话，必须修得所有初级职业以及四个高级职业，所以是非常耗时的，如果只是想要通关的话，还是不要去费这个功夫的好。</p>
+            点评：标准的&ldquo;万金油&rdquo;职业了，被称作为&ldquo;希望之星&rdquo;的职业。可说是本作综合实力最强的职业，单从能力来讲，和圣骑士、魔法战士的星数加起来差不多，不过当勇者修练到6星时，就有在战斗中回复HP的能力，这一点很好狠强大（打隐藏世界Boss时就有优势了），可说是越战越勇。特技方面，历代的勇者都擅长雷属性的魔法和特技，这次也不例外，可以修得所有的雷咒文和两个极强的雷属性特技（强力斩(GigaSlash)和地狱雷霆(GigaSpar)）；此外还有两个很实用的辅助特技&mdash;&mdash;冻结波动(Nullify)，有利状态解除和冥想(Meditate)，自身回复500HP；究极技为合体，由于四个人一回合只能用一次，所以用处不大。要修得勇者的话，必须修得所有初级职业以及四个高级职业，所以是非常耗时的，如果只是想要通关的话，还是不要去费这个功夫的好。</p>
             </td>
         </tr>
     </tbody>
