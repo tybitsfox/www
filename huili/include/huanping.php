@@ -44,7 +44,7 @@ $ft4b="					 <div class='shareblock-body'>
 $ft4="                  <div class='shareblock-head shareblock-head-light' id='wewe'>
 							<p class='shareblock-account'><span class='light'>%s</span> <strong><span class='account-cursor' weclick='%s'>%s</span></strong>%s</p>
                         </div>"; //需要输入：专家或团队提示、专家或团队名称、新消息标志、weclick    div+0
-$ft41="<div id='%s' style='width:100%%;max-height:200px;background-color:transparent;margin:2px;overflow:auto;display:none;'>%s<br><form action='#' method=post><input type='text' class='form-control onlined' name='getval' value='' /></form></div>";
+$ft41="<div id='%s' style='width:100%%;max-height:200px;background-color:transparent;margin:2px;overflow:auto;display:none;'><div id='%s'>%s<br></div><form action='#' method=post><input type='text' class='form-control onlined' name='getval' value='' /></form></div>"; //需要的输入：id,id,msg
 $ft5="</div></div></div></div>";     //div-4
 $hipchat=" <span class='icon-hipchat'></span>";
 //}}}
@@ -111,6 +111,7 @@ for($j=1;$j<3;$j++)
 		$ay[2]=$a[2];//姓名或名称
 		$ay[3]="mxx".$j.$i;$i++;  //weclick
 		$ay[4]=$ay[3]."a";
+		$ay[5]=$ay[3]."b";
 		array_push($gby,$ay);
 	}
 	array_push($gay,$gby);
@@ -180,7 +181,7 @@ foreach($pg_sel as $a)
 		{
 			$st=sprintf($ft4,$b[1],$b[3],$b[2],$hipchat);
 			echo $st;
-			$st=sprintf($ft41,$b[4],'hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>helasdflkjasdflkj asdflkjasdf lkjasdfl kjasdflk jasdflka jsdfla kasdflo world<br>');
+			$st=sprintf($ft41,$b[4],$b[5],'hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>helasdflkjasdflkj asdflkjasdf lkjasdfl kjasdflk jasdflka jsdfla kasdflo world<br>');
 			echo $st;
 		}
 		$st=sprintf($ft4b,$gayc[0],$gayc[1],$gayc[2],$gayc[3],$gayc[4]);
@@ -201,6 +202,7 @@ echo"</div></div></div>";
 .onlined{width:90%;display:inline-block;vertical-align:top;}
 </style>
 <script>
+//{{{ JQuery for modified styles
 $(document).ready(function(){
 		$("li").click(function(){
 				var vid=$(this).attr("id");
@@ -237,8 +239,31 @@ $(document).ready(function(){
 				var x=$(this).attr("weclick");
 				var y="#"+x+"a";
 				$(y).slideToggle();
+				if(y == "#mxx10a")
+				{
+					var u="mxx10b";
+					ajax_init(u);
+				}
 				});
 		});
+//}}}
+//{{{ AJax 
+function ajax_init(u)
+{
+	var xmlhttp=new XMLHttpRequest();
+	xmlhttp.onreadystatechange=function()
+	{
+		if(xmlhttp.readyState==4 && xmlhttp.status==200)
+		{
+			document.getElementById(u).innerHTML=xmlhttp.responseText;
+		}
+	}
+	xmlhttp.open("GET","/huili/include/for_get.php",true);
+	xmlhttp.send();
+	setTimeout(ajax_get,2000);
+	
+}//}}}
+
 </script>
 <?php
 echo $SIG_HTML['RIGHT_TOP3'];  //div-1;section-1;div-1;
