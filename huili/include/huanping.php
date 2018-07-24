@@ -41,10 +41,10 @@ $ft4b="					 <div class='shareblock-body'>
                             </div>
 						 </div></div></div>";//需要输入：前翻页链接、前翻页链接样式、页码、后翻页链接、链接样式 div-2
 
-$ft4="                  <div class='shareblock-head shareblock-head-light'>
-							<p class='shareblock-account'><span class='light'>%s</span> <strong><span class='account-truncated'>%s</span></strong>%s</p>
-                            	<a href='#' class='btn btn-primary withicon btn-shareaccount' data-toggle-inactive='modal' weclick='%s'><i class='icon-pencil'></i> 开始交流</a>
+$ft4="                  <div class='shareblock-head shareblock-head-light' id='wewe'>
+							<p class='shareblock-account'><span class='light'>%s</span> <strong><span class='account-cursor' weclick='%s'>%s</span></strong>%s</p>
                         </div>"; //需要输入：专家或团队提示、专家或团队名称、新消息标志、weclick    div+0
+$ft41="<div id='%s' style='width:100%%;max-height:200px;background-color:transparent;margin:2px;overflow:auto;display:none;'>%s<br><form action='#' method=post><input type='text' class='form-control onlined' name='getval' value='' /></form></div>";
 $ft5="</div></div></div></div>";     //div-4
 $hipchat=" <span class='icon-hipchat'></span>";
 //}}}
@@ -58,6 +58,8 @@ $pg_sel=array(array("active",""),
 //三个需要处理的动作：1、发送对话消息；2、上翻页；3、下翻页；这三个动作还要配合具体的标签页来处理。
 //定义通过GET传送的参数：（1）上翻页：pageup ->；（2）下翻页：pagedown <-； （3）发送消息：sendmsg；（4）当前标签页：curpage；
 $pgcnt=array(array(0,0),array(0,0),array(0,0));//元素队列中第一个元素表示项目展示页面，后两个元素表示第二页面纵向标签页的状态。元素第一项表示总的页数，第二项表示当前显示的页数,
+if(isset($_POST['getval']))
+{die("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".$_POST['getval']);}
 if(isset($_GET['curpage']))
 {
 	$p=$_GET['curpage'];
@@ -84,9 +86,10 @@ else //default
 //首先查找当前账户是否为专家账户,如果是则只读取聊天信息表，否则读取我的专家表，列出所有可对话的专家团队
 //使用新的session变量，一减少数据库的访问
 //$_SESSION['GLO_VAR']: 0->是否专家，
-$gay=array();$i=0;$cy=array();
+$gay=array();$cy=array();
 for($j=1;$j<3;$j++)
 {
+	$i=0;
 	$gby=array();
 	$cy=$_SESSION['GLO_VAR'][$j];
 	foreach($cy as $a)
@@ -107,6 +110,7 @@ for($j=1;$j<3;$j++)
 		}
 		$ay[2]=$a[2];//姓名或名称
 		$ay[3]="mxx".$j.$i;$i++;  //weclick
+		$ay[4]=$ay[3]."a";
 		array_push($gby,$ay);
 	}
 	array_push($gay,$gby);
@@ -174,8 +178,10 @@ foreach($pg_sel as $a)
 		$c=array();$c=$gay[$i];
 		foreach($c as $b)
 		{
-			$st=sprintf($ft4,$b[1],$b[2],$b[3]);
-			echo $st;	
+			$st=sprintf($ft4,$b[1],$b[3],$b[2],$hipchat);
+			echo $st;
+			$st=sprintf($ft41,$b[4],'hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>helasdflkjasdflkj asdflkjasdf lkjasdfl kjasdflk jasdflka jsdfla kasdflo world<br>');
+			echo $st;
 		}
 		$st=sprintf($ft4b,$gayc[0],$gayc[1],$gayc[2],$gayc[3],$gayc[4]);
 		echo $st;
@@ -191,6 +197,8 @@ echo"</div></div></div>";
 ?>
 <style>
 .pont:hover {cursor:pointer;}
+.account-cursor{display:inline-block;max-width:200px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;vertical-align:text-bottom;position:relative;top:2px;cursor:pointer;}
+.onlined{width:90%;display:inline-block;vertical-align:top;}
 </style>
 <script>
 $(document).ready(function(){
@@ -224,6 +232,11 @@ $(document).ready(function(){
 					y.innerHTML="邀请我的客户或团队";
 					break;
 				}
+				});
+		$("span").click(function(){
+				var x=$(this).attr("weclick");
+				var y="#"+x+"a";
+				$(y).slideToggle();
 				});
 		});
 </script>
