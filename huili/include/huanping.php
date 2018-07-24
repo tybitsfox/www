@@ -59,7 +59,10 @@ $pg_sel=array(array("active",""),
 //定义通过GET传送的参数：（1）上翻页：pageup ->；（2）下翻页：pagedown <-； （3）发送消息：sendmsg；（4）当前标签页：curpage；
 $pgcnt=array(array(0,0),array(0,0),array(0,0));//元素队列中第一个元素表示项目展示页面，后两个元素表示第二页面纵向标签页的状态。元素第一项表示总的页数，第二项表示当前显示的页数,
 if(isset($_POST['getval']))
-{die("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".$_POST['getval']);}
+{
+	die("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".$_POST['getval']);
+
+}
 if(isset($_GET['curpage']))
 {
 	$p=$_GET['curpage'];
@@ -239,15 +242,15 @@ $(document).ready(function(){
 				var x=$(this).attr("weclick");
 				var y="#"+x+"a";
 				$(y).slideToggle();
-				if(y == "#mxx10a")
-				{
-					var u="mxx10b";
-					ajax_init(u);
-				}
+//				if(y == "#mxx10a")
+//				{
+//					var u="mxx10b";
+//					ajax_init(u);
+//				}
 				});
 		});
 //}}}
-//{{{ AJax 
+//{{{ AJax for get data
 function ajax_init(u)
 {
 	var xmlhttp=new XMLHttpRequest();
