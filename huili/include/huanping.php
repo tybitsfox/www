@@ -41,10 +41,10 @@ $ft4b="					 <div class='shareblock-body'>
                             </div>
 						 </div></div></div>";//需要输入：前翻页链接、前翻页链接样式、页码、后翻页链接、链接样式 div-2
 
-$ft4="                  <div class='shareblock-head shareblock-head-light' id='wewe'>
+$ft4="                  <div class='shareblock-head shareblock-head-light' >
 							<p class='shareblock-account'><span class='light'>%s</span> <strong><span class='account-cursor' weclick='%s'>%s</span></strong>%s</p>
                         </div>"; //需要输入：专家或团队提示、专家或团队名称、新消息标志、weclick    div+0
-$ft41="<div id='%s' style='width:100%%;max-height:200px;background-color:transparent;margin:2px;overflow:auto;display:none;'><div id='%s'>%s<br></div><form action='#' method=post><input type='text' class='form-control onlined' name='getval' value='' /></form></div>"; //需要的输入：id,id,msg
+$ft41="<div id='%s' style='width:100%%;max-height:200px;background-color:transparent;margin:2px;overflow:auto;display:none;' data-trans='%s'><div id='%s'>%s<br></div><input type='text' class='form-control onlined' id='%s' value='' /></div>"; //需要的输入：(1)响应隐藏显示的控件id，(2)保存uid的data-trans,(3)更新记录的id,(4)记录消息msg
 $ft5="</div></div></div></div>";     //div-4
 $hipchat=" <span class='icon-hipchat'></span>";
 //}}}
@@ -61,7 +61,6 @@ $pgcnt=array(array(0,0),array(0,0),array(0,0));//元素队列中第一个元素�
 if(isset($_POST['getval']))
 {
 	die("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".$_POST['getval']);
-
 }
 if(isset($_GET['curpage']))
 {
@@ -78,8 +77,7 @@ if(isset($_GET['curpage']))
 	if(isset($_GET['pageup'])) //上翻页
 		$pgcnt[$p][1]++;
 	elseif(isset($_GET['pagedown'])) //下
-		$pgcnt[$p][1]--;
-	
+		$pgcnt[$p][1]--;	
 }
 else //default
 {
@@ -98,7 +96,7 @@ for($j=1;$j<3;$j++)
 	foreach($cy as $a)
 	{
 		$ay=array();
-		$ay[0]=$a[0]; //uid
+		$ay[0]=$a[0]; //对方uid
 		switch($a[1])
 		{
 			case 0://专家
@@ -184,7 +182,7 @@ foreach($pg_sel as $a)
 		{
 			$st=sprintf($ft4,$b[1],$b[3],$b[2],$hipchat);
 			echo $st;
-			$st=sprintf($ft41,$b[4],$b[5],'hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>hello world<br>helasdflkjasdflkj asdflkjasdf lkjasdfl kjasdflk jasdflka jsdfla kasdflo world<br>');
+			$st=sprintf($ft41,$b[4],$b[0],$b[5],'',$b[3]."c");
 			echo $st;
 		}
 		$st=sprintf($ft4b,$gayc[0],$gayc[1],$gayc[2],$gayc[3],$gayc[4]);
@@ -205,9 +203,10 @@ echo"</div></div></div>";
 .onlined{width:90%;display:inline-block;vertical-align:top;}
 </style>
 <script>
+var user_id=<?php echo $_SESSION['CURR_USR'][0];?>;
 //{{{ JQuery for modified styles
 $(document).ready(function(){
-		$("li").click(function(){
+		$("li").click(function(){//第一标签页，项目展示的开关设置
 				var vid=$(this).attr("id");
 				switch(vid)
 				{
@@ -225,7 +224,7 @@ $(document).ready(function(){
 					break;
 				}
 				});
-		$("a").click(function(){
+		$("a").click(function(){//第二标签页，纵向标签页切换时的提示设置
 				var x=$(this).attr("weclick");
 				var y=document.getElementById("glb_msg");
 				switch(x)
@@ -238,20 +237,28 @@ $(document).ready(function(){
 					break;
 				}
 				});
-		$("span").click(function(){
+		$("span").click(function(){//第二标签页，详细聊天记录显示的开关设置，并调用了ajax获取数据
 				var x=$(this).attr("weclick");
+				if(x == null)
+					return;
 				var y="#"+x+"a";
+				var z=$(y).attr("data-trans"); //对方uid
 				$(y).slideToggle();
-//				if(y == "#mxx10a")
-//				{
-//					var u="mxx10b";
-//					ajax_init(u);
-//				}
+				var u=x+"b";
+				ajax_init(u,y,z);
+				$(y).scrollTop(250); //max-height:200px
+				var o="#"+x+"c";
+				$(o).bind('keypress',function(event){
+						if(event.keyCode == 13)
+						{
+							$(o).val("");
+						}
+						});
 				});
 		});
 //}}}
 //{{{ AJax for get data
-function ajax_init(u)
+function ajax_init(u,v,w)
 {
 	var xmlhttp=new XMLHttpRequest();
 	xmlhttp.onreadystatechange=function()
@@ -261,10 +268,19 @@ function ajax_init(u)
 			document.getElementById(u).innerHTML=xmlhttp.responseText;
 		}
 	}
-	xmlhttp.open("GET","/huili/include/for_get.php",true);
-	xmlhttp.send();
-	setTimeout(ajax_get,2000);
-	
+	var url="/huili/include/for_get.php?aid="+user_id+"&bid="+w+"&mod=0";
+//	xmlhttp.open("GET","/huili/include/for_get.php",true);
+//	xmlhttp.open("GET",url,true);
+	xmlhttp.open("POST","/huili/include/for_get.php",true);
+//	xmlhttp.send();
+	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+	var aa="aid="+user_id+"&bid="+w+"&mod=0";
+	xmlhttp.send(aa);
+	if($(v).is(":hidden"))	//看看在这样能否执行 ok!! 使用alert测试成功！！
+		return;
+	else
+//	setTimeout(ajax_init,2000);
+		setTimeout(function(){ajax_init(u,v,w)},2000);
 }//}}}
 
 </script>
