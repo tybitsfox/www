@@ -906,13 +906,12 @@ class tb_talkmsg extends base_login
 //{{{private function range_array(&$u) //序列化,该函数保证第一个uid小于第二个uid
 	private function range_array(&$u)
 	{
-		if(count($u) != 4)
+		if((count($u) != 4) || ($u[0] != $_SESSION['CURR_USR'][0])) //硬性规定了调整前的传入队列首个元素必须是当前用户的uid
 		{$this->err_no=2;return 0;}
 		$i=$u[0];$r=0;
 		if($u[0] > $u[1])
 		{
 			$u[0]=$u[1];$u[1]=$i;
-			$i=$u[5];$u[5]=$u[6];$u[6]=$i; //保证该函数在更新操作时一样使用
 			$r=1;
 		}
 		$this->init_db();
@@ -920,11 +919,14 @@ class tb_talkmsg extends base_login
 	}//}}}
 //{{{public function add_msg(&$u) 添加记录,因涉及到可能对传入队列的调整，因此需要传地址参数
 	public function add_msg(&$u)
-	{//传入的参数队列：uid,uid,wthmod,msg
-		$this->range_array($u);
+	{//传入的参数队列：uid,uid,wthmod,msg,并且第一个uid是当前用户uid->$_SESSION['CURR_USR'][0];
+		$i=$this->range_array($u);
 		if($this->err_no)
 			return;
-		$str="INSERT INTO talkmsg(lid,bid,tdate,msg,wthmod,lrd,brd) VALUES(%d,%d,now(),'%s',%d,0,0)";
+		if($i)//bid=$_SESSION['CURR_USR'][0]
+			$str="INSERT INTO talkmsg(lid,bid,tdate,msg,wthmod,lrd,brd) VALUES(%d,%d,now(),'%s',%d,0,1)";
+		else
+			$str="INSERT INTO talkmsg(lid,bid,tdate,msg,wthmod,lrd,brd) VALUES(%d,%d,now(),'%s',%d,1,0)";
 		$conn=sprintf($str,$u[0],$u[1],$u[3],$u[2]);
 		$res=mysqli_query($this->mysqli,$conn);
 		mysqli_close($this->mysqli);
@@ -951,7 +953,8 @@ class tb_talkmsg extends base_login
 	public function get_msg(&$u)
 	{//传入的参数队列：uid,uid,wthmod,msg
 		$ay=array();
-		$i=$this->update_msg($u);
+//		$i=$this->update_msg($u);
+		$i=$this->range_array($u);
 		if($this->err_no)
 			return $ay;
 		$this->init_db();
@@ -961,6 +964,8 @@ class tb_talkmsg extends base_login
 			$conn="SELECT * FROM talkmsg WHERE lid = ".$u[0]." AND bid = ".$u[1]." AND wthmod = ".$u[2]." AND lrd < 10";
 		else
 			$conn="SELECT * FROM talkmsg WHERE lid = ".$u[0]." AND bid = ".$u[1]." AND wthmod = ".$u[2]." AND brd < 10";
+//		echo $conn;
+//		return $ay;
 		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
 			array_push($ay,$row);

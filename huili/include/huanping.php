@@ -49,7 +49,7 @@ $ft5="</div></div></div></div>";     //div-4
 $hipchat=" <span class='icon-hipchat'></span>";
 //}}}
 //{{{ data dispose
-//下面的队列，第一个元素表示横向标签页的活动状态，后面两个表示帮助页面的纵向标签页的状态及信息
+//下面的队列，第一个元素表示横向标签页的活动状态，后面两个表示交谈页面的纵向标签页的状态及信息
 $pg_sel=array(array("active",""),
 		array("active","coll","tab1","icon-user","我邀请的团队","您还没有合作的专家或团队"),
 		array("","invit","tab2","icon-group","邀请我的团队","通过认证获取他人的邀请"),
@@ -58,10 +58,6 @@ $pg_sel=array(array("active",""),
 //三个需要处理的动作：1、发送对话消息；2、上翻页；3、下翻页；这三个动作还要配合具体的标签页来处理。
 //定义通过GET传送的参数：（1）上翻页：pageup ->；（2）下翻页：pagedown <-； （3）发送消息：sendmsg；（4）当前标签页：curpage；
 $pgcnt=array(array(0,0),array(0,0),array(0,0));//元素队列中第一个元素表示项目展示页面，后两个元素表示第二页面纵向标签页的状态。元素第一项表示总的页数，第二项表示当前显示的页数,
-if(isset($_POST['getval']))
-{
-	die("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".$_POST['getval']);
-}
 if(isset($_GET['curpage']))
 {
 	$p=$_GET['curpage'];
@@ -74,10 +70,8 @@ if(isset($_GET['curpage']))
 		$pg_sel[$p][0]="active";
 		$pg_sel[0][1]="active";
 	}
-	if(isset($_GET['pageup'])) //上翻页
-		$pgcnt[$p][1]++;
-	elseif(isset($_GET['pagedown'])) //下
-		$pgcnt[$p][1]--;	
+	if(isset($_GET['pagemv'])) //点击翻页了
+		$pgcnt[$p][1]=$_GET['pagemv'];
 }
 else //default
 {
@@ -117,6 +111,24 @@ for($j=1;$j<3;$j++)
 	}
 	array_push($gay,$gby);
 }
+//到这里，所有的数据都已读取完毕，可以确定总的页数了，项目展示目前没涉及到数据库操作，为便于统一，后期用上数据库后取得的记录仍然使用shwmsg队列存储
+//所以，这里只对shwmsg操作即可
+$pgcnt[0][0]=floor(count($shwmsg)/5); //项目展示页面
+if(count($shwmsg) % 5)
+	$pgcnt[0][0]++;
+$pgcnt[1][0]=floor(count($gay[0])/5); //我邀请的专家页面
+if(count($gay[0]) % 5)
+	$pgcnt[1][0]++;
+$pgcnt[2][0]=floor(count($gay[1])/5);//邀请我的界面
+if(count($gay[1]) % 5)
+	$pgcnt[2][0]++;
+for($i=0;$i<3;$i++) //保证不越界
+{
+	if($pgcnt[$i][1] >= $pgcnt[$i][0])
+		$pgcnt[$i][1]=$pgcnt[$i][0]-1;
+	elseif($pgcnt[$i][1] < 0)
+		$pgcnt[$i][1]=0;
+}
 $gayc=array('javascript:;','color: gray; cursor: default; disabled: true;','1','javascript:;','color: gray; cursor: default; disabled: true;');
 //}}}
 //}}}
@@ -139,18 +151,40 @@ echo"</ul><div class='body'><div class='body body-settings'><div class='tab-cont
 echo"<div role='tabpanel' class='tab-pane active' id='huanping'>";
 echo "<ul class='list-unstyled list-accounts'>";
 $st1="<li id='li000%d' class='pont'><div>%s<div id='dv000%d' style='width:100%%;margin:2px auto;display:none;'>%s<br><div class='blog-img'><img src='%s' /></div><br>";
-//"ssssssssss</div></div></li>";//need 5 paras
-for($i=0;$i<count($shwmsg);$i++)
+$st2="					</ul><div class='shareblock-body'>
+							<div class='text-center'>
+								<a href='%s' style='%s'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;%s&nbsp;&nbsp;&nbsp;<a href='%s' style='%s'>&gt;&gt;</a>
+                            </div>
+						 </div></div>";//需要输入：前翻页链接、前翻页链接样式、页码、后翻页链接、链接样式 div-2
+for($i=0;$i<5;$i++)
 {
-	$st=sprintf($st1,$i+1,$shwmsg[$i][0],$i+1,$shwmsg[$i][1],$shwmsg[$i][2]);
+	$j=$pgcnt[0][1]*5+$i;
+	if($j >= count($shwmsg))
+		break;
+	$st=sprintf($st1,$i+1,$shwmsg[$j][0],$i+1,$shwmsg[$j][1],$shwmsg[$j][2]);
 	echo $st;
-	$st=constant("FULL_PATH").$shwmsg[$i][3];
+	$st=constant("FULL_PATH").$shwmsg[$j][3];
 	include_once($st);
 	echo "</div></div></li>";
 }
-//echo "<li id='li0001' class='pont'><div>恭贺汇氏管家吉日上线！<div id='dv0001' style='width:100%;margin:2px auto;display:none;'>tianyong<br><div class='blog-img'><img src='/huili/images/logo/0210140GB7.jpg' /></div><br>taianshi</div></div></li>";
-
-echo"</ul></div>";
+$ay=array();$j=$pgcnt[0][1];
+if(intval($j) == 0) //设置0,1,2元素
+{$ay[0]=$gayc[0];$ay[1]=$gayc[1];$ay[2]='1';}
+else
+{
+	$ay[0]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ1']."&curpage=0&pagemv=".($j-1);
+	$ay[1]="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+	$ay[2]=$j+1;
+}
+if(intval($j) == intval($pgcnt[0][0]-1))//设置3,4元素
+{$ay[3]=$gayc[3];$ay[4]=$gayc[4];}
+else
+{
+	$ay[3]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ1']."&curpage=0&pagemv=".($j+1);
+	$ay[4]="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+}
+$st=sprintf($st2,$ay[0],$ay[1],$ay[2],$ay[3],$ay[4]);
+echo $st;
 //}}}
 //{{{ 第二页的代码  div+0
 $st=sprintf($ft0,$pg_sel[0][1],"gethelp");
@@ -178,14 +212,42 @@ foreach($pg_sel as $a)
 	else
 	{//这里添加ft4的循环
 		$c=array();$c=$gay[$i];
-		foreach($c as $b)
+		for($k=0;$k<5;$k++)
 		{
+			$j=$pgcnt[$i+1][1]*5+$k;
+			if($j >= count($c))
+				break;
+			$b=array();
+			$b=$c[$j];
 			$st=sprintf($ft4,$b[1],$b[3],$b[2],$hipchat);
 			echo $st;
 			$st=sprintf($ft41,$b[4],$b[0],$b[5],'',$b[3]."c");
 			echo $st;
 		}
-		$st=sprintf($ft4b,$gayc[0],$gayc[1],$gayc[2],$gayc[3],$gayc[4]);
+	/*	foreach($c as $b)
+		{
+			$st=sprintf($ft4,$b[1],$b[3],$b[2],$hipchat);
+			echo $st;
+			$st=sprintf($ft41,$b[4],$b[0],$b[5],'',$b[3]."c");
+			echo $st;
+		}*/
+		$ay=array();$j=$pgcnt[$i+1][1];
+		if(intval($j) == 0)
+		{$ay[0]=$gayc[0];$ay[1]=$gayc[1];$ay[2]='1';}
+		else
+		{
+			$ay[0]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ1']."&curpage=".($i+1)."&pagemv=".($j-1);
+			$ay[1]="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+			$ay[2]=$j+1;
+		}
+		if(intval($j) == intval($pgcnt[$i+1][0]-1))//设置3,4元素
+		{$ay[3]=$gayc[3];$ay[4]=$gayc[4];}
+		else
+		{
+			$ay[3]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ1']."&curpage=".($i+1)."&pagemv=".($j+1);
+			$ay[4]="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+		}
+		$st=sprintf($ft4b,$ay[0],$ay[1],$ay[2],$ay[3],$ay[4]);
 		echo $st;
 	}
 	$i++;
@@ -251,6 +313,8 @@ $(document).ready(function(){
 				$(o).bind('keypress',function(event){
 						if(event.keyCode == 13)
 						{
+							var s=$(o).val();
+							ajax_save(z,s,u);
 							$(o).val("");
 						}
 						});
@@ -269,19 +333,29 @@ function ajax_init(u,v,w)
 		}
 	}
 	var url="/huili/include/for_get.php?aid="+user_id+"&bid="+w+"&mod=0";
-//	xmlhttp.open("GET","/huili/include/for_get.php",true);
-//	xmlhttp.open("GET",url,true);
-	xmlhttp.open("POST","/huili/include/for_get.php",true);
-//	xmlhttp.send();
-	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-	var aa="aid="+user_id+"&bid="+w+"&mod=0";
-	xmlhttp.send(aa);
+	xmlhttp.open("GET",url,true);
+	xmlhttp.send();
 	if($(v).is(":hidden"))	//看看在这样能否执行 ok!! 使用alert测试成功！！
-		return;
+		return; //关闭前执行更新
 	else
-//	setTimeout(ajax_init,2000);
-		setTimeout(function(){ajax_init(u,v,w)},2000);
-}//}}}
+		setTimeout(function(){ajax_init(u,v,w)},30000);//30秒一更新
+}
+function ajax_save(u,s,w) //保存对话记录
+{
+	var xmlhttp=new XMLHttpRequest();
+	xmlhttp.onreadystatechange=function()
+	{
+		if(xmlhttp.readyState==4 && xmlhttp.status==200)
+		{
+			document.getElementById(w).innerHTML=xmlhttp.responseText;
+		}
+	}
+	xmlhttp.open("POST","/huili/include/for_save.php",true);
+	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+	var aa="aid="+user_id+"&bid="+u+"&mod=0&msg="+s;
+	xmlhttp.send(aa);
+}
+//}}}
 
 </script>
 <?php
