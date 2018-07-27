@@ -310,7 +310,8 @@ $(document).ready(function(){
 				$(y).slideToggle();
 				var u=x+"b";
 				ajax_init(u,y,z,na);
-//				$(y).scrollTop(1000); //max-height:200px
+				setTimeout(function(){delay(y)},1000);
+//				$(y).scrollTop(1000); //max-height:200px <- 不延时的话，会出现数据加载还没玩就滑动了，这样滑动不到低端
 				var o="#"+x+"c";
 				$(o).bind('keypress',function(event){
 						if(event.keyCode == 13)
@@ -332,7 +333,7 @@ function ajax_init(u,v,w,x)
 		if(xmlhttp.readyState==4 && xmlhttp.status==200)
 		{
 			document.getElementById(u).innerHTML=xmlhttp.responseText;
-			$(v).scrollTop(1000); //max-height:200px
+//			$(v).scrollTop(1000); //max-height:200px  放在这里会时时刷新，不行 -_-！
 		}
 	}
 	var url="/huili/include/for_get.php?aid="+user_id+"&bid="+w+"&mod=0&uname="+x;
@@ -359,7 +360,10 @@ function ajax_save(u,s,w) //保存对话记录
 	xmlhttp.send(aa);
 }
 //}}}
-
+//{{{ delay function
+function delay(u)
+{$(u).scrollTop(1000);}
+//}}}
 </script>
 <?php
 echo $SIG_HTML['RIGHT_TOP3'];  //div-1;section-1;div-1;
