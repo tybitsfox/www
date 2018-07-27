@@ -905,7 +905,7 @@ class tb_talkmsg extends base_login
 {
 //{{{private function range_array(&$u) //序列化,该函数保证第一个uid小于第二个uid
 	private function range_array(&$u)
-	{
+	{//参数u的元素：uid,uid,wthmod,msg;
 		if((count($u) != 4) || ($u[0] != $_SESSION['CURR_USR'][0])) //硬性规定了调整前的传入队列首个元素必须是当前用户的uid
 		{$this->err_no=2;return 0;}
 		$i=$u[0];$r=0;
@@ -924,13 +924,13 @@ class tb_talkmsg extends base_login
 		if($this->err_no)
 			return;
 		if($i)//bid=$_SESSION['CURR_USR'][0]
-			$str="INSERT INTO talkmsg(lid,bid,tdate,msg,wthmod,lrd,brd) VALUES(%d,%d,now(),'%s',%d,0,1)";
+			$str="INSERT INTO talkmsg(lid,bid,tdate,msg,wthmod,wmsg,lrd,brd) VALUES(%d,%d,now(),'%s',%d,1,0,1)";
 		else
-			$str="INSERT INTO talkmsg(lid,bid,tdate,msg,wthmod,lrd,brd) VALUES(%d,%d,now(),'%s',%d,1,0)";
+			$str="INSERT INTO talkmsg(lid,bid,tdate,msg,wthmod,wmsg,lrd,brd) VALUES(%d,%d,now(),'%s',%d,0,1,0)";
 		$conn=sprintf($str,$u[0],$u[1],$u[3],$u[2]);
 		$res=mysqli_query($this->mysqli,$conn);
 		mysqli_close($this->mysqli);
-		if($res == FALSE)
+		if($res == false)
 			$this->err_no=3;
 	}//}}}
 //{{{public function update_msg(&$u) 更新记录的读取次数

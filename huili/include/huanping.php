@@ -268,6 +268,7 @@ echo"</div></div></div>";
 var user_id=<?php echo $_SESSION['CURR_USR'][0];?>;
 //{{{ JQuery for modified styles
 $(document).ready(function(){
+		var namea="";
 		$("li").click(function(){//第一标签页，项目展示的开关设置
 				var vid=$(this).attr("id");
 				switch(vid)
@@ -301,14 +302,15 @@ $(document).ready(function(){
 				});
 		$("span").click(function(){//第二标签页，详细聊天记录显示的开关设置，并调用了ajax获取数据
 				var x=$(this).attr("weclick");
+				var na=$(this).text();
 				if(x == null)
 					return;
 				var y="#"+x+"a";
 				var z=$(y).attr("data-trans"); //对方uid
 				$(y).slideToggle();
 				var u=x+"b";
-				ajax_init(u,y,z);
-				$(y).scrollTop(250); //max-height:200px
+				ajax_init(u,y,z,na);
+//				$(y).scrollTop(1000); //max-height:200px
 				var o="#"+x+"c";
 				$(o).bind('keypress',function(event){
 						if(event.keyCode == 13)
@@ -322,7 +324,7 @@ $(document).ready(function(){
 		});
 //}}}
 //{{{ AJax for get data
-function ajax_init(u,v,w)
+function ajax_init(u,v,w,x)
 {
 	var xmlhttp=new XMLHttpRequest();
 	xmlhttp.onreadystatechange=function()
@@ -330,26 +332,27 @@ function ajax_init(u,v,w)
 		if(xmlhttp.readyState==4 && xmlhttp.status==200)
 		{
 			document.getElementById(u).innerHTML=xmlhttp.responseText;
+			$(v).scrollTop(1000); //max-height:200px
 		}
 	}
-	var url="/huili/include/for_get.php?aid="+user_id+"&bid="+w+"&mod=0";
+	var url="/huili/include/for_get.php?aid="+user_id+"&bid="+w+"&mod=0&uname="+x;
 	xmlhttp.open("GET",url,true);
 	xmlhttp.send();
 	if($(v).is(":hidden"))	//看看在这样能否执行 ok!! 使用alert测试成功！！
 		return; //关闭前执行更新
 	else
-		setTimeout(function(){ajax_init(u,v,w)},30000);//30秒一更新
+		setTimeout(function(){ajax_init(u,v,w,x)},3000);//30秒一更新
 }
 function ajax_save(u,s,w) //保存对话记录
 {
 	var xmlhttp=new XMLHttpRequest();
-	xmlhttp.onreadystatechange=function()
-	{
-		if(xmlhttp.readyState==4 && xmlhttp.status==200)
-		{
-			document.getElementById(w).innerHTML=xmlhttp.responseText;
-		}
-	}
+//	xmlhttp.onreadystatechange=function()
+//	{
+//		if(xmlhttp.readyState==4 && xmlhttp.status==200)
+//		{
+//			document.getElementById(w).innerHTML=xmlhttp.responseText;
+//		}
+//	}
 	xmlhttp.open("POST","/huili/include/for_save.php",true);
 	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
 	var aa="aid="+user_id+"&bid="+u+"&mod=0&msg="+s;
