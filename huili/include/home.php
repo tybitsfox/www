@@ -92,6 +92,10 @@ else
 		include_once('../template/def_dashbroad.php');
 		include_once('./huanping.php');
 		break;
+	case $SIGNED_PAGE['GJ2']://环境工程
+		include_once('../template/def_dashbroad.php');
+		include_once('./gongcheng.php');
+		break;
 	default:
 		include_once('../template/def_dashbroad.php');
 		include_once('../template/def_login.php');

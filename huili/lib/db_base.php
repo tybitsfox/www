@@ -1011,8 +1011,27 @@ class tb_talkmsg extends base_login
 	}//}}}
 
 }//}}}
+//{{{class tb_blog extends base_login  博客管理类
+class tb_blog extends base_login
+{//模块代码：  0：环评咨询；1：环境工程；2：环境监测；
+//{{{public function add_blog($u)
+//传入参数为队列：(0)模块代码，(1)标题，(2)团队名，(3)内容，(4)图片链接，(5)团队id，(6)简介	
+	public function add_blog($u) //添加博客
+	{
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$st="INSERT INTO blog(idx,ttile,uname,fintime,ttext,piclink,uid,header) VALUES(%s,'%s','%s',now(),'%s','%s',%s,'%s')";
+		$conn=sprintf($st,$u[0],$u[1],$u[2],$u[3],$u[4],$u[5],$u[6]);
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == flase)
+			$this->err_no=3;
+	}//}}}
 
 
+
+}//}}}
 
 
 ////////////begin function//////////////////////////////
