@@ -111,6 +111,28 @@ for($j=1;$j<3;$j++)
 	}
 	array_push($gay,$gby);
 }
+$cy=array();
+if(count($_SESSION['GLO_VAR'][2]) == 0)
+{
+	$cy=$_SESSION['GLO_VAR'][1];
+}
+else
+{
+	foreach($_SESSION['GLO_VAR'][1] as $a)
+	{
+		$i=1;
+		foreach($_SESSION['GLO_VAR'][2] as $b)
+		{
+			if($b[0] == $a[0]) //uid 
+			{$i=0;break;}
+		}
+		if($i)
+			array_push($cy,$a);
+	}
+	$gay=array_merge($cy,$)$_SESSION['GLO_VAR'][2];
+}
+
+
 //到这里，所有的数据都已读取完毕，可以确定总的页数了，项目展示目前没涉及到数据库操作，为便于统一，后期用上数据库后取得的记录仍然使用shwmsg队列存储
 //所以，这里只对shwmsg操作即可
 $pgcnt[0][0]=floor(count($shwmsg)/5); //项目展示页面
@@ -150,7 +172,7 @@ echo"</ul><div class='body'><div class='body body-settings'><div class='tab-cont
 //{{{第一页的代码 div+0
 echo"<div role='tabpanel' class='tab-pane active' id='huanping'>";
 echo "<ul class='list-unstyled list-accounts'>";
-$st1="<li id='li000%d' class='pont'><div>%s<div id='dv000%d' style='width:100%%;margin:2px auto;display:none;'>%s<br><div class='blog-img'><img src='%s' /></div><br>";
+$st1="<li lid='%s' class='pont'><div>%s</div></li><li id='%s' style='display:none'><div style='width:100%%;margin:2px auto;'>%s<br><div class='blog-img'><img src='%s' /></div><br>";
 $st2="					</ul><div class='shareblock-body'>
 							<div class='text-center'>
 								<a href='%s' style='%s'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;%s&nbsp;&nbsp;&nbsp;<a href='%s' style='%s'>&gt;&gt;</a>
@@ -161,11 +183,17 @@ for($i=0;$i<5;$i++)
 	$j=$pgcnt[0][1]*5+$i;
 	if($j >= count($shwmsg))
 		break;
-	$st=sprintf($st1,$i+1,$shwmsg[$j][0],$i+1,$shwmsg[$j][1],$shwmsg[$j][2]);
+	$s1="Li00".$i;$s2=$s1.'x';
+	$st=sprintf($st1,$s1,$shwmsg[$j][0],$s2,$shwmsg[$j][1],$shwmsg[$j][2]);
 	echo $st;
 	$st=constant("FULL_PATH").$shwmsg[$j][3];
 	include_once($st);
-	echo "</div></div></li>";
+	if($_SESSION['CURR_USR'][0] <= 100001)
+	{
+		$s1="<br><a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>删除</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>隐藏</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>封禁帐号</a><br>";
+		echo $s1;
+	}
+	echo "</div></li>";
 }
 $ay=array();$j=$pgcnt[0][1];
 if(intval($j) == 0) //设置0,1,2元素
@@ -270,22 +298,11 @@ var user_id=<?php echo $_SESSION['CURR_USR'][0];?>;
 $(document).ready(function(){
 		var namea="";
 		$("li").click(function(){//第一标签页，项目展示的开关设置
-				var vid=$(this).attr("id");
-				switch(vid)
-				{
-				case "li0001":
-					$("#dv0001").slideToggle();
-					break;
-				case "li0002":
-					$("#dv0002").slideToggle();
-					break;
-				case "li0003":
-					$("#dv0003").slideToggle();
-					break;
-				case "li0004":
-					$("#dv0004").slideToggle();
-					break;
-				}
+				var vid=$(this).attr("lid");
+				if(vid == null)
+					return;
+				var x="#"+vid+"x";
+				$(x).slideToggle();
 				});
 		$("a").click(function(){//第二标签页，纵向标签页切换时的提示设置
 				var x=$(this).attr("weclick");
