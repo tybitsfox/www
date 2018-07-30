@@ -1014,21 +1014,46 @@ class tb_talkmsg extends base_login
 //{{{class tb_blog extends base_login  博客管理类
 class tb_blog extends base_login
 {//模块代码：  0：环评咨询；1：环境工程；2：环境监测；
-//{{{public function add_blog($u)
+//{{{public function add_blog($u) 保存博客记录
 //传入参数为队列：(0)模块代码，(1)标题，(2)团队名，(3)内容，(4)图片链接，(5)团队id，(6)简介	
 	public function add_blog($u) //添加博客
 	{
+		if(count($u) != 7)
+		{$this->err_no=2;return;}
 		$this->init_db();
 		if($this->err_no)
 			return;
-		$st="INSERT INTO blog(idx,ttile,uname,fintime,ttext,piclink,uid,header) VALUES(%s,'%s','%s',now(),'%s','%s',%s,'%s')";
+		$st="INSERT INTO blog(idx,title,uname,fintime,ttext,piclink,uid,header,isshow,istop,isglob) VALUES(%s,'%s','%s',now(),'%s','%s',%s,'%s',1,0,0)";
 		$conn=sprintf($st,$u[0],$u[1],$u[2],$u[3],$u[4],$u[5],$u[6]);
 		$res=mysqli_query($this->mysqli,$conn);
 		mysqli_close($this->mysqli);
 		if($res == flase)
 			$this->err_no=3;
 	}//}}}
-
+//{{{public function get_blog($u) 取得博客
+/*记录的取得不是按模块全部取得，而是每次只取得显示的记录，目前为10条。
+  传入参数：队列，(0)模块代码，(1)起始的时间
+  返回值：结果队列
+ */
+	public function get_blog($u)
+	{
+		$ay=array();
+		if(count($u) != 2)
+		{$this->err_no=2;return $ay;}
+		$this->init_db();
+		if($this->err_no)
+			return $ay;
+		if($u[1] == 0)
+			$conn="SELECT * FROM blog WHERE idx = ".$u[0]." ORDER BY fintime DESC LIMIT 10";
+		else
+			$conn="SELECT * FROM blog WHERE idx = ".$u[0]." AND fintime < ".$u[1]." ORDER BY fintime DESC LIMIT 10";
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}
 
 
 }//}}}

@@ -51,13 +51,13 @@ $hipchat=" <span class='icon-hipchat'></span>";
 //{{{ data dispose
 //下面的队列，第一个元素表示横向标签页的活动状态，后面两个表示交谈页面的纵向标签页的状态及信息
 $pg_sel=array(array("active",""),
-		array("active","coll","tab1","icon-user","我邀请的团队","您还没有合作的专家或团队"),
-		array("","invit","tab2","icon-group","邀请我的团队","通过认证获取他人的邀请"),
+		array("active","coll","tab1","icon-user","我的交流","您还没有合作的专家或团队"),
+		array("","invit","tab2","icon-group","发博客","普通账户无法发送博客"),
 		);
 //		array("","blog","tab3","icon-finder","发布公告","这里添加编辑框"),
 //三个需要处理的动作：1、发送对话消息；2、上翻页；3、下翻页；这三个动作还要配合具体的标签页来处理。
 //定义通过GET传送的参数：（1）上翻页：pageup ->；（2）下翻页：pagedown <-； （3）发送消息：sendmsg；（4）当前标签页：curpage；
-$pgcnt=array(array(0,0),array(0,0),array(0,0));//元素队列中第一个元素表示项目展示页面，后两个元素表示第二页面纵向标签页的状态。元素第一项表示总的页数，第二项表示当前显示的页数,
+$pgcnt=array(array(0,0),array(0,0));//元素队列中第一个元素表示项目展示页面，后两个元素表示第二页面纵向标签页的状态。元素第一项表示总的页数，第二项表示当前显示的页数,
 if(isset($_GET['curpage']))
 {
 	$p=$_GET['curpage'];
@@ -78,43 +78,12 @@ else //default
 	$pg_sel[0][0]="active";
 	$pg_sel[1][0]="active";
 }
-//首先查找当前账户是否为专家账户,如果是则只读取聊天信息表，否则读取我的专家表，列出所有可对话的专家团队
-//使用新的session变量，一减少数据库的访问
 //$_SESSION['GLO_VAR']: 0->是否专家，
+//将所有可聊天的账户合并为一个队列,不再分我邀请的和邀请我的
 $gay=array();$cy=array();
-for($j=1;$j<3;$j++)
-{
-	$i=0;
-	$gby=array();
-	$cy=$_SESSION['GLO_VAR'][$j];
-	foreach($cy as $a)
-	{
-		$ay=array();
-		$ay[0]=$a[0]; //对方uid
-		switch($a[1])
-		{
-			case 0://专家
-				$ay[1]="专家姓名：";
-				break;
-			case 1://团队
-				$ay[1]="团队名称：";
-				break;
-			case 2://普通帐号
-				$ay[1]="普通账户：";
-				break;
-		}
-		$ay[2]=$a[2];//姓名或名称
-		$ay[3]="mxx".$j.$i;$i++;  //weclick
-		$ay[4]=$ay[3]."a";
-		$ay[5]=$ay[3]."b";
-		array_push($gby,$ay);
-	}
-	array_push($gay,$gby);
-}
-$cy=array();
 if(count($_SESSION['GLO_VAR'][2]) == 0)
 {
-	$cy=$_SESSION['GLO_VAR'][1];
+	$gay=$_SESSION['GLO_VAR'][1];
 }
 else
 {
@@ -129,7 +98,7 @@ else
 		if($i)
 			array_push($cy,$a);
 	}
-	$gay=array_merge($cy,$)$_SESSION['GLO_VAR'][2];
+	$gay=array_merge($cy,$_SESSION['GLO_VAR'][2]);
 }
 
 
@@ -138,13 +107,10 @@ else
 $pgcnt[0][0]=floor(count($shwmsg)/5); //项目展示页面
 if(count($shwmsg) % 5)
 	$pgcnt[0][0]++;
-$pgcnt[1][0]=floor(count($gay[0])/5); //我邀请的专家页面
-if(count($gay[0]) % 5)
+$pgcnt[1][0]=floor(count($gay)/5); //我邀请的专家页面
+if(count($gay) % 5)
 	$pgcnt[1][0]++;
-$pgcnt[2][0]=floor(count($gay[1])/5);//邀请我的界面
-if(count($gay[1]) % 5)
-	$pgcnt[2][0]++;
-for($i=0;$i<3;$i++) //保证不越界
+for($i=0;$i<2;$i++) //保证不越界
 {
 	if($pgcnt[$i][1] >= $pgcnt[$i][0])
 		$pgcnt[$i][1]=$pgcnt[$i][0]-1;
@@ -165,7 +131,7 @@ echo"<div class='inner' id='modal_container' ><div class='block'><div class='pan
 $st1="<li role='presentation' class='%s'><a href='%s' aria-controls='share' role='tab' data-toggle='tab'>%s</a></li>";
 $st2=sprintf($st1,$pg_sel[0][0],'#huanping','工程实例');
 echo $st2;
-$st2=sprintf($st1,$pg_sel[0][1],'#gethelp','寻求合作');
+$st2=sprintf($st1,$pg_sel[0][1],'#gethelp','合作交流');
 echo $st2;
 echo"</ul><div class='body'><div class='body body-settings'><div class='tab-content'>";
 //}}}
@@ -226,6 +192,53 @@ foreach($pg_sel as $a)
 }
 echo $ft2;
 $i=0;
+$a=array();$a=$pg_sel[1];
+$st=sprintf($ft3,$a[0],$a[1]);
+echo $st;
+if(count($gay) == 0)
+{
+	$st=sprintf($ft4a,$a[5]);
+	echo $st;
+}
+$c=array();$c=$gay;
+for($k=0;$k<5;$k++)
+{
+	$j=$pgcnt[1][1]*5+$k;
+	if($j >= count($c))
+		break;
+	$b=array();
+	$b=$c[$j];
+	$st=sprintf($ft4,$b[1],$b[3],$b[2],$hipchat);
+	echo $st;
+	$st=sprintf($ft41,$b[4],$b[0],$b[5],'',$b[3]."c");
+	echo $st;
+}
+$ay=array();$j=$pgcnt[1][1];
+if(intval($j) == 0)
+{$ay[0]=$gayc[0];$ay[1]=$gayc[1];$ay[2]='1';}
+else
+{
+	$ay[0]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&curpage=".($i+1)."&pagemv=".($j-1);
+	$ay[1]="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+	$ay[2]=$j+1;
+}
+if(intval($j) == intval($pgcnt[1][0]-1))//设置3,4元素
+{$ay[3]=$gayc[3];$ay[4]=$gayc[4];}
+else
+{
+	$ay[3]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&curpage=".($i+1)."&pagemv=".($j+1);
+	$ay[4]="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+}
+$st=sprintf($ft4b,$ay[0],$ay[1],$ay[2],$ay[3],$ay[4]);
+echo $st;
+//第一纵标签页完成，开始第二纵标签页
+$a=array();$a=$pg_sel[2];
+$st=sprintf($ft3,$a[0],$a[1]);
+echo $st;
+//$st=sprintf($ft4a,$a[5]);
+//echo $st;
+
+/*
 foreach($pg_sel as $a)
 {
 	if(count($a)<3)
@@ -252,13 +265,6 @@ foreach($pg_sel as $a)
 			$st=sprintf($ft41,$b[4],$b[0],$b[5],'',$b[3]."c");
 			echo $st;
 		}
-	/*	foreach($c as $b)
-		{
-			$st=sprintf($ft4,$b[1],$b[3],$b[2],$hipchat);
-			echo $st;
-			$st=sprintf($ft41,$b[4],$b[0],$b[5],'',$b[3]."c");
-			echo $st;
-		}*/
 		$ay=array();$j=$pgcnt[$i+1][1];
 		if(intval($j) == 0)
 		{$ay[0]=$gayc[0];$ay[1]=$gayc[1];$ay[2]='1';}
@@ -279,7 +285,13 @@ foreach($pg_sel as $a)
 		echo $st;
 	}
 	$i++;
-}
+}*/
+echo "<div id='summernote'><p>Hello Summernote</p></div>
+  <script>
+    $(document).ready(function() {
+        $('#summernote').summernote();
+    });
+  </script>";
 echo $ft5;
 //}}}
 

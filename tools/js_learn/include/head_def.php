@@ -7,6 +7,8 @@
 -->
 <link rel="stylesheet" href="http://localhost/css/bootstrap.min.css">
 <script src="http://localhost/css/jquery.min.js"></script>
+<link rel="stylesheet" href="http://localhost/css/summernote.css">
+<script src="http://localhost/css/summernote.js"></script>
 
 <?php
 //template format define:
