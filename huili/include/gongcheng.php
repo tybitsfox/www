@@ -286,12 +286,21 @@ foreach($pg_sel as $a)
 	}
 	$i++;
 }*/
+/*
 echo "<div id='summernote'><p>Hello Summernote</p></div>
   <script>
     $(document).ready(function() {
         $('#summernote').summernote();
     });
   </script>";
+ */
+echo "<a href='javascript:;' onclick='aaa();'>确定发送</a>
+<div id='qqq' class='modal in' aria-hidden='false' tabindex=-1 style='display:none;padding-right: 13px;'>
+	<div class='modal-dialog'>
+		  <div id='summernote'><p>请编辑您的博客</p></div>
+		  <div><a href='javascript:;' onclick='bbb();'>发送</a></div>
+	</div>
+</div>";
 echo $ft5;
 //}}}
 
@@ -306,6 +315,30 @@ echo"</div></div></div>";
 </style>
 <script>
 var user_id=<?php echo $_SESSION['CURR_USR'][0];?>;
+function aaa()
+{
+	$("#qqq").show();
+	$(document).ready(function(){
+			$('#summernote').summernote({
+					height: 350,
+					lang:'zh-CN',
+					focus:true,
+  toolbar: [
+    // [groupName, [list of button]]
+    ['style', ['bold', 'italic', 'underline', 'clear']],
+    ['fontsize', ['fontsize']],
+    ['color', ['color']],
+    ['insert', ['picture']],
+    ['misc', ['fullscreen', 'codeview']]
+  ]		
+					});
+			});
+}
+function bbb()
+{
+	$("#qqq").hide();
+	$('#summernote').summernote('destroy');
+}
 //{{{ JQuery for modified styles
 $(document).ready(function(){
 		var namea="";
