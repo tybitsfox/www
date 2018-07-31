@@ -12,7 +12,7 @@ $ft0="<div role='tabpanel' class='tab-pane %s' id='%s'>
 		<div class='inner-narrow inner-midnarrow'>
 		    <div class='intro-block intro-block-slim'>
 				<!--        <p>我的管理界面.</p> -->
-				<p id='glb_msg'>我邀请的专家或团队</p>
+				<p id='glb_msg'>我的交流伙伴</p>
   			</div>		
 			<div class='nav-vendors'>
 				<!-- Vendor nav -->
@@ -98,9 +98,30 @@ else
 		if($i)
 			array_push($cy,$a);
 	}
-	$gay=array_merge($cy,$_SESSION['GLO_VAR'][2]);
+	$cy=array_merge($cy,$_SESSION['GLO_VAR'][2]);
 }
-
+foreach($cy as $a)
+{
+	$ay=array();
+	$ay[0]=$a[0]; //对方uid
+	switch($a[1])
+	{
+		case 0://专家
+			$ay[1]="专家姓名：";
+			break;
+		case 1://团队
+			$ay[1]="团队名称：";
+			break;
+		case 2://普通帐号
+			$ay[1]="普通账户：";
+			break;
+	}
+	$ay[2]=$a[2];//姓名或名称
+	$ay[3]="mxx".$j.$i;$i++;  //weclick
+	$ay[4]=$ay[3]."a";
+	$ay[5]=$ay[3]."b";
+	array_push($gay,$ay);
+}
 
 //到这里，所有的数据都已读取完毕，可以确定总的页数了，项目展示目前没涉及到数据库操作，为便于统一，后期用上数据库后取得的记录仍然使用shwmsg队列存储
 //所以，这里只对shwmsg操作即可
@@ -235,70 +256,11 @@ echo $st;
 $a=array();$a=$pg_sel[2];
 $st=sprintf($ft3,$a[0],$a[1]);
 echo $st;
-//$st=sprintf($ft4a,$a[5]);
-//echo $st;
-
-/*
-foreach($pg_sel as $a)
-{
-	if(count($a)<3)
-		continue;
-	$st=sprintf($ft3,$a[0],$a[1]);
-	echo $st;
-	if(count($gay[$i]) == 0)
-	{
-		$st=sprintf($ft4a,$a[5]);
-		echo $st;
-	}
-	else
-	{//这里添加ft4的循环
-		$c=array();$c=$gay[$i];
-		for($k=0;$k<5;$k++)
-		{
-			$j=$pgcnt[$i+1][1]*5+$k;
-			if($j >= count($c))
-				break;
-			$b=array();
-			$b=$c[$j];
-			$st=sprintf($ft4,$b[1],$b[3],$b[2],$hipchat);
-			echo $st;
-			$st=sprintf($ft41,$b[4],$b[0],$b[5],'',$b[3]."c");
-			echo $st;
-		}
-		$ay=array();$j=$pgcnt[$i+1][1];
-		if(intval($j) == 0)
-		{$ay[0]=$gayc[0];$ay[1]=$gayc[1];$ay[2]='1';}
-		else
-		{
-			$ay[0]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&curpage=".($i+1)."&pagemv=".($j-1);
-			$ay[1]="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
-			$ay[2]=$j+1;
-		}
-		if(intval($j) == intval($pgcnt[$i+1][0]-1))//设置3,4元素
-		{$ay[3]=$gayc[3];$ay[4]=$gayc[4];}
-		else
-		{
-			$ay[3]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&curpage=".($i+1)."&pagemv=".($j+1);
-			$ay[4]="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
-		}
-		$st=sprintf($ft4b,$ay[0],$ay[1],$ay[2],$ay[3],$ay[4]);
-		echo $st;
-	}
-	$i++;
-}*/
-/*
-echo "<div id='summernote'><p>Hello Summernote</p></div>
-  <script>
-    $(document).ready(function() {
-        $('#summernote').summernote();
-    });
-  </script>";
- */
-echo "<a href='javascript:;' onclick='aaa();'>确定发送</a>
+echo "<div><center><font color=red>发文须知</font></center><br>1、目前博客功能仅对认证账户开放。<br>2、请遵守国家相关的法律法规，不得发送违法法律法规的博文。<br>3、所发的博文仅代表作者的观点，本站不做评价。<br>4、对违反法律、规定发送不当博文的，我们有权删除其文章并对作者处以封号处罚。<br><br></div><div class='text-center'><a href='javascript:;' onclick='aaa();'>了解并开始编写</a></div>
 <div id='qqq' class='modal in' aria-hidden='false' tabindex=-1 style='display:none;padding-right: 13px;'>
 	<div class='modal-dialog'>
-		  <div id='summernote'><p>请编辑您的博客</p></div>
-		  <div><a href='javascript:;' onclick='bbb();'>发送</a></div>
+		  <div id='summernote'></div>
+		  <div class='text-center'><a href='javascript:;' onclick='bbb(0);' style='color: #FFFFFF; text-decoration: none; border-bottom: 1px solid #3EAE48;'>发送</a>&nbsp;&nbsp;&nbsp;<a href='javascript:;' onclick='bbb(1);' style='color: #FFFFFF; text-decoration: none; border-bottom: 1px solid#3EAE48;'>取消</a></div>
 	</div>
 </div>";
 echo $ft5;
@@ -323,19 +285,23 @@ function aaa()
 					height: 350,
 					lang:'zh-CN',
 					focus:true,
-  toolbar: [
+//  toolbar: [
     // [groupName, [list of button]]
-    ['style', ['bold', 'italic', 'underline', 'clear']],
-    ['fontsize', ['fontsize']],
-    ['color', ['color']],
-    ['insert', ['picture']],
-    ['misc', ['fullscreen', 'codeview']]
-  ]		
+//    ['style', ['bold', 'italic', 'underline', 'clear']],
+//    ['fontsize', ['fontsize']],
+//    ['color', ['color']],
+//    ['insert', ['picture']],
+//    ['misc', ['fullscreen', 'codeview']]
+//  ]		
 					});
 			});
 }
-function bbb()
+function bbb(i)
 {
+	if(i == 0)
+	{
+		var st=$('#summernote').summernote('code');
+	}
 	$("#qqq").hide();
 	$('#summernote').summernote('destroy');
 }
@@ -355,10 +321,10 @@ $(document).ready(function(){
 				switch(x)
 				{
 				case "tab1":
-					y.innerHTML="我邀请的专家或团队";
+					y.innerHTML="我交流伙伴";
 					break;
 				case "tab2":
-					y.innerHTML="邀请我的客户或团队";
+					y.innerHTML="我的博客";
 					break;
 				}
 				});
