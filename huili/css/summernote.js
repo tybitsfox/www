@@ -1698,20 +1698,20 @@ $$1.summernote = $$1.summernote || {
 $$1.extend($$1.summernote.lang, {
     'en-US': {
         font: {
-            bold: 'Bold',
-            italic: 'Italic',
-            underline: 'Underline',
-            clear: 'Remove Font Style',
+            bold: '粗体',
+            italic: '斜体',
+            underline: '下划线',
+            clear: '清除样式',
             height: 'Line Height',
-            name: 'Font Family',
+            name: '字库',
             strikethrough: 'Strikethrough',
             subscript: 'Subscript',
             superscript: 'Superscript',
-            size: 'Font Size'
+            size: '字体大小'
         },
         image: {
-            image: 'Picture',
-            insert: 'Insert Image',
+            image: '图片',
+            insert: '插入图片',
             resizeFull: 'Resize Full',
             resizeHalf: 'Resize Half',
             resizeQuarter: 'Resize Quarter',
@@ -1727,9 +1727,9 @@ $$1.extend($$1.summernote.lang, {
             selectFromFiles: 'Select from files',
             maximumFileSize: 'Maximum file size',
             maximumFileSizeError: 'Maximum file size exceeded.',
-            url: 'Image URL',
-            remove: 'Remove Image',
-            original: 'Original'
+            url: '图片链接',
+            remove: '删除图片',
+            original: '原始图片'
         },
         video: {
             video: 'Video',
@@ -1748,7 +1748,7 @@ $$1.extend($$1.summernote.lang, {
             openInNewWindow: 'Open in new window'
         },
         table: {
-            table: 'Table',
+            table: '表格',
             addRowAbove: 'Add row above',
             addRowBelow: 'Add row below',
             addColLeft: 'Add column left',
@@ -1761,44 +1761,43 @@ $$1.extend($$1.summernote.lang, {
             insert: 'Insert Horizontal Rule'
         },
         style: {
-            style: 'Style',
-            p: 'Normal',
-            blockquote: 'Quote',
-            pre: 'Code',
-            h1: 'Header 1',
-            h2: 'Header 2',
-            h3: 'Header 3',
-            h4: 'Header 4',
-            h5: 'Header 5',
-            h6: 'Header 6'
+            style: '格式',
+            p: '普通',
+            blockquote: '块引用',
+            pre: '代码',
+            h2: '字号 2',
+            h3: '字号 3',
+            h4: '字号 4',
+            h5: '字号 5',
+            h6: '字号 6'
         },
         lists: {
-            unordered: 'Unordered list',
-            ordered: 'Ordered list'
+            unordered: '带点号',
+            ordered: '带序号'
         },
         options: {
-            help: 'Help',
-            fullscreen: 'Full Screen',
-            codeview: 'Code View'
+            help: '帮助',
+            fullscreen: '全屏切换',
+            codeview: '查看代码'
         },
         paragraph: {
-            paragraph: 'Paragraph',
-            outdent: 'Outdent',
-            indent: 'Indent',
-            left: 'Align left',
-            center: 'Align center',
-            right: 'Align right',
-            justify: 'Justify full'
+            paragraph: '段落',
+            outdent: '延伸',
+            indent: '缩进',
+            left: '左对齐',
+            center: '居中对齐',
+            right: '右对齐',
+            justify: '适应宽度'
         },
         color: {
-            recent: 'Recent Color',
-            more: 'More Color',
-            background: 'Background Color',
-            foreground: 'Foreground Color',
-            transparent: 'Transparent',
-            setTransparent: 'Set transparent',
-            reset: 'Reset',
-            resetToDefault: 'Reset to default'
+            recent: '当前色彩',
+            more: '更多色彩',
+            background: '背景颜色',
+            foreground: '前景颜色',
+            transparent: '透明',
+            setTransparent: '设置透明',
+            reset: '重置',
+            resetToDefault: '重置为默认'
         },
         shortcut: {
             shortcuts: 'Keyboard shortcuts',
@@ -4758,7 +4757,8 @@ var Fullscreen = /** @class */ (function () {
     Fullscreen.prototype.toggle = function () {
         this.$editor.toggleClass('fullscreen');
         if (this.isFullscreen()) {
-            this.$editable.data('orgHeight', this.$editable.css('height'));
+//           this.$editable.data('orgHeight', this.$editable.css('height'));
+            this.$editable.data('orgHeight', '250px');
             this.$window.on('resize', this.onResize).trigger('resize');
             this.$scrollbar.css('overflow', 'hidden');
         }
@@ -7122,13 +7122,14 @@ $$1.summernote = $$1.extend($$1.summernote, {
         tooltip: 'auto',
         container: 'body',
         maxTextLength: 0,
-        styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+//        styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+        styleTags: ['p', 'blockquote', 'pre', 'h2', 'h3', 'h4', 'h5', 'h6'],
         fontNames: [
             'Arial', 'Arial Black', 'Comic Sans MS', 'Courier New',
             'Helvetica Neue', 'Helvetica', 'Impact', 'Lucida Grande',
             'Tahoma', 'Times New Roman', 'Verdana'
         ],
-        fontSizes: ['8', '9', '10', '11', '12', '14', '18', '24', '36'],
+        fontSizes: ['9', '10', '11', '12', '13', '14', '16', '18', '24', '36'],
         // pallete colors(n x n)
         colors: [
             ['#000000', '#424242', '#636363', '#9C9C94', '#CEC6CE', '#EFEFEF', '#F7F7F7', '#FFFFFF'],

@@ -259,6 +259,7 @@ echo $st;
 echo "<div><center><font color=red>发文须知</font></center><br>1、目前博客功能仅对认证账户开放。<br>2、请遵守国家相关的法律法规，不得发送违法法律法规的博文。<br>3、所发的博文仅代表作者的观点，本站不做评价。<br>4、对违反法律、规定发送不当博文的，我们有权删除其文章并对作者处以封号处罚。<br><br></div><div class='text-center'><a href='javascript:;' onclick='aaa();'>了解并开始编写</a></div>
 <div id='qqq' class='modal in' aria-hidden='false' tabindex=-1 style='display:none;padding-right: 13px;'>
 	<div class='modal-dialog'>
+	<input type='text' style='width:100%;margin:1px auto;padding:1px auto;' placeholder='标题' value='' /><br>
 		  <div id='summernote'></div>
 		  <div class='text-center'><a href='javascript:;' onclick='bbb(0);' style='color: #FFFFFF; text-decoration: none; border-bottom: 1px solid #3EAE48;'>发送</a>&nbsp;&nbsp;&nbsp;<a href='javascript:;' onclick='bbb(1);' style='color: #FFFFFF; text-decoration: none; border-bottom: 1px solid#3EAE48;'>取消</a></div>
 	</div>
@@ -277,25 +278,54 @@ echo"</div></div></div>";
 </style>
 <script>
 var user_id=<?php echo $_SESSION['CURR_USR'][0];?>;
+//编辑框的弹出响应函数
 function aaa()
 {
 	$("#qqq").show();
 	$(document).ready(function(){
 			$('#summernote').summernote({
-					height: 350,
+					toolbar: [
+							    ['color', ['color']],
+								['para', ['ul', 'ol', 'paragraph']],
+								['Paragraph style',['style']], 
+								['fontsize', ['fontsize']],
+								['style', ['bold', 'italic', 'underline', 'clear']],
+							    ['insert', ['picture', 'table']],
+							    ['Misc', ['fullscreen', 'codeview']],
+							 ],	
+					placeholder: '这里写正文',
+					height: '300px',
 					lang:'zh-CN',
 					focus:true,
-//  toolbar: [
-    // [groupName, [list of button]]
-//    ['style', ['bold', 'italic', 'underline', 'clear']],
-//    ['fontsize', ['fontsize']],
-//    ['color', ['color']],
-//    ['insert', ['picture']],
-//    ['misc', ['fullscreen', 'codeview']]
-//  ]		
+					disableDragAndDrop:true,
+					callbacks: {onImageUpload: function(files) {sendFile(files[0]);}}		
 					});
 			});
 }
+//图片上传的回调函数
+function sendFile(file)
+{
+	var da;
+	if(user_id == null)
+		da="unknown";
+	else
+		da=user_id;
+    data = new FormData();
+    data.append("file", file);
+	data.append("val",da);
+    $.ajax({
+        data: data,
+        type: "POST",
+        url: "/huili/callback/summ_support.php",
+        cache: false,
+        contentType: false, //'multipart/form-data',
+        processData: false,
+        success: function(url) {
+                $('#summernote').summernote('editor.insertImage', url);
+        }
+    });	
+}
+//编辑框的保存和退出函数
 function bbb(i)
 {
 	if(i == 0)
