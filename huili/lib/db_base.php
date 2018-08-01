@@ -157,6 +157,15 @@ class login extends base_login
 		else
 			$s2=strtoupper(substr($s1,0,1));
 		$ay[0][13]=$s2; //2018-7-23添加，将昵称的开头字母保存至_SESSION['CURR_USR'][13]
+		$ta=new tb_expert();
+		$cy=array();$xy=array(0,$ay[0][0]);
+		$cy=$ta->get_expert($xy);
+		if($ta->err_no)
+			$ay[0][14]=$ay[0][2];
+		elseif(count($cy) > 0)
+			$ay[0][14]=$cy[2];
+		else
+			$ay[0][14]=$ay[0][2]; //2018-8-1添加，_SESSION['CURR_USR'][14]保存了专家名称
 		$_SESSION['CURR_USR']=array_merge($_SESSION['CURR_USR'],$ay[0]);
 		unset($ay);
 	}//}}}
@@ -209,7 +218,7 @@ class login extends base_login
 //{{{public function edit($ay) 记录编辑 auth表只允许编辑：邮箱、密码、昵称！so～
 	public function edit($ay)
 	{
-		if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 14))
+		if((!isset($_SESSION['CURR_USR'])) || (count($_SESSION['CURR_USR']) != 15))
 		{$this->err_no=10;return;}
 		$this->init_db();
 		if($this->err_no)
@@ -1015,7 +1024,7 @@ class tb_talkmsg extends base_login
 class tb_blog extends base_login
 {//模块代码：  0：环评咨询；1：环境工程；2：环境监测；
 //{{{public function add_blog($u) 保存博客记录
-//传入参数为队列：(0)模块代码，(1)标题，(2)团队名，(3)内容，(4)图片链接，(5)团队id，(6)简介	
+//传入参数为队列：(0)模块代码，(1)标题，(2)团队名，(3)内容，(5)uid	
 	public function add_blog($u) //添加博客
 	{
 		if(count($u) != 7)
