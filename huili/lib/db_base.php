@@ -1024,16 +1024,16 @@ class tb_talkmsg extends base_login
 class tb_blog extends base_login
 {//模块代码：  0：环评咨询；1：环境工程；2：环境监测；
 //{{{public function add_blog($u) 保存博客记录
-//传入参数为队列：(0)模块代码，(1)标题，(2)团队名，(3)内容，(5)uid	
+//传入参数为队列：(0)模块代码，(1)标题，(2)团队名，(3)内容，(4)uid	
 	public function add_blog($u) //添加博客
 	{
-		if(count($u) != 7)
+		if(count($u) != 5)
 		{$this->err_no=2;return;}
 		$this->init_db();
 		if($this->err_no)
 			return;
-		$st="INSERT INTO blog(idx,title,uname,fintime,ttext,piclink,uid,header,isshow,istop,isglob) VALUES(%s,'%s','%s',now(),'%s','%s',%s,'%s',1,0,0)";
-		$conn=sprintf($st,$u[0],$u[1],$u[2],$u[3],$u[4],$u[5],$u[6]);
+		$st="INSERT INTO blog(idx,title,uname,fintime,ttext,uid,isshow,isstop,isglob) VALUES(%s,'%s','%s',now(),'%s',%s,1,0,0)";
+		$conn=sprintf($st,$u[0],$u[1],$u[2],$u[3],$u[4]);
 		$res=mysqli_query($this->mysqli,$conn);
 		mysqli_close($this->mysqli);
 		if($res == flase)
