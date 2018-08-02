@@ -1041,29 +1041,53 @@ class tb_blog extends base_login
 	}//}}}
 //{{{public function get_blog($u) 取得博客
 /*记录的取得不是按模块全部取得，而是每次只取得显示的记录，目前为10条。
-  传入参数：队列，(0)模块代码，(1)起始的时间
+  传入参数：队列，(0)模块代码，(1)操作状态：0：初始，1前翻，2后翻，(2)起始的时间
   返回值：结果队列
  */
 	public function get_blog($u)
 	{
 		$ay=array();
-		if(count($u) != 2)
+		if(count($u) != 3)
 		{$this->err_no=2;return $ay;}
 		$this->init_db();
 		if($this->err_no)
 			return $ay;
-		if($u[1] == 0)
-			$conn="SELECT * FROM blog WHERE idx = ".$u[0]." ORDER BY fintime DESC LIMIT 10";
-		else
-			$conn="SELECT * FROM blog WHERE idx = ".$u[0]." AND fintime < ".$u[1]." ORDER BY fintime DESC LIMIT 10";
+		if($u[1] == 0)//首次取得，没有时间限制
+			$conn="SELECT * FROM blog WHERE idx = ".$u[0]." ORDER BY fintime LIMIT 10";
+		elseif($u[1] == 1) //前翻
+			$conn="SELECT * FROM blog WHERE idx = ".$u[0]." AND fintime < ".$u[2]." ORDER BY fintime DESC LIMIT 10";
+		else //后翻
+			$conn="SELECT * FROM blog WHERE idx = ".$u[0]." AND fintime > ".$u[2]." ORDER BY fintime LIMIT 10";
 		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
 			array_push($ay,$row);
 		mysqli_free_result($res);
 		mysqli_close($this->mysqli);
-		return $ay;
+		if(($u[1] == 1) && (count($ay) > 1))//前翻的话，需要反转队列
+		{
+			$cy=array();
+			$cy=array_reverse($ay);
+		}
+		else
+			return $ay;
 	}//}}}
-
+//{{{public function get_count($u) 取得指定模块的博文条数
+	public function get_count($u)
+	{
+		$i=0;
+		if(intval($u)>5 || intval($u)< 0)
+			return $i;
+		$this->init_db();
+		if($this->err_no)
+			return $i;
+		$conn="SELECT count(*) FROM blog WHERE idx = ".$u;
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			$i=$row[0][0];
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $i;
+	}//}}}
 
 }//}}}
 

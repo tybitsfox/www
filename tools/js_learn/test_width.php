@@ -44,4 +44,13 @@ else
 	echo "<div id='div2' style='margin-left:20px;'></div>";
 ?>
 </form>
+<br>
+<input type='button' onclick='xx(1,3);' value='click' />
+<script>
+function xx(x,y)
+{
+	$1=y
+	alert($1);
+}
+</script>
 </body></html>

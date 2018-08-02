@@ -5,7 +5,7 @@
         $destination = '/var/www/huili/callback/upload/'.$filename;
         $location =  $_FILES["file"]["tmp_name"];
         move_uploaded_file($location,$destination);
-        echo 'http://localhost/huili/callback/upload/'.$filename;
+        echo '/huili/callback/upload/'.$filename;
 function randomString($s) {
 	$i=time();
 	$st=sprintf("%s_%d",$s,$i);

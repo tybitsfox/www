@@ -3,11 +3,11 @@
 if(!defined("HOME_CALLED") || !isset($_SESSION['GLO_VAR']))
 	die("access denied!");
 //{{{ format define	
-$shwmsg=array(
-		array('恭贺汇氏管家吉日上线！','恭祝汇氏管家上线大吉，一家网站，两份收益，朋友三番四次光顾，五福临门照耀，六六大顺生意，七仙过海帮你，八面玲珑客户满门，九九归一成功，十全十美的人生！','/huili/images/logo/0210140GB7.jpg','temp/msg000.txt'),
-		array('十三届全国人大常委会第四次会议在京举行','7月9日，十三届全国人大常委会第四次会议在北京人民大会堂举行。栗战书委员长主持会议并作全国人大常委会执法检查组关于检查大气污染防治法实施情况的报告。','/huili/images/logo/W020180710688862012139.jpg','temp/msg001.txt'),
-		array('省环保厅举行两法启动仪','省环保厅举行《山东省环境保护厅群众反映和监控发现的环境污染问题整改落实情况随机抽查办法》和《山东省排污许可制执行情况监督检查办法》 启动仪式','/huili/images/logo/W020180706695142506931.jpg','temp/msg003.txt')
-		);
+$shwmsg=array();
+//		array('恭贺汇氏管家吉日上线！','恭祝汇氏管家上线大吉，一家网站，两份收益，朋友三番四次光顾，五福临门照耀，六六大顺生意，七仙过海帮你，八面玲珑客户满门，九九归一成功，十全十美的人生！','/huili/images/logo/0210140GB7.jpg','temp/msg000.txt'),
+//		array('十三届全国人大常委会第四次会议在京举行','7月9日，十三届全国人大常委会第四次会议在北京人民大会堂举行。栗战书委员长主持会议并作全国人大常委会执法检查组关于检查大气污染防治法实施情况的报告。','/huili/images/logo/W020180710688862012139.jpg','temp/msg001.txt'),
+//		array('省环保厅举行两法启动仪','省环保厅举行《山东省环境保护厅群众反映和监控发现的环境污染问题整改落实情况随机抽查办法》和《山东省排污许可制执行情况监督检查办法》 启动仪式','/huili/images/logo/W020180706695142506931.jpg','temp/msg003.txt')
+//		);
 $ft0="<div role='tabpanel' class='tab-pane %s' id='%s'>
 		<div class='inner-narrow inner-midnarrow'>
 		    <div class='intro-block intro-block-slim'>
@@ -58,6 +58,7 @@ $pg_sel=array(array("active",""),
 //三个需要处理的动作：1、发送对话消息；2、上翻页；3、下翻页；这三个动作还要配合具体的标签页来处理。
 //定义通过GET传送的参数：（1）上翻页：pageup ->；（2）下翻页：pagedown <-； （3）发送消息：sendmsg；（4）当前标签页：curpage；
 $pgcnt=array(array(0,0),array(0,0));//元素队列中第一个元素表示项目展示页面，后两个元素表示第二页面纵向标签页的状态。元素第一项表示总的页数，第二项表示当前显示的页数,
+$garrow=0; //指示上翻还是下翻 0:下翻怕；1：上
 if(isset($_GET['curpage']))
 {
 	$p=$_GET['curpage'];
@@ -71,13 +72,20 @@ if(isset($_GET['curpage']))
 		$pg_sel[0][1]="active";
 	}
 	if(isset($_GET['pagemv'])) //点击翻页了
+	{
+		if($pgcnt[$p][1] > $_GET['pagemv'])
+			$garrow=0;
+		else
+			$garrow=1;
 		$pgcnt[$p][1]=$_GET['pagemv'];
+	}
 }
 else //default
 {
 	$pg_sel[0][0]="active";
 	$pg_sel[1][0]="active";
 }
+
 //$_SESSION['GLO_VAR']: 0->是否专家，
 //将所有可聊天的账户合并为一个队列,不再分我邀请的和邀请我的
 $gay=array();$cy=array();
@@ -122,11 +130,29 @@ foreach($cy as $a)
 	$ay[5]=$ay[3]."b";
 	array_push($gay,$ay);
 }
-
+$lstm=array('0','0');	//需要传给查询函数的日期
+if(isset($_GET['lasttime']))
+	$lstm[$garrow]=$_GET['lasttime'];
+$cy=array();
+if(strlen($lstm[$garrow]) == 1) //初始
+	$ay=array(1,0,0); //idx,状态码
+else
+	$ay=array(1,$garrow+1,$lstm[$garrow]);
+$ta=new tb_blog();
+$shwmsg=$ta->get_blog($ay); //shwmsg
+$i=count($shwmsg);
+if($i > 0)
+{
+	$lstm[0]=$shwmsg[0][4];
+	$lstm[1]=$shwmsg[$i-1][4];
+}
+//die("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".$i);
+$ta=new tb_blog();$j=1;
+$i=$ta->get_count($j);
 //到这里，所有的数据都已读取完毕，可以确定总的页数了，项目展示目前没涉及到数据库操作，为便于统一，后期用上数据库后取得的记录仍然使用shwmsg队列存储
 //所以，这里只对shwmsg操作即可
-$pgcnt[0][0]=floor(count($shwmsg)/5); //项目展示页面
-if(count($shwmsg) % 5)
+$pgcnt[0][0]=floor(count($i)/10); //项目展示页面
+if(count($i) % 10)
 	$pgcnt[0][0]++;
 $pgcnt[1][0]=floor(count($gay)/5); //我邀请的专家页面
 if(count($gay) % 5)
@@ -159,22 +185,23 @@ echo"</ul><div class='body'><div class='body body-settings'><div class='tab-cont
 //{{{第一页的代码 div+0
 echo"<div role='tabpanel' class='tab-pane active' id='huanping'>";
 echo "<ul class='list-unstyled list-accounts'>";
-$st1="<li lid='%s' class='pont'><div>%s</div></li><li id='%s' style='display:none'><div style='width:100%%;margin:2px auto;'>%s<br><div class='blog-img'><img src='%s' /></div><br>";
+$st1="<li lid='%s' class='pont'><div>%s</div></li><li id='%s' style='display:none'><div style='width:100%%;margin:2px auto;'>%s<br><br>";
 $st2="					</ul><div class='shareblock-body'>
 							<div class='text-center'>
 								<a href='%s' style='%s'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;%s&nbsp;&nbsp;&nbsp;<a href='%s' style='%s'>&gt;&gt;</a>
                             </div>
 						 </div></div>";//需要输入：前翻页链接、前翻页链接样式、页码、后翻页链接、链接样式 div-2
-for($i=0;$i<5;$i++)
+$j=count($shwmsg);
+for($i=0;$i<$j;$i++)
 {
-	$j=$pgcnt[0][1]*5+$i;
-	if($j >= count($shwmsg))
-		break;
+//	$j=$pgcnt[0][1]*5+$i;
+//	if($j >= count($shwmsg))
+//		break;
 	$s1="Li00".$i;$s2=$s1.'x';
-	$st=sprintf($st1,$s1,$shwmsg[$j][0],$s2,$shwmsg[$j][1],$shwmsg[$j][2]);
+	$st=sprintf($st1,$s1,$shwmsg[$i][2],$s2,$shwmsg[$i][5]);
 	echo $st;
-	$st=constant("FULL_PATH").$shwmsg[$j][3];
-	include_once($st);
+//	$st=constant("FULL_PATH").$shwmsg[$j][3];
+//	include_once($st);
 	if($_SESSION['CURR_USR'][0] <= 100001)
 	{
 		$s1="<br><a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>删除</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>隐藏</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>封禁帐号</a><br>";
@@ -351,14 +378,14 @@ function bbb(i)
 			processData: false,
 			success: function(url){
 				$("#blogtitle").val('');
-				$("#summernote").summernote('reset');
+				$('#summernote').summernote('editor.insertText','');
 				$("#testid").text(url);
 				},
 			error: function(url){$("#testid").text('aaa');}
 			}); 
 	}
+	$("#summernote").summernote('reset');
 	$("#qqq").hide();
-	$('#summernote').summernote('destroy');
 }
 //{{{ JQuery for modified styles
 $(document).ready(function(){
