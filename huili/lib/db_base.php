@@ -162,8 +162,8 @@ class login extends base_login
 		$cy=$ta->get_expert($xy);
 		if($ta->err_no)
 			$ay[0][14]=$ay[0][2];
-		elseif(count($cy) > 0)
-			$ay[0][14]=$cy[2];
+		elseif(count($cy[0]) > 0)
+			$ay[0][14]=$cy[0][2];
 		else
 			$ay[0][14]=$ay[0][2]; //2018-8-1添加，_SESSION['CURR_USR'][14]保存了专家名称
 		$_SESSION['CURR_USR']=array_merge($_SESSION['CURR_USR'],$ay[0]);
@@ -1036,7 +1036,7 @@ class tb_blog extends base_login
 		$conn=sprintf($st,$u[0],$u[1],$u[2],$u[3],$u[4]);
 		$res=mysqli_query($this->mysqli,$conn);
 		mysqli_close($this->mysqli);
-		if($res == flase)
+		if($res == false)
 			$this->err_no=3;
 	}//}}}
 //{{{public function get_blog($u) 取得博客

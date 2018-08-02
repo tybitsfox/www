@@ -82,7 +82,7 @@ $(document).ready(function(){
 <?php
 echo "</head><body>";
 ?>
-<br>&nbsp;&nbsp;&nbsp;&nbsp;<a href="./ajax_test.php" target=_blank>ajax测试</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='./test_width.php'>width测试</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="./test_edit.php">edit测试</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="./summernote.php">summernote</a><br>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<a href="./ajax_test.php" target=_blank>ajax测试</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='./test_width.php'>width测试</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="./test_edit.php">edit测试</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="./summernote.php">summernote</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='./preg_grep.php'>preg_grep</a><br>
 -----------------------------------------测试hide()和show()函数---------------------------------------------<br><br>
 <p>hello world</p>
 <p id="p01">another world</p>

@@ -256,12 +256,13 @@ echo $st;
 $a=array();$a=$pg_sel[2];
 $st=sprintf($ft3,$a[0],$a[1]);
 echo $st;
-echo "<div><center><font color=red>发文须知</font></center><br>1、目前博客功能仅对认证账户开放。<br>2、请遵守国家相关的法律法规，不得发送违法法律法规的博文。<br>3、所发的博文仅代表作者的观点，本站不做评价。<br>4、对违反法律、规定发送不当博文的，我们有权删除其文章并对作者处以封号处罚。<br><br></div><div class='text-center'><a href='javascript:;' onclick='aaa();'>了解并开始编写</a></div>
+echo "<div><center><font color=red>发文须知</font></center><br>1、目前博客功能仅对认证账户开放。<br>2、请遵守国家相关的法律法规，不得发送违法法律法规的博文。<br>3、所发的博文仅代表作者的观点，本站不做评价。<br>4、对违反法律、规定发送不当博文的，我们有权删除其文章并对作者处以封号处罚。<br><br></div><div class='text-center'><a href='javascript:;' class='btn btn-primary' onclick='aaa();'>了解并开始编写</a></div>
+<div id='testid'></div>
 <div id='qqq' class='modal in' aria-hidden='false' tabindex=-1 style='display:none;padding-right: 13px;'>
 	<div class='modal-dialog'>
-	<input type='text' style='width:100%;margin:1px auto;padding:1px auto;' placeholder='标题' value='' /><br>
+	<input type='text' id='blogtitle' style='width:100%;margin:1px auto;padding:1px auto;' placeholder='标题' value='' /><br>
 		  <div id='summernote'></div>
-		  <div class='text-center'><a href='javascript:;' onclick='bbb(0);' style='color: #FFFFFF; text-decoration: none; border-bottom: 1px solid #3EAE48;'>发送</a>&nbsp;&nbsp;&nbsp;<a href='javascript:;' onclick='bbb(1);' style='color: #FFFFFF; text-decoration: none; border-bottom: 1px solid#3EAE48;'>取消</a></div>
+		  <div class='text-center'><a href='javascript:;' onclick='bbb(0);' class='btn btn-primary'>发送</a>&nbsp;&nbsp;&nbsp;<a href='javascript:;' onclick='bbb(1);' class='btn btn-primary'>取消</a></div>
 	</div>
 </div>";
 echo $ft5;
@@ -277,7 +278,8 @@ echo"</div></div></div>";
 .onlined{width:90%;display:inline-block;vertical-align:top;}
 </style>
 <script>
-var user_id=<?php echo $_SESSION['CURR_USR'][0];?>;
+var user_id = <?php echo "'".$_SESSION['CURR_USR'][0]."'"; ?>;
+var user_aa = <?php echo "'".$_SESSION['CURR_USR'][14]."'"; ?>;
 //编辑框的弹出响应函数
 function aaa()
 {
@@ -310,9 +312,11 @@ function sendFile(file)
 		da="unknown";
 	else
 		da=user_id;
+//	var db=$("#blogtitle").val();
     data = new FormData();
     data.append("file", file);
 	data.append("val",da);
+//	data.append("title",db);
     $.ajax({
         data: data,
         type: "POST",
@@ -331,6 +335,27 @@ function bbb(i)
 	if(i == 0)
 	{
 		var st=$('#summernote').summernote('code');
+		var ti=$("#blogtitle").val();
+		data=new FormData();
+		data.append("idx","1");
+		data.append("ttle",ti);
+		data.append("nam",user_aa);
+		data.append("bod",st);
+		data.append("uid",user_id);
+		$.ajax({
+			data: data,
+			type: "POST",
+			url: "/huili/callback/summ_save.php",
+			cache: false,
+			contentType: false,
+			processData: false,
+			success: function(url){
+				$("#blogtitle").val('');
+				$("#summernote").summernote('reset');
+				$("#testid").text(url);
+				},
+			error: function(url){$("#testid").text('aaa');}
+			}); 
 	}
 	$("#qqq").hide();
 	$('#summernote').summernote('destroy');
