@@ -1764,7 +1764,8 @@ $$1.extend($$1.summernote.lang, {
             style: '格式',
             p: '普通',
             blockquote: '块引用',
-            pre: '代码',
+            pre: 'code',
+            h1: '字号 1',
             h2: '字号 2',
             h3: '字号 3',
             h4: '字号 4',
@@ -7122,14 +7123,13 @@ $$1.summernote = $$1.extend($$1.summernote, {
         tooltip: 'auto',
         container: 'body',
         maxTextLength: 0,
-//        styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-        styleTags: ['p', 'blockquote', 'pre', 'h2', 'h3', 'h4', 'h5', 'h6'],
+        styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
         fontNames: [
             'Arial', 'Arial Black', 'Comic Sans MS', 'Courier New',
             'Helvetica Neue', 'Helvetica', 'Impact', 'Lucida Grande',
             'Tahoma', 'Times New Roman', 'Verdana'
         ],
-        fontSizes: ['9', '10', '11', '12', '13', '14', '16', '18', '24', '36'],
+        fontSizes: ['9', '10', '11', '12', '14', '18', '24', '36'],
         // pallete colors(n x n)
         colors: [
             ['#000000', '#424242', '#636363', '#9C9C94', '#CEC6CE', '#EFEFEF', '#F7F7F7', '#FFFFFF'],
