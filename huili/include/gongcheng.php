@@ -4,10 +4,6 @@ if(!defined("HOME_CALLED") || !isset($_SESSION['GLO_VAR']))
 	die("access denied!");
 //{{{ format define	
 $shwmsg=array();
-//		array('恭贺汇氏管家吉日上线！','恭祝汇氏管家上线大吉，一家网站，两份收益，朋友三番四次光顾，五福临门照耀，六六大顺生意，七仙过海帮你，八面玲珑客户满门，九九归一成功，十全十美的人生！','/huili/images/logo/0210140GB7.jpg','temp/msg000.txt'),
-//		array('十三届全国人大常委会第四次会议在京举行','7月9日，十三届全国人大常委会第四次会议在北京人民大会堂举行。栗战书委员长主持会议并作全国人大常委会执法检查组关于检查大气污染防治法实施情况的报告。','/huili/images/logo/W020180710688862012139.jpg','temp/msg001.txt'),
-//		array('省环保厅举行两法启动仪','省环保厅举行《山东省环境保护厅群众反映和监控发现的环境污染问题整改落实情况随机抽查办法》和《山东省排污许可制执行情况监督检查办法》 启动仪式','/huili/images/logo/W020180706695142506931.jpg','temp/msg003.txt')
-//		);
 $ft0="<div role='tabpanel' class='tab-pane %s' id='%s'>
 		<div class='inner-narrow inner-midnarrow'>
 		    <div class='intro-block intro-block-slim'>
@@ -146,7 +142,6 @@ if($i > 0)
 	$lstm[0]=$shwmsg[0][4];
 	$lstm[1]=$shwmsg[$i-1][4];
 }
-//die("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".$i);
 $ta=new tb_blog();$j=1;
 $i=$ta->get_count($j);
 //到这里，所有的数据都已读取完毕，可以确定总的页数了，项目展示目前没涉及到数据库操作，为便于统一，后期用上数据库后取得的记录仍然使用shwmsg队列存储
@@ -185,7 +180,7 @@ echo"</ul><div class='body'><div class='body body-settings'><div class='tab-cont
 //{{{第一页的代码 div+0
 echo"<div role='tabpanel' class='tab-pane active' id='huanping'>";
 echo "<ul class='list-unstyled list-accounts'>";
-$st1="<li lid='%s' class='pont'><div>%s</div></li><li id='%s' style='display:none'><div style='width:100%%;margin:2px auto;'>%s<br><br>";
+$st1="<li lid='%s' class='pont'><div>%s</div></li><li id='%s' style='display:none'><div style='width:100%%;margin:2px auto;'>%s<br>%s<br><br>";
 $st2="					</ul><div class='shareblock-body'>
 							<div class='text-center'>
 								<a href='%s' style='%s'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;%s&nbsp;&nbsp;&nbsp;<a href='%s' style='%s'>&gt;&gt;</a>
@@ -198,7 +193,8 @@ for($i=0;$i<$j;$i++)
 //	if($j >= count($shwmsg))
 //		break;
 	$s1="Li00".$i;$s2=$s1.'x';
-	$st=sprintf($st1,$s1,$shwmsg[$i][2],$s2,$shwmsg[$i][5]);
+	$sa1="<div class='avatar'><div class='circle'><img src='".$shwmsg[$i][10]."' alt='汇氏'/></div>  <font size=3 color='gray'>".$shwmsg[$i][3]."</font><font size=2 color='gray'>  ".$shwmsg[$i][4]."</font></div>";
+	$st=sprintf($st1,$s1,$shwmsg[$i][2],$s2,$sa1,$shwmsg[$i][5]);
 	echo $st;
 //	$st=constant("FULL_PATH").$shwmsg[$j][3];
 //	include_once($st);
@@ -420,7 +416,7 @@ $(document).ready(function(){
 				$(y).slideToggle();
 				var u=x+"b";
 				ajax_init(u,y,z,na);
-				setTimeout(function(){delay(y)},1000);
+				setTimeout(function(){delay(y)},500);
 //				$(y).scrollTop(1000); //max-height:200px <- 不延时的话，会出现数据加载还没玩就滑动了，这样滑动不到低端
 				var o="#"+x+"c";
 				$(o).bind('keypress',function(event){
