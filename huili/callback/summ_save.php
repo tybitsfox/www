@@ -1,10 +1,14 @@
 <?php
 require_once("../lib/db_base.php");
-$ay=array($_POST['idx'],$_POST['ttle'],$_POST['nam'],$_POST['bod'],$_POST['uid']);
-if($ay[3] == null)
-{	echo "wrong";
+if($_POST['bod'] == null)
 	exit(0);
-}
+$st=$_POST['bod'];
+$s1="/<img(.*?)src=\"(.*?)\"(.*?)>/i";
+$s2="<div class=\"blog-img\"><img src=\"\${2}\"></div>";
+$s3=preg_replace($s1,$s2,$st);
+//echo $_POST['bod'];
+//die($s3);
+$ay=array($_POST['idx'],$_POST['ttle'],$_POST['nam'],$s3,$_POST['uid']);
 if($ay[1] == null)
 {
 	$s1=array();
