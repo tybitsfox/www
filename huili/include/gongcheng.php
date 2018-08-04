@@ -52,7 +52,13 @@ $pg_sel=array(array("active",""),
 		);
 //		array("","blog","tab3","icon-finder","发布公告","这里添加编辑框"),
 //三个需要处理的动作：1、发送对话消息；2、上翻页；3、下翻页；这三个动作还要配合具体的标签页来处理。
-//定义通过GET传送的参数：（1）上下翻页：pagemv ；（2）当前标签页：curpage；(3) 查询日期标志：lasttime
+//定义通过GET传送的参数：（1）上下翻页：pagemv ；（2）当前标签页：curpage；(3) 查询日期标志：lasttime；
+//下面的参数仅仅用于管理员：(4)删除，隐藏博文，封号：opblog；(5)帖子序号：tuid
+if(isset($_GET['opblog']) && (isset($_GET['tuid'])))//隐藏：0,置顶：1,封号：2,解封：3 当进行封号、解封操作时，tuid为uid
+{
+	$u=array($_GET['opblog'],$_GET['tuid']);
+	root_opera($u);
+}
 $pgcnt=array(array(0,0),array(0,0));//元素队列中第一个元素表示项目展示页面，后个元素表示第二页面。元素第一项表示总的页数，第二项表示当前显示的页数,
 $garrow=0; //指示上翻还是下翻 0:下翻怕；1：上
 if(isset($_GET['curpage']))
@@ -162,7 +168,7 @@ for($i=0;$i<2;$i++) //保证不越界
 //2018-8-4添加，存储所有有新对话的uid，用于显示新对话图标提示
 $newtk=array();
 $ta=new tb_talkmsg();
-$newtk=$ta->get_msg_by_id();
+$newtk=$ta->get_msg_by_id(1);
 $gayc=array('javascript:;','color: gray; cursor: default; disabled: true;','1','javascript:;','color: gray; cursor: default; disabled: true;');
 //}}}
 //}}}
@@ -199,7 +205,10 @@ for($i=0;$i<$j;$i++)
 	echo $st;
 	if($_SESSION['CURR_USR'][0] <= 100001)
 	{
-		$s1="<br><a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;font-size:75%;'>删除</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;font-size:75%;'>隐藏</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;font-size:75%;'>封禁帐号</a><br>";
+		$s2=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&opblog=0&tuid=".$shwmsg[$i][0];
+		$s3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&opblog=1&tuid=".$shwmsg[$i][0];
+		$s4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&opblog=2&tuid=".$shwmsg[$i][6];
+		$s1="<br><a href='".$s2."' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;font-size:75%;'>删除</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='".$s3."' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;font-size:75%;'>推荐</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='".$s4."' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;font-size:75%;'>封禁帐号</a><br>";
 		echo $s1;
 	}
 	echo "</div></li>";

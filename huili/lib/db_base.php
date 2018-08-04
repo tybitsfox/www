@@ -302,6 +302,31 @@ class login extends base_login
 		mysqli_close($this->mysqli);
 		return $ay;
 	}//}}}
+//{{{public function update_auth($u) 封号使用
+//传入参数：队列，（0）操作代码 2：封号，3：解封；（1）uid
+	public function update_auth($u)
+	{
+		$v=0;
+		switch(intval($u[0]))
+		{
+		case 2://封号
+			$v=0;
+			break;
+		case 3://解封
+			$v=7;
+			break;
+		default:
+			return;
+		};
+		$conn="UPDATE auth SET priv = ".$v." WHERE uid = ".$u[1];
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == false)
+			$this->err_no=11;
+	}//}}}
 }//}}}
 //{{{class tb_choose extends base_login
 class tb_choose extends base_login
@@ -982,19 +1007,22 @@ class tb_talkmsg extends base_login
 		mysqli_close($this->mysqli);
 		return $ay;
 	}//}}}
-//{{{public function get_msg_by_id() 取当前用户所有的新对话
-	public function get_msg_by_id()
+//{{{public function get_msg_by_id($m) 取当前用户所有的新对话
+//传入参数：模块索引号
+	public function get_msg_by_id($m)
 	{//传出：有新消息的用户uid数组
+		if((intval($m) < 0) || (intval($m) > 5))
+		{$this->err_no=2;return;}
 		$ay=array();$cy=array();
 		$this->init_db();
 		if($this->err_no)
 			return $cy;
-		$conn="SELECT bid FROM talkmsg WHERE lid = ".$_SESSION['CURR_USR'][0]." AND lrd = 0";
+		$conn="SELECT bid FROM talkmsg WHERE lid = ".$_SESSION['CURR_USR'][0]." AND lrd = 0 AND wthmod = ".$m;
 		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
 			array_push($ay,$row[0]);
 		mysqli_free_result($res);
-		$conn="SELECT lid FROM talkmsg WHERE bid = ".$_SESSION['CURR_USR'][0]." AND brd = 0";
+		$conn="SELECT lid FROM talkmsg WHERE bid = ".$_SESSION['CURR_USR'][0]." AND brd = 0 AND wthmod = ".$m;
 		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
 			array_push($ay,$row[0]);
@@ -1087,7 +1115,29 @@ class tb_blog extends base_login
 		mysqli_close($this->mysqli);
 		return $i;
 	}//}}}
-
+//{{{public function update_blog($u) 设置帖子的隐藏、置顶操作
+//传入参数：队列，（1）操作代码：0：隐藏，1：置顶；（2）tuid
+	public function update_blog($u)
+	{
+		switch(intval($u[0]))
+		{
+		case 0://隐藏
+			$conn="UPDATE blog SET isshow = 1 WHERE tuid = ".$u[1];
+			break;
+		case 1://置顶
+			$conn="UPDATE blog SET isglob = 1 WHERE tuid = ".$u[1];
+			break;
+		default:
+			return;
+		}
+		$this->init_db();
+		if($this->err_no)
+			return;
+		$res=mysqli_query($this->mysqli,$conn);
+		mysqli_close($this->mysqli);
+		if($res == false)
+			$this->err_no=11;
+	}//}}}
 }//}}}
 
 
@@ -1225,7 +1275,28 @@ function get_invite()
 	}
 	$_SESSION['GLO_VAR'][2]=array_merge($_SESSION['GLO_VAR'][2],$cy);//2 保存了邀请我的队列
 }//}}}
-
+//{{{function root_opera($u) 管理操作，删贴、封号、置顶
+//传入参数：队列，元素1：操作索引，元素2：帖子id或者作者uid
+function root_opera($u)
+{
+	if(count($u) != 2)
+		return;
+	switch(intval($u[0]))
+	{
+	case 0://隐藏帖子
+	case 1://置顶帖子
+		$ta=new tb_blog();
+		$ta->update_blog($u);
+		return;
+	case 2://封号
+	case 3://解封
+		$ta=new tb_auth();
+		$ta->update_auth($u);
+		return;
+	default:
+		return;
+	};
+}//}}}
 
 
 ?>
