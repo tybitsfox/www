@@ -74,13 +74,9 @@ if(isset($_GET['curpage']))
 		$pg_sel[0][1]="active";
 	}
 	if(isset($_GET['pagemv'])) //点击翻页了
-	{
-		if($pgcnt[$p][1] > $_GET['pagemv'])
-			$garrow=0;
-		else
-			$garrow=1;
 		$pgcnt[$p][1]=$_GET['pagemv'];
-	}
+	if(isset($_GET['arrownext']))
+		$garrow=$_GET['arrownext'];
 }
 else //default
 {
@@ -152,8 +148,8 @@ $ta=new tb_blog();$j=1;
 $i=$ta->get_count($j);
 //到这里，所有的数据都已读取完毕，可以确定总的页数了，项目展示目前没涉及到数据库操作，为便于统一，后期用上数据库后取得的记录仍然使用shwmsg队列存储
 //所以，这里只对shwmsg操作即可
-$pgcnt[0][0]=floor(count($i)/10); //项目展示页面
-if(count($i) % 10)
+$pgcnt[0][0]=floor($i/10); //项目展示页面
+if($i % 10)
 	$pgcnt[0][0]++;
 $pgcnt[1][0]=floor(count($gay)/5); //我邀请的专家页面
 if(count($gay) % 5)
@@ -218,15 +214,15 @@ if(intval($j) == 0) //设置0,1,2元素
 {$ay[0]=$gayc[0];$ay[1]=$gayc[1];$ay[2]='1';}
 else
 {
-	$ay[0]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&curpage=0&pagemv=".($j-1)."&lasttime=".$lstm[0];
+	$ay[0]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&curpage=0&pagemv=".($j-1)."&arrownext=0&lasttime=".$lstm[0];
 	$ay[1]="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
 	$ay[2]=$j+1;
 }
-if(intval($j) == intval($pgcnt[0][0]-1))//设置3,4元素
+if(intval($j) == (intval($pgcnt[0][0])-1))//设置3,4元素
 {$ay[3]=$gayc[3];$ay[4]=$gayc[4];}
 else
 {
-	$ay[3]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&curpage=0&pagemv=".($j+1)."&lasttime=".$lstm[1];
+	$ay[3]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&curpage=0&pagemv=".($j+1)."&arrownext=1&lasttime=".$lstm[1];
 	$ay[4]="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
 }
 $st=sprintf($st2,$ay[0],$ay[1],$ay[2],$ay[3],$ay[4]);

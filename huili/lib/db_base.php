@@ -1077,26 +1077,17 @@ class tb_blog extends base_login
 		if($this->err_no)
 			return $ay;
 		if($u[1] == 0)//首次取得，没有时间限制
-//			$conn="SELECT * FROM blog WHERE idx = ".$u[0]." ORDER BY fintime DESC LIMIT 10";
 			$conn="SELECT a.tuid,a.idx,a.title,a.uname,a.fintime,a.ttext,a.uid,a.isshow,a.isstop,a.isglob,b.imgpath FROM blog as a LEFT JOIN auth as b ON a.uid = b.uid WHERE a.idx = ".$u[0]." ORDER BY a.fintime DESC LIMIT 10";
 		elseif($u[1] == 1) //前翻
-//			$conn="SELECT * FROM blog WHERE idx = ".$u[0]." AND fintime < ".$u[2]." ORDER BY fintime LIMIT 10";
-			$conn="SELECT a.tuid,a.idx,a.title,a.uname,a.fintime,a.ttext,a.uid,a.isshow,a.isstop,a.isglob,b.imgpath FROM blog as a LEFT JOIN auth as b ON a.uid = b.uid WHERE a.idx = ".$u[0]." AND a.fintime < ".$u[2]." ORDER BY a.fintime DESC LIMIT 10";
+			$conn="SELECT a.tuid,a.idx,a.title,a.uname,a.fintime,a.ttext,a.uid,a.isshow,a.isstop,a.isglob,b.imgpath FROM blog as a LEFT JOIN auth as b ON a.uid = b.uid WHERE a.idx = ".$u[0]." AND a.fintime > '".$u[2]."' ORDER BY a.fintime DESC LIMIT 10";
 		else //后翻
-//			$conn="SELECT * FROM blog WHERE idx = ".$u[0]." AND fintime > ".$u[2]." ORDER BY fintime DESC LIMIT 10";
-			$conn="SELECT a.tuid,a.idx,a.title,a.uname,a.fintime,a.ttext,a.uid,a.isshow,a.isstop,a.isglob,b.imgpath FROM blog as a LEFT JOIN auth as b ON a.uid = b.uid WHERE a.idx = ".$u[0]." AND a.fintime > ".$u[2]." ORDER BY a.fintime LIMIT 10";
+			$conn="SELECT a.tuid,a.idx,a.title,a.uname,a.fintime,a.ttext,a.uid,a.isshow,a.isstop,a.isglob,b.imgpath FROM blog as a LEFT JOIN auth as b ON a.uid = b.uid WHERE a.idx = ".$u[0]." AND a.fintime < '".$u[2]."' ORDER BY a.fintime DESC LIMIT 10";
 		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
 			array_push($ay,$row);
 		mysqli_free_result($res);
 		mysqli_close($this->mysqli);
-		if(($u[1] == 2) && (count($ay) > 1))//前翻的话，需要反转队列
-		{
-			$cy=array();
-			$cy=array_reverse($ay);
-		}
-		else
-			return $ay;
+		return $ay;
 	}//}}}
 //{{{public function get_count($u) 取得指定模块的博文条数
 	public function get_count($u)
@@ -1110,7 +1101,7 @@ class tb_blog extends base_login
 		$conn="SELECT count(*) FROM blog WHERE idx = ".$u;
 		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
-			$i=$row[0][0];
+			$i=$row[0]; //使用count(*)时直接返回结果，而不是队列
 		mysqli_free_result($res);
 		mysqli_close($this->mysqli);
 		return $i;
