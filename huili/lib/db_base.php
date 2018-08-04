@@ -970,9 +970,9 @@ class tb_talkmsg extends base_login
 		if($this->err_no)
 			return $ay;
 		if($i == 0)
-			$conn="SELECT * FROM talkmsg WHERE lid = ".$u[0]." AND bid = ".$u[1]." AND wthmod = ".$u[2]." AND lrd < 10";
+			$conn="SELECT * FROM talkmsg WHERE lid = ".$u[0]." AND bid = ".$u[1]." AND wthmod = ".$u[2]." AND lrd < 100";
 		else
-			$conn="SELECT * FROM talkmsg WHERE lid = ".$u[0]." AND bid = ".$u[1]." AND wthmod = ".$u[2]." AND brd < 10";
+			$conn="SELECT * FROM talkmsg WHERE lid = ".$u[0]." AND bid = ".$u[1]." AND wthmod = ".$u[2]." AND brd < 100";
 //		echo $conn;
 //		return $ay;
 		$res=mysqli_query($this->mysqli,$conn);
@@ -994,11 +994,7 @@ class tb_talkmsg extends base_login
 		while($row=mysqli_fetch_row($res))
 			array_push($ay,$row[0]);
 		mysqli_free_result($res);
-//		mysqli_close($this->mysqli);
 		$conn="SELECT lid FROM talkmsg WHERE bid = ".$_SESSION['CURR_USR'][0]." AND brd = 0";
-//		$this->init_db();
-//		if($this->err_no)
-//			return $cy;
 		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
 			array_push($ay,$row[0]);

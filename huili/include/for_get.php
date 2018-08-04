@@ -4,6 +4,9 @@ if(session_status() != PHP_SESSION_ACTIVE)
 require_once("../lib/db_base.php");
 if(isset($_GET['update'])) //更新浏览次数
 {
+	$ay=array($_GET['aid'],$_GET['bid'],$_GET['mod'],"");
+	$ta=new tb_talkmsg();
+	$ta->update_msg($ay);
 }
 else
 {

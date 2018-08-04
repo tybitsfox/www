@@ -3,7 +3,7 @@
 if(!defined("HOME_CALLED") || !isset($_SESSION['GLO_VAR']))
 	die("access denied!");
 //{{{ format define	
-$shwmsg=array();
+$shwmsg=array(); //博客内容队列
 $ft0="<div role='tabpanel' class='tab-pane %s' id='%s'>
 		<div class='inner-narrow inner-midnarrow'>
 		    <div class='intro-block intro-block-slim'>
@@ -42,7 +42,7 @@ $ft4="                  <div class='shareblock-head shareblock-head-light' >
                         </div>"; //需要输入：专家或团队提示、专家或团队名称、新消息标志、weclick    div+0
 $ft41="<div id='%s' style='width:100%%;max-height:200px;background-color:transparent;margin:2px;overflow:auto;display:none;' data-trans='%s'><div id='%s'>%s<br></div><input type='text' class='form-control onlined' id='%s' value='' /></div>"; //需要的输入：(1)响应隐藏显示的控件id，(2)保存uid的data-trans,(3)更新记录的id,(4)记录消息msg
 $ft5="</div></div></div></div>";     //div-4
-$hipchat=" <span class='icon-hipchat'></span>";
+$hipchat=" <span id='%s' class='icon-hipchat' style='display:%s;'></span>";
 //}}}
 //{{{ data dispose
 //下面的队列，第一个元素表示横向标签页的活动状态，后面两个表示交谈页面的纵向标签页的状态及信息
@@ -52,8 +52,8 @@ $pg_sel=array(array("active",""),
 		);
 //		array("","blog","tab3","icon-finder","发布公告","这里添加编辑框"),
 //三个需要处理的动作：1、发送对话消息；2、上翻页；3、下翻页；这三个动作还要配合具体的标签页来处理。
-//定义通过GET传送的参数：（1）上翻页：pageup ->；（2）下翻页：pagedown <-； （3）发送消息：sendmsg；（4）当前标签页：curpage；
-$pgcnt=array(array(0,0),array(0,0));//元素队列中第一个元素表示项目展示页面，后两个元素表示第二页面纵向标签页的状态。元素第一项表示总的页数，第二项表示当前显示的页数,
+//定义通过GET传送的参数：（1）上下翻页：pagemv ；（2）当前标签页：curpage；(3) 查询日期标志：lasttime
+$pgcnt=array(array(0,0),array(0,0));//元素队列中第一个元素表示项目展示页面，后个元素表示第二页面。元素第一项表示总的页数，第二项表示当前显示的页数,
 $garrow=0; //指示上翻还是下翻 0:下翻怕；1：上
 if(isset($_GET['curpage']))
 {
@@ -159,6 +159,10 @@ for($i=0;$i<2;$i++) //保证不越界
 	elseif($pgcnt[$i][1] < 0)
 		$pgcnt[$i][1]=0;
 }
+//2018-8-4添加，存储所有有新对话的uid，用于显示新对话图标提示
+$newtk=array();
+$ta=new tb_talkmsg();
+$newtk=$ta->get_msg_by_id();
 $gayc=array('javascript:;','color: gray; cursor: default; disabled: true;','1','javascript:;','color: gray; cursor: default; disabled: true;');
 //}}}
 //}}}
@@ -189,18 +193,13 @@ $st2="					</ul><div class='shareblock-body'>
 $j=count($shwmsg);
 for($i=0;$i<$j;$i++)
 {
-//	$j=$pgcnt[0][1]*5+$i;
-//	if($j >= count($shwmsg))
-//		break;
 	$s1="Li00".$i;$s2=$s1.'x';
 	$sa1="<div class='avatar'><div class='circle'><img src='".$shwmsg[$i][10]."' alt='汇氏'/></div>  <font size=3 color='gray'>".$shwmsg[$i][3]."</font><font size=2 color='gray'>  ".$shwmsg[$i][4]."</font></div>";
 	$st=sprintf($st1,$s1,$shwmsg[$i][2],$s2,$sa1,$shwmsg[$i][5]);
 	echo $st;
-//	$st=constant("FULL_PATH").$shwmsg[$j][3];
-//	include_once($st);
 	if($_SESSION['CURR_USR'][0] <= 100001)
 	{
-		$s1="<br><a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>删除</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>隐藏</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>封禁帐号</a><br>";
+		$s1="<br><a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;font-size:75%;'>删除</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;font-size:75%;'>隐藏</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;font-size:75%;'>封禁帐号</a><br>";
 		echo $s1;
 	}
 	echo "</div></li>";
@@ -210,7 +209,7 @@ if(intval($j) == 0) //设置0,1,2元素
 {$ay[0]=$gayc[0];$ay[1]=$gayc[1];$ay[2]='1';}
 else
 {
-	$ay[0]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&curpage=0&pagemv=".($j-1);
+	$ay[0]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&curpage=0&pagemv=".($j-1)."&lasttime=".$lstm[0];
 	$ay[1]="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
 	$ay[2]=$j+1;
 }
@@ -218,7 +217,7 @@ if(intval($j) == intval($pgcnt[0][0]-1))//设置3,4元素
 {$ay[3]=$gayc[3];$ay[4]=$gayc[4];}
 else
 {
-	$ay[3]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&curpage=0&pagemv=".($j+1);
+	$ay[3]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&curpage=0&pagemv=".($j+1)."&lasttime=".$lstm[1];
 	$ay[4]="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
 }
 $st=sprintf($st2,$ay[0],$ay[1],$ay[2],$ay[3],$ay[4]);
@@ -252,7 +251,18 @@ for($k=0;$k<5;$k++)
 		break;
 	$b=array();
 	$b=$c[$j];
-	$st=sprintf($ft4,$b[1],$b[3],$b[2],$hipchat);
+	$s1="";
+	foreach($newtk as $z)
+	{
+		if(intval($b[0]) == intval($z))
+		{
+			$s1=sprintf($hipchat,$b[3]."d","inline");
+			break;
+		}
+	}
+	if($s1 == "")
+		$s1=sprintf($hipchat,$b[3]."d","none");
+	$st=sprintf($ft4,$b[1],$b[3],$b[2],$s1);
 	echo $st;
 	$st=sprintf($ft41,$b[4],$b[0],$b[5],'',$b[3]."c");
 	echo $st;
@@ -303,7 +313,7 @@ echo"</div></div></div>";
 <script>
 var user_id = <?php echo "'".$_SESSION['CURR_USR'][0]."'"; ?>;
 var user_aa = <?php echo "'".$_SESSION['CURR_USR'][14]."'"; ?>;
-//编辑框的弹出响应函数
+//{{{编辑框的弹出响应函数
 function aaa()
 {
 	$("#qqq").show();
@@ -326,8 +336,8 @@ function aaa()
 					callbacks: {onImageUpload: function(files) {sendFile(files[0]);}}		
 					});
 			});
-}
-//图片上传的回调函数
+}//}}}
+//{{{图片上传的回调函数
 function sendFile(file)
 {
 	var da;
@@ -351,8 +361,8 @@ function sendFile(file)
                 $('#summernote').summernote('editor.insertImage', url);
         }
     });	
-}
-//编辑框的保存和退出函数
+}//}}}
+//{{{编辑框的保存和退出函数
 function bbb(i)
 {
 	if(i == 0)
@@ -382,7 +392,7 @@ function bbb(i)
 	}
 	$("#summernote").summernote('reset');
 	$("#qqq").hide();
-}
+}//}}}
 //{{{ JQuery for modified styles
 $(document).ready(function(){
 		var namea="";
@@ -427,6 +437,8 @@ $(document).ready(function(){
 							$(o).val("");
 						}
 						});
+				var vv="#"+x+"d";
+				$(vv).hide();
 				});
 		});
 //}}}
@@ -442,27 +454,25 @@ function ajax_init(u,v,w,x)
 //			$(v).scrollTop(1000); //max-height:200px  放在这里会时时刷新，不行 -_-！
 		}
 	}
-	var url="/huili/include/for_get.php?aid="+user_id+"&bid="+w+"&mod=0&uname="+x;
+	var url="/huili/include/for_get.php?aid="+user_id+"&bid="+w+"&mod=1&uname="+x;
 	xmlhttp.open("GET",url,true);
 	xmlhttp.send();
 	if($(v).is(":hidden"))	//看看在这样能否执行 ok!! 使用alert测试成功！！
+	{
+		url="/huili/include/for_get.php?aid="+user_id+"&bid="+w+"&mod=1&update=1";
+		xmlhttp.open("GET",url,true);
+		xmlhttp.send();
 		return; //关闭前执行更新
+	}
 	else
 		setTimeout(function(){ajax_init(u,v,w,x)},3000);//30秒一更新
 }
 function ajax_save(u,s,w) //保存对话记录
 {
 	var xmlhttp=new XMLHttpRequest();
-//	xmlhttp.onreadystatechange=function()
-//	{
-//		if(xmlhttp.readyState==4 && xmlhttp.status==200)
-//		{
-//			document.getElementById(w).innerHTML=xmlhttp.responseText;
-//		}
-//	}
 	xmlhttp.open("POST","/huili/include/for_save.php",true);
 	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-	var aa="aid="+user_id+"&bid="+u+"&mod=0&msg="+s;
+	var aa="aid="+user_id+"&bid="+u+"&mod=1&msg="+s;
 	xmlhttp.send(aa);
 }
 //}}}
