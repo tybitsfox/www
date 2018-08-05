@@ -96,6 +96,10 @@ else
 		include_once('../template/def_dashbroad.php');
 		include_once('./gongcheng.php');
 		break;
+	case $SIGNED_PAGE['GJ3']://环境监测
+		include_once('../template/def_dashbroad.php');
+		include_once('./jiance.php');
+		break;
 	default:
 		include_once('../template/def_dashbroad.php');
 		include_once('../template/def_login.php');

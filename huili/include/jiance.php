@@ -7,7 +7,7 @@ if(!defined("HOME_CALLED") || !isset($_SESSION['GLO_VAR']))
 		  （7）排污申报
 元素0：模块序号，元素1：模块名称，元素2、3：横向标签页名，元素4：模块链接
  */
-$glo_idx=array(1,'环境工程','工程实例','交流合作',$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']);	
+$glo_idx=array(2,'环境监测','技术分享','监测交流',$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ3']);	
 //{{{ format define	
 $shwmsg=array(); //博客内容队列
 $ft0="<div role='tabpanel' class='tab-pane %s' id='%s'>
@@ -147,6 +147,7 @@ if(strlen($lstm[$garrow]) == 1) //初始
 	$ay=array($glo_idx[0],0,0); //idx,状态码,日期
 else
 	$ay=array($glo_idx[0],$garrow+1,$lstm[$garrow]);
+//die("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".$ay[0]."aa".$ay[1]);
 $ta=new tb_blog();
 $shwmsg=$ta->get_blog($ay); //shwmsg
 $i=count($shwmsg);

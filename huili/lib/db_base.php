@@ -1101,9 +1101,11 @@ class tb_blog extends base_login
 		mysqli_close($this->mysqli);
 		if($u[1] == 0)
 		{
-			$j=10-count($cy);
-			for($i=0;$i<$j;$i++)
+			$j=10-count($cy);$k= ($j>count($ay))?count($ay):$j;
+			for($i=0;$i<$k;$i++)
+			{
 				array_push($cy,$ay[$i]);
+			}
 			return $cy;
 		}
 		else
