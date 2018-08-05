@@ -5,9 +5,10 @@ function chlinkfunc()
 	if(typeof(b[1]) == 'string')
 	{
 		var i;
+		var c=b[1].substr(0,32);
 		for(i=0;i<liaa.length;i++)
 		{
-			if(liaa[i][1] == b[1])
+			if(liaa[i][1] == c)
 			{
 				document.getElementById(liaa[i][0]).className='liaa[i][2] active';
 				document.getElementById(liaa[i][0]).style.color='#3EAE48';

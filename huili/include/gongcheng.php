@@ -2,6 +2,12 @@
 //{{{ init
 if(!defined("HOME_CALLED") || !isset($_SESSION['GLO_VAR']))
 	die("access denied!");
+/*下面的变量定义，区分了具体应用模块：
+模块序号：（0）环评咨询；（1）环境工程；（2）环境监测；（3）项目验收；（4）清洁生产；（5）危废处理；（6）应急预案；
+		  （7）排污申报
+元素0：模块序号，元素1：模块名称，元素2、3：横向标签页名，元素4：模块链接
+ */
+$glo_idx=array(1,'环境工程','工程实例','交流合作',$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']);	
 //{{{ format define	
 $shwmsg=array(); //博客内容队列
 $ft0="<div role='tabpanel' class='tab-pane %s' id='%s'>
@@ -138,9 +144,9 @@ if(isset($_GET['lasttime']))
 }
 $cy=array();
 if(strlen($lstm[$garrow]) == 1) //初始
-	$ay=array(1,0,0); //idx,状态码
+	$ay=array($glo_idx[0],0,0); //idx,状态码,日期
 else
-	$ay=array(1,$garrow+1,$lstm[$garrow]);
+	$ay=array($glo_idx[0],$garrow+1,$lstm[$garrow]);
 $ta=new tb_blog();
 $shwmsg=$ta->get_blog($ay); //shwmsg
 $i=count($shwmsg);
@@ -149,8 +155,8 @@ if($i > 0)
 	$lstm[0]=$shwmsg[0][4];
 	$lstm[1]=$shwmsg[$i-1][4];
 }
-$ta=new tb_blog();$j=1;
-$i=$ta->get_count($j);
+$ta=new tb_blog();
+$i=$ta->get_count($glo_idx[0]);//传入的参数为模块序号
 //到这里，所有的数据都已读取完毕，可以确定总的页数了，项目展示目前没涉及到数据库操作，为便于统一，后期用上数据库后取得的记录仍然使用shwmsg队列存储
 //所以，这里只对shwmsg操作即可
 $pgcnt[0][0]=floor($i/10); //项目展示页面
@@ -169,7 +175,7 @@ for($i=0;$i<2;$i++) //保证不越界
 //2018-8-4添加，存储所有有新对话的uid，用于显示新对话图标提示
 $newtk=array();
 $ta=new tb_talkmsg();
-$newtk=$ta->get_msg_by_id(1);
+$newtk=$ta->get_msg_by_id($glo_idx[0]);
 $gayc=array('javascript:;','color: gray; cursor: default; disabled: true;','1','javascript:;','color: gray; cursor: default; disabled: true;');
 //}}}
 //}}}
@@ -177,14 +183,14 @@ $gayc=array('javascript:;','color: gray; cursor: default; disabled: true;','1','
 <?php
 //{{{标签页的代码  div+1  div+7
 //进入到本文件之前div+1
-$st2="<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li>环境工程";
+$st2="<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li>".$glo_idx[1];
 $st1=sprintf($SIG_HTML['RIGHT_TOP1'],$st2);				//section+1;div+1
 echo $st1;
 echo"<div class='inner' id='modal_container' ><div class='block'><div class='panel shadow'><ul class='nav nav-tabs nav-tabs-hor' role='tablist'>";
 $st1="<li role='presentation' class='%s'><a href='%s' aria-controls='share' role='tab' data-toggle='tab'>%s</a></li>";
-$st2=sprintf($st1,$pg_sel[0][0],'#huanping','工程实例');
+$st2=sprintf($st1,$pg_sel[0][0],'#huanping',$glo_idx[2]);
 echo $st2;
-$st2=sprintf($st1,$pg_sel[0][1],'#gethelp','合作交流');
+$st2=sprintf($st1,$pg_sel[0][1],'#gethelp',$glo_idx[3]);
 echo $st2;
 echo"</ul><div class='body'><div class='body body-settings'><div class='tab-content'>";
 //}}}
@@ -209,9 +215,9 @@ for($i=0;$i<$j;$i++)
 	echo $st;
 	if($_SESSION['CURR_USR'][0] <= 100001)
 	{
-		$s2=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&opblog=0&tuid=".$shwmsg[$i][0];
-		$s3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&opblog=1&tuid=".$shwmsg[$i][0];
-		$s4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&opblog=2&tuid=".$shwmsg[$i][6];
+		$s2=$glo_idx[4]."&opblog=0&tuid=".$shwmsg[$i][0];
+		$s3=$glo_idx[4]."&opblog=1&tuid=".$shwmsg[$i][0];
+		$s4=$glo_idx[4]."&opblog=2&tuid=".$shwmsg[$i][6];
 		$s1="<br><a href='".$s2."' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;font-size:75%;'>删除</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='".$s3."' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;font-size:75%;'>推荐</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='".$s4."' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;font-size:75%;'>封禁帐号</a><br>";
 		echo $s1;
 	}
@@ -222,7 +228,7 @@ if(intval($j) == 0) //设置0,1,2元素
 {$ay[0]=$gayc[0];$ay[1]=$gayc[1];$ay[2]='1';}
 else
 {
-	$ay[0]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&curpage=0&pagemv=".($j-1)."&arrownext=0&lasttime=".$lstm[0];
+	$ay[0]=$glo_idx[4]."&curpage=0&pagemv=".($j-1)."&arrownext=0&lasttime=".$lstm[0];
 	$ay[1]="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
 	$ay[2]=$j+1;
 }
@@ -230,7 +236,7 @@ if(intval($j) == (intval($pgcnt[0][0])-1))//设置3,4元素
 {$ay[3]=$gayc[3];$ay[4]=$gayc[4];}
 else
 {
-	$ay[3]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&curpage=0&pagemv=".($j+1)."&arrownext=1&lasttime=".$lstm[1];
+	$ay[3]=$glo_idx[4]."&curpage=0&pagemv=".($j+1)."&arrownext=1&lasttime=".$lstm[1];
 	$ay[4]="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
 }
 $st=sprintf($st2,$ay[0],$ay[1],$ay[2],$ay[3],$ay[4]);
@@ -247,7 +253,6 @@ foreach($pg_sel as $a)
 	echo $st;
 }
 echo $ft2;
-$i=0;
 $a=array();$a=$pg_sel[1];
 $st=sprintf($ft3,$a[0],$a[1]);
 echo $st;
@@ -285,7 +290,7 @@ if(intval($j) == 0)
 {$ay[0]=$gayc[0];$ay[1]=$gayc[1];$ay[2]='1';}
 else
 {
-	$ay[0]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&curpage=".($i+1)."&pagemv=".($j-1);
+	$ay[0]=$glo_idx[4]."&curpage=1&pagemv=".($j-1);
 	$ay[1]="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
 	$ay[2]=$j+1;
 }
@@ -293,7 +298,7 @@ if(intval($j) == intval($pgcnt[1][0]-1))//设置3,4元素
 {$ay[3]=$gayc[3];$ay[4]=$gayc[4];}
 else
 {
-	$ay[3]=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ2']."&curpage=".($i+1)."&pagemv=".($j+1);
+	$ay[3]=$glo_idx[4]."&curpage=1&pagemv=".($j+1);
 	$ay[4]="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
 }
 $st=sprintf($ft4b,$ay[0],$ay[1],$ay[2],$ay[3],$ay[4]);
@@ -326,6 +331,7 @@ echo"</div></div></div>";
 <script>
 var user_id = <?php echo "'".$_SESSION['CURR_USR'][0]."'"; ?>;
 var user_aa = <?php echo "'".$_SESSION['CURR_USR'][14]."'"; ?>;
+var user_pg	= <?php echo "'".$glo_idx[0]."'"?>;
 //{{{编辑框的弹出响应函数
 function aaa()
 {
@@ -383,7 +389,7 @@ function bbb(i)
 		var st=$('#summernote').summernote('code');
 		var ti=$("#blogtitle").val();
 		data=new FormData();
-		data.append("idx","1");
+		data.append("idx",user_pg);
 		data.append("ttle",ti);
 		data.append("nam",user_aa);
 		data.append("bod",st);
@@ -485,7 +491,7 @@ function ajax_save(u,s,w) //保存对话记录
 	var xmlhttp=new XMLHttpRequest();
 	xmlhttp.open("POST","/huili/include/for_save.php",true);
 	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-	var aa="aid="+user_id+"&bid="+u+"&mod=1&msg="+s;
+	var aa="aid="+user_id+"&bid="+u+"&mod="+user_pg+"&msg="+s;
 	xmlhttp.send(aa);
 }
 //}}}
