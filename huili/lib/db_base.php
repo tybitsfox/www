@@ -1070,14 +1070,26 @@ class tb_blog extends base_login
  */
 	public function get_blog($u)
 	{
-		$ay=array();
+		$ay=array();$cy=array();
 		if(count($u) != 3)
 		{$this->err_no=2;return $ay;}
 		$this->init_db();
 		if($this->err_no)
 			return $ay;
-		if($u[1] == 0)//首次取得，没有时间限制
-			$conn="SELECT a.tuid,a.idx,a.title,a.uname,a.fintime,a.ttext,a.uid,a.isshow,a.isstop,a.isglob,b.imgpath FROM blog as a LEFT JOIN auth as b ON a.uid = b.uid WHERE a.idx = ".$u[0]." ORDER BY a.fintime DESC LIMIT 10";
+		if($u[1] == 0)//取得显示置顶贴
+		{
+			$conn="SELECT a.tuid,a.idx,a.title,a.uname,a.fintime,a.ttext,a.uid,a.isshow,a.isstop,a.isglob,b.imgpath FROM blog as a LEFT JOIN auth as b ON a.uid = b.uid WHERE a.idx = ".$u[0]." AND a.isglob = 1 ORDER BY a.fintime DESC LIMIT 5"; //最多5个置顶被显示
+			$res=mysqli_query($this->mysqli,$conn);
+			while($row=mysqli_fetch_row($res))
+				array_push($cy,$row);
+			mysqli_free_result($res);
+			mysqli_close($this->mysqli);
+//		if($u[1] == 0)//首次取得，没有时间限制
+			$conn="SELECT a.tuid,a.idx,a.title,a.uname,a.fintime,a.ttext,a.uid,a.isshow,a.isstop,a.isglob,b.imgpath FROM blog as a LEFT JOIN auth as b ON a.uid = b.uid WHERE a.idx = ".$u[0]." AND a.isglob = 0 ORDER BY a.fintime DESC LIMIT 10";
+			$this->init_db();
+			if($this->err_no)
+				return $ay;
+		}
 		elseif($u[1] == 1) //前翻
 			$conn="SELECT a.tuid,a.idx,a.title,a.uname,a.fintime,a.ttext,a.uid,a.isshow,a.isstop,a.isglob,b.imgpath FROM blog as a LEFT JOIN auth as b ON a.uid = b.uid WHERE a.idx = ".$u[0]." AND a.fintime > '".$u[2]."' ORDER BY a.fintime DESC LIMIT 10";
 		else //后翻
@@ -1087,7 +1099,15 @@ class tb_blog extends base_login
 			array_push($ay,$row);
 		mysqli_free_result($res);
 		mysqli_close($this->mysqli);
-		return $ay;
+		if($u[1] == 0)
+		{
+			$j=10-count($cy);
+			for($i=0;$i<$j;$i++)
+				array_push($cy,$ay[$i]);
+			return $cy;
+		}
+		else
+			return $ay;
 	}//}}}
 //{{{public function get_count($u) 取得指定模块的博文条数
 	public function get_count($u)

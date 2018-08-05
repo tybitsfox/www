@@ -130,7 +130,12 @@ foreach($cy as $a)
 }
 $lstm=array('0','0');	//需要传给查询函数的日期
 if(isset($_GET['lasttime']))
-	$lstm[$garrow]=$_GET['lasttime'];
+{
+	if(intval($_GET['pagemv']) == 0)
+		$lstm[$garrow]='0';
+	else
+		$lstm[$garrow]=$_GET['lasttime'];
+}
 $cy=array();
 if(strlen($lstm[$garrow]) == 1) //初始
 	$ay=array(1,0,0); //idx,状态码
@@ -186,7 +191,7 @@ echo"</ul><div class='body'><div class='body body-settings'><div class='tab-cont
 //{{{第一页的代码 div+0
 echo"<div role='tabpanel' class='tab-pane active' id='huanping'>";
 echo "<ul class='list-unstyled list-accounts'>";
-$st1="<li lid='%s' class='pont'><div>%s</div></li><li id='%s' style='display:none'><div style='width:100%%;margin:2px auto;'>%s<br>%s<br><br>";
+$st1="<li lid='%s' class='pont'><div>%s&nbsp;&nbsp;%s</div></li><li id='%s' style='display:none'><div style='width:100%%;margin:2px auto;'>%s<br>%s<br><br>";
 $st2="					</ul><div class='shareblock-body'>
 							<div class='text-center'>
 								<a href='%s' style='%s'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;%s&nbsp;&nbsp;&nbsp;<a href='%s' style='%s'>&gt;&gt;</a>
@@ -197,7 +202,10 @@ for($i=0;$i<$j;$i++)
 {
 	$s1="Li00".$i;$s2=$s1.'x';
 	$sa1="<div class='avatar'><div class='circle'><img src='".$shwmsg[$i][10]."' alt='汇氏'/></div>  <font size=3 color='gray'>".$shwmsg[$i][3]."</font><font size=2 color='gray'>  ".$shwmsg[$i][4]."</font></div>";
-	$st=sprintf($st1,$s1,$shwmsg[$i][2],$s2,$sa1,$shwmsg[$i][5]);
+	$sa2="";
+	if($shwmsg[$i][9])
+		$sa2="<font size=2 color=red>精</font>";
+	$st=sprintf($st1,$s1,$shwmsg[$i][2],$sa2,$s2,$sa1,$shwmsg[$i][5]);
 	echo $st;
 	if($_SESSION['CURR_USR'][0] <= 100001)
 	{
