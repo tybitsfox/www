@@ -6,6 +6,12 @@ $st=$_POST['bod'];
 $s1="/<img(.*?)src=\"(.*?)\"(.*?)>/i";
 $s2="<div class=\"blog-img\"><img src=\"\${2}\"></div>";
 $s3=preg_replace($s1,$s2,$st);
+$s1="/<table class/";
+$s2="<div style=\"width:90%;overflow:auto;margin:auto;\"><table class";
+$st=preg_replace($s1,$s2,$s3);
+$s1="/<\/table>/";
+$s2="<\/table><\/div>";
+$s3=preg_replace($s1,$s2,$st); //把表格也替换掉
 //echo $_POST['bod'];
 //die($s3);
 $ay=array($_POST['idx'],$_POST['ttle'],$_POST['nam'],$s3,$_POST['uid']);
