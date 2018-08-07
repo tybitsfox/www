@@ -100,6 +100,14 @@ else
 		include_once('../template/def_dashbroad.php');
 		include_once('./jiance.php');
 		break;
+	case $SIGNED_PAGE['GJ4']://项目验收
+		include_once('../template/def_dashbroad.php');
+		include_once('./yanshou.php');
+		break;
+	case $SIGNED_PAGE['GJ5']://项目验收
+		include_once('../template/def_dashbroad.php');
+		include_once('./qingjieshengchan.php');
+		break;
 	default:
 		include_once('../template/def_dashbroad.php');
 		include_once('../template/def_login.php');

@@ -724,7 +724,7 @@ class tb_expert extends base_login
 		switch(intval($e[0]))
 		{
 		case 0://按uid取得
-			$conn="SELECT * FROM expert WHERE uid = ".$e[1];
+			$conn="SELECT * FROM expert WHERE uid = ".$e[1]." AND confirmed = 1";
 			break;
 		case 1://按专业和取得认证
 			$conn="SELECT * FROM expert WHERE (mid & ".$e[1].") != 0 AND confirmed = 1";
