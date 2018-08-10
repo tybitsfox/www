@@ -104,9 +104,13 @@ else
 		include_once('../template/def_dashbroad.php');
 		include_once('./yanshou.php');
 		break;
-	case $SIGNED_PAGE['GJ5']://项目验收
+	case $SIGNED_PAGE['GJ5']://清洁生产
 		include_once('../template/def_dashbroad.php');
 		include_once('./qingjieshengchan.php');
+		break;
+	case $SIGNED_PAGE['GJ6']://危废服务
+		include_once('../template/def_dashbroad.php');
+		include_once('./weifei.php');
 		break;
 	default:
 		include_once('../template/def_dashbroad.php');
