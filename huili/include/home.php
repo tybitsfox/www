@@ -112,6 +112,10 @@ else
 		include_once('../template/def_dashbroad.php');
 		include_once('./weifei.php');
 		break;
+	case $SIGNED_PAGE['GJ12']://危废服务
+		include_once('../template/def_dashbroad.php');
+		include_once('./falvfagui.php');
+		break;
 	default:
 		include_once('../template/def_dashbroad.php');
 		include_once('../template/def_login.php');
