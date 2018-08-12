@@ -1152,6 +1152,28 @@ class tb_blog extends base_login
 			$this->err_no=11;
 	}//}}}
 }//}}}
+//{{{class tb_documents extends base_login 法律文档的操作类
+class tb_documents extends base_login
+{
+//{{{public function get_doc($id) 按序列号取得文档	
+	public function get_doc($id)
+	{
+		$ay=array();
+		if($id == null)
+		{$this->err_no=2;return $ay;}
+		$this->init_db();
+		if($this->err_no)
+			return $ay;
+		$conn="SELECT * FROM documents WHERE idx > ".$id." ORDER BY idx LIMIT 10";
+		$res=mysql_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}
+}//}}}
+
 
 
 ////////////begin function//////////////////////////////
