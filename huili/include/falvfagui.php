@@ -42,15 +42,16 @@ $pg_sel=array(array("",""),
 $debug_msg="";
 $radio_ary=array(array("","水环境标准","1"),array("","气环境标准","2"),array("","清洁生产标准","3"),array("","其他环保标准","4"),array("","重要文件","5"),array("","环保部复函","6"),array("","产业政策及规划","7"),array("","环保法律法规","8"),array("","环境监测规范","9"),array("","环保技术规范","10"),array("","环评技术导则","11"),array("","环评工作资料","12"),array("","挥发性有机物(VOCs)专栏","13"),array("","山东省","14"),array("","北京市","15"),array("","上海市","16"),array("","河北省","17"),array("","河南省","18"),array("","云南省","19"),array("","天津市","20"),array("","内蒙古","21"));
 //法律法规界面：取得的post和get分别为：$_POST['optionsRadios']和$_GET['class'],$_GET['iid'],$_GET['IDX'],先测试post
-$i=0;$j=0;
+$i=0;
 if(isset($_POST['optionsRadios']))
 {
-	$debug_msg=$_POST['optionsRadios'];
-	$i=intval($debug_msg)-1;
+	$g=$_POST['optionsRadios'];
+	$i=intval($g)-1;
 	$radio_ary[$i][0]="checked";
-	$j=intval($_POST['pg_num']);
+	$j=$_POST['pg_num'];
 	$pg_sel[$j][0]="active";
 	$pg_sel[0][0]="active";
+//	$debug_msg="i=".$i." j=".$j;
 }
 else
 {
@@ -166,8 +167,7 @@ for($i=0;$i<4;$i++)
 	$st=sprintf("<div class='shareblock-head shareblock-head-light'><label style='text-align:center;'><input type='radio' name='optionsRadios' id='%s' value='%s' %s>%s</label></div>","rad".$radio_ary[$i][2],$radio_ary[$i][2],$radio_ary[$i][0],$radio_ary[$i][1]);
 	echo $st;
 }
-echo"</div>";
-echo "<br><div class='text-center'><button type='submit' class='btn btn-outline'>浏览查询</button></div><input type='hidden' name='pg_num' id='pg_num' value='1' /></form>";
+echo "</div><br><div class='text-center'><button type='submit' class='btn btn-outline'>浏览查询</button></div><input type='hidden' name='pg_num' id='pg_num' value='1' /></form>";
 echo "</div></div>";
 //第一纵标签页完成，开始第二纵标签页
 $a=array();$a=$pg_sel[2];
