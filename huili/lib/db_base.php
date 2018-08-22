@@ -1164,8 +1164,8 @@ class tb_documents extends base_login
 		$this->init_db();
 		if($this->err_no)
 			return $ay;
-		$conn="SELECT * FROM documents WHERE idx > ".$id." ORDER BY idx LIMIT 10";
-		$res=mysql_query($this->mysqli,$conn);
+		$conn="SELECT * FROM documents WHERE idx > ".$id[0]." AND cid = ".$id[1]." AND iid = ".$id[2]." ORDER BY idx LIMIT 10";
+		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
 			array_push($ay,$row);
 		mysqli_free_result($res);

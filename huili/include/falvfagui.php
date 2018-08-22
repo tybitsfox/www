@@ -42,6 +42,7 @@ $pg_sel=array(array("",""),
 $debug_msg="";
 $radio_ary=array(array("","水环境标准","1"),array("","气环境标准","2"),array("","清洁生产标准","3"),array("","其他环保标准","4"),array("","重要文件","5"),array("","环保部复函","6"),array("","产业政策及规划","7"),array("","环保法律法规","8"),array("","环境监测规范","9"),array("","环保技术规范","10"),array("","环评技术导则","11"),array("","环评工作资料","12"),array("","挥发性有机物(VOCs)专栏","13"),array("","山东省","14"),array("","北京市","15"),array("","上海市","16"),array("","河北省","17"),array("","河南省","18"),array("","云南省","19"),array("","天津市","20"),array("","内蒙古","21"));
 //法律法规界面：取得的post和get分别为：$_POST['optionsRadios']和$_GET['class'],$_GET['iid'],$_GET['IDX'],先测试post
+$i=0;$j=0;
 if(isset($_POST['optionsRadios']))
 {
 	$debug_msg=$_POST['optionsRadios'];
@@ -57,6 +58,10 @@ else
 	$pg_sel[1][0]="active";
 	$radio_ary[0][0]="checked";
 }
+$v=array(0,$i,0);
+$ta=new tb_documents();
+$shwmsg=array();
+$shwmsg=$ta->get_doc($v);
 $i=0;
 $pgcnt[0][0]=floor($i/10); //项目展示页面
 if($i % 10)
@@ -92,7 +97,8 @@ echo"</ul><div class='body'><div class='body body-settings'><div class='tab-cont
 //{{{第一页的代码 div+0
 echo"<div role='tabpanel' class='tab-pane ".$pg_sel[0][0]."' id='huanping'>";
 echo "<ul class='list-unstyled list-accounts'>";
-$st1="<li lid='%s' class='pont'><div>%s&nbsp;&nbsp;%s</div></li><li id='%s' style='display:none'><div style='width:100%%;margin:2px auto;'>%s<br>%s<br><br>";
+$st1="<li lid='%s' class='pont'><div>%s</div></li><li id='%s' style='display:none'><div style='width:100%%;margin:2px auto;'>";
+$st3="<br><br>";
 $st2="					</ul><div class='shareblock-body'>
 							<div class='text-center'>
 								<a href='%s' style='%s'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;%s&nbsp;&nbsp;&nbsp;<a href='%s' style='%s'>&gt;&gt;</a>
@@ -102,20 +108,19 @@ $j=count($shwmsg);
 for($i=0;$i<$j;$i++)
 {
 	$s1="Li00".$i;$s2=$s1.'x';
-	$sa1="<div class='avatar'><div class='circle'><img src='".$shwmsg[$i][10]."' alt='汇氏'/></div>  <font size=3 color='gray'>".$shwmsg[$i][3]."</font><font size=2 color='gray'>  ".$shwmsg[$i][4]."</font></div>";
-	$sa2="";
-	if($shwmsg[$i][9])
-		$sa2="<font size=2 color=red>精</font>";
-	$st=sprintf($st1,$s1,$shwmsg[$i][2],$sa2,$s2,$sa1,$shwmsg[$i][5]);
+	$st=sprintf($st1,$s1,$shwmsg[$i][3],$s2);//,$shwmsg[$i][4]);
 	echo $st;
-	if($_SESSION['CURR_USR'][0] <= 100001)
+//	include_once("/var/www/huili/documents/doc_001.txt");
+	$sa1=substr($shwmsg[$i][4],-3);
+	if(strtolower($sa1) == "pdf")
+		echo "<object data='".$shwmsg[$i][4]."' type='application/pdf' width=100% height=800px>alt : <a href='".$shwmsg[$i][4]."'>test.pdf</a></object>";
+	else
 	{
-		$s2=$glo_idx[4]."&opblog=0&tuid=".$shwmsg[$i][0];
-		$s3=$glo_idx[4]."&opblog=1&tuid=".$shwmsg[$i][0];
-		$s4=$glo_idx[4]."&opblog=2&tuid=".$shwmsg[$i][6];
-		$s1="<br><a href='".$s2."' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;font-size:75%;'>删除</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='".$s3."' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;font-size:75%;'>推荐</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='".$s4."' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;font-size:75%;'>封禁帐号</a><br>";
-		echo $s1;
+		$sa2=constant("FULL_PATH").substr($shwmsg[$i][4],7);
+		include_once($sa2);
+	//	echo $sa2;
 	}
+	echo $st3;
 	echo "</div></li>";
 }
 $ay=array();$j=$pgcnt[0][1];
