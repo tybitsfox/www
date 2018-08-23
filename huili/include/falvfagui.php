@@ -43,6 +43,9 @@ $debug_msg="";
 $radio_ary=array(array("","水环境标准","1"),array("","气环境标准","2"),array("","清洁生产标准","3"),array("","其他环保标准","4"),array("","重要文件","5"),array("","环保部复函","6"),array("","产业政策及规划","7"),array("","环保法律法规","8"),array("","环境监测规范","9"),array("","环保技术规范","10"),array("","环评技术导则","11"),array("","环评工作资料","12"),array("","挥发性有机物(VOCs)专栏","13"),array("","山东省","14"),array("","北京市","15"),array("","上海市","16"),array("","河北省","17"),array("","河南省","18"),array("","云南省","19"),array("","天津市","20"),array("","内蒙古","21"));
 //法律法规界面：取得的post和get分别为：$_POST['optionsRadios']和$_GET['class'],$_GET['iid'],$_GET['IDX'],先测试post
 $i=0;
+$global_id=0;
+$ta=new tb_documents();
+$shwmsg=array();$ay=array();
 if(isset($_POST['optionsRadios']))
 {
 	$g=$_POST['optionsRadios'];
@@ -51,18 +54,33 @@ if(isset($_POST['optionsRadios']))
 	$j=$_POST['pg_num'];
 	$pg_sel[$j][0]="active";
 	$pg_sel[0][0]="active";
-//	$debug_msg="i=".$i." j=".$j;
+	$global_id=$i;   //save it
+	$v=array(0,$i);
+	$ay=$ta->get_forward($v);
+}
+elseif(isset($_GET['cid']))
+{
+	$global_id=$_GET['cid']; //save it
+	if(isset($_GET['fw']))//前翻页
+	{
+		$v=array($_GET['cid'],$global_id);
+		$ay=$ta->get_forward($v);
+	}
+	else//后翻页
+	{
+		$v=array($_GET['bw'],$global_id);
+		$ay=$ta->get_backward($v);
+	}
 }
 else
 {
 	$pg_sel[0][0]="active";
 	$pg_sel[1][0]="active";
 	$radio_ary[0][0]="checked";
+	$v=array(0,0);
+	$ay=$ta->get_forward($v);
 }
-$v=array(0,$i,0);
-$ta=new tb_documents();
-$shwmsg=array();
-$shwmsg=$ta->get_doc($v);
+$shwmsg=array_pop($ay);
 $i=0;
 $pgcnt[0][0]=floor($i/10); //项目展示页面
 if($i % 10)
