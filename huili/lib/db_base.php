@@ -1155,23 +1155,6 @@ class tb_blog extends base_login
 //{{{class tb_documents extends base_login 法律文档的操作类
 class tb_documents extends base_login
 {
-//{{{public function get_doc($id) 按序列号取得文档	
-	public function get_doc($id)
-	{
-		$ay=array();
-		if($id == null)
-		{$this->err_no=2;return $ay;}
-		$this->init_db();
-		if($this->err_no)
-			return $ay;
-		$conn="SELECT * FROM documents WHERE idx > ".$id[0]." AND cid = ".$id[1]." AND iid = ".$id[2]." ORDER BY idx LIMIT 10";
-		$res=mysqli_query($this->mysqli,$conn);
-		while($row=mysqli_fetch_row($res))
-			array_push($ay,$row);
-		mysqli_free_result($res);
-		mysqli_close($this->mysqli);
-		return $ay;
-	}//}}}
 //{{{public function get_forward($u) 取得前翻页的数据
 /*in: array, 0->idx;1->cid;
 out: array, 0->count array;1->data array;
@@ -1184,23 +1167,20 @@ out: array, 0->count array;1->data array;
 		$this->init_db();
 		if($this->err_no)
 			return $ay;
-		$conn="SELECT COUNT(*) FROM documents WHERE idx > ".$u[0]." AND cid = ".$u[1];
-		$res=mysqli_query($this->mysqli,$conn);
-		$row=mysqli_fetch_row($res);
-		$c1=$row[0]; //取得idx之后且等于cid的记录条数
-		mysqli_free_result($res);
 		$conn="SELECT COUNT(*) FROM documents WHERE cid = ".$u[1];
 		$res=mysqli_query($this->mysqli,$conn);
 		$row=mysqli_fetch_row($res);
-		$c2=$row[0]; //取得所有等于指定cid的记录条数
+		$c1=$row[0]; //取得所有等于指定cid的记录条数
 		mysqli_free_result($res);
-		$cy=array($c1,$c2);
 		$conn="SELECT * FROM documents WHERE idx > ".$u[0]." AND cid = ".$u[1]." ORDER BY idx LIMIT 10";
 		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
 			array_push($ay,$row);
 		mysqli_free_result($res);
 		mysqli_close($this->mysqli);
+		$i=count($ay)-1;
+		$c2=$ay[0][0];$c3=$ay[$i][0];
+		$cy=array($c1,$c2,$c3);//保存了记录条数、首尾记录的idx
 		$dy=array($cy,$ay);
 		return $dy;
 	}//}}}
@@ -1213,17 +1193,11 @@ out: array, 0->count array;1->data array;
 		$this->init_db();
 		if($this->err_no)
 			return $ay;
-		$conn="SELECT COUNT(*) FROM documents WHERE idx < ".$u[0]." AND cid = ".$u[1];
-		$res=mysqli_query($this->mysqli,$conn);
-		$row=mysqli_fetch_row($res);
-		$c1=$row[0]; //取得小于idx且等于cid的记录条数
-		mysqli_free_result($res);
 		$conn="SELECT COUNT(*) FROM documents WHERE cid = ".$u[1];
 		$res=mysqli_query($this->mysqli,$conn);
 		$row=mysqli_fetch_row($res);
-		$c2=$row[0];//取得所有等于指定cid的记录条数
+		$c1=$row[0];//取得所有等于指定cid的记录条数
 		mysqli_free_result($res);
-		$cy=array($c1,$c2);
 		$conn="SELECT * FROM documents WHERE idx < ".$u[0]." AND cid = ".$u[1]." ORDER BY idx DESC LIMIT 10";
 		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
@@ -1232,6 +1206,9 @@ out: array, 0->count array;1->data array;
 		mysqli_close($this->mysqli);
 		$dy=array();
 		$dy=array_reverse($ay);//反转队列
+		$i=count($dy);
+		$c2=$dy[0][0];$c3=$dy[$i][0];
+		$cy=array($c1,$c2,$c3);
 		$ey=array($cy,$dy);
 		return $ey;
 	}//}}}
