@@ -389,7 +389,7 @@ class tb_choose extends base_login
 //{{{public function add_db_group($ay)
 	public function add_db_group($ay)
 	{
-		if((count($ay) <= 0) || (count($ay) >=13))
+		if((count($ay) <= 0) || (count($ay) >=16))
 			return;
 		$this->init_db();
 		if($this->err_no)

@@ -7,7 +7,7 @@ if(!defined("HOME_CALLED") || !isset($_SESSION['GLO_VAR']))
 		  （7）排污申报；（11）环境法规；
 元素0：模块序号，元素1：模块名称，元素2、3：横向标签页名，元素4：模块链接
  */
-$glo_idx=array(11,'法律法规','法规目录','目录查询',$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ12']);	
+$glo_idx=array(11,'法律法规','法规目录','目录查询',$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ10']);	
 //{{{ format define	
 $ft0="<div role='tabpanel' class='tab-pane %s' id='%s'>
 		<div class='inner-narrow inner-midnarrow'>
@@ -107,7 +107,7 @@ $gayc=array('javascript:;','color: gray; cursor: default; disabled: true;','1','
 <?php
 //{{{标签页的代码  div+1  div+7
 //进入到本文件之前div+1
-$st2="\n\n<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li>".$glo_idx[1]."<li>".$pg_sel[$global_num][4]."</li><li>".$radio_ary[$global_id][1]."</li>";
+$st2="\n\n<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li>".$glo_idx[1]."<li>".$pg_sel[$global_num][4]."</li><li>".$radio_ary[$global_id][1];
 $st1=sprintf($SIG_HTML['RIGHT_TOP1'],$st2);				//section+1;div+1
 echo $st1;
 echo"\n<div class='inner' id='modal_container' ><div class='block'><div class='panel shadow'><ul class='nav nav-tabs nav-tabs-hor' role='tablist'>";
@@ -191,7 +191,7 @@ for($i=0;$i<4;$i++)
 	$st=sprintf("<div class='shareblock-head shareblock-head-light'><label style='text-align:center;'><input type='radio' name='optionsRadios' id='%s' value='%s' %s>%s</label></div>","rad".$radio_ary[$i][2],$radio_ary[$i][2],$radio_ary[$i][0],$radio_ary[$i][1]);
 	echo $st;
 }
-echo "</div><br><div class='text-center'><input type='hidden' name='pg_num' id='pg_num' value='1' /><button type='submit' class='btn btn-outline'>浏览查询</button></div></form>";
+echo "</div><br><div class='text-center'><input type='hidden' value='1' name='pg_num' /><button type='submit' class='btn btn-outline'>浏览查询</button></div></form>";
 echo "</div></div>";
 //第一纵标签页完成，开始第二纵标签页
 $a=array();$a=$pg_sel[2];
@@ -203,7 +203,7 @@ for($i=4;$i<8;$i++)
 	$st=sprintf("<div class='shareblock-head shareblock-head-light'><label style='text-align:center;'><input type='radio' name='optionsRadios' id='%s' value='%s' %s>%s</label></div>","rad".$radio_ary[$i][2],$radio_ary[$i][2],$radio_ary[$i][0],$radio_ary[$i][1]);
 	echo $st;
 }
-echo "</div><br><div class='text-center'><input type='hidden' name='pg_num' id='pg_num' value='2' /><button type='submit' class='btn btn-outline'>浏览查询</button></div></form>";
+echo "</div><br><div class='text-center'><input type='hidden' value='2' name='pg_num' /><button type='submit' class='btn btn-outline'>浏览查询</button></div></form>";
 echo "</div></div>";
 //第三纵标签
 $a=array();$a=$pg_sel[3];
@@ -215,7 +215,7 @@ for($i=8;$i<13;$i++)
 	$st=sprintf("<div class='shareblock-head shareblock-head-light'><label style='text-align:center;'><input type='radio' name='optionsRadios' id='%s' value='%s' %s>%s</label></div>","rad".$radio_ary[$i][2],$radio_ary[$i][2],$radio_ary[$i][0],$radio_ary[$i][1]);
 	echo $st;
 }
-echo "</div><br><div class='text-center'><input type='hidden' name='pg_num' id='pg_num' value='3' /><button type='submit' class='btn btn-outline'>浏览查询</button></div></form>";
+echo "</div><br><div class='text-center'><input type='hidden' value='3' name='pg_num' /><button type='submit' class='btn btn-outline'>浏览查询</button></div></form>";
 echo "</div></div>";
 //第四纵标签
 $a=array();$a=$pg_sel[4];
@@ -228,7 +228,7 @@ for($i=13;$i<21;$i++)
 	echo $st;
 }
 echo "</div>";
-echo "<br><div class='text-center'><input type='hidden' name='pg_num' id='pg_num' value='4' /><button type='submit' class='btn btn-outline'>浏览查询</button></div></form>";
+echo "<br><div class='text-center'><input type='hidden' value='4' name='pg_num' /><button type='submit' class='btn btn-outline'>浏览查询</button></div></form>";
 echo $ft5;
 echo "<div class='text-center'>".$debug_msg."</div>";
 
