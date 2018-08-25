@@ -34,13 +34,13 @@ $ft5="</div></div></div></div>";     //div-4
 //{{{ data dispose
 //下面的队列，第一个元素表示横向标签页的活动状态，后面两个表示交谈页面的纵向标签页的状态及信息
 $pg_sel=array(array("",""),
-		array("","coll","tab1","icon-user","执行标准","您还没有合作的专家或团队"),
-		array("","invit","tab2","icon-group","文件汇编","普通账户无法发送博客"),
+		array("","coll","tab1","icon-group","文件汇编","您还没有合作的专家或团队"),
+		array("","invit","tab2","icon-user","执行标准","普通账户无法发送博客"),
 		array("","falv1","tab3","icon-quickbook-short","技术规范","普通账户无法发送博客"),
 		array("","falv2","tab4","icon-book","地方法规","普通账户无法发送博客"),
 		);
 $debug_msg="";
-$radio_ary=array(array("","水环境标准","1"),array("","气环境标准","2"),array("","清洁生产标准","3"),array("","其他环保标准","4"),array("","重要文件","5"),array("","环保部复函","6"),array("","产业政策及规划","7"),array("","环保法律法规","8"),array("","环境监测规范","9"),array("","环保技术规范","10"),array("","环评技术导则","11"),array("","环评工作资料","12"),array("","挥发性有机物(VOCs)专栏","13"),array("","山东省","14"),array("","北京市","15"),array("","上海市","16"),array("","河北省","17"),array("","河南省","18"),array("","云南省","19"),array("","天津市","20"),array("","内蒙古","21"));
+$radio_ary=array(array("","重要文件","1"),array("","环保部复函","2"),array("","产业政策及规划","3"),array("","环保法律法规","4"),array("","水环境标准","5"),array("","气环境标准","6"),array("","清洁生产标准","7"),array("","其他环保标准","8"),array("","环境监测规范","9"),array("","环保技术规范","10"),array("","环评技术导则","11"),array("","环评工作资料","12"),array("","挥发性有机物(VOCs)专栏","13"),array("","山东省","14"),array("","北京市","15"),array("","上海市","16"),array("","河北省","17"),array("","河南省","18"),array("","云南省","19"),array("","天津市","20"),array("","内蒙古","21"));
 //法律法规界面：取得的post和get分别为：$_POST['optionsRadios']和$_GET['class'],$_GET['iid'],$_GET['IDX'],先测试post
 $pgcnt=array(0,0);
 $pgidx=array();
