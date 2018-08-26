@@ -10,6 +10,8 @@ $pg_sel[0][0]="active";
 $area_ay=array();
 $ta=new tb_area_info();
 $area_ay=$ta->get_sheng();
+$area_by=array();
+$area_by=$ta->get_dishi("370000");
 //}}}
 ?>
 <?php
@@ -81,9 +83,17 @@ $area_ay=$ta->get_sheng();
 						<label class="col-sm-3 control-label">行业分类</label>
 						<div class="col-sm-9">
 							<select class="form-control">
-								<option value="aaa">aaa</option>
-								<option value="bbb">bbb</option>
-								<option value="ccc">ccc</option>
+								<option value="a">农、林、牧、渔业</option>
+								<option value="b">采矿业</option>
+								<option value="c">制造业</option>
+								<option value="d">电力、热力、燃气及水生产和供应业</option>
+								<option value="e">建筑业</option>
+								<option value="f">批发和零售业</option>
+								<option value="g">交通运输、仓储和邮政业</option>
+								<option value="h">住宿和餐饮业</option>
+								<option value="i">信息传输、软件和信息技术服务业</option>
+								<option value="j">金融业</option>
+								<option value="k">其他行业</option>
 							</select>
 						</div>
 					</div>
@@ -134,7 +144,10 @@ $area_ay=$ta->get_sheng();
 							<?php
 								foreach($area_ay as $a)
 								{
-									$st=sprintf("<option value='%s'>%s</option>",$a[0],$a[1]);
+									if($a[0] == "370000")
+										$st=sprintf("<option value='%s' selected='selected'>%s</option>",$a[0],$a[1]);
+									else
+										$st=sprintf("<option value='%s'>%s</option>",$a[0],$a[1]);
 									echo $st;
 								}
 							?>
@@ -145,9 +158,17 @@ $area_ay=$ta->get_sheng();
 						<label class="col-sm-3 control-label">地市</label>
 						<div class="col-sm-9">
 							<select class="form-control" id="area_sel2">
-								<option value="aaa">aaa</option>
-								<option value="bbb">bbb</option>
-								<option value="ccc">ccc</option>
+							<?php
+								echo "<option value='0'>忽略地市</option>";
+								foreach($area_by as $b)
+								{
+									if($b[0] == "370900")
+										$st=sprintf("<option value='%s' selected='selected'>%s</option>",$b[0],$b[1]);
+									else
+										$st=sprintf("<option value='%s'>%s</option>",$b[0],$b[1]);
+									echo $st;
+								}
+							?>
 							</select>
 						</div>
 					</div>
@@ -189,6 +210,11 @@ $area_ay=$ta->get_sheng();
 $(document).ready(function(){
 	$("#texta1").click(function(){
 			$(".dropdown-filtersa").removeClass("open");
+			var s=$("#area_sel1").find("option:selected").text();
+			if($("#texta1").is(":visible"))
+			{
+				$("#texta1").val(s);
+			}
 			$(".dropdown-filters").toggleClass("open");
 			});
 	$("#texta2").click(function(){
@@ -196,7 +222,7 @@ $(document).ready(function(){
 			$(".dropdown-filtersa").toggleClass("open");
 			});
 	$("#btngrp1").click(function(){
-			a=$("#btnsel").val();
+			var a=$("#btnsel").val();
 			if(a == "n")
 			{
 				$("#btngrp1").addClass("active");
@@ -205,7 +231,7 @@ $(document).ready(function(){
 			}
 			});
 	$("#btngrp2").click(function(){
-			a=$("#btnsel").val();
+			var a=$("#btnsel").val();
 			if(a == "y")
 			{
 				$("#btngrp1").removeClass("active");
@@ -213,17 +239,47 @@ $(document).ready(function(){
 				$("#btnsel").val("n");
 			}
 			});
+	$("#btngrp3").click(function(){
+			var a=$("#btnsel1").val();
+			if(a == "n")
+			{
+				$("#btngrp3").addClass("active");
+				$("#btngrp4").removeClass("active");
+				$("#btnsel1").val("y");
+			}
+			});
+	$("#btngrp4").click(function(){
+			var a=$("#btnsel1").val();
+			if(a == "y")
+			{
+				$("#btngrp3").removeClass("active");
+				$("#btngrp4").addClass("active");
+				$("#btnsel1").val("n");
+			}
+			});
 	$(".btn-advancedsearch").click(function(){
 			$(".searchbar-filters").show();
 			});
 	$("#area_sel1").change(function(){
-				a=$("#area_sel1").val();
-				$("#byname01").val(a);
+				var a=$("#area_sel1").val();
+				var b="area_sel2";
+				$("#area_sel2").empty();
+				ajax_getval(a,b);
 			});
 });
-function ajax_getval(u)
+function ajax_getval(u,v)
 {
-
+	var xmlhttp=new XMLHttpRequest();
+	xmlhttp.onreadystatechange=function()
+	{
+		if(xmlhttp.readyState==4 && xmlhttp.status==200)
+		{
+			document.getElementById(v).innerHTML=xmlhttp.responseText;
+		}
+	}
+	var url="/huili/include/for_get.php?area_code="+u;
+	xmlhttp.open("GET",url,true);
+	xmlhttp.send();
 }
 </script>	
 <?php

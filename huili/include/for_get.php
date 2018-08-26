@@ -8,7 +8,24 @@ if(isset($_GET['update'])) //更新浏览次数
 	$ta=new tb_talkmsg();
 	$ta->update_msg($ay);
 }
-else
+elseif(isset($_GET['area_code'])) //更新行政区划的地市
+{
+	$a=$_GET['area_code'];
+	$ta=new tb_area_info();
+	$ay=array();
+	$ay=$ta->get_dishi($a);
+	if(count($ay) < 1)
+		$str="<option value='0'>没有数据</option>";
+	else
+		$str="<option value='0'>忽略地市</option>";
+	foreach($ay as $b)
+	{
+		$st=sprintf("<option value='%s'>%s</option>",$b[0],$b[1]);
+		$str=$str.$st;
+	}
+	echo $str;
+}
+else//实时聊天
 {
 //echo date("Y-m-d H:i:s");
 	$name=$_GET['uname'];
