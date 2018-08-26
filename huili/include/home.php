@@ -114,7 +114,7 @@ else
 		break;
 	case $SIGNED_PAGE['GJ9']://企业名录
 		include_once('../template/def_dashbroad.php');
-		include_once('./qiyeminglu.php');
+		include_once('./minglu.php');
 		break;
 	case $SIGNED_PAGE['GJ10']://法律法规
 		include_once('../template/def_dashbroad.php');

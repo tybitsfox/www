@@ -1213,8 +1213,43 @@ out: array, 0->count array;1->data array;
 		return $ey;
 	}//}}}
 }//}}}
+//{{{class tb_area_info extends base_login 行政区划的操作类
+class tb_area_info extends base_login
+{
+//{{{public function get_sheng()	
+	public function get_sheng()
+	{
+		$ay=array();
+		$this->init_db();
+		if($this->err_no)
+			return $ay;
+		$conn="SELECT aid,aname FROM area_info WHERE aid%10000 = 0 ORDER BY aid";
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}
+//{{{public function get_dishi($u)
+	public function get_dishi($u)
+	{
+		$x=intval($u)+1;
+		$y=$x+9998;
+		$ay=array();
+		$this->init_db();
+		if($this->err_no)
+			return $ay;
+		$conn="SELECT aid,aname FROM area_info WHERE aid BETWEEN ".$x." AND ".$y." ORDER BY aid";
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}
 
-
+}//}}}
 
 ////////////begin function//////////////////////////////
 //{{{function get_major($ay) $ay[0]=mid;$ay[1]=0 专家类型，=1 团队行业
