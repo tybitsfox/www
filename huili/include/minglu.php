@@ -6,12 +6,29 @@ $glo_idx=array(9,'企业名录','企业浏览','企业信息','企业地址',$SI
 $pg_sel=array(array("","mlview","企业浏览"),array("","mlintro","企业信息"),array("","mladdr","企业地址")); //活动状态，id，标题
 $pg_sel[0][0]="active";
 
-//下面是获取属地的省份数据
+//下面是获取属地的省份数据,默认显示泰安的工业企业
 $area_ay=array();
 $ta=new tb_area_info();
 $area_ay=$ta->get_sheng();
 $area_by=array();
 $area_by=$ta->get_dishi("370000");
+$msg01="<p>这是企业浏览界面</p>";  //测试，显示测试信息用
+$shwmsg=array(); //显示信息队列
+
+if(isset($_POST['byname01'])) //按名称查找
+{}
+elseif(isset($_POST['btnsel1'])) //按行业
+{
+	$x=$_POST['btnsel3']; //行业代码
+	$y=$_POST['btnsel1'];	//是否使用属地过滤
+	$z=$_POST['btnsel2'];	//属地区划代码
+}
+else
+{
+	$x=$_POST['btnsela'];	//行业代码
+	$y=$_POST['btnsel'];	//是否使用行业过滤
+	$z=$_POST['btnselb']; //行政区划
+}
 //}}}
 ?>
 <?php
@@ -28,7 +45,7 @@ $area_by=$ta->get_dishi("370000");
 	echo"\n</ul><div class='body'><div class='body body-settings'><div class='tab-content'>";
 //{{{page one 企业浏览
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[0][0]."' id='".$pg_sel[0][1]."'>";
-	echo"<p>这是企业浏览界面</p>";
+	echo $msg01;
 	echo"</div>";
 //}}}	
 //{{{page two 企业信息
@@ -52,14 +69,14 @@ $area_by=$ta->get_dishi("370000");
 ?>
 <div class="form">
 <div class="searchbar">
-	<div class="searchbar-search">
+	<div class="searchbar-search"><form action="<?php echo $glo_idx[5];?>" method="post">
 		<div class="form-group">
 			<div class="form-prefix">
 				<i class="icon-search picto"></i>
-				<input class="form-control form-search" id="byname01" placeholder="按名称查找" value="" type="text">
+				<input class="form-control form-search" id="byname01" name="byname01" placeholder="按名称查找" value="" type="text">
 			</div>
-			<button class="btn btn-search">查找</button>
-		</div>	
+			<button type="submit" class="btn btn-search">查找</button>
+		</div></form>	
 	</div>
 <?php
 //}}}
@@ -82,7 +99,7 @@ $area_by=$ta->get_dishi("370000");
 					<div class="form-group">
 						<label class="col-sm-3 control-label">行业分类</label>
 						<div class="col-sm-9">
-							<select class="form-control">
+							<select class="form-control" name="area_sel3" id="area_sel3">
 								<option value="a">农、林、牧、渔业</option>
 								<option value="b">采矿业</option>
 								<option value="c">制造业</option>
@@ -106,14 +123,16 @@ $area_by=$ta->get_dishi("370000");
 								<button class="btn active" id="btngrp3">考虑</button>
 								<button class="btn" id="btngrp4">不考虑</button>
 							</div>
-							<input type="hidden" value="y" name="btnsel1" id="btnsel1" />
 						</div>
 					</div>
 					<div class="form-group">
-						<label class="col-sm-3 control-label">&nbsp;</label>
+						<label class="col-sm-3 control-label">&nbsp;</label><form action="<?php echo $glo_idx[5];?>" method="post">
 						<div class="col-sm-9">
-							<button class="btn btn-primary btn-block btn-applyfilters" data-dismiss="dropdown">应用查询</button> 
-						</div>
+							<input type="hidden" value="y" name="btnsel1" id="btnsel1" />
+							<input type="hidden" value="370900" name="btnsel2" id="btnsel2" />
+							<input type="hidden" value="a" name="btnsel3" id="btnsel3" />
+							<button type="submit" class="btn btn-primary btn-block">应用查询</button> 
+						</div></form>
 					</div>
 				</div>
 			</div>
@@ -181,14 +200,16 @@ $area_by=$ta->get_dishi("370000");
 								<button class="btn active" id="btngrp1">考虑</button>
 								<button class="btn" id="btngrp2">不考虑</button>
 							</div>
-							<input type="hidden" value="y" name="btnsel" id="btnsel" />
 						</div>
 					</div>
 					<div class="form-group">
-						<label class="col-sm-3 control-label">&nbsp;</label>
+						<label class="col-sm-3 control-label">&nbsp;</label><form action="<?php echo $glo_idx[5];?>" method="post">
 						<div class="col-sm-9">
-							<button class="btn btn-primary btn-block btn-applyfilters" data-dismiss="dropdown">应用查询</button> 
-						</div>
+							<input type="hidden" value="y" name="btnsel" id="btnsel" />
+							<input type="hidden" value="a" name="btnsela" id="btnsela" />
+							<input type="hidden" value="370900" name="btnselb" id="btnselb" />
+							<button type="submit" class="btn btn-primary btn-block">应用查询</button> 
+						</div></form>
 					</div>
 				</div>
 			</div>
@@ -262,9 +283,22 @@ $(document).ready(function(){
 			});
 	$("#area_sel1").change(function(){
 				var a=$("#area_sel1").val();
+				$("#btnsel2").val(a);$("#btnselb").val(a);
 				var b="area_sel2";
 				$("#area_sel2").empty();
 				ajax_getval(a,b);
+			});
+	$("#area_sel2").change(function(){
+			var a=$("#area_sel2").val();
+			if(a == "0")
+			{$("#btnsel2").val($("#area_sel1").val());$("#btnselb").val($("#area_sel1").val());}
+			else
+			{$("#btnsel2").val(a);$("#btnselb").val(a);}
+			});
+	$("#area_sel3").change(function(){
+			var a=$("#area_sel3").val();
+			$("#btnsela").val(a);
+			$("#btnsel3").val(a);
 			});
 });
 function ajax_getval(u,v)
