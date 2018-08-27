@@ -1,3 +1,7 @@
+<script>
+loadscript("/huili/css/summernote.css","css");
+loadscript("/huili/css/summernote.js","js");
+</script>
 <?php
 //{{{ init
 if(!defined("HOME_CALLED") || !isset($_SESSION['GLO_VAR']))

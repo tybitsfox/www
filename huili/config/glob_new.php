@@ -31,8 +31,8 @@ $s2="<link rel='stylesheet' href='".constant('CSS_FONT')."'>\n<link rel='stylesh
 $s3="<script src='".constant("JS_FILEA")."'></script>\n<script src='".constant("JS_FILEB")."'></script>\n";
 $s4="<link rel='stylesheet' href='".constant('CSS_FONT')."'>\n<link rel='stylesheet' href='".constant("CSS_MAIN")."'>";
 $s5="<script src='".constant("JS_FILEC")."'></script>\n";
-$s6="<link rel='stylesheet' href='".constant("CSS_NOTE")."'>\n<script src='".constant("JS_FILEE")."'></script>";
-$ALL_HTML['LOGIN_HEAD']	=	$s1.$s2.$s3.$s5.$s6."</head>";		//这是注册，登录界面的标准头定义
+//$s6="<link rel='stylesheet' href='".constant("CSS_NOTE")."'>\n<script src='".constant("JS_FILEE")."'></script>";
+$ALL_HTML['LOGIN_HEAD']	=	$s1.$s2.$s3.$s5."</head>";		//这是注册，登录界面的标准头定义
 $ALL_HTML['MAIN_HEAD']	=	$s1.$s4.$s3."</head><body>";		//这是主界面的标准头定义
 unset($s1);unset($s2);unset($s3);unset($s4);
 ?>

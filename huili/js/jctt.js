@@ -92,3 +92,22 @@ $(document).ready(function(){
 				$("#slide1").slideToggle("slow");
 				});
 		});
+//动态加载css，js
+function loadscript(fn,ft)
+{
+	if(ft == "js")
+	{
+      var f = document.createElement('script');
+	  f.setAttribute("type","text/javascript");
+	  f.setAttribute("src",fn);  
+	}
+	else if(ft == "css")
+	{
+		var f=document.createElement('link');
+		f.setAttribute("rel","stylesheet");
+		f.setAttribute("type","text/css");
+		f.setAttribute("href",fn);
+	}
+	if(typeof f != "undefined")
+	{document.getElementsByTagName("head")[0].appendChild(f);}
+}

@@ -16,7 +16,9 @@ $msg01="<p>这是企业浏览界面</p>";  //测试，显示测试信息用
 $shwmsg=array(); //显示信息队列
 
 if(isset($_POST['byname01'])) //按名称查找
-{}
+{
+
+}
 elseif(isset($_POST['btnsel1'])) //按行业
 {
 	$x=$_POST['btnsel3']; //行业代码
@@ -31,6 +33,18 @@ else
 }
 //}}}
 ?>
+<script>
+function loadcssfile()
+{
+	var f=document.createElement("link");
+	f.setAttribute("rel","stylesheet");
+	f.setAttribute("type","text/css");
+	f.setAttribute("href","/huili/css/newstyle.css");
+    var head = document.getElementsByTagName('head')[0];
+    head.appendChild(f);	
+}
+loadcssfile();
+</script>
 <?php
 	$st2="\n\n<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li>".$glo_idx[1];
 	$st=sprintf($SIG_HTML['RIGHT_TOP1'],$st2);

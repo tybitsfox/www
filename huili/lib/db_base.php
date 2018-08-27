@@ -1250,7 +1250,86 @@ class tb_area_info extends base_login
 	}//}}}
 
 }//}}}
+//{{{class tb_comp_info extends base_login
+class tb_comp_info extends base_login
+{
+//{{{public function get_comp($u)
+/*in: array{1,2,3,4},
+1:类型：
+	0：只按名称查，
+	1：按名称和行业查，
+	2：按名称和属地查，
+	3：按名称，行业，属地查，
+	4：按行业和属地查，
+	5：按行业查，
+	6：按属地查。
+2:名称；3：行业；4：属地
+out: array
+*/
+	public function get_comp($u)
+	{
+		$ay=array();
+		if(count($u) != 4)
+		{$this->err_no=2;return $ay;}	
+		$this->init_db();
+		if($this->err_no)
+			return $ay;
+		$i=intval($u[0]);
+		switch($i)
+		{
+		case 0://只按名称查询，支持模糊查询
+			$conn="SELECT * FROM comp_info WHERE LOCATE('".$u[1]."',name) > 0"; 
+			break;
+		case 1://名称和行业查询
+			$conn="SELECT * FROM comp_info WHERE LOCATE('".$u[1]."',name) > 0 AND tid = '".$u[2]."'"; 
+			break;
+		case 2://名称和属地
+			$conn="SELECT * FROM comp_info WHERE LOCATE('".$u[1]."',name) > 0 AND aid = ".$u[3]; 
+			break;
+		case 3://名称，行业，属地。加入区划代码的，需要考虑区划代码是否为省级和地市级
+			$j=intval($u[3]);
+			if(($j%10000) > 0)
+				$conn="SELECT * FROM comp_info WHERE LOCATE('".$u[1]."',name) > 0 AND tid = '".$u[2]."' AND aid = ".$u[3];
+			else
+			{
+				$k=floor($j/10000);
+				$conn="SELECT * FROM comp_info WHERE LOCATE('".$u[1]."',name) > 0 AND tid = '".$u[2]."' AND aid div 10000 = ".$k;
+			}
+			break;
+		case 4://按行业和属地
+			$j=intval($u[3]);
+			if(($j%10000) > 0)
+				$conn="SELECT * FROM comp_info WHERE tid = '".$u[2]."' AND aid = ".$u[3];
+			else
+			{
+				$k=floor($j/10000);
+				$conn="SELECT * FROM comp_info WHERE tid = '".$u[2]."' AND aid div 10000 = ".$k;
+			}
+			break;
+		case 5://按行业
+			$conn="SELECT * FROM comp_info WHERE tid = '".$u[2]."'";
+			break;
+		case 6://按属地
+			$j=intval($u[3]);
+			if(($j%10000) > 0)
+				$conn="SELECT * FROM comp_info WHERE aid = ".$u[3];
+			else
+			{
+				$k=floor($j/10000);
+				$conn="SELECT * FROM comp_info WHERE aid div 10000 = ".$k;
+			}
+			break;
+		}
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}	
 
+
+}//}}}
 ////////////begin function//////////////////////////////
 //{{{function get_major($ay) $ay[0]=mid;$ay[1]=0 专家类型，=1 团队行业
 function get_major($ay) //$ay[0]=mid;$ay[1]=0 专家类型，=1 团队行业
