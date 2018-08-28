@@ -72,6 +72,24 @@ elseif(isset($_POST['btnsel']))
 	{$act_val[0]=6;$act_va[3]=$z;}
 	$msg01="按区划查找，行业代码：".$x."区划代码：".$z."是否考虑区划：".$y;
 }
+else //default
+{
+	$act_val=array(6,"","","370900");
+	$ta=new tb_comp_info();
+	$shwmsg=$ta->get_comp($act_val);
+}
+if(count($shwmsg) > 0)
+{
+	echo "<script>";
+	echo "var sval=[];\n";
+	for($i=0;$i<count($shwmsg);$i++)
+	{
+		$a=array();$a=$shwmsg[$i];
+		$st=sprintf("sval[%d]=['%s','%s','%s','%s'];\n",$i,$a[1],$a[3],$a[5],$a[6]);
+		echo $st;
+	}
+	echo "</script>";
+}
 //}}}
 ?>
 <?php
@@ -79,18 +97,22 @@ elseif(isset($_POST['btnsel']))
 	$st=sprintf($SIG_HTML['RIGHT_TOP1'],$st2);
 	echo $st;
 	echo"\n<div class='inner' id='modal_container' ><div class='block'><div class='panel shadow'><ul class='nav nav-tabs nav-tabs-hor' role='tablist'>";
-	$st1="\n<li role='presentation' class='%s'><a href='%s' aria-controls='share' role='tab' data-toggle='tab'>%s</a></li>";
+	$st1="\n<li role='presentation' class='%s' id='vdv%d'><a href='%s' aria-controls='share' role='tab' data-toggle='tab'>%s</a></li>";
 	for($i=0;$i<3;$i++)
 	{
-		$st2=sprintf($st1,$pg_sel[$i][0],'#'.$pg_sel[$i][1],$pg_sel[$i][2]);
+		$st2=sprintf($st1,$pg_sel[$i][0],$i,'#'.$pg_sel[$i][1],$pg_sel[$i][2]);
 		echo $st2;
 	}
 	echo"\n</ul><div class='body'><div class='body body-settings'><div class='tab-content'>";
 //{{{page one 企业浏览
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[0][0]."' id='".$pg_sel[0][1]."'><ul class='list-unstyled list-accounts'>";
-	$st1="<li><div class='avatar'></div><div class='account-info'><p class='title'><strong>单位名称：</strong> xxxxxxx</p></div><div class='account-status'><p></p></div><div class='account-action'><a href='#zation%s' class='btn btn-outline' data-trigger='collapse'>详细信息</a></div></li>";
-//	$st2=sprintf($st1,"山东泰安汇力环保公司");
-	echo $st1;
+	$st1="<li><div class='avatar'></div><div class='account-info'><p class='title'><strong>单位名称：</strong>%s</p></div><div class='account-status'><p></p></div><div class='account-action'><a href='#".$pg_sel[1][1]."' class='btn btn-outline' data-toggle='tab' onclick='switch_pg(%d);'>详细信息</a></div></li>";
+	for($i=0;$i<count($shwmsg);$i++)
+	{
+		$a=array();$a=$shwmsg[$i];
+		$st=sprintf($st1,$a[1],$i);
+		echo $st;
+	}
 echo "</ul></div>";	
 //	echo $msg01;
 //	echo"</ul></div>";
@@ -394,6 +416,11 @@ function set_vv(v)
 		document.getElementById("btnsel3").value="";document.getElementById("btnsela").value="";
 		$(".dropdown-filtersa").toggleClass("open");
 	}
+};
+function switch_pg()
+{
+	$("#vdv0").toggleClass("active");
+	$("#vdv1").toggleClass("active");
 };
 </script>	
 <?php
