@@ -87,7 +87,7 @@ if(count($shwmsg) > 0)
 	for($i=0;$i<count($shwmsg);$i++)
 	{
 		$a=array();$a=$shwmsg[$i];
-		$st=sprintf("['%s','%s','%s','%s']",$a[1],$a[3],$a[5],$a[6]);
+		$st=sprintf("['%s','%s','%s','%s','%s']",$a[1],$a[3],$a[5],$a[6],$a[8]);
 		echo $st;
 		if($i == (count($shwmsg)-1))
 			echo "]";
@@ -112,7 +112,7 @@ if(count($shwmsg) > 0)
 	echo"\n</ul><div class='body'><div class='body body-settings'><div class='tab-content'>";
 //{{{page one 企业浏览
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[0][0]."' id='".$pg_sel[0][1]."'><ul class='list-unstyled list-accounts'>";
-	$st1="<li><div class='avatar'></div><div class='account-info'><p class='title'><strong>单位名称：</strong>%s</p></div><div class='account-status'><p></p></div><div class='account-action'><a href='#' class='btn btn-outline' onclick='switch_pg(1,%d);'>详细信息</a></div></li>";
+	$st1="<li><div class='avatar'></div><div class='account-info'><p class='title'><strong>单位名称：</strong>%s</p></div><div class='account-status'><p></p></div><div class='account-action'><a href='#' class='btn btn-outline' onclick='switch_pg(3,%d);'>详细信息</a></div></li>";
 	for($i=0;$i<count($shwmsg);$i++)
 	{
 		$a=array();$a=$shwmsg[$i];
@@ -134,20 +134,6 @@ echo "</ul></div>";
 	echo "<div id='allmap' style='width:100%;height:400px;'>";
 ?>
 <script>
-function show_map(x,y)
-{
-	var map = new BMap.Map("allmap");    // 创建Map实例
-//	var point = new BMap.Point(parseFloat(x),parseFloat(y));
-	var point = new BMap.Point(x,y);
-	map.centerAndZoom(point, 11);  // 初始化地图,设置中心点坐标和地图级别
-	map.addControl(new BMap.MapTypeControl());   //添加地图类型控件
-	map.setCurrentCity("泰安");          // 设置地图显示的城市 此项是必须设置的
-	map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
-//	map.clearOverlays();
-//	var point = new BMap.Point(x,y);
-	var marker = new BMap.Marker(point);
-	map.addOverlay(marker);
-}
 </script>
 <?php
 echo "</div></div>";
@@ -326,8 +312,35 @@ echo "</div></div>";
 <script>
 var iflag=0;
 var jflag=0;
-//var xx = <?php echo $shwmsg[0][5];?>;
-//var yy = <?php echo $shwmsg[0][6];?>;
+var indx=0;
+function show_map()
+{
+	var x=sval[indx][2]; //lng
+	var y=sval[indx][3]; //lat
+	var z=sval[indx][4]; //城市名
+	var n=sval[indx][0]; //单位名
+	var len=n.length*6.25;
+	len=0-len;
+	var map = new BMap.Map("allmap");    // 创建Map实例
+	var point = new BMap.Point(x,y);
+	map.centerAndZoom(point, 11);  // 初始化地图,设置中心点坐标和地图级别
+	map.addControl(new BMap.MapTypeControl());   //添加地图类型控件
+	map.setCurrentCity(z);          // 设置地图显示的城市 此项是必须设置的
+	map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+	var marker = new BMap.Marker(point);
+	map.addOverlay(marker);
+	var opts = {
+	  position : point,
+	  offset   : new BMap.Size(len, 0)
+	}
+	var label = new BMap.Label(n, opts);  // 创建文本标注对象
+		label.setStyle({
+			 color : "blue",
+			 border: "0",
+			 fontSize : "12px"
+		 });
+	map.addOverlay(label);
+}
 $(document).ready(function(){
 	$("#texta1").click(function(){
 			$(".dropdown-filtersa").removeClass("open");
@@ -463,9 +476,9 @@ function switch_pg(i,j)
 		$("#mlintro").addClass("active");
 		$("#mlview").removeClass("active");
 		$("#mladdr").removeClass("active");
-		$("#intro_show").html(sval[j][1]);
+		$("#intro_show").html(sval[indx][1]);
 	}
-	else
+	else if(i == 2)
 	{
 		var xx=sval[0][2];
 		var yy=sval[0][3];
@@ -477,9 +490,20 @@ function switch_pg(i,j)
 		$("#mlintro").removeClass("active");//这里添加地图信息
 		var h=window.screen.height * 0.48;
 		$("#allmap").height(h);
-		var st="lng=".concat(xx,"; lat=",yy);
+	//	var st="lng=".concat(xx,"; lat=",yy);
 	//	$("#allmap").html(st);
-		show_map(xx,yy);
+		show_map();
+	}
+	else if(i == 3)
+	{
+		$("#vdv1").addClass("active");
+		$("#vdv0").removeClass("active");
+		$("#vdv2").removeClass("active");
+		$("#mlintro").addClass("active");
+		$("#mlview").removeClass("active");
+		$("#mladdr").removeClass("active");
+		$("#intro_show").html(sval[j][1]);
+		indx=j;
 	}
 };
 </script>	
