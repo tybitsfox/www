@@ -1,6 +1,8 @@
 <script>
 loadscript("/huili/css/newstyle.css","css");
 </script>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=Wst0GYAGq6QfZG1fGTwNxGLD9CBW5N99"></script>
+<script src='http://libs.baidu.com/jquery/1.9.0/jquery.js'></script>
 <?php
 //{{{变量、初始化
 if(!defined("HOME_CALLED") || !isset($_SESSION['GLO_VAR']))
@@ -81,12 +83,16 @@ else //default
 if(count($shwmsg) > 0)
 {
 	echo "<script>";
-	echo "var sval=[];\n";
+	echo "var sval=[";
 	for($i=0;$i<count($shwmsg);$i++)
 	{
 		$a=array();$a=$shwmsg[$i];
-		$st=sprintf("sval[%d]=['%s','%s','%s','%s'];\n",$i,$a[1],$a[3],$a[5],$a[6]);
+		$st=sprintf("['%s','%s','%s','%s']",$a[1],$a[3],$a[5],$a[6]);
 		echo $st;
+		if($i == (count($shwmsg)-1))
+			echo "]";
+		else
+			echo ",";
 	}
 	echo "</script>";
 }
@@ -97,16 +103,16 @@ if(count($shwmsg) > 0)
 	$st=sprintf($SIG_HTML['RIGHT_TOP1'],$st2);
 	echo $st;
 	echo"\n<div class='inner' id='modal_container' ><div class='block'><div class='panel shadow'><ul class='nav nav-tabs nav-tabs-hor' role='tablist'>";
-	$st1="\n<li role='presentation' class='%s' id='vdv%d'><a href='%s' aria-controls='share' role='tab' data-toggle='tab'>%s</a></li>";
+	$st1="\n<li role='presentation' class='%s' id='vdv%d'><a href='javascript:;' onclick='switch_pg(%d,0);'>%s</a></li>";
 	for($i=0;$i<3;$i++)
 	{
-		$st2=sprintf($st1,$pg_sel[$i][0],$i,'#'.$pg_sel[$i][1],$pg_sel[$i][2]);
+		$st2=sprintf($st1,$pg_sel[$i][0],$i,$i,$pg_sel[$i][2]);
 		echo $st2;
 	}
 	echo"\n</ul><div class='body'><div class='body body-settings'><div class='tab-content'>";
 //{{{page one 企业浏览
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[0][0]."' id='".$pg_sel[0][1]."'><ul class='list-unstyled list-accounts'>";
-	$st1="<li><div class='avatar'></div><div class='account-info'><p class='title'><strong>单位名称：</strong>%s</p></div><div class='account-status'><p></p></div><div class='account-action'><a href='#".$pg_sel[1][1]."' class='btn btn-outline' data-toggle='tab' onclick='switch_pg(%d);'>详细信息</a></div></li>";
+	$st1="<li><div class='avatar'></div><div class='account-info'><p class='title'><strong>单位名称：</strong>%s</p></div><div class='account-status'><p></p></div><div class='account-action'><a href='#' class='btn btn-outline' onclick='switch_pg(1,%d);'>详细信息</a></div></li>";
 	for($i=0;$i<count($shwmsg);$i++)
 	{
 		$a=array();$a=$shwmsg[$i];
@@ -119,13 +125,32 @@ echo "</ul></div>";
 //}}}	
 //{{{page two 企业信息
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[1][0]."' id='".$pg_sel[1][1]."'>";
-	echo"<p>这是企业信息界面</p>";
-	echo"</div>";
+	echo "<ul class='list-unstyled list-accounts'>";
+	echo "<li><div id='intro_show' style='width:100%%;margin:2px auto;'></div></li>";
+	echo"</ul></div>";
 //}}}
 //{{{page three 企业地址
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[2][0]."' id='".$pg_sel[2][1]."'>";
-	echo"<p>这是地图显示界面</p>";
-	echo"</div>";
+	echo "<div id='allmap' style='width:100%;height:400px;'>";
+?>
+<script>
+function show_map(x,y)
+{
+	var map = new BMap.Map("allmap");    // 创建Map实例
+//	var point = new BMap.Point(parseFloat(x),parseFloat(y));
+	var point = new BMap.Point(x,y);
+	map.centerAndZoom(point, 11);  // 初始化地图,设置中心点坐标和地图级别
+	map.addControl(new BMap.MapTypeControl());   //添加地图类型控件
+	map.setCurrentCity("泰安");          // 设置地图显示的城市 此项是必须设置的
+	map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+//	map.clearOverlays();
+//	var point = new BMap.Point(x,y);
+	var marker = new BMap.Marker(point);
+	map.addOverlay(marker);
+}
+</script>
+<?php
+echo "</div></div>";
 //}}}
 
 
@@ -301,6 +326,8 @@ echo "</ul></div>";
 <script>
 var iflag=0;
 var jflag=0;
+//var xx = <?php echo $shwmsg[0][5];?>;
+//var yy = <?php echo $shwmsg[0][6];?>;
 $(document).ready(function(){
 	$("#texta1").click(function(){
 			$(".dropdown-filtersa").removeClass("open");
@@ -417,10 +444,43 @@ function set_vv(v)
 		$(".dropdown-filtersa").toggleClass("open");
 	}
 };
-function switch_pg()
+function switch_pg(i,j)
 {
-	$("#vdv0").toggleClass("active");
-	$("#vdv1").toggleClass("active");
+	if(i == 0)
+	{
+		$("#vdv0").addClass("active");
+		$("#vdv1").removeClass("active");
+		$("#vdv2").removeClass("active");
+		$("#mlview").addClass("active");
+		$("#mlintro").removeClass("active");
+		$("#mladdr").removeClass("active");
+	}
+	else if(i == 1)
+	{
+		$("#vdv1").addClass("active");
+		$("#vdv0").removeClass("active");
+		$("#vdv2").removeClass("active");
+		$("#mlintro").addClass("active");
+		$("#mlview").removeClass("active");
+		$("#mladdr").removeClass("active");
+		$("#intro_show").html(sval[j][1]);
+	}
+	else
+	{
+		var xx=sval[0][2];
+		var yy=sval[0][3];
+		$("#vdv2").addClass("active");
+		$("#vdv0").removeClass("active");
+		$("#vdv1").removeClass("active");
+		$("#mladdr").addClass("active");
+		$("#mlview").removeClass("active");
+		$("#mlintro").removeClass("active");//这里添加地图信息
+		var h=window.screen.height * 0.48;
+		$("#allmap").height(h);
+		var st="lng=".concat(xx,"; lat=",yy);
+	//	$("#allmap").html(st);
+		show_map(xx,yy);
+	}
 };
 </script>	
 <?php
