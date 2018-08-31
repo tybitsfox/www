@@ -10,7 +10,8 @@ if(!defined("HOME_CALLED") || !isset($_SESSION['GLO_VAR']))
 $glo_idx=array(9,'企业名录','企业浏览','企业信息','企业地址',$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ9']);
 $pg_sel=array(array("","mlview","企业浏览"),array("","mlintro","企业信息"),array("","mladdr","企业地址")); //活动状态，id，标题
 $pg_sel[0][0]="active";
-$act_val=array(0,"","","");//操作代码，名称，行业，所属。
+$act_val=array(0,"","","",0,0,0);//操作代码，名称，行业，所属，翻页方向，idx。
+$pg_cnt=array(0,0,0,0); //翻页操作所用变量：总的页数，当前页数，当前最小idx,当前最大idx
 
 
 //下面是获取属地的省份数据,默认显示泰安的工业企业
@@ -75,11 +76,25 @@ elseif(isset($_POST['btnsel']))
 	$msg01="按区划查找，行业代码：".$x."区划代码：".$z."是否考虑区划：".$y;
 }
 else //default
-{
-	$act_val=array(6,"","","370900");
-	$ta=new tb_comp_info();
-	$shwmsg=$ta->get_comp($act_val);
+{//这里加入翻页的响应代码
+	if(isset($_GET['next'])) //下翻页
+	{
+		$act_val[0]=$_GET['actcode']; //操作代码
+		$act_val[1]=$_GET['name']; //名称
+		$act_val[2]=$_GET['hycode'];//行业代码
+		$act_val[3]=$_GET['acode'];//区划代码
+		$act_val[4]=$_GET['next'];//下翻页起始idx
+	}
+	elseif(isset($_GET['pre']))//上翻页
+	{}
+	else
+	{
+		$act_val=array(6,"","","370900",0,0);
+		$ta=new tb_comp_info();
+		$shwmsg=$ta->get_comp($act_val);
+	}
 }
+$v=array_pop($shwmsg);
 if(count($shwmsg) > 0)
 {
 	echo "<script>";
