@@ -10,8 +10,9 @@ if(!defined("HOME_CALLED") || !isset($_SESSION['GLO_VAR']))
 $glo_idx=array(9,'企业名录','企业浏览','企业信息','企业地址',$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ9']);
 $pg_sel=array(array("","mlview","企业浏览"),array("","mlintro","企业信息"),array("","mladdr","企业地址")); //活动状态，id，标题
 $pg_sel[0][0]="active";
-$act_val=array(0,"","","",0,0,0);//操作代码，名称，行业，所属，翻页方向，idx。
-$pg_cnt=array(0,0,0,0); //翻页操作所用变量：总的页数，当前页数，当前最小idx,当前最大idx
+$act_val=array(0,"","","",0,0);//操作代码，名称，行业，所属，翻页方向，idx。
+$pg_cnt=array(0,0,0,0); //翻页操作所用变量：当前页号，总页数（可继续翻页标志），当前最小idx,当前最大idx
+
 
 
 //下面是获取属地的省份数据,默认显示泰安的工业企业
@@ -83,20 +84,33 @@ else //default
 		$act_val[1]=$_GET['name']; //名称
 		$act_val[2]=$_GET['hycode'];//行业代码
 		$act_val[3]=$_GET['acode'];//区划代码
-		$act_val[4]=$_GET['next'];//下翻页起始idx
+		$act_val[4]=1;//下（前）翻页
+		$act_val[5]=$_GET['next'];//下翻页起始idx
+		$pg_cnt[0]=$_GET['curpg'];//当前页号
 	}
 	elseif(isset($_GET['pre']))//上翻页
-	{}
-	else
 	{
-		$act_val=array(6,"","","370900",0,0);
-		$ta=new tb_comp_info();
-		$shwmsg=$ta->get_comp($act_val);
+		$act_val[0]=$_GET['actcode']; //操作代码
+		$act_val[1]=$_GET['name']; //名称
+		$act_val[2]=$_GET['hycode'];//行业代码
+		$act_val[3]=$_GET['acode'];//区划代码
+		$act_val[4]=2;
+		$act_val[5]=$_GET['pre'];//上翻页起始idx
+		$pg_cnt[0]=$_GET['curpg'];//当前页号
 	}
+	else  //这里是初始状态
+	{$act_val=array(6,"","","370900",0,0);}
+	$ta=new tb_comp_info();
+	$shwmsg=$ta->get_comp($act_val);
 }
-$v=array_pop($shwmsg);
-if(count($shwmsg) > 0)
+$ay=array();
+$ay=array_pop($shwmsg);
+$pg_cnt[1]=$ay[0]; //保存可翻页标志，大于10表示可继续翻页
+$j=count($shwmsg);
+if($j>0)
 {
+	$ay=$shwmsg[0];	$pg_cnt[2]=$ay[0];
+	$ay=$shwmsg[$j-1];$pg_cnt[3]=$ay[0];
 	echo "<script>";
 	echo "var sval=[";
 	for($i=0;$i<count($shwmsg);$i++)
@@ -110,6 +124,20 @@ if(count($shwmsg) > 0)
 			echo ",";
 	}
 	echo "</script>";
+}
+if(($pg_cnt[0] == 0) || (($act_val[4] == 2) && ($pg_cnt[1] <=10))) //没有前翻页了
+{$pgstr1="<div class='shareblock-body'><div class='text-center'><a href='javascript:;' style='color: gray; cursor: default; disabled: true;'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;";}
+else
+{
+	$st=$glo_idx[5]."?pre=".$pg_cnt[2]."&actcode=".$act_val[0]."&name=".$act_val[1]."&hycode=".$act_val[2]."&acode=".$act_val[3]."&curpg=".($pg_cnt[0]-1);
+	$pgstr1="<div class='shareblock-body'><div class='text-center'><a href='".$st."' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;".($pg_cnt[0]+1)."&nbsp;&nbsp;&nbsp;";
+}
+if(($act_val[4] <= 1) && ($pg_cnt[1] <= 10)) //没有后翻页了
+{$pgstr2="<a href='javascript:;' style='color: gray; cursor: default; disabled: true;'>&gt;&gt;</a></div></div>";}
+else
+{
+	$st=$glo_idx[5]."?next=".$pg_cnt[3]."&actcode=".$act_val[0]."&name=".$act_val[1]."&hycode=".$act_val[2]."&acode=".$act_val[3]."&curpg=".($pg_cnt[0]+1);
+	$pgstr2="<a href='".$st."' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>&gt;&gt;</a></div></div>";
 }
 //}}}
 ?>
@@ -134,7 +162,9 @@ if(count($shwmsg) > 0)
 		$st=sprintf($st1,$a[1],$i);
 		echo $st;
 	}
-echo "</ul></div>";	
+echo "</ul>";
+echo $pgstr1.$pgstr2;
+echo "</div>";	
 //	echo $msg01;
 //	echo"</ul></div>";
 //}}}	

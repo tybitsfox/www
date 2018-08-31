@@ -1342,12 +1342,12 @@ out: array
 			$conn1=$conn." ORDER BY idx LIMIT 10";
 			$conn3=$conn2;
 			break;
-		case 1://上翻页
+		case 1://下翻页（前）
 			$st=" AND idx > ".$u[5]." ORDER BY idx LIMIT 10";
 			$conn1=$conn.$st;
 			$conn3=$conn2." AND idx > ".$u[5];
 			break;
-		case 2://下翻页
+		case 2://上翻页（后）
 			$st=" AND idx < ".$u[5]." ORDER BY idx DESC LIMIT 10";
 			$conn1=$conn.$st;
 			$conn3=$conn2." AND idx < ".$u[5];
