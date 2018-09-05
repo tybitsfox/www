@@ -117,7 +117,7 @@ class init_gis implements listbox_data
 				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid WHERE a.stype = 0 AND a.aid > %u AND a.aid < %u AND b.lid < 1000 group by a.sid";
 				break;
 			case 2://质控点位
-				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid WHERE a.stype = 1 AND a.aid > %u AND a.aid < %u AND b.lid < 1000 group by a.sid";
+				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid WHERE (a.stype & 1) = 1 AND a.aid > %u AND a.aid < %u AND b.lid < 1000 group by a.sid";
 				break;
 			};
 			$this->str_top1=sprintf($s1,$i,$i+99);
@@ -133,7 +133,7 @@ class init_gis implements listbox_data
 				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE a.stype = 0 AND a.aid = %u AND b.lid < 1000 group by a.sid";
 				break;
 			case 2://质控点位
-				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE a.stype = 1 AND a.aid = %u AND b.lid < 1000 group by a.sid";
+				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE (a.stype & 1) = 1 AND a.aid = %u AND b.lid < 1000 group by a.sid";
 				break;
 			};
 			$this->str_top1=sprintf($s1,$i);

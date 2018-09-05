@@ -124,6 +124,10 @@ else
 		include_once('../template/def_dashbroad.php');
 		include_once('./zhuanjia.php');
 		break;
+	case $SIGNED_PAGE['GJ12']://土壤平台
+		include_once('../template/def_dashbroad.php');
+		include_once('./pt001.php');
+		break;
 	default:
 		include_once('../template/def_dashbroad.php');
 		include_once('../template/def_login.php');

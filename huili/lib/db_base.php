@@ -1223,7 +1223,7 @@ class tb_area_info extends base_login
 		$this->init_db();
 		if($this->err_no)
 			return $ay;
-		$conn="SELECT aid,aname FROM area_info WHERE aid%10000 = 0 ORDER BY aid";
+		$conn="SELECT aid,aname FROM area_info WHERE aid mod 10000 = 0 ORDER BY aid";
 		$res=mysqli_query($this->mysqli,$conn);
 		while($row=mysqli_fetch_row($res))
 			array_push($ay,$row);

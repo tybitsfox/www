@@ -6,138 +6,14 @@ loadscript("/huili/css/newstyle.css","css");
 //{{{变量、初始化
 if(!defined("HOME_CALLED") || !isset($_SESSION['GLO_VAR']))
 	die("access denied!");
-$glo_idx=array(9,'企业名录','企业浏览','企业信息','企业地址',$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ9']);
-$pg_sel=array(array("","mlview","企业浏览"),array("","mlintro","企业信息"),array("","mladdr","企业地址")); //活动状态，id，标题
+$glo_idx=array(12,'土壤监测','点位总览','站点明细','监测数据',$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ12']);
+$pg_sel=array(array("","mlview","点位总览"),array("","mlintro","点位明细"),array("","mladdr","监测数据")); //活动状态，id，标题
 $pg_sel[0][0]="active";
 $act_val=array(0,"","","",0,0);//操作代码，名称，行业，所属，翻页方向，idx。
 $pg_cnt=array(0,0,0,0); //翻页操作所用变量：当前页号，总页数（可继续翻页标志），当前最小idx,当前最大idx
-
-
-
-//下面是获取属地的省份数据,默认显示泰安的工业企业
-$area_ay=array();
-$ta=new tb_area_info();
-$area_ay=$ta->get_sheng();
-$area_by=array();
-$area_by=$ta->get_dishi("370000");
-$msg01="<p>这是企业浏览界面</p>";  //测试，显示测试信息用
+$msg01="<p>点位总览</p>";  //测试，显示测试信息用
 $shwmsg=array(); //显示信息队列
 
-if(isset($_POST['byname01'])) //按名称查找
-{
-	$x=$_POST['hycode'];
-	$y=$_POST['sdcode'];
-	if($x == "")//只能两种操作：仅按名称，名称和属地
-	{
-		if($y == "")
-		{$act_val[0]=0;$act_val[1]=$_POST['byname01'];}
-		else
-		{$act_val[0]=2;$act_val[1]=$_POST['byname01'];$act_val[3]=$y;}
-	}
-	else //两种操作：
-	{
-		if($y == "")
-		{$act_val[0]=1;$act_val[1]=$_POST['byname01'];$act_val[2]=$x;}
-		else
-		{$act_val[0]=3;$act_val[1]=$_POST['byname01'];$act_val[2]=$x;$act_val[3]=$y;}
-	}
-	$msg01="按名称查找，行业代码：".$x." 区划代码：".$y;
-}
-elseif(isset($_POST['btnsel1'])) //按行业
-{
-	$x=$_POST['btnsel3']; //行业代码
-	$y=$_POST['btnsel1'];	//是否使用属地过滤
-	$z=$_POST['btnsel2'];	//属地区划代码
-	if($y == "y") //考虑属地
-	{
-		if($z == "") //为空，则不考虑属地
-		{$act_val[0]=5;$act_val[2]=$x;}
-		else
-		{$act_val[0]=4;$act_val[2]=$x;$act_val[3]=$z;}
-	}
-	else
-	{$act_val[0]=5;$act_val[2]=$x;}
-	$msg01="按行业查找，行业代码：".$x."区划代码：".$z."是否考虑区划：".$y;
-}
-elseif(isset($_POST['btnsel']))
-{
-	$x=$_POST['btnsela'];	//行业代码
-	$y=$_POST['btnsel'];	//是否使用行业过滤
-	$z=$_POST['btnselb']; //行政区划
-	if($y == "y") //考虑行业
-	{
-		if($x == "") //行业为空，则仅考虑属地
-		{$act_val[0]=6;$act_va[3]=$z;}
-		else
-		{$act_val[0]=4;$act_val[2]=$x;$act_val[3]=$z;}
-	}
-	else
-	{$act_val[0]=6;$act_va[3]=$z;}
-	$msg01="按区划查找，行业代码：".$x."区划代码：".$z."是否考虑区划：".$y;
-}
-else //default
-{//这里加入翻页的响应代码
-	if(isset($_GET['next'])) //下翻页
-	{
-		$act_val[0]=$_GET['actcode']; //操作代码
-		$act_val[1]=$_GET['name']; //名称
-		$act_val[2]=$_GET['hycode'];//行业代码
-		$act_val[3]=$_GET['acode'];//区划代码
-		$act_val[4]=1;//下（前）翻页
-		$act_val[5]=$_GET['next'];//下翻页起始idx
-		$pg_cnt[0]=$_GET['curpg'];//当前页号
-	}
-	elseif(isset($_GET['pre']))//上翻页
-	{
-		$act_val[0]=$_GET['actcode']; //操作代码
-		$act_val[1]=$_GET['name']; //名称
-		$act_val[2]=$_GET['hycode'];//行业代码
-		$act_val[3]=$_GET['acode'];//区划代码
-		$act_val[4]=2;
-		$act_val[5]=$_GET['pre'];//上翻页起始idx
-		$pg_cnt[0]=$_GET['curpg'];//当前页号
-	}
-	else  //这里是初始状态
-	{$act_val=array(6,"","","370900",0,0);}
-	$ta=new tb_comp_info();
-	$shwmsg=$ta->get_comp($act_val);
-}
-$ay=array();
-$ay=array_pop($shwmsg);
-$pg_cnt[1]=$ay[0]; //保存可翻页标志，大于10表示可继续翻页
-$j=count($shwmsg);
-if($j>0)
-{
-	$ay=$shwmsg[0];	$pg_cnt[2]=$ay[0];
-	$ay=$shwmsg[$j-1];$pg_cnt[3]=$ay[0];
-	echo "<script>";
-	echo "var sval=[";
-	for($i=0;$i<count($shwmsg);$i++)
-	{
-		$a=array();$a=$shwmsg[$i];
-		$st=sprintf("['%s','%s','%s','%s','%s']",$a[1],$a[3],$a[5],$a[6],$a[8]);
-		echo $st;
-		if($i == (count($shwmsg)-1))
-			echo "]";
-		else
-			echo ",";
-	}
-	echo "</script>";
-}
-if(($pg_cnt[0] == 0) || (($act_val[4] == 2) && ($pg_cnt[1] <=10))) //没有前翻页了
-{$pgstr1="<div class='shareblock-body'><div class='text-center'><a href='javascript:;' style='color: gray; cursor: default; disabled: true;'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;";}
-else
-{
-	$st=$glo_idx[5]."?pre=".$pg_cnt[2]."&actcode=".$act_val[0]."&name=".$act_val[1]."&hycode=".$act_val[2]."&acode=".$act_val[3]."&curpg=".($pg_cnt[0]-1);
-	$pgstr1="<div class='shareblock-body'><div class='text-center'><a href='".$st."' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;".($pg_cnt[0]+1)."&nbsp;&nbsp;&nbsp;";
-}
-if(($act_val[4] <= 1) && ($pg_cnt[1] <= 10)) //没有后翻页了
-{$pgstr2="<a href='javascript:;' style='color: gray; cursor: default; disabled: true;'>&gt;&gt;</a></div></div>";}
-else
-{
-	$st=$glo_idx[5]."?next=".$pg_cnt[3]."&actcode=".$act_val[0]."&name=".$act_val[1]."&hycode=".$act_val[2]."&acode=".$act_val[3]."&curpg=".($pg_cnt[0]+1);
-	$pgstr2="<a href='".$st."' style='color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;'>&gt;&gt;</a></div></div>";
-}
 //}}}
 ?>
 <?php
@@ -153,19 +29,9 @@ else
 	}
 	echo"\n</ul><div class='body'><div class='body body-settings'><div class='tab-content'>";
 //{{{page one 企业浏览
-	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[0][0]."' id='".$pg_sel[0][1]."'><ul class='list-unstyled list-accounts'>";
-	$st1="<li><div class='avatar'></div><div class='account-info'><p class='title'><strong>单位名称：</strong>%s</p></div><div class='account-status'><p></p></div><div class='account-action'><a href='#' class='btn btn-outline' onclick='switch_pg(3,%d);'>详细信息</a></div></li>";
-	for($i=0;$i<count($shwmsg);$i++)
-	{
-		$a=array();$a=$shwmsg[$i];
-		$st=sprintf($st1,$a[1],$i);
-		echo $st;
-	}
-echo "</ul>";
-echo $pgstr1.$pgstr2;
-echo "</div>";	
-//	echo $msg01;
-//	echo"</ul></div>";
+	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[0][0]."' id='".$pg_sel[0][1]."'>";
+	echo "<div id='allmap' style='width:100%;height:400px;'></div>";
+	echo "</div>";	
 //}}}	
 //{{{page two 企业信息
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[1][0]."' id='".$pg_sel[1][1]."'>";
@@ -175,12 +41,7 @@ echo "</div>";
 //}}}
 //{{{page three 企业地址
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[2][0]."' id='".$pg_sel[2][1]."'>";
-	echo "<div id='allmap' style='width:100%;height:400px;'>";
-?>
-<script>
-</script>
-<?php
-echo "</div></div>";
+	echo "</div>";
 //}}}
 
 
@@ -213,7 +74,7 @@ echo "</div></div>";
 			<div class="form-group">
 				<div class="form-prefix">
 					<i class="icon-filter picto"></i>
-					<input class="form-control form-daterange" id="texta2" placeholder="按行业过滤" value="" type="text">
+					<input class="form-control form-daterange" id="texta2" placeholder="按类型过滤" value="" type="text">
 					<span class="caret"></span>
 				</div>
 			</div>
@@ -223,20 +84,23 @@ echo "</div></div>";
 				</div>
 				<div class="dropdown-menu-body form-horizontal">
 					<div class="form-group">
-						<label class="col-sm-3 control-label">行业分类</label>
+						<label class="col-sm-3 control-label">点位类型</label>
 						<div class="col-sm-9">
 							<select class="form-control" name="area_sel3" id="area_sel3">
-								<option value="A">农、林、牧、渔业</option>
-								<option value="B">采矿业</option>
-								<option value="C">制造业</option>
-								<option value="D">电力、热力、燃气及水生产和供应业</option>
-								<option value="E">建筑业</option>
-								<option value="F">批发和零售业</option>
-								<option value="G">交通运输、仓储和邮政业</option>
-								<option value="H">住宿和餐饮业</option>
-								<option value="I">信息传输、软件和信息技术服务业</option>
-								<option value="J">金融业</option>
-								<option value="K">其他行业</option>
+								<option value="A">全部点位</option>
+								<option value="B">正常点位</option>
+								<option value="C">质控点位</option>
+								<option value="D">背景点位</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label">所属时期</label>
+						<div class="col-sm-9">
+							<select class="form-control" name="area_sel4" id="area_sel4">
+								<option value="2016">2016</option>
+								<option value="2017">2017</option>
+								<option value="2018" selected="selected">2018</option>
 							</select>
 						</div>
 					</div>
@@ -524,19 +388,19 @@ function switch_pg(i,j)
 	}
 	else if(i == 2)
 	{
-		var xx=sval[0][2];
-		var yy=sval[0][3];
+	//	var xx=sval[0][2];
+	//	var yy=sval[0][3];
 		$("#vdv2").addClass("active");
 		$("#vdv0").removeClass("active");
 		$("#vdv1").removeClass("active");
 		$("#mladdr").addClass("active");
 		$("#mlview").removeClass("active");
 		$("#mlintro").removeClass("active");//这里添加地图信息
-		var h=window.screen.height * 0.48;
-		$("#allmap").height(h);
+	//	var h=window.screen.height * 0.48;
+	//	$("#allmap").height(h);
 	//	var st="lng=".concat(xx,"; lat=",yy);
 	//	$("#allmap").html(st);
-		show_map();
+	//	show_map();
 	}
 	else if(i == 3)
 	{
