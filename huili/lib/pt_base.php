@@ -13,8 +13,14 @@ class pt_base
 {
 	public $db,$mysqli,$err_no;
 //{{{public function __construct()
-	public function __construct()
+	public function __construct($t)
 	{
+		if(($t != ""))
+		{
+			$i=intval($t);
+			if(($i < 2030 ) && ($i > 2015))
+				$_SESSION['PTCURRENT']=$i;
+		}
 		if(!isset($_SESSION['PTCURRENT']))
 			$this->get_cur_year();
 		$this->err_no=$this->check_it();
@@ -105,12 +111,93 @@ class pt_base
 //{{{class zl extends pt_base 点位总览界面数据操作类
 class zl extends pt_base
 {
-//{{{public function get_point($u) 
-/*in:	array;
+//{{{public function get_station($u) 
+/*in:	array(0,0,0,0);
+  array[0]:	操作代码；其中：
+  	=0	取得全部点位记录
+	=1	按区划取得全部记录
+	=2	按区划和类型取得记录
+	=3	按类型取得记录
+	=4	按名称模糊查询
+array[1]:	区划代码
+array[2]:	类型代码
+array[3]:	名称关键字
+out:	array;
  */	
-	public function get_point($u)
+	public function get_station($u)
 	{
-
+		$ay=array();
+		if(count($u) != 4)
+		{$this->err_no=2;return $ay;}
+		$this->init_db();
+		if($this->err_no)
+			return $ay;
+		switch($u[0])
+		{
+//{{{switch
+		case 0://取得全部点位记录 --这个应该不常用
+			$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid WHERE b.lid = 0 order by a.sid";
+			break;
+		case 1://按区划取得全部记录
+			$i=intval($u[1]);
+			if($i % 100) //按地市取得
+			{
+				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid WHERE a.aid > %u AND a.aid < %u AND b.lid = 0 order by a.sid";
+				$conn=sprintf($s1,$i,$i+99);
+			}
+			else
+			{
+				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE a.aid = %u AND b.lid = 0 order by a.sid";
+				$conn=sprintf($s1,$i);
+			}
+			break;
+		case 2://按区划和类型
+			$i=intval($u[1]);
+			$j=intval($u[2]);
+			if($j == 0) //基础点位
+				$s2=" AND a.stype = 0";
+			elseif($j == 1) //质控点位
+				$s2=" AND (a.stype & 1) > 0";
+			elseif($j == 2) //背景点位
+				$s2=" AND (a.stype & 2) > 0";
+			elseif($j == 3) //质控和背景点位
+				$s2=" AND a.stype = 3";
+			else//全部类型
+				$s2="";
+			if($i % 100) //按地市取得
+			{
+				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid WHERE a.aid > %u AND a.aid < %u %s AND b.lid = 0 order by a.sid";
+				$conn=sprintf($s1,$i,$i+99,$s2);
+			}
+			else
+			{
+				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE a.aid = %u %s AND b.lid = 0 order by a.sid";
+				$conn=sprintf($s1,$i,$s2);
+			}
+			break;
+		case 3://按类型
+			$j=intval($u[2]);
+			if($j == 0) //基础点位
+				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE a.stype = 0 AND b.lid = 0 order by a.sid";
+			elseif($j == 1)//质控点位
+				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE (a.stype & 1) > 0 AND b.lid = 0 order by a.sid";
+			elseif($j == 2)//背景点位
+				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE (a.stype & 2) > 0 AND b.lid = 0 order by a.sid";
+			elseif($j == 3)//质控和背景点位
+				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE a.stype = 3 AND b.lid = 0 order by a.sid";
+			else //全部点位
+				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE b.lid = 0 order by a.sid";
+			break;
+		case 4://按名称关键字
+				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE LOCATE('".$u[3]."',a.sname) > 0 AND b.lid = 0 order by a.sid";
+			break; //}}}
+		};
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
 	}//}}}
 
 }//}}}
