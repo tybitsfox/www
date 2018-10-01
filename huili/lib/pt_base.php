@@ -199,6 +199,25 @@ out:	array;
 		mysqli_close($this->mysqli);
 		return $ay;
 	}//}}}
+//{{{ public function get_act_area() 取得有效的区划信息
+/*in: none
+out:	array[0] 区划代码
+	 	array[1] 区划名称
+ */
+	public function get_act_area()
+	{
+		$ay=array();
+		$this->init_db();
+		if($this->err_no)
+			return $ay;
+		$conn="SELECT aid,aname FROM area_info WHERE bused = 1";
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}
 
 }//}}}
 

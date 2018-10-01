@@ -13,7 +13,9 @@ $act_val=array(0,"","","",0,0);//操作代码，名称，行业，所属，翻�
 $pg_cnt=array(0,0,0,0); //翻页操作所用变量：当前页号，总页数（可继续翻页标志），当前最小idx,当前最大idx
 $msg01="<p>点位总览</p>";  //测试，显示测试信息用
 $shwmsg=array(); //显示信息队列
-
+$area_ay=array(); //地市队列，这里颗粒度设为地市，所以就一个结果
+$tb=new zl();
+$area_ay=$tb->get_act_area();
 //}}}
 ?>
 <?php
@@ -147,32 +149,31 @@ $shwmsg=array(); //显示信息队列
 				</div>
 				<div class="dropdown-menu-body form-horizontal">
 					<div class="form-group">
-						<label class="col-sm-3 control-label">省份</label>
+						<label class="col-sm-3 control-label">地市</label>
 						<div class="col-sm-9">
 							<select class="form-control" id="area_sel1">
 							<?php
 								foreach($area_ay as $a)
 								{
-									if($a[0] == "370000")
+									if(($a[0] % 100) == 0)
+									{
 										$st=sprintf("<option value='%s' selected='selected'>%s</option>",$a[0],$a[1]);
-									else
-										$st=sprintf("<option value='%s'>%s</option>",$a[0],$a[1]);
-									echo $st;
+										echo $st;
+									}
 								}
 							?>
 							</select>
 						</div>
 					</div>
 					<div class="form-group">
-						<label class="col-sm-3 control-label">地市</label>
+						<label class="col-sm-3 control-label">区县</label>
 						<div class="col-sm-9">
 							<select class="form-control" id="area_sel2">
 							<?php
-								echo "<option value='0'>忽略地市</option>";
-								foreach($area_by as $b)
+								foreach($area_ay as $b)
 								{
-									if($b[0] == "370900")
-										$st=sprintf("<option value='%s' selected='selected'>%s</option>",$b[0],$b[1]);
+									if(($b[0] % 100) == 0)
+										$st=sprintf("<option value='%s' selected='selected'>全市</option>",$b[0]);
 									else
 										$st=sprintf("<option value='%s'>%s</option>",$b[0],$b[1]);
 									echo $st;
@@ -184,7 +185,7 @@ $shwmsg=array(); //显示信息队列
 					<div class="form-group">
 					</div>
 					<div class="form-group">
-						<label class="col-sm-3 control-label">行业过滤</label>
+						<label class="col-sm-3 control-label">类型过滤</label>
 						<div class="col-sm-9">
 							<div class="btn-group btn-group-switch">
 								<button class="btn active" id="btngrp1">考虑</button>
@@ -316,13 +317,13 @@ $(document).ready(function(){
 	$(".btn-advancedsearch").click(function(){
 			$(".searchbar-filters").show();
 			});
-	$("#area_sel1").change(function(){
-				var a=$("#area_sel1").val();
-				$("#btnsel2").val(a);$("#btnselb").val(a);$("#sdcode").val(a);
-				var b="area_sel2";
-				$("#area_sel2").empty();
-				ajax_getval(a,b);
-			});
+//	$("#area_sel1").change(function(){
+//				var a=$("#area_sel1").val();
+//				$("#btnsel2").val(a);$("#btnselb").val(a);$("#sdcode").val(a);
+//				var b="area_sel2";
+//				$("#area_sel2").empty();
+//				ajax_getval(a,b);
+//			});
 	$("#area_sel2").change(function(){
 			var a=$("#area_sel2").val();
 			if(a == "0")
@@ -418,7 +419,7 @@ function switch_pg(i,j)
 <?php
 //}}}
 //}}}
-	echo "</div></div>";
+	echo "</div></div></div>";
 	echo $SIG_HTML['RIGHT_TOP3'];
 ?>
 
