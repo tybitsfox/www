@@ -220,6 +220,8 @@ out:	array[0] 区划代码
 	}//}}}
 
 }//}}}
+//{{{public function get_xx()
 
+//}}}
 
 ?>

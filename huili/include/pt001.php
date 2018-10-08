@@ -16,6 +16,23 @@ $shwmsg=array(); //显示信息队列
 $area_ay=array(); //地市队列，这里颗粒度设为地市，所以就一个结果
 $tb=new zl();
 $area_ay=$tb->get_act_area();
+$station_ay=array(); //站点队列
+$tmp_ay=array(0,0,0,0);
+$station_ay=$tb->get_station($tmp_ay);
+echo "<script>";
+echo "var pval=[";
+for($i=0;$i<count($station_ay);$i++)
+{
+	$ay=array();$ay=$station_ay[$i];
+	$st=sprintf("['%s','%s','%s','%s','%s','%s']",$ay[0],$ay[1],$ay[2],$ay[3],$ay[4],$ay[5]);
+	echo $st;
+	if($i == (count($station_ay)-1))
+		echo "]";
+	else
+		echo ",";
+}
+echo "</script>";
+
 //}}}
 ?>
 <?php
@@ -76,7 +93,7 @@ $area_ay=$tb->get_act_area();
 			<div class="form-group">
 				<div class="form-prefix">
 					<i class="icon-filter picto"></i>
-					<input class="form-control form-daterange" id="texta2" placeholder="按类型过滤" value="" type="text">
+					<input class="form-control form-daterange" id="texta2" placeholder="全部点位" value="" type="text">
 					<span class="caret"></span>
 				</div>
 			</div>
@@ -89,10 +106,10 @@ $area_ay=$tb->get_act_area();
 						<label class="col-sm-3 control-label">点位类型</label>
 						<div class="col-sm-9">
 							<select class="form-control" name="area_sel3" id="area_sel3">
-								<option value="A">全部点位</option>
-								<option value="B">正常点位</option>
-								<option value="C">质控点位</option>
-								<option value="D">背景点位</option>
+								<option value="全部点位" selected="selected">全部点位</option>
+								<option value="正常点位">正常点位</option>
+								<option value="质控点位">质控点位</option>
+								<option value="背景点位">背景点位</option>
 							</select>
 						</div>
 					</div>
@@ -268,7 +285,7 @@ $(document).ready(function(){
 	$("#texta2").click(function(){
 			$(".dropdown-filters").removeClass("open");
 			var v=$("#area_sel3").val();
-			var w=v+"类";
+			var w=v;
 			if($("#texta2").is(":visible"))
 			{
 				if(jflag == 0)
@@ -415,7 +432,10 @@ function switch_pg(i,j)
 		indx=j;
 	}
 };
-</script>	
+</script>
+<script>
+
+</script>
 <?php
 //}}}
 //}}}
