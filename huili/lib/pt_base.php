@@ -39,7 +39,7 @@ class pt_base
 	public function check_it()
 	{
 		global $DB_ADDR_TY,$DB_PORT_TY,$PT_NAME_TY,$DB_USER_TY,$DB_PWD_TY;
-		$i=intval($_SESSION['CURRENT']);
+		$i=intval($_SESSION['PTCURRENT']);
 		if(!isset($DB_ADDR_TY[$i]))
 		{$this->err_no=4;return;} //选择的年份没有数据
 		$this->db=array();

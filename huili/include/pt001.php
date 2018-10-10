@@ -14,24 +14,11 @@ $pg_cnt=array(0,0,0,0); //翻页操作所用变量：当前页号，总页数（
 $msg01="<p>点位总览</p>";  //测试，显示测试信息用
 $shwmsg=array(); //显示信息队列
 $area_ay=array(); //地市队列，这里颗粒度设为地市，所以就一个结果
-$tb=new zl();
+$tb=new zl('2017');
 $area_ay=$tb->get_act_area();
 $station_ay=array(); //站点队列
 $tmp_ay=array(0,0,0,0);
 $station_ay=$tb->get_station($tmp_ay);
-echo "<script>";
-echo "var pval=[";
-for($i=0;$i<count($station_ay);$i++)
-{
-	$ay=array();$ay=$station_ay[$i];
-	$st=sprintf("['%s','%s','%s','%s','%s','%s']",$ay[0],$ay[1],$ay[2],$ay[3],$ay[4],$ay[5]);
-	echo $st;
-	if($i == (count($station_ay)-1))
-		echo "]";
-	else
-		echo ",";
-}
-echo "</script>";
 
 //}}}
 ?>
@@ -51,6 +38,31 @@ echo "</script>";
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[0][0]."' id='".$pg_sel[0][1]."'>";
 	echo "<div id='allmap' style='width:100%;height:400px;'></div>";
 	echo "</div>";	
+echo "<script>";
+$st1="var map = new BMap.Map('allmap');map.centerAndZoom('%s', 10);map.addControl(new BMap.MapTypeControl());";
+$st2="泰安"; //default
+foreach($area_ay as $a)
+{
+	if(($a[0] % 100) == 0)
+	{$st2=$a[1];break;}
+}
+$st=sprintf($st1,$st2);
+echo $st."\n";
+$st=sprintf("map.setCurrentCity('%s');map.enableScrollWheelZoom(true);\n",$st2);
+echo $st;
+$st=sprintf("var opts = {width:300,height:130,title:'%s',enableMessage:true};\n",$st2);
+echo $st;
+$st1="var content = \"<div style='margin:0;line-height:20px;padding:2px;'><img src='.%s' alt='' style='float:right;zoom:1;overflow:hidden;width:100px;height:100px;margin-left:3px;'/>点位名称：%s<br>点位代码：<font color=red>%s</font><br>经度：<font color=blue>%0.6f</font><br>纬度：<font color=blue>%0.6f</font></div>\";\n";
+foreach($station_ay as $a)
+{
+	$st=sprintf($st1,$a[5],$a[1],$a[2],$a[3],$a[4]);
+	echo $st;
+	$st=sprintf("var marker = new BMap.Marker(new BMap.Point(%0.6f,%0.6f));map.addOverlay(marker);addClickHandler(content,marker);",$a[3],$a[4]);
+	echo $st;
+}
+echo "function addClickHandler(content,marker){marker.addEventListener('click',function(e){openInfo(content,e)});};";
+echo "function openInfo(content,e){var p = e.target;var point = new BMap.Point(p.getPosition().lng, p.getPosition().lat);var infoWindow = new BMap.InfoWindow(content,opts);map.openInfoWindow(infoWindow,point);};";
+echo "</script>";
 //}}}	
 //{{{page two 企业信息
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[1][0]."' id='".$pg_sel[1][1]."'>";
@@ -117,9 +129,20 @@ echo "</script>";
 						<label class="col-sm-3 control-label">所属时期</label>
 						<div class="col-sm-9">
 							<select class="form-control" name="area_sel4" id="area_sel4">
-								<option value="2016">2016</option>
-								<option value="2017">2017</option>
-								<option value="2018" selected="selected">2018</option>
+							<?php
+								$ay=array();$ay=array_keys($PT_NAME_TY);$year=intval(date("Y"));
+								foreach($ay as $a)
+								{
+									if(intval($a)>$year)
+										continue;
+									elseif(intval($a) == $year)
+									{$st=sprintf("<option value='%s' selected='selected'>%s</option>",$a,$a);}
+									else
+									{$st=sprintf("<option value='%s'>%s</option>",$a,$a);}
+									echo $st;
+								}
+
+							?>
 							</select>
 						</div>
 					</div>
@@ -432,9 +455,6 @@ function switch_pg(i,j)
 		indx=j;
 	}
 };
-</script>
-<script>
-
 </script>
 <?php
 //}}}
