@@ -105,7 +105,7 @@ echo "</script>";
 			<div class="form-group">
 				<div class="form-prefix">
 					<i class="icon-filter picto"></i>
-					<input class="form-control form-daterange" id="texta2" placeholder="全部点位" value="" type="text">
+					<input class="form-control form-daterange" id="texta2" placeholder="点位过滤" value="" type="text">
 					<span class="caret"></span>
 				</div>
 			</div>
@@ -114,17 +114,6 @@ echo "</script>";
 					<a class="btn-text" href="javascript:;" onclick="set_vv(2);">清空过滤</a>
 				</div>
 				<div class="dropdown-menu-body form-horizontal">
-					<div class="form-group">
-						<label class="col-sm-3 control-label">点位类型</label>
-						<div class="col-sm-9">
-							<select class="form-control" name="area_sel3" id="area_sel3">
-								<option value="全部点位" selected="selected">全部点位</option>
-								<option value="正常点位">正常点位</option>
-								<option value="质控点位">质控点位</option>
-								<option value="背景点位">背景点位</option>
-							</select>
-						</div>
-					</div>
 					<div class="form-group">
 						<label class="col-sm-3 control-label">所属时期</label>
 						<div class="col-sm-9">
@@ -141,20 +130,53 @@ echo "</script>";
 									{$st=sprintf("<option value='%s'>%s</option>",$a,$a);}
 									echo $st;
 								}
-
 							?>
 							</select>
 						</div>
 					</div>
 					<div class="form-group">
+						<label class="col-sm-3 control-label">所属地市</label>
+						<div class="col-sm-9">
+							<select class="form-control" id="area_sel1">
+							<?php
+								foreach($area_ay as $a)
+								{
+									if(($a[0] % 100) == 0)
+									{
+										$st=sprintf("<option value='%s' selected='selected'>%s</option>",$a[0],$a[1]);
+										echo $st;
+									}
+								}
+							?>
+							</select>
+						</div>
 					</div>
 					<div class="form-group">
-						<label class="col-sm-3 control-label">属地过滤</label>
+						<label class="col-sm-3 control-label">所属区县</label>
 						<div class="col-sm-9">
-							<div class="btn-group btn-group-switch">
-								<button class="btn active" id="btngrp3">考虑</button>
-								<button class="btn" id="btngrp4">不考虑</button>
-							</div>
+							<select class="form-control" id="area_sel2">
+							<?php
+								foreach($area_ay as $b)
+								{
+									if(($b[0] % 100) == 0)
+										$st=sprintf("<option value='%s' selected='selected'>全市</option>",$b[0]);
+									else
+										$st=sprintf("<option value='%s'>%s</option>",$b[0],$b[1]);
+									echo $st;
+								}
+							?>
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label">点位类型</label>
+						<div class="col-sm-9">
+							<select class="form-control" name="area_sel3" id="area_sel3">
+								<option value="全部点位" selected="selected">全部点位</option>
+								<option value="正常点位">正常点位</option>
+								<option value="质控点位">质控点位</option>
+								<option value="背景点位">背景点位</option>
+							</select>
 						</div>
 					</div>
 					<div class="form-group">
@@ -179,14 +201,14 @@ echo "</script>";
 			<div class="form-group">
 		   		<div class="form-prefix">
 					<i class="icon-filter picto"></i>
-					<input class="form-control form-filters" id="texta1" placeholder="按属地过滤" value="" type="text">
+					<input class="form-control form-filters" id="texta1" placeholder="项目过滤" value="" type="text">
 					<span class="caret"></span>
 				</div>	
 			</div>
 			<div class="dropdown-menu dropdown-menu-right dropdown-menu-filters">
 				<div class="dropdown-menu-head text-right">
 					<a class="btn-text" href="javascript:;" onclick="set_vv(1);">清空过滤</a>
-				</div>
+				</div><form action="<?php echo $glo_idx[5];?>" method="post">
 				<div class="dropdown-menu-body form-horizontal">
 					<div class="form-group">
 						<label class="col-sm-3 control-label">地市</label>
@@ -234,15 +256,15 @@ echo "</script>";
 						</div>
 					</div>
 					<div class="form-group">
-						<label class="col-sm-3 control-label">&nbsp;</label><form action="<?php echo $glo_idx[5];?>" method="post">
+						<label class="col-sm-3 control-label">&nbsp;</label>
 						<div class="col-sm-9">
 							<input type="hidden" value="y" name="btnsel" id="btnsel" />
 							<input type="hidden" value="a" name="btnsela" id="btnsela" />
 							<input type="hidden" value="370900" name="btnselb" id="btnselb" />
 							<button type="submit" class="btn btn-primary btn-block">应用查询</button> 
-						</div></form>
+						</div>
 					</div>
-				</div>
+				</div></form>
 			</div>
 		</div>
 	</div>
@@ -318,52 +340,9 @@ $(document).ready(function(){
 			}
 			$(".dropdown-filtersa").toggleClass("open");
 			});
-	$("#btngrp1").click(function(){
-			var a=$("#btnsel").val();
-			if(a == "n")
-			{
-				$("#btngrp1").addClass("active");
-				$("#btngrp2").removeClass("active");
-				$("#btnsel").val("y");
-			}
-			});
-	$("#btngrp2").click(function(){
-			var a=$("#btnsel").val();
-			if(a == "y")
-			{
-				$("#btngrp1").removeClass("active");
-				$("#btngrp2").addClass("active");
-				$("#btnsel").val("n");
-			}
-			});
-	$("#btngrp3").click(function(){
-			var a=$("#btnsel1").val();
-			if(a == "n")
-			{
-				$("#btngrp3").addClass("active");
-				$("#btngrp4").removeClass("active");
-				$("#btnsel1").val("y");
-			}
-			});
-	$("#btngrp4").click(function(){
-			var a=$("#btnsel1").val();
-			if(a == "y")
-			{
-				$("#btngrp3").removeClass("active");
-				$("#btngrp4").addClass("active");
-				$("#btnsel1").val("n");
-			}
-			});
 	$(".btn-advancedsearch").click(function(){
 			$(".searchbar-filters").show();
 			});
-//	$("#area_sel1").change(function(){
-//				var a=$("#area_sel1").val();
-//				$("#btnsel2").val(a);$("#btnselb").val(a);$("#sdcode").val(a);
-//				var b="area_sel2";
-//				$("#area_sel2").empty();
-//				ajax_getval(a,b);
-//			});
 	$("#area_sel2").change(function(){
 			var a=$("#area_sel2").val();
 			if(a == "0")
@@ -401,8 +380,7 @@ function set_vv(v)
 	}
 	else
 	{
-		jflag=1;document.getElementById("texta2").value="";document.getElementById("hycode").value="";
-		document.getElementById("btnsel3").value="";document.getElementById("btnsela").value="";
+		jflag=1;document.getElementById("texta2").value="";
 		$(".dropdown-filtersa").toggleClass("open");
 	}
 };
