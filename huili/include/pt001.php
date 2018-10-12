@@ -14,16 +14,47 @@ $pg_cnt=array(0,0,0,0); //翻页操作所用变量：当前页号，总页数（
 $msg01="<p>点位总览</p>";  //测试，显示测试信息用
 $shwmsg=array(); //显示信息队列
 $area_ay=array(); //地市队列，这里颗粒度设为地市，所以就一个结果
-$tb=new zl('2017');
+//2010-10-12添加，用于保存或初始化控件所用的变量
+$cur_ay=array("date" => 2017,"ds" => "泰安市","qx" => 370900,"dw" => "0");
+if(isset($_POST["area_sel4"]))
+{$cur_ay["date"]=$_POST["area_sel4"];}
+if(isset($_POST["area_sel2"]))
+{$cur_ay["qx"]=$_POST["area_sel2"];}
+if(isset($_POST["area_sel3"]))
+{$cur_ay["dw"]=$_POST["area_sel3"];}
+
+$tb=new zl($cur_ay["date"]);
 $area_ay=$tb->get_act_area();
 $station_ay=array(); //站点队列
 $tmp_ay=array(0,0,0,0);
+$v1=intval($cur_ay["qx"]);
+if(($v1 % 100) == 0)//两种可能：取得全部点位，按类型取得点位
+{
+	if(intval($cur_ay["dw"]) == 0) //取得全部点位
+		$tmp_ay=array(0,0,0,0);
+	else
+		$tmp_ay=array(3,0,intval($cur_ay["dw"])-1,0);
+}
+else//两种可能：按区划取得点位，按区划和类型取得点位
+{
+	if(intval($cur_ay["dw"]) == 0) //按区划
+		$tmp_ay=array(1,$v1,0,0);
+	else
+		$tmp_ay=array(2,$v1,intval($cur_ay["dw"])-1,0);
+}
 $station_ay=$tb->get_station($tmp_ay);
 
 //}}}
 ?>
 <?php
-	$st2="\n\n<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li>".$glo_idx[1];
+	$st1="泰安市";
+	foreach($area_ay as $a)
+	{
+		if(intval($a[0]) == intval($cur_ay["qx"]))
+		{$st1=$a[1];break;}
+	}
+	$sa=array("全部点位","基础点位","质控点位","背景点位","质控和背景点位");
+	$st2="\n\n<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li>".$glo_idx[1]."</li><li>".$cur_ay["date"]."年</li><li>".$st1."</li><li>".$sa[intval($cur_ay["dw"])];
 	$st=sprintf($SIG_HTML['RIGHT_TOP1'],$st2);
 	echo $st;
 	echo"\n<div class='inner' id='modal_container' ><div class='block'><div class='panel shadow'><ul class='nav nav-tabs nav-tabs-hor' role='tablist'>";
@@ -112,19 +143,19 @@ echo "</script>";
 			<div class="dropdown-menu dropdown-menu-right dropdown-menu-filters">
 				<div class="dropdown-menu-head text-right">
 					<a class="btn-text" href="javascript:;" onclick="set_vv(2);">清空过滤</a>
-				</div>
+				</div><form action="<?php echo $glo_idx[5];?>" method="post">
 				<div class="dropdown-menu-body form-horizontal">
 					<div class="form-group">
 						<label class="col-sm-3 control-label">所属时期</label>
 						<div class="col-sm-9">
 							<select class="form-control" name="area_sel4" id="area_sel4">
 							<?php
-								$ay=array();$ay=array_keys($PT_NAME_TY);$year=intval(date("Y"));
+								$ay=array();$ay=array_keys($PT_NAME_TY);$year=date("Y");
 								foreach($ay as $a)
 								{
 									if(intval($a)>$year)
 										continue;
-									elseif(intval($a) == $year)
+									elseif(intval($a) == $cur_ay["date"])
 									{$st=sprintf("<option value='%s' selected='selected'>%s</option>",$a,$a);}
 									else
 									{$st=sprintf("<option value='%s'>%s</option>",$a,$a);}
@@ -154,14 +185,19 @@ echo "</script>";
 					<div class="form-group">
 						<label class="col-sm-3 control-label">所属区县</label>
 						<div class="col-sm-9">
-							<select class="form-control" id="area_sel2">
+							<select class="form-control" name="area_sel2" id="area_sel2">
 							<?php
+								$cc=array();
 								foreach($area_ay as $b)
 								{
-									if(($b[0] % 100) == 0)
-										$st=sprintf("<option value='%s' selected='selected'>全市</option>",$b[0]);
+									if((intval($b[0]) % 100) == 0)
+										$cc=array($b[0],"全市");
 									else
-										$st=sprintf("<option value='%s'>%s</option>",$b[0],$b[1]);
+										$cc=array($b[0],$b[1]);
+									if(intval($b[0]) == intval($cur_ay["qx"]))
+										$st=sprintf("<option value='%s' selected='selected'>%s</option>",$cc[0],$cc[1]);
+									else
+										$st=sprintf("<option value='%s'>%s</option>",$cc[0],$cc[1]);
 									echo $st;
 								}
 							?>
@@ -172,23 +208,30 @@ echo "</script>";
 						<label class="col-sm-3 control-label">点位类型</label>
 						<div class="col-sm-9">
 							<select class="form-control" name="area_sel3" id="area_sel3">
-								<option value="全部点位" selected="selected">全部点位</option>
-								<option value="正常点位">正常点位</option>
-								<option value="质控点位">质控点位</option>
-								<option value="背景点位">背景点位</option>
+							<?php
+								$sa=array("全部点位","基础点位","质控点位","背景点位","质控和背景点位");
+								for($i=0;$i<5;$i++)
+								{
+									if($i == intval($cur_ay["dw"]))
+										$st=sprintf("<option value='%d' selected='selected'>%s</option>",$i,$sa[$i]);
+									else
+										$st=sprintf("<option value='%d'>%s</option>",$i,$sa[$i]);
+									echo $st;
+								}
+							?>
 							</select>
 						</div>
 					</div>
 					<div class="form-group">
-						<label class="col-sm-3 control-label">&nbsp;</label><form action="<?php echo $glo_idx[5];?>" method="post">
+						<label class="col-sm-3 control-label">&nbsp;</label>
 						<div class="col-sm-9">
 							<input type="hidden" value="y" name="btnsel1" id="btnsel1" />
 							<input type="hidden" value="370900" name="btnsel2" id="btnsel2" />
 							<input type="hidden" value="a" name="btnsel3" id="btnsel3" />
 							<button type="submit" class="btn btn-primary btn-block">应用查询</button> 
-						</div></form>
+						</div>
 					</div>
-				</div>
+				</div></form>
 			</div>
 		</div>
 	</div>
@@ -284,34 +327,6 @@ echo "</script>";
 var iflag=0;
 var jflag=0;
 var indx=0;
-function show_map()
-{
-	var x=sval[indx][2]; //lng
-	var y=sval[indx][3]; //lat
-	var z=sval[indx][4]; //城市名
-	var n=sval[indx][0]; //单位名
-	var len=n.length*6.25;
-	len=0-len;
-	var map = new BMap.Map("allmap");    // 创建Map实例
-	var point = new BMap.Point(x,y);
-	map.centerAndZoom(point, 11);  // 初始化地图,设置中心点坐标和地图级别
-	map.addControl(new BMap.MapTypeControl());   //添加地图类型控件
-	map.setCurrentCity(z);          // 设置地图显示的城市 此项是必须设置的
-	map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
-	var marker = new BMap.Marker(point);
-	map.addOverlay(marker);
-	var opts = {
-	  position : point,
-	  offset   : new BMap.Size(len, 0)
-	}
-	var label = new BMap.Label(n, opts);  // 创建文本标注对象
-		label.setStyle({
-			 color : "blue",
-			 border: "0",
-			 fontSize : "12px"
-		 });
-	map.addOverlay(label);
-}
 $(document).ready(function(){
 	$("#texta1").click(function(){
 			$(".dropdown-filtersa").removeClass("open");
@@ -341,34 +356,10 @@ $(document).ready(function(){
 			$(".dropdown-filtersa").toggleClass("open");
 			});
 	$(".btn-advancedsearch").click(function(){
+			$(".searchbar-dates").show();
 			$(".searchbar-filters").show();
 			});
-	$("#area_sel2").change(function(){
-			var a=$("#area_sel2").val();
-			if(a == "0")
-			{$("#btnsel2").val($("#area_sel1").val());$("#btnselb").val($("#area_sel1").val());$("#sdcode").val($("#area_sel1").val());}
-			else
-			{$("#btnsel2").val(a);$("#btnselb").val(a);$("#sdcode").val(a);}
-			});
-	$("#area_sel3").change(function(){
-			var a=$("#area_sel3").val();
-			$("#btnsela").val(a);$("#btnsel3").val(a);$("#hycode").val(a);
-			});
 });
-function ajax_getval(u,v)
-{
-	var xmlhttp=new XMLHttpRequest();
-	xmlhttp.onreadystatechange=function()
-	{
-		if(xmlhttp.readyState==4 && xmlhttp.status==200)
-		{
-			document.getElementById(v).innerHTML=xmlhttp.responseText;
-		}
-	}
-	var url="/huili/include/for_get.php?area_code="+u;
-	xmlhttp.open("GET",url,true);
-	xmlhttp.send();
-};
 
 function set_vv(v)
 {
@@ -407,19 +398,12 @@ function switch_pg(i,j)
 	}
 	else if(i == 2)
 	{
-	//	var xx=sval[0][2];
-	//	var yy=sval[0][3];
 		$("#vdv2").addClass("active");
 		$("#vdv0").removeClass("active");
 		$("#vdv1").removeClass("active");
 		$("#mladdr").addClass("active");
 		$("#mlview").removeClass("active");
 		$("#mlintro").removeClass("active");//这里添加地图信息
-	//	var h=window.screen.height * 0.48;
-	//	$("#allmap").height(h);
-	//	var st="lng=".concat(xx,"; lat=",yy);
-	//	$("#allmap").html(st);
-	//	show_map();
 	}
 	else if(i == 3)
 	{

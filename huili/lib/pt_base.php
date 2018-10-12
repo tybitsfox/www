@@ -140,7 +140,7 @@ out:	array;
 			break;
 		case 1://按区划取得全部记录
 			$i=intval($u[1]);
-			if($i % 100) //按地市取得
+			if(($i % 100) == 0) //按地市取得
 			{
 				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid WHERE a.aid > %u AND a.aid < %u AND b.lid = 0 order by a.sid";
 				$conn=sprintf($s1,$i,$i+99);
@@ -164,7 +164,7 @@ out:	array;
 				$s2=" AND a.stype = 3";
 			else//全部类型
 				$s2="";
-			if($i % 100) //按地市取得
+			if(($i % 100) == 0) //按地市取得
 			{
 				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid WHERE a.aid > %u AND a.aid < %u %s AND b.lid = 0 order by a.sid";
 				$conn=sprintf($s1,$i,$i+99,$s2);
