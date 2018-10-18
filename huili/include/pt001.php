@@ -16,6 +16,14 @@ $shwmsg=array(); //显示信息队列
 $area_ay=array(); //地市队列，这里颗粒度设为地市，所以就一个结果
 //2010-10-12添加，用于保存或初始化控件所用的变量
 $cur_ay=array("date" => 2017,"ds" => "泰安市","qx" => 370900,"dw" => "0");
+if(isset($_GET["cp"]))
+{
+	$pg_cnt[0]=$_GET["cp"];
+	$cur_ay["date"]=$_GET["cd"];
+	$cur_ay["qx"]=$_GET["qx"];
+	$cur_ay["dw"]=$_GET["dw"];
+	$pg_sel[1][0]="active";$pg_sel[0][0]="";$pg_sel[2][0]="";
+}
 if(isset($_POST["area_sel4"]))
 {$cur_ay["date"]=$_POST["area_sel4"];}
 if(isset($_POST["area_sel2"]))
@@ -43,7 +51,9 @@ else//两种可能：按区划取得点位，按区划和类型取得点位
 		$tmp_ay=array(2,$v1,intval($cur_ay["dw"])-1,0);
 }
 $station_ay=$tb->get_station($tmp_ay);
-
+$pg_cnt[1]=floor(count($station_ay)/10);
+if(count($station_ay)%10)
+	$pg_cnt[1]++;
 //}}}
 ?>
 <?php
@@ -86,9 +96,9 @@ echo $st;
 $st1="var content = \"<div style='margin:0;line-height:20px;padding:2px;'><img src='.%s' alt='' style='float:right;zoom:1;overflow:hidden;width:100px;height:100px;margin-left:3px;'/>点位名称：%s<br>点位代码：<font color=red>%s</font><br>经度：<font color=blue>%0.6f</font><br>纬度：<font color=blue>%0.6f</font></div>\";\n";
 foreach($station_ay as $a)
 {
-	$st=sprintf($st1,$a[5],$a[1],$a[2],$a[3],$a[4]);
+	$st=sprintf($st1,$a[5],$a[1],$a[6],$a[2],$a[3]);
 	echo $st;
-	$st=sprintf("var marker = new BMap.Marker(new BMap.Point(%0.6f,%0.6f));map.addOverlay(marker);addClickHandler(content,marker);",$a[3],$a[4]);
+	$st=sprintf("var marker = new BMap.Marker(new BMap.Point(%0.6f,%0.6f));map.addOverlay(marker);addClickHandler(content,marker);",$a[2],$a[3]);
 	echo $st;
 }
 echo "function addClickHandler(content,marker){marker.addEventListener('click',function(e){openInfo(content,e)});};";
@@ -98,8 +108,80 @@ echo "</script>";
 //{{{page two 企业信息
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[1][0]."' id='".$pg_sel[1][1]."'>";
 	echo "<ul class='list-unstyled list-accounts'>";
-	echo "<li><div id='intro_show' style='width:100%%;margin:2px auto;'></div></li>";
-	echo"</ul></div>";
+	echo "<div id='showtb'></div>";
+	$st1="<li lid='%s' class='pont'><div><font color='blue'>%s</font></div></li><li id='%s' style='display:none'><div style='width:100%%;overflow:auto;margin:auto;'><table class='table table-bordered'><tbody><tr><td style='white-space:nowrap;text-align:center;'><font color='red'>项目名称</font></td><td style='white-space:nowrap;text-align:center;'><font color='red'>项目内容</font></td><td style='white-space:nowrap;text-align:center;'><font color='red'>项目名称</font></td><td style='white-space:nowrap;text-align:center;'><font color='red'>项目内容</font></td></tr>";
+	$st2="<tr><td align='center'>%s</td><td align='center'>%s</td><td align='center'>%s</td><td align='center'>%s</td></tr>";
+	$stn="</tbody></table></div></li>";
+	$ay=array();
+	for($i=0;$i<10;$i++)
+	{
+		$j=$pg_cnt[0]*10+$i;
+		if($j>=count($station_ay))
+			break;
+		$ay=$station_ay[$j];
+		$st=sprintf($st1,"Li00".$i,$ay[1],"Li00".$i."x");
+		echo $st;
+		$st=sprintf($st2,"点位编号",$ay[6],"采样地点",$ay[7]);echo $st;
+		$st=sprintf($st2,"经度",$ay[2],"纬度",$ay[3]);echo $st;
+		$st=sprintf($st2,"采样时间",$ay[8],"天气",$ay[9]);echo $st;
+		$st=sprintf($st2,"样品编号",$ay[10],"采样深度",$ay[11]);echo $st;
+		$st=sprintf($st2,"海拔",$ay[12],"土地利用",$ay[13]);echo $st;
+		$st=sprintf($st2,"作物类型",$ay[14],"灌溉类型",$ay[15]);echo $st;
+		$st=sprintf($st2,"地形地貌",$ay[16],"土壤类型",$ay[17]);echo $st;
+		$st=sprintf($st2,"土壤质地",$ay[18],"土壤颜色",$ay[19]);echo $st;
+		$st=sprintf($st2,"土壤湿度",$ay[20],"样品重量",$ay[21]);echo $st;
+		$st=sprintf($st2,"周边信息-东",$ay[22],"周边信息-西",$ay[23]);echo $st;
+		$st=sprintf($st2,"周边信息-南",$ay[24],"周边信息-北",$ay[25]);echo $st;
+		$j=intval($ay[4]);
+		switch($j)
+		{
+		case 0://基础
+			$sc="基础点位";
+			break;
+		case 1://质控点位
+			$sc="质控点位";
+			break;
+		case 2://背景点位
+			$sc="背景点位";
+			break;
+		default:
+			$sc="质控背景点位";
+		};
+		$st=sprintf($st2,"点位类型",$sc,"采样人",$ay[26]);echo $st;
+		$st=sprintf($st2,"记录人",$ay[27],"校对人",$ay[28]);echo $st;
+		echo $stn;
+	}
+	echo"</ul>";
+	$st1="<div class='shareblock-body'>
+		<div class='text-center'>
+		<a href='%s' style='%s'>&lt;&lt;</a>&nbsp;&nbsp;&nbsp;%d&nbsp;&nbsp;&nbsp;<a href='%s' style='%s'>&gt;&gt;</a>
+		</div>
+		</div>";
+	if($pg_cnt[0] == 0)
+	{
+		$sta1="color: gray; cursor: default; disabled: true;";
+		$sta4="javascript:;";
+	}
+	else
+	{
+		$bb=intval($pg_cnt[0])-1;
+		$sta1="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ12']."&cp=".$bb."&cd=".$cur_ay["date"]."&qx=".$cur_ay["qx"]."&dw=".$cur_ay["dw"];
+	}
+	if($pg_cnt[0] >= ($pg_cnt[1]-1))
+	{
+		$sta2="color: gray; cursor: default; disabled: true;";
+		$sta3="javascript:;";
+	}
+	else
+	{
+		$bb=intval($pg_cnt[0])+1;
+		$sta2="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
+		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ12']."&cp=".$bb."&cd=".$cur_ay["date"]."&qx=".$cur_ay["qx"]."&dw=".$cur_ay["dw"];
+	}
+	$st=sprintf($st1,$sta4,$sta1,$pg_cnt[0]+1,$sta3,$sta2);
+	echo $st;
+	echo"</div>";
 //}}}
 //{{{page three 企业地址
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[2][0]."' id='".$pg_sel[2][1]."'>";
@@ -359,6 +441,13 @@ $(document).ready(function(){
 			$(".searchbar-dates").show();
 			$(".searchbar-filters").show();
 			});
+	$("li").click(function(){//第一标签页，项目展示的开关设置
+			var vid=$(this).attr("lid");
+			if(vid == null)
+				return;
+			var x="#"+vid+"x";
+			$(x).slideToggle();
+			});
 });
 
 function set_vv(v)
@@ -394,7 +483,6 @@ function switch_pg(i,j)
 		$("#mlintro").addClass("active");
 		$("#mlview").removeClass("active");
 		$("#mladdr").removeClass("active");
-		$("#intro_show").html(sval[indx][1]);
 	}
 	else if(i == 2)
 	{
@@ -413,7 +501,6 @@ function switch_pg(i,j)
 		$("#mlintro").addClass("active");
 		$("#mlview").removeClass("active");
 		$("#mladdr").removeClass("active");
-		$("#intro_show").html(sval[j][1]);
 		indx=j;
 	}
 };
