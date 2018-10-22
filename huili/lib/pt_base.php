@@ -136,18 +136,21 @@ out:	array;
 		{
 //{{{switch
 		case 0://取得全部点位记录 --这个应该不常用
-			$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid WHERE b.lid = 0 order by a.sid";
+//			$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid WHERE b.lid = 0 order by a.sid";
+			$conn="SELECT a.aid,a.sname,a.lng,a.lat,a.stype,b.link,c.* FROM station as a LEFT JOIN pt_link as b ON a.sid=b.sid LEFT JOIN station_ex as c ON a.sid = c.sid WHERE b.lid = 0 order by a.sid";
 			break;
 		case 1://按区划取得全部记录
 			$i=intval($u[1]);
 			if(($i % 100) == 0) //按地市取得
 			{
-				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid WHERE a.aid > %u AND a.aid < %u AND b.lid = 0 order by a.sid";
+//				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid WHERE a.aid > %u AND a.aid < %u AND b.lid = 0 order by a.sid";
+				$s1="SELECT a.aid,a.sname,a.lng,a.lat,a.stype,b.link,c.* FROM station AS a LEFT JOIN pt_link AS b ON a.sid=b.sid LEFT JOIN station_ex as c ON a.sid=c.sid WHERE a.aid BETWEEN %u AND %u AND b.lid = 0 order by a.sid";
 				$conn=sprintf($s1,$i,$i+99);
 			}
 			else
 			{
-				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE a.aid = %u AND b.lid = 0 order by a.sid";
+//				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE a.aid = %u AND b.lid = 0 order by a.sid";
+				$s1="SELECT a.aid,a.sname,a.lng,a.lat,a.stype,b.link,c.* FROM station AS a LEFT JOIN pt_link AS b ON a.sid=b.sid LEFT JOIN station_ex AS c ON a.sid=c.sid  WHERE a.aid = %u AND b.lid = 0 order by a.sid";
 				$conn=sprintf($s1,$i);
 			}
 			break;
@@ -166,30 +169,38 @@ out:	array;
 				$s2="";
 			if(($i % 100) == 0) //按地市取得
 			{
-				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid WHERE a.aid > %u AND a.aid < %u %s AND b.lid = 0 order by a.sid";
+//				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid WHERE a.aid > %u AND a.aid < %u %s AND b.lid = 0 order by a.sid";
+				$s1="SELECT a.aid,a.sname,a.lng,a.lat,a.stype,b.link,c.* from station as a LEFT JOIN pt_link as b ON a.sid=b.sid LEFT JOIN station_ex as c ON a.sid=c.sid WHERE a.aid BETWEEN %u AND %u %s AND b.lid = 0 order by a.sid";
 				$conn=sprintf($s1,$i,$i+99,$s2);
 			}
 			else
 			{
-				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE a.aid = %u %s AND b.lid = 0 order by a.sid";
+//				$s1="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE a.aid = %u %s AND b.lid = 0 order by a.sid";
+				$s1="SELECT a.aid,a.sname,a.lng,a.lat,a.stype,b.link,c.* from station as a LEFT JOIN pt_link as b ON a.sid=b.sid LEFT JOIN station_ex as c ON a.sid=c.sid WHERE a.aid = %u %s AND b.lid = 0 order by a.sid";
 				$conn=sprintf($s1,$i,$s2);
 			}
 			break;
 		case 3://按类型
 			$j=intval($u[2]);
 			if($j == 0) //基础点位
-				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE a.stype = 0 AND b.lid = 0 order by a.sid";
+//				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE a.stype = 0 AND b.lid = 0 order by a.sid";
+				$conn="SELECT a.aid,a.sname,a.lng,a.lat,a.stype,b.link,c.* from station as a LEFT JOIN pt_link as b ON a.sid=b.sid LEFT JOIN station_ex as c ON a.sid=c.sid WHERE a.stype = 0 AND b.lid = 0 order by a.sid";
 			elseif($j == 1)//质控点位
-				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE (a.stype & 1) > 0 AND b.lid = 0 order by a.sid";
+//				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE (a.stype & 1) > 0 AND b.lid = 0 order by a.sid";
+				$conn="SELECT a.aid,a.sname,a.lng,a.lat,a.stype,b.link,c.* from station as a LEFT JOIN pt_link as b ON a.sid=b.sid LEFT JOIN station_ex as c ON a.sid=c.sid WHERE (a.stype & 1) > 0 AND b.lid = 0 order by a.sid";
 			elseif($j == 2)//背景点位
-				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE (a.stype & 2) > 0 AND b.lid = 0 order by a.sid";
+//				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE (a.stype & 2) > 0 AND b.lid = 0 order by a.sid";
+				$conn="SELECT a.aid,a.sname,a.lng,a.lat,a.stype,b.link,c.* from station as a LEFT JOIN pt_link as b ON a.sid=b.sid LEFT JOIN station_ex as c ON a.sid=c.sid WHERE (a.stype & 2) > 0 AND b.lid = 0 order by a.sid";
 			elseif($j == 3)//质控和背景点位
-				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE a.stype = 3 AND b.lid = 0 order by a.sid";
+//				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE a.stype = 3 AND b.lid = 0 order by a.sid";
+				$conn="SELECT a.aid,a.sname,a.lng,a.lat,a.stype,b.link,c.* from station as a LEFT JOIN pt_link as b ON a.sid=b.sid LEFT JOIN station_ex as c ON a.sid=c.sid WHERE a.stype = 3 AND b.lid = 0 order by a.sid";
 			else //全部点位
-				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE b.lid = 0 order by a.sid";
+//				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE b.lid = 0 order by a.sid";
+				$conn="SELECT a.aid,a.sname,a.lng,a.lat,a.stype,b.link,c.* from station as a LEFT JOIN pt_link as b ON a.sid=b.sid LEFT JOIN station_ex as c ON a.sid=c.sid WHERE b.lid = 0 order by a.sid";
 			break;
 		case 4://按名称关键字
-				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE LOCATE('".$u[3]."',a.sname) > 0 AND b.lid = 0 order by a.sid";
+//				$conn="SELECT a.aid,a.sname,a.sid,a.lng,a.lat,b.link from station as a LEFT JOIN pt_link as b ON a.sid=b.sid  WHERE LOCATE('".$u[3]."',a.sname) > 0 AND b.lid = 0 order by a.sid";
+				$conn="SELECT a.aid,a.sname,a.lng,a.lat,a.stype,b.link,c.* from station as a LEFT JOIN pt_link as b ON a.sid=b.sid LEFT JOIN station_ex as c ON a.sid=c.sid WHERE LOCATE('".$u[3]."',a.sname) > 0 AND b.lid = 0 order by a.sid";
 			break; //}}}
 		};
 		$res=mysqli_query($this->mysqli,$conn);
