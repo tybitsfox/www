@@ -1,5 +1,6 @@
 <script>
 loadscript("/huili/css/newstyle.css","css");
+loadscript("/huili/js/Chart.min.js","js");
 </script>
 <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=Wst0GYAGq6QfZG1fGTwNxGLD9CBW5N99"></script>
 <?php
@@ -51,6 +52,10 @@ else//两种可能：按区划取得点位，按区划和类型取得点位
 		$tmp_ay=array(2,$v1,intval($cur_ay["dw"])-1,0);
 }
 $station_ay=$tb->get_station($tmp_ay);
+$val_ay=array();//数据队列
+$tmp_ay[3]=1; //默认为镉
+$val_ay=$tb->get_val($tmp_ay);
+
 $pg_cnt[1]=floor(count($station_ay)/10);
 if(count($station_ay)%10)
 	$pg_cnt[1]++;
@@ -185,7 +190,57 @@ echo "</script>";
 //}}}
 //{{{page three 企业地址
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[2][0]."' id='".$pg_sel[2][1]."'>";
-	echo "</div>";
+	$j=count($val_ay)*22;
+	if($j < 400)
+		$j=400;
+	echo "\n<div style='width:100%;height: ".$j."px;'>";
+	echo "<canvas id='myChart'></canvas>";
+	echo "</div></div>";
+	echo "<script>";
+	echo "var ctx = document.getElementById('myChart').getContext('2d');";
+	echo "var myChart = new Chart(ctx, {
+    type: 'horizontalBar',
+    data: {";
+	$s1="labels: [";
+	$i=0;$j=count($val_ay);
+	$s2="data: [";
+	foreach($val_ay as $a)
+	{
+		$s1.="'".$a[1]."'";
+		$s2.=$a[0];
+		$i++;
+		if($i < $j)
+		{$s1.=", ";$s2.=", ";}
+		else
+		{$s1.="],";$s2.="],";}
+	}
+	echo $s1;
+//    echo  "labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+    echo  "datasets: [{
+            label: ' 项目 ".$a[2]."',";
+//    echo  " data: [12, 19, 3, 5.7, 2, 3],";
+	echo $s2;
+    echo  " backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgba(255,99,132,1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            xAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        },
+		title:{
+			display: true,
+			text: '2017年土壤监测项目'
+		},
+		maintainAspectRatio: false,			  
+    }
+});";
+echo "</script>";
 //}}}
 
 

@@ -229,10 +229,39 @@ out:	array[0] 区划代码
 		mysqli_close($this->mysqli);
 		return $ay;
 	}//}}}
-
-}//}}}
-//{{{public function get_xx()
-
+//{{{public function get_val($u)
+/*传入参数同get_station函数 */
+	public function get_val($u)
+	{
+		$ay=array();
+		if(count($u) != 4)
+		{$this->err_no=2;return $ay;}
+		$this->init_db();
+		if($this->err_no)
+			return $ay;
+		switch($u[0])
+		{
+		case 1://按区划取得全部记录 -iid=1
+			$conn="SELECT a.val,b.sname,c.iname FROM soil_val AS a LEFT JOIN station AS b ON a.sid = b.sid LEFT JOIN standard AS c ON a.iid = c.iid WHERE a.aid = ".$u[1]." AND a.iid = ".$u[3];
+			break;
+		case 2://按区划和类型取得记录
+			$conn="SELECT a.val,b.sname,c.iname FROM soil_val AS a LEFT JOIN station AS b ON a.sid = b.sid LEFT JOIN standard AS c ON a.iid = c.iid WHERE a.aid = ".$u[1]." AND a.stype = ".$u[2]." AND a.iid = ".$u[3];
+			break;
+		case 3://只按类型取得记录
+			$conn="SELECT a.val,b.sname,c.iname FROM soil_val AS a LEFT JOIN station AS b ON a.sid = b.sid LEFT JOIN standard AS c ON a.iid = c.iid WHERE a.stype = ".$u[2]." AND a.iid = ".$u[3];
+			break;
+		default://取得全部点位记录，-iid=1(镉) array[3]=iid
+			$conn="SELECT a.val,b.sname,c.iname FROM soil_val AS a LEFT JOIN station AS b ON a.sid = b.sid LEFT JOIN standard AS c ON a.iid = c.iid WHERE a.iid = ".$u[3];
+			break;
+		};
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}
 //}}}
+}//}}}
 
 ?>
