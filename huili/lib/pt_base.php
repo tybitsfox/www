@@ -262,6 +262,22 @@ out:	array[0] 区划代码
 		return $ay;
 	}
 //}}}
+//{{{public function get_std()
+	public function get_std()
+	{
+		$ay=array();
+		$this->init_db();
+		if($this->err_no)
+			return $ay;
+		$conn="SELECT a.iid,b.iname,b.soil_name,b.std FROM soil_val AS a LEFT JOIN standard AS b ON a.iid = b.iid GROUP BY a.iid";
+		$res=mysqli_query($this->mysqli,$conn);
+		while($row=mysqli_fetch_row($res))
+			array_push($ay,$row);
+		mysqli_free_result($res);
+		mysqli_close($this->mysqli);
+		return $ay;
+	}//}}}
+
 }//}}}
 
 ?>

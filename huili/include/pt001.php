@@ -16,13 +16,14 @@ $msg01="<p>点位总览</p>";  //测试，显示测试信息用
 $shwmsg=array(); //显示信息队列
 $area_ay=array(); //地市队列，这里颗粒度设为地市，所以就一个结果
 //2010-10-12添加，用于保存或初始化控件所用的变量
-$cur_ay=array("date" => 2017,"ds" => "泰安市","qx" => 370900,"dw" => "0");
+$cur_ay=array("date" => 2017,"ds" => "泰安市","qx" => 370900,"dw" => "0","xm" => "1");
 if(isset($_GET["cp"]))
 {
 	$pg_cnt[0]=$_GET["cp"];
 	$cur_ay["date"]=$_GET["cd"];
 	$cur_ay["qx"]=$_GET["qx"];
 	$cur_ay["dw"]=$_GET["dw"];
+	$cur_ay["xm"]=$_GET["xm"];
 	$pg_sel[1][0]="active";$pg_sel[0][0]="";$pg_sel[2][0]="";
 }
 if(isset($_POST["area_sel4"]))
@@ -52,6 +53,8 @@ else//两种可能：按区划取得点位，按区划和类型取得点位
 		$tmp_ay=array(2,$v1,intval($cur_ay["dw"])-1,0);
 }
 $station_ay=$tb->get_station($tmp_ay);
+$std_ay=array();//分析项目及标准
+$std_ay=$tb->get_std();
 $val_ay=array();//数据队列
 $tmp_ay[3]=1; //默认为镉
 $val_ay=$tb->get_val($tmp_ay);
@@ -391,15 +394,24 @@ echo "</script>";
 				</div><form action="<?php echo $glo_idx[5];?>" method="post">
 				<div class="dropdown-menu-body form-horizontal">
 					<div class="form-group">
-						<label class="col-sm-3 control-label">地市</label>
+						<label class="col-sm-3 control-label">分析项目</label>
 						<div class="col-sm-9">
 							<select class="form-control" id="area_sel1">
 							<?php
-								foreach($area_ay as $a)
+								$i=0;
+								foreach($std_ay as $a)
 								{
-									if(($a[0] % 100) == 0)
+									$s1=$a[1];
+									if($a[2] != "")
+										$s1=$s1."-".$a[2];
+									if($i == 0)
 									{
-										$st=sprintf("<option value='%s' selected='selected'>%s</option>",$a[0],$a[1]);
+										$st=sprintf("<option value='%s' selected='selected'>%s</option>",$a[0],$s1);
+										echo $st;$i++;
+									}
+									else
+									{
+										$st=sprintf("<option value='%s'>%s</option>",$a[0],$s1);
 										echo $st;
 									}
 								}
@@ -408,32 +420,7 @@ echo "</script>";
 						</div>
 					</div>
 					<div class="form-group">
-						<label class="col-sm-3 control-label">区县</label>
-						<div class="col-sm-9">
-							<select class="form-control" id="area_sel2">
-							<?php
-								foreach($area_ay as $b)
-								{
-									if(($b[0] % 100) == 0)
-										$st=sprintf("<option value='%s' selected='selected'>全市</option>",$b[0]);
-									else
-										$st=sprintf("<option value='%s'>%s</option>",$b[0],$b[1]);
-									echo $st;
-								}
-							?>
-							</select>
-						</div>
-					</div>
-					<div class="form-group">
-					</div>
-					<div class="form-group">
-						<label class="col-sm-3 control-label">类型过滤</label>
-						<div class="col-sm-9">
-							<div class="btn-group btn-group-switch">
-								<button class="btn active" id="btngrp1">考虑</button>
-								<button class="btn" id="btngrp2">不考虑</button>
-							</div>
-						</div>
+
 					</div>
 					<div class="form-group">
 						<label class="col-sm-3 control-label">&nbsp;</label>
@@ -564,6 +551,7 @@ function switch_pg(i,j)
 //}}}
 //}}}
 	echo "</div></div></div>";
+	echo "<br><br><br><br><br><br>";
 	echo $SIG_HTML['RIGHT_TOP3'];
 ?>
 
