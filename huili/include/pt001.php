@@ -1,6 +1,6 @@
 <script>
 loadscript("/huili/css/newstyle.css","css");
-loadscript("/huili/js/Chart.min.js","js");
+loadscript("/huili/js/Chart.bundle.js","js");
 </script>
 <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=Wst0GYAGq6QfZG1fGTwNxGLD9CBW5N99"></script>
 <?php
@@ -75,6 +75,193 @@ if(count($station_ay)%10)
 	$st2="\n\n<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li>".$glo_idx[1]."</li><li>".$cur_ay["date"]."年</li><li>".$st1."</li><li>".$sa[intval($cur_ay["dw"])];
 	$st=sprintf($SIG_HTML['RIGHT_TOP1'],$st2);
 	echo $st;
+	//---------------------------
+	echo "\n<div id='slide1' class='inner'><div class='order-empty panel'>";
+//{{{按名称过滤	
+?>
+<div class="form">
+<div class="searchbar">
+	<div class="searchbar-search"><form action="<?php echo $glo_idx[5];?>" method="post">
+		<div class="form-group">
+			<div class="form-prefix">
+				<i class="icon-search picto"></i>
+				<input class="form-control form-search" id="byname01" name="byname01" placeholder="按名称查找" value="" type="text">
+			</div>
+			<input type="hidden" value="" name="hycode" id="hycode" />
+			<input type="hidden" value="" name="sdcode" id="sdcode" />
+			<button type="submit" class="btn btn-search">查找</button>
+		</div></form>	
+	</div>
+<?php
+//}}}
+//{{{按行业过滤
+?>	
+	<div class="searchbar-dates">
+		<div class="dropdown dropdown-filtersa">
+			<div class="form-group">
+				<div class="form-prefix">
+					<i class="icon-filter picto"></i>
+					<input class="form-control form-daterange" id="texta2" placeholder="点位过滤" value="" type="text">
+					<span class="caret"></span>
+				</div>
+			</div>
+			<div class="dropdown-menu dropdown-menu-right dropdown-menu-filters">
+				<div class="dropdown-menu-head text-right">
+					<a class="btn-text" href="javascript:;" onclick="set_vv(2);">清空过滤</a>
+				</div><form action="<?php echo $glo_idx[5];?>" method="post">
+			<div class="dropdown-menu-body form-horizontal">
+				<div class="form-group">
+						<label class="col-sm-3 control-label">所属时期</label>
+					<div class="col-sm-9">
+							<select class="form-control" name="area_sel4" id="area_sel4">
+							<?php
+								$ay=array();$ay=array_keys($PT_NAME_TY);$year=date("Y");
+								foreach($ay as $a)
+								{
+									if(intval($a)>$year)
+										continue;
+									elseif(intval($a) == $cur_ay["date"])
+									{$st=sprintf("<option value='%s' selected='selected'>%s</option>",$a,$a);}
+									else
+									{$st=sprintf("<option value='%s'>%s</option>",$a,$a);}
+									echo $st;
+								}
+							?>
+							</select>
+					</div>
+				</div>
+			<div class="form-group">
+					<label class="col-sm-3 control-label">所属地市</label>
+					<div class="col-sm-9">
+							<select class="form-control" id="area_sel1">
+							<?php
+								foreach($area_ay as $a)
+								{
+									if(($a[0] % 100) == 0)
+									{
+										$st=sprintf("<option value='%s' selected='selected'>%s</option>",$a[0],$a[1]);
+										echo $st;
+									}
+								}
+							?>
+							</select>
+					</div>
+			</div>
+			<div class="form-group">
+						<label class="col-sm-3 control-label">所属区县</label>
+					<div class="col-sm-9">
+							<select class="form-control" name="area_sel2" id="area_sel2">
+							<?php
+								$cc=array();
+								foreach($area_ay as $b)
+								{
+									if((intval($b[0]) % 100) == 0)
+										$cc=array($b[0],"全市");
+									else
+										$cc=array($b[0],$b[1]);
+									if(intval($b[0]) == intval($cur_ay["qx"]))
+										$st=sprintf("<option value='%s' selected='selected'>%s</option>",$cc[0],$cc[1]);
+									else
+										$st=sprintf("<option value='%s'>%s</option>",$cc[0],$cc[1]);
+									echo $st;
+								}
+							?>
+							</select>
+					</div>
+			</div>
+			<div class="form-group">
+						<label class="col-sm-3 control-label">点位类型</label>
+					<div class="col-sm-9">
+							<select class="form-control" name="area_sel3" id="area_sel3">
+							<?php
+								$sa=array("全部点位","基础点位","质控点位","背景点位","质控和背景点位");
+								for($i=0;$i<5;$i++)
+								{
+									if($i == intval($cur_ay["dw"]))
+										$st=sprintf("<option value='%d' selected='selected'>%s</option>",$i,$sa[$i]);
+									else
+										$st=sprintf("<option value='%d'>%s</option>",$i,$sa[$i]);
+									echo $st;
+								}
+							?>
+							</select>
+					</div>
+			</div>
+			<div class="form-group">
+						<label class="col-sm-3 control-label">&nbsp;</label>
+					<div class="col-sm-9">
+							<input type="hidden" value="y" name="btnsel1" id="btnsel1" />
+							<input type="hidden" value="370900" name="btnsel2" id="btnsel2" />
+							<input type="hidden" value="a" name="btnsel3" id="btnsel3" />
+							<button type="submit" class="btn btn-primary btn-block">应用查询</button> 
+					</div>
+			</div>
+	</div></form>
+	</div>
+	</div>
+	</div>
+<?php
+//}}}
+//{{{按属地过滤
+?>	
+	<div class="searchbar-filters">
+		<div class="dropdown dropdown-filters">
+			<div class="form-group">
+		   		<div class="form-prefix">
+					<i class="icon-filter picto"></i>
+					<input class="form-control form-filters" id="texta1" placeholder="项目过滤" value="" type="text">
+					<span class="caret"></span>
+				</div>	
+			</div>
+			<div class="dropdown-menu dropdown-menu-right dropdown-menu-filters">
+				<div class="dropdown-menu-head text-right">
+					<a class="btn-text" href="javascript:;" onclick="set_vv(1);">清空过滤</a>
+				</div><form action="<?php echo $glo_idx[5];?>" method="post">
+			<div class="dropdown-menu-body form-horizontal">
+				<div class="form-group">
+						<label class="col-sm-3 control-label">分析项目</label>
+					<div class="col-sm-9">
+							<select class="form-control" id="area_sel1">
+							<?php
+								$i=0;
+								foreach($std_ay as $a)
+								{
+									$s1=$a[1];
+									if($a[2] != "")
+										$s1=$s1."-".$a[2];
+									if($i == 0)
+									{
+										$st=sprintf("<option value='%s' selected='selected'>%s</option>",$a[0],$s1);
+										echo $st;$i++;
+									}
+									else
+									{
+										$st=sprintf("<option value='%s'>%s</option>",$a[0],$s1);
+										echo $st;
+									}
+								}
+							?>
+							</select>
+					</div>
+				</div>
+				<div class="form-group">
+						<label class="col-sm-3 control-label">&nbsp;</label>
+					<div class="col-sm-9">
+							<input type="hidden" value="y" name="btnsel" id="btnsel" />
+							<input type="hidden" value="a" name="btnsela" id="btnsela" />
+							<input type="hidden" value="370900" name="btnselb" id="btnselb" />
+							<button type="submit" class="btn btn-primary btn-block">应用查询</button> 
+					</div>
+				</div>
+				</div></form>
+			</div>
+		</div>
+	</div>
+
+<?php
+//}}}
+	//---------------------------
+	echo "</div></div></div>";
 	echo"\n<div class='inner' id='modal_container' ><div class='block'><div class='panel shadow'><ul class='nav nav-tabs nav-tabs-hor' role='tablist'>";
 	$st1="\n<li role='presentation' class='%s' id='vdv%d'><a href='javascript:;' onclick='switch_pg(%d,0);'>%s</a></li>";
 	for($i=0;$i<3;$i++)
@@ -196,11 +383,21 @@ echo "</script>";
 	$j=count($val_ay)*22;
 	if($j < 400)
 		$j=400;
-	echo "\n<div style='width:100%;height: ".$j."px;'>";
+	echo "\n<div id='vbnv' style='width:100%;height: ".$j."px;'>";
 	echo "<canvas id='myChart'></canvas>";
 	echo "</div></div>";
 	echo "<script>";
+//	echo "if(!!(document.getElementById('myChart'))){
+//    document.getElementById('myChart').remove();}";
+//	echo "var cdom = document.createElement('canvas');
+//cdom.setAttribute('id','myChart');
+//cdom.setAttribute('height','".$j."');";
+//	echo "document.getElementById('vbnv').appendChild(cdom);";
 	echo "var ctx = document.getElementById('myChart').getContext('2d');";
+//echo "var imgData = cxt.getImageData(0,0,canvas.width,canvas.height);
+//canvas.height = ".$j.";
+//cxt.putImageData(imgData,0,0);";
+//	echo "ctx.clearRect(0,0,canvas.width,canvas.height);";
 	echo "var myChart = new Chart(ctx, {
     type: 'horizontalBar',
     data: {";
@@ -242,201 +439,17 @@ echo "</script>";
 		},
 		maintainAspectRatio: false,			  
     }
-});";
+});
+myChart.update();
+";
 echo "</script>";
 //}}}
-
-
 
 //{{{ 查询、过滤	
 	echo"</div></div></div>";
 	echo"</div></div></div>";
-	echo "\n<div id='slide1' class='inner'><div class='order-empty panel'>";
-//{{{按名称过滤	
 ?>
-<div class="form">
-<div class="searchbar">
-	<div class="searchbar-search"><form action="<?php echo $glo_idx[5];?>" method="post">
-		<div class="form-group">
-			<div class="form-prefix">
-				<i class="icon-search picto"></i>
-				<input class="form-control form-search" id="byname01" name="byname01" placeholder="按名称查找" value="" type="text">
-			</div>
-			<input type="hidden" value="" name="hycode" id="hycode" />
-			<input type="hidden" value="" name="sdcode" id="sdcode" />
-			<button type="submit" class="btn btn-search">查找</button>
-		</div></form>	
-	</div>
 <?php
-//}}}
-//{{{按行业过滤
-?>	
-	<div class="searchbar-dates">
-		<div class="dropdown dropdown-filtersa">
-			<div class="form-group">
-				<div class="form-prefix">
-					<i class="icon-filter picto"></i>
-					<input class="form-control form-daterange" id="texta2" placeholder="点位过滤" value="" type="text">
-					<span class="caret"></span>
-				</div>
-			</div>
-			<div class="dropdown-menu dropdown-menu-right dropdown-menu-filters">
-				<div class="dropdown-menu-head text-right">
-					<a class="btn-text" href="javascript:;" onclick="set_vv(2);">清空过滤</a>
-				</div><form action="<?php echo $glo_idx[5];?>" method="post">
-				<div class="dropdown-menu-body form-horizontal">
-					<div class="form-group">
-						<label class="col-sm-3 control-label">所属时期</label>
-						<div class="col-sm-9">
-							<select class="form-control" name="area_sel4" id="area_sel4">
-							<?php
-								$ay=array();$ay=array_keys($PT_NAME_TY);$year=date("Y");
-								foreach($ay as $a)
-								{
-									if(intval($a)>$year)
-										continue;
-									elseif(intval($a) == $cur_ay["date"])
-									{$st=sprintf("<option value='%s' selected='selected'>%s</option>",$a,$a);}
-									else
-									{$st=sprintf("<option value='%s'>%s</option>",$a,$a);}
-									echo $st;
-								}
-							?>
-							</select>
-						</div>
-					</div>
-					<div class="form-group">
-						<label class="col-sm-3 control-label">所属地市</label>
-						<div class="col-sm-9">
-							<select class="form-control" id="area_sel1">
-							<?php
-								foreach($area_ay as $a)
-								{
-									if(($a[0] % 100) == 0)
-									{
-										$st=sprintf("<option value='%s' selected='selected'>%s</option>",$a[0],$a[1]);
-										echo $st;
-									}
-								}
-							?>
-							</select>
-						</div>
-					</div>
-					<div class="form-group">
-						<label class="col-sm-3 control-label">所属区县</label>
-						<div class="col-sm-9">
-							<select class="form-control" name="area_sel2" id="area_sel2">
-							<?php
-								$cc=array();
-								foreach($area_ay as $b)
-								{
-									if((intval($b[0]) % 100) == 0)
-										$cc=array($b[0],"全市");
-									else
-										$cc=array($b[0],$b[1]);
-									if(intval($b[0]) == intval($cur_ay["qx"]))
-										$st=sprintf("<option value='%s' selected='selected'>%s</option>",$cc[0],$cc[1]);
-									else
-										$st=sprintf("<option value='%s'>%s</option>",$cc[0],$cc[1]);
-									echo $st;
-								}
-							?>
-							</select>
-						</div>
-					</div>
-					<div class="form-group">
-						<label class="col-sm-3 control-label">点位类型</label>
-						<div class="col-sm-9">
-							<select class="form-control" name="area_sel3" id="area_sel3">
-							<?php
-								$sa=array("全部点位","基础点位","质控点位","背景点位","质控和背景点位");
-								for($i=0;$i<5;$i++)
-								{
-									if($i == intval($cur_ay["dw"]))
-										$st=sprintf("<option value='%d' selected='selected'>%s</option>",$i,$sa[$i]);
-									else
-										$st=sprintf("<option value='%d'>%s</option>",$i,$sa[$i]);
-									echo $st;
-								}
-							?>
-							</select>
-						</div>
-					</div>
-					<div class="form-group">
-						<label class="col-sm-3 control-label">&nbsp;</label>
-						<div class="col-sm-9">
-							<input type="hidden" value="y" name="btnsel1" id="btnsel1" />
-							<input type="hidden" value="370900" name="btnsel2" id="btnsel2" />
-							<input type="hidden" value="a" name="btnsel3" id="btnsel3" />
-							<button type="submit" class="btn btn-primary btn-block">应用查询</button> 
-						</div>
-					</div>
-				</div></form>
-			</div>
-		</div>
-	</div>
-<?php
-//}}}
-//{{{按属地过滤
-?>	
-	<div class="searchbar-filters">
-		<div class="dropdown dropdown-filters">
-			<div class="form-group">
-		   		<div class="form-prefix">
-					<i class="icon-filter picto"></i>
-					<input class="form-control form-filters" id="texta1" placeholder="项目过滤" value="" type="text">
-					<span class="caret"></span>
-				</div>	
-			</div>
-			<div class="dropdown-menu dropdown-menu-right dropdown-menu-filters">
-				<div class="dropdown-menu-head text-right">
-					<a class="btn-text" href="javascript:;" onclick="set_vv(1);">清空过滤</a>
-				</div><form action="<?php echo $glo_idx[5];?>" method="post">
-				<div class="dropdown-menu-body form-horizontal">
-					<div class="form-group">
-						<label class="col-sm-3 control-label">分析项目</label>
-						<div class="col-sm-9">
-							<select class="form-control" id="area_sel1">
-							<?php
-								$i=0;
-								foreach($std_ay as $a)
-								{
-									$s1=$a[1];
-									if($a[2] != "")
-										$s1=$s1."-".$a[2];
-									if($i == 0)
-									{
-										$st=sprintf("<option value='%s' selected='selected'>%s</option>",$a[0],$s1);
-										echo $st;$i++;
-									}
-									else
-									{
-										$st=sprintf("<option value='%s'>%s</option>",$a[0],$s1);
-										echo $st;
-									}
-								}
-							?>
-							</select>
-						</div>
-					</div>
-					<div class="form-group">
-
-					</div>
-					<div class="form-group">
-						<label class="col-sm-3 control-label">&nbsp;</label>
-						<div class="col-sm-9">
-							<input type="hidden" value="y" name="btnsel" id="btnsel" />
-							<input type="hidden" value="a" name="btnsela" id="btnsela" />
-							<input type="hidden" value="370900" name="btnselb" id="btnselb" />
-							<button type="submit" class="btn btn-primary btn-block">应用查询</button> 
-						</div>
-					</div>
-				</div></form>
-			</div>
-		</div>
-	</div>
-<?php
-//}}}
 //{{{移动端高级搜索
 ?>	
 	<div class="searchbar-advanced"><p></p>
@@ -550,8 +563,7 @@ function switch_pg(i,j)
 <?php
 //}}}
 //}}}
-	echo "</div></div></div>";
-	echo "<br><br><br><br><br><br>";
+//	echo "<br><br><br><br><br><br>";
 	echo $SIG_HTML['RIGHT_TOP3'];
 ?>
 
