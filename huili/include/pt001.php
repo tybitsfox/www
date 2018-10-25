@@ -1,6 +1,6 @@
 <script>
 loadscript("/huili/css/newstyle.css","css");
-loadscript("/huili/js/Chart.bundle.js","js");
+loadscript("/huili/js/Chart.min.js","js");
 </script>
 <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=Wst0GYAGq6QfZG1fGTwNxGLD9CBW5N99"></script>
 <?php
@@ -31,7 +31,16 @@ if(isset($_POST["area_sel4"]))
 if(isset($_POST["area_sel2"]))
 {$cur_ay["qx"]=$_POST["area_sel2"];}
 if(isset($_POST["area_sel3"]))
-{$cur_ay["dw"]=$_POST["area_sel3"];}
+{$cur_ay["dw"]=$_POST["area_sel3"];$cur_ay["xm"]=$_POST["btnsel1"];}
+if(isset($_POST["area_sel5"]))//这是分析项目的选择响应
+{
+	$cur_ay["xm"]=$_POST["area_sel5"];
+	$cur_ay["qx"]=$_POST["btnsel"];
+	$cur_ay["dw"]=$_POST["btnsela"];
+	$cur_ay["date"]=$_POST["btnselb"];
+	$pg_sel[2][0]="active";$pg_sel[0][0]="";$pg_sel[1][0]="";
+}
+
 
 $tb=new zl($cur_ay["date"]);
 $area_ay=$tb->get_act_area();
@@ -56,7 +65,7 @@ $station_ay=$tb->get_station($tmp_ay);
 $std_ay=array();//分析项目及标准
 $std_ay=$tb->get_std();
 $val_ay=array();//数据队列
-$tmp_ay[3]=1; //默认为镉
+$tmp_ay[3]=$cur_ay["xm"]; //默认为镉
 $val_ay=$tb->get_val($tmp_ay);
 
 $pg_cnt[1]=floor(count($station_ay)/10);
@@ -72,7 +81,7 @@ if(count($station_ay)%10)
 		{$st1=$a[1];break;}
 	}
 	$sa=array("全部点位","基础点位","质控点位","背景点位","质控和背景点位");
-	$st2="\n\n<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li>".$glo_idx[1]."</li><li>".$cur_ay["date"]."年</li><li>".$st1."</li><li>".$sa[intval($cur_ay["dw"])];
+	$st2="\n\n<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li>".$glo_idx[1]."</li><li>".$cur_ay["date"]."年</li><li>".$st1."</li><li>".$sa[intval($cur_ay["dw"])]."</li><li>".$cur_ay["xm"];
 	$st=sprintf($SIG_HTML['RIGHT_TOP1'],$st2);
 	echo $st;
 	//---------------------------
@@ -101,7 +110,7 @@ if(count($station_ay)%10)
 			<div class="form-group">
 				<div class="form-prefix">
 					<i class="icon-filter picto"></i>
-					<input class="form-control form-daterange" id="texta2" placeholder="点位过滤" value="" type="text">
+					<input class="form-control form-daterange" id="texta2" placeholder="点位过滤" value="" type="text" readonly="readonly">
 					<span class="caret"></span>
 				</div>
 			</div>
@@ -191,8 +200,6 @@ if(count($station_ay)%10)
 						<label class="col-sm-3 control-label">&nbsp;</label>
 					<div class="col-sm-9">
 							<input type="hidden" value="y" name="btnsel1" id="btnsel1" />
-							<input type="hidden" value="370900" name="btnsel2" id="btnsel2" />
-							<input type="hidden" value="a" name="btnsel3" id="btnsel3" />
 							<button type="submit" class="btn btn-primary btn-block">应用查询</button> 
 					</div>
 			</div>
@@ -209,7 +216,7 @@ if(count($station_ay)%10)
 			<div class="form-group">
 		   		<div class="form-prefix">
 					<i class="icon-filter picto"></i>
-					<input class="form-control form-filters" id="texta1" placeholder="项目过滤" value="" type="text">
+					<input class="form-control form-filters" id="texta1" placeholder="项目过滤" value="" type="text" readonly="readonly">
 					<span class="caret"></span>
 				</div>	
 			</div>
@@ -221,7 +228,7 @@ if(count($station_ay)%10)
 				<div class="form-group">
 						<label class="col-sm-3 control-label">分析项目</label>
 					<div class="col-sm-9">
-							<select class="form-control" id="area_sel1">
+							<select class="form-control" id="area_sel5">
 							<?php
 								$i=0;
 								foreach($std_ay as $a)
@@ -270,7 +277,7 @@ if(count($station_ay)%10)
 		echo $st2;
 	}
 	echo"\n</ul><div class='body'><div class='body body-settings'><div class='tab-content'>";
-//{{{page one 企业浏览
+//{{{page one 点位浏览
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[0][0]."' id='".$pg_sel[0][1]."'>";
 	echo "<div id='allmap' style='width:100%;height:400px;'></div>";
 	echo "</div>";	
@@ -300,7 +307,7 @@ echo "function addClickHandler(content,marker){marker.addEventListener('click',f
 echo "function openInfo(content,e){var p = e.target;var point = new BMap.Point(p.getPosition().lng, p.getPosition().lat);var infoWindow = new BMap.InfoWindow(content,opts);map.openInfoWindow(infoWindow,point);};";
 echo "</script>";
 //}}}	
-//{{{page two 企业信息
+//{{{page two 点位明细
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[1][0]."' id='".$pg_sel[1][1]."'>";
 	echo "<ul class='list-unstyled list-accounts'>";
 	echo "<div id='showtb'></div>";
@@ -361,7 +368,7 @@ echo "</script>";
 	{
 		$bb=intval($pg_cnt[0])-1;
 		$sta1="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
-		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ12']."&cp=".$bb."&cd=".$cur_ay["date"]."&qx=".$cur_ay["qx"]."&dw=".$cur_ay["dw"];
+		$sta4=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ12']."&cp=".$bb."&cd=".$cur_ay["date"]."&qx=".$cur_ay["qx"]."&dw=".$cur_ay["dw"]."&xm=".$cur_ay["xm"];
 	}
 	if($pg_cnt[0] >= ($pg_cnt[1]-1))
 	{
@@ -372,13 +379,13 @@ echo "</script>";
 	{
 		$bb=intval($pg_cnt[0])+1;
 		$sta2="color: #3EAE48; text-decoration: none; border-bottom: 1px solid #3EAE48;";
-		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ12']."&cp=".$bb."&cd=".$cur_ay["date"]."&qx=".$cur_ay["qx"]."&dw=".$cur_ay["dw"];
+		$sta3=$SIGNED_DEF['LINK']."?select=".$SIGNED_PAGE['GJ12']."&cp=".$bb."&cd=".$cur_ay["date"]."&qx=".$cur_ay["qx"]."&dw=".$cur_ay["dw"]."&xm=".$cur_ay["xm"];
 	}
 	$st=sprintf($st1,$sta4,$sta1,$pg_cnt[0]+1,$sta3,$sta2);
 	echo $st;
 	echo"</div>";
 //}}}
-//{{{page three 企业地址
+//{{{page three 数据分析
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[2][0]."' id='".$pg_sel[2][1]."'>";
 	$j=count($val_ay)*22;
 	if($j < 400)
@@ -439,9 +446,8 @@ echo "</script>";
 		},
 		maintainAspectRatio: false,			  
     }
-});
-myChart.update();
-";
+});";
+//myChart.update();
 echo "</script>";
 //}}}
 
@@ -461,35 +467,30 @@ echo "</script>";
 //{{{ js & jquery
 ?>
 <script>
-var iflag=0;
-var jflag=0;
 var indx=0;
 $(document).ready(function(){
+	$("#area_sel5").change(function(){
+			var s=$("#area_sel5").val();
+			$("#btnsel1").val(s);	//将选择的项目保存至texta2
+			});
+	$("#area_sel2").change(function(){
+			var s=$("#area_sel2").val();
+			$("#btnsel").val(s);	//将区县代码保存至texta1
+			});
+	$("#area_sel3").change(function(){
+			var s=$("#area_sel3").val();
+			$("#btnsela").val(s);	//将点位代码保存至texta1
+			});
+	$("#area_sel4").change(function(){
+			var s=$("#area_sel4").val();
+			$("#btnselb").val(s);	//将所属年份保存至texta1
+			});
 	$("#texta1").click(function(){
 			$(".dropdown-filtersa").removeClass("open");
-			var s=$("#area_sel1").find("option:selected").text();
-			if($("#area_sel2").val() > 1)
-				s=$("#area_sel2").find("option:selected").text();
-			if($("#texta1").is(":visible"))
-			{
-				if(iflag == 0)
-				{$("#texta1").val(s);}
-				else
-				{iflag=0;}
-			}
 			$(".dropdown-filters").toggleClass("open");
 			});
 	$("#texta2").click(function(){
 			$(".dropdown-filters").removeClass("open");
-			var v=$("#area_sel3").val();
-			var w=v;
-			if($("#texta2").is(":visible"))
-			{
-				if(jflag == 0)
-				{$("#texta2").val(w);}
-				else
-				{jflag=0;}
-			}
 			$(".dropdown-filtersa").toggleClass("open");
 			});
 	$(".btn-advancedsearch").click(function(){
