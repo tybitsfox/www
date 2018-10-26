@@ -32,6 +32,7 @@ if(isset($_POST["area_sel2"]))
 {$cur_ay["qx"]=$_POST["area_sel2"];}
 if(isset($_POST["area_sel3"]))
 {$cur_ay["dw"]=$_POST["area_sel3"];$cur_ay["xm"]=$_POST["btnsel1"];}
+echo "<script>var myChart;var is_chartshow=0;</script>";
 if(isset($_POST["area_sel5"]))//这是分析项目的选择响应
 {
 	$cur_ay["xm"]=$_POST["area_sel5"];
@@ -39,6 +40,7 @@ if(isset($_POST["area_sel5"]))//这是分析项目的选择响应
 	$cur_ay["dw"]=$_POST["btnsela"];
 	$cur_ay["date"]=$_POST["btnselb"];
 	$pg_sel[2][0]="active";$pg_sel[0][0]="";$pg_sel[1][0]="";
+	echo "<script>is_chartshow=1;</script>";	
 }
 
 
@@ -199,7 +201,7 @@ if(count($station_ay)%10)
 			<div class="form-group">
 						<label class="col-sm-3 control-label">&nbsp;</label>
 					<div class="col-sm-9">
-							<input type="hidden" value="y" name="btnsel1" id="btnsel1" />
+							<input type="hidden" value="1" name="btnsel1" id="btnsel1" />
 							<button type="submit" class="btn btn-primary btn-block">应用查询</button> 
 					</div>
 			</div>
@@ -228,7 +230,7 @@ if(count($station_ay)%10)
 				<div class="form-group">
 						<label class="col-sm-3 control-label">分析项目</label>
 					<div class="col-sm-9">
-							<select class="form-control" id="area_sel5">
+							<select class="form-control" id="area_sel5" name="area_sel5">
 							<?php
 								$i=0;
 								foreach($std_ay as $a)
@@ -254,9 +256,9 @@ if(count($station_ay)%10)
 				<div class="form-group">
 						<label class="col-sm-3 control-label">&nbsp;</label>
 					<div class="col-sm-9">
-							<input type="hidden" value="y" name="btnsel" id="btnsel" />
-							<input type="hidden" value="a" name="btnsela" id="btnsela" />
-							<input type="hidden" value="370900" name="btnselb" id="btnselb" />
+							<input type="hidden" value="370900" name="btnsel" id="btnsel" />
+							<input type="hidden" value="0" name="btnsela" id="btnsela" />
+							<input type="hidden" value="2017" name="btnselb" id="btnselb" />
 							<button type="submit" class="btn btn-primary btn-block">应用查询</button> 
 					</div>
 				</div>
@@ -394,18 +396,9 @@ echo "</script>";
 	echo "<canvas id='myChart'></canvas>";
 	echo "</div></div>";
 	echo "<script>";
-//	echo "if(!!(document.getElementById('myChart'))){
-//    document.getElementById('myChart').remove();}";
-//	echo "var cdom = document.createElement('canvas');
-//cdom.setAttribute('id','myChart');
-//cdom.setAttribute('height','".$j."');";
-//	echo "document.getElementById('vbnv').appendChild(cdom);";
+	echo "function my_chart()\n{";
 	echo "var ctx = document.getElementById('myChart').getContext('2d');";
-//echo "var imgData = cxt.getImageData(0,0,canvas.width,canvas.height);
-//canvas.height = ".$j.";
-//cxt.putImageData(imgData,0,0);";
-//	echo "ctx.clearRect(0,0,canvas.width,canvas.height);";
-	echo "var myChart = new Chart(ctx, {
+	echo "myChart = new Chart(ctx, {
     type: 'horizontalBar',
     data: {";
 	$s1="labels: [";
@@ -422,10 +415,8 @@ echo "</script>";
 		{$s1.="],";$s2.="],";}
 	}
 	echo $s1;
-//    echo  "labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
     echo  "datasets: [{
             label: ' 项目 ".$a[2]."',";
-//    echo  " data: [12, 19, 3, 5.7, 2, 3],";
 	echo $s2;
     echo  " backgroundColor: 'rgba(255, 99, 132, 0.2)',
             borderColor: 'rgba(255,99,132,1)',
@@ -446,7 +437,7 @@ echo "</script>";
 		},
 		maintainAspectRatio: false,			  
     }
-});";
+});\n};";
 //myChart.update();
 echo "</script>";
 //}}}
@@ -467,6 +458,11 @@ echo "</script>";
 //{{{ js & jquery
 ?>
 <script>
+if(is_chartshow == 1)
+{
+	is_chartshow=0;
+	my_chart();
+}
 var indx=0;
 $(document).ready(function(){
 	$("#area_sel5").change(function(){
@@ -548,6 +544,7 @@ function switch_pg(i,j)
 		$("#mladdr").addClass("active");
 		$("#mlview").removeClass("active");
 		$("#mlintro").removeClass("active");//这里添加地图信息
+		my_chart();
 	}
 	else if(i == 3)
 	{
