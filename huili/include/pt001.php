@@ -17,6 +17,7 @@ $shwmsg=array(); //显示信息队列
 $area_ay=array(); //地市队列，这里颗粒度设为地市，所以就一个结果
 //2010-10-12添加，用于保存或初始化控件所用的变量
 $cur_ay=array("date" => 2017,"ds" => "泰安市","qx" => 370900,"dw" => "0","xm" => "1");
+echo "<script>var myChart;var is_chartshow=0;</script>";
 if(isset($_GET["cp"]))
 {
 	$pg_cnt[0]=$_GET["cp"];
@@ -25,6 +26,7 @@ if(isset($_GET["cp"]))
 	$cur_ay["dw"]=$_GET["dw"];
 	$cur_ay["xm"]=$_GET["xm"];
 	$pg_sel[1][0]="active";$pg_sel[0][0]="";$pg_sel[2][0]="";
+//	echo "<script>is_chartshow=1;</script>";	
 }
 if(isset($_POST["area_sel4"]))
 {$cur_ay["date"]=$_POST["area_sel4"];}
@@ -32,15 +34,14 @@ if(isset($_POST["area_sel2"]))
 {$cur_ay["qx"]=$_POST["area_sel2"];}
 if(isset($_POST["area_sel3"]))
 {$cur_ay["dw"]=$_POST["area_sel3"];$cur_ay["xm"]=$_POST["btnsel1"];}
-echo "<script>var myChart;var is_chartshow=0;</script>";
 if(isset($_POST["area_sel5"]))//这是分析项目的选择响应
 {
 	$cur_ay["xm"]=$_POST["area_sel5"];
 	$cur_ay["qx"]=$_POST["btnsel"];
 	$cur_ay["dw"]=$_POST["btnsela"];
 	$cur_ay["date"]=$_POST["btnselb"];
-	$pg_sel[2][0]="active";$pg_sel[0][0]="";$pg_sel[1][0]="";
-	echo "<script>is_chartshow=1;</script>";	
+//	$pg_sel[2][0]="active";$pg_sel[0][0]="";$pg_sel[1][0]="";
+//	echo "<script>is_chartshow=2;</script>";	
 }
 
 
@@ -83,7 +84,7 @@ if(count($station_ay)%10)
 		{$st1=$a[1];break;}
 	}
 	$sa=array("全部点位","基础点位","质控点位","背景点位","质控和背景点位");
-	$st2="\n\n<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li>".$glo_idx[1]."</li><li>".$cur_ay["date"]."年</li><li>".$st1."</li><li>".$sa[intval($cur_ay["dw"])]."</li><li>".$cur_ay["xm"];
+	$st2="\n\n<a href='".$SIGNED_DEF['LINK']."' >主页</a></li><li>".$glo_idx[1]."</li><li>".$cur_ay["date"]."年</li><li>".$st1."</li><li>".$sa[intval($cur_ay["dw"])];
 	$st=sprintf($SIG_HTML['RIGHT_TOP1'],$st2);
 	echo $st;
 	//---------------------------
@@ -201,7 +202,7 @@ if(count($station_ay)%10)
 			<div class="form-group">
 						<label class="col-sm-3 control-label">&nbsp;</label>
 					<div class="col-sm-9">
-							<input type="hidden" value="1" name="btnsel1" id="btnsel1" />
+							<input type="hidden" value="<?php echo $cur_ay['xm'];?>" name="btnsel1" id="btnsel1" />
 							<button type="submit" class="btn btn-primary btn-block">应用查询</button> 
 					</div>
 			</div>
@@ -256,9 +257,9 @@ if(count($station_ay)%10)
 				<div class="form-group">
 						<label class="col-sm-3 control-label">&nbsp;</label>
 					<div class="col-sm-9">
-							<input type="hidden" value="370900" name="btnsel" id="btnsel" />
-							<input type="hidden" value="0" name="btnsela" id="btnsela" />
-							<input type="hidden" value="2017" name="btnselb" id="btnselb" />
+							<input type="hidden" value="<?php echo $cur_ay['qx'];?>" name="btnsel" id="btnsel" />
+							<input type="hidden" value="<?php echo $cur_ay['dw'];?>" name="btnsela" id="btnsela" />
+							<input type="hidden" value="<?php echo $cur_ay['date'];?>" name="btnselb" id="btnselb" />
 							<button type="submit" class="btn btn-primary btn-block">应用查询</button> 
 					</div>
 				</div>
@@ -389,9 +390,9 @@ echo "</script>";
 //}}}
 //{{{page three 数据分析
 	echo"\n<div role='tabpanel' class='tab-pane ".$pg_sel[2][0]."' id='".$pg_sel[2][1]."'>";
-	$j=count($val_ay)*22;
-	if($j < 400)
-		$j=400;
+	$j=count($val_ay)*28;
+	if($j < 100)
+		$j=100+$j;
 	echo "\n<div id='vbnv' style='width:100%;height: ".$j."px;'>";
 	echo "<canvas id='myChart'></canvas>";
 	echo "</div></div>";
@@ -458,11 +459,6 @@ echo "</script>";
 //{{{ js & jquery
 ?>
 <script>
-if(is_chartshow == 1)
-{
-	is_chartshow=0;
-	my_chart();
-}
 var indx=0;
 $(document).ready(function(){
 	$("#area_sel5").change(function(){
@@ -557,6 +553,11 @@ function switch_pg(i,j)
 		indx=j;
 	}
 };
+//if(is_chartshow > 0)
+//{
+//	setTimeout(switch_pg(is_chartshow),3000);
+//	is_charshow=0;
+//}
 </script>
 <?php
 //}}}
