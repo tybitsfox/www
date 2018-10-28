@@ -34,7 +34,7 @@ echo "<tr><td>5</td><td>30</td><td>金属斩</td><td>0</td><td>对金属史莱�
 echo "<tr><td>6</td><td>40</td><td>会心率上升</td><td>-</td><td>剑装备时会心一击率上升</td></tr>";
 echo "<tr><td>7</td><td>52</td><td>隼斩</td><td>0</td><td>以70%伤害对敌单体做出2次连续攻击,装备隼剑可4次攻击</td></tr>";
 echo "<tr><td>8</td><td>66</td><td>攻击力+25</td><td>-</td><td>剑装备时攻击力+25</td></tr>";
-echo "<tr><td>9</td><td>82</td><td>奇迹之剑</td><td>2</td><td>1</td></tr>";
+echo "<tr><td>9</td><td>82</td><td>奇迹之剑</td><td>2</td><td>恢复HP量=对敌伤害量的50%但恢复量不大于敌残留HP</td></tr>";
 echo "<tr><td>10</td><td>100</td><td>超级斩</td><td>20</td><td>对敌一组攻击的究级剑技伤害约165</td></tr>";
 echo "<tr><td>组合技</td><td>-</td><td>超级重斩</td><td>20</td><td>超级斩的强化版，伤害敌一组约300</td></tr>";
 echo "</table><br><br>";
@@ -65,9 +65,35 @@ echo "<tr><td>7</td><td>52</td><td>强力投</td><td>4</td><td>力量投的强�
 echo "<tr><td>8</td><td>66</td><td>攻击力+20</td><td>-</td><td>回旋镖装备时攻击力+20</td></tr>";
 echo "<tr><td>9</td><td>82</td><td>星光投</td><td>8</td><td>敌全体造成光属性伤害约70</td></tr>";
 echo "<tr><td>10</td><td>100</td><td>雷光投</td><td>16</td><td>敌单体造成雷属性伤害约165</td></tr>";
-
-
-echo "<tr><td>1</td><td>4</td><td>小</td><td>2</td><td>1</td></tr>";
+echo "</table><br><br>";
+echo "<table width=100% >";
+echo "<tr><th colspan=5>格斗技能</th></tr>";
+echo "<tr><th width=10%>等级</th><th width=10%>所需sp</th><th width=30%>技能名称</th><th width=10%>消耗MP</th><th width=40%>作用</th></tr>";
+echo "<tr><td>1</td><td>4</td><td>攻击力+5</td><td>-</td><td>不装备武器时攻击力+5</td></tr>";
+echo "<tr><td>2</td><td>11</td><td>大防御</td><td>0</td><td>受到的伤害变成10%</td></tr>";
+echo "<tr><td>3</td><td>17</td><td>投石</td><td>0</td><td>敌一组石子攻击伤害约20</td></tr>";
+echo "<tr><td>4</td><td>24</td><td>正拳突</td><td>2</td><td>以150%的伤害对敌单体攻击蓄气无效</td></tr>";
+echo "<tr><td>5</td><td>33</td><td>攻击力+20</td><td>-</td><td>不装备武器时攻击力+20</td></tr>";
+echo "<tr><td>6</td><td>42</td><td>真空波</td><td>2</td><td>敌全体造成真空属性伤害等级越高伤害越大</td></tr>";
+echo "<tr><td>7</td><td>52</td><td>会心率上升</td><td>-</td><td>不装备武器时会心率上升</td></tr>";
+echo "<tr><td>8</td><td>70</td><td>连环拳</td><td>0</td><td>以50%的伤害对敌做出4次攻击，目标随机</td></tr>";
+echo "<tr><td>9</td><td>82</td><td>巨石投</td><td>4</td><td>敌全体大石头攻击伤害约100</td></tr>";
+echo "<tr><td>10</td><td>100</td><td>攻击力+50</td><td>-</td><td>不装备武器时攻击力+50</td></tr>";
+echo "</table><br><br>";
+echo "<table width=100% >";
+echo "<tr><th colspan=5>勇气技能</th></tr>";
+echo "<tr><th width=10%>等级</th><th width=10%>所需sp</th><th width=30%>技能名称</th><th width=10%>消耗MP</th><th width=40%>作用</th></tr>";
+echo "<tr><td>1</td><td>8</td><td>回城</td><td>1</td><td>瞬间回到去过的城镇等地</td></tr>";
+echo "<tr><td>2</td><td>16</td><td>解麻</td><td>2</td><td>我方全体睡眠，麻痹状态回复</td></tr>";
+echo "<tr><td>3</td><td>28</td><td>驱散小怪</td><td>4</td><td>在一定路程内不会遇到比自己弱的敌人</td></tr>";
+echo "<tr><td>4</td><td>40</td><td>魔法封印</td><td>3</td><td>敌一组魔法封印</td></tr>";
+echo "<tr><td>5</td><td>48</td><td>雷击</td><td>6</td><td>敌全体雷攻击中等伤害</td></tr>";
+echo "<tr><td>6</td><td>56</td><td>消耗mp3/4</td><td>-</td><td>使用任何魔法、特技只需正常MP的3/4，遇小数上升1</td></tr>";
+echo "<tr><td>7</td><td>70</td><td>同归于尽</td><td>1</td><td>自己和敌人同归于尽，有可能失败，BOSS无效</td></tr>";
+echo "<tr><td>8</td><td>82</td><td>大回复</td><td>36</td><td>我方全体HP全回复</td></tr>";
+echo "<tr><td>9</td><td>90</td><td>消耗mp1/2</td><td>-</td><td>使用任何魔法、特技只需正常MP的1/2</td></tr>";
+echo "<tr><td>10</td><td>100</td><td>强雷</td><td>15</td><td>敌一组雷攻击大伤害</td></tr>";
+echo "<tr><td>10</td><td>100</td><td>撕裂斩</td><td>20</td><td>对敌一组攻击的究级剑技伤害约165</td></tr>";
 echo "</table><br><br>";
 echo "<br><br><br><br>";
 echo "</center></div>";
