@@ -36,6 +36,10 @@ echo "<td align=center><a href='./role1.php' target=_blank><font size=4>主角�
 echo "<td align=center><a href='./role2.php' target=_blank><font size=4>杨加斯技能</font></a></td>";
 echo "<td align=center><a href='./role3.php' target=_blank><font size=4>洁西卡技能</font></a></td>";
 echo "<td align=center><a href='./role4.php' target=_blank><font size=4>库库鲁技能</font></a></td></tr><tr>";
+echo "<td align=center><a href='./item1.php' target=_blank><font size=4>武器合成</font></a></td>";
+echo "<td align=center><a href='./item2.php' target=_blank><font size=4>铠甲合成</font></a></td>";
+echo "<td align=center><a href='./item3.php' target=_blank><font size=4>盾牌合成</font></a></td>";
+echo "<td align=center><a href='./item4.php' target=_blank><font size=4>头盔合成</font></a></td>";
 echo "</tr></table>";
 echo "<br><center><img src='./171011/b3c8bb12c8fcc3ce6aa6e34a9f45d688d53f20b9.jpg' border=1 style='width:90%;cursor:pointer' onclick='javascript:window.open(this.src)' /></center>";
 echo "</body></html>";
