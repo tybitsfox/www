@@ -2,9 +2,9 @@
 echo "<html><head>
 <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
 <style type='text/css'>
-body{ text-align:left} 
+body{ text-align:left;font-family:'YaHei Consolas Hybrid';} 
 #divcenter{margin:0 auto;width:1024px}
-#divcenter table{text-align:center;border=1px black solid;border-collapse:collapse;}
+#divcenter table{text-align:center;border=1px black solid;border-collapse:collapse;font-size:large;}
 #divcenter th{border:1px black solid;background-color:#CCFFFF;}
 #divcenter td{border:1px black solid;}
 </style>
