@@ -21,8 +21,9 @@ echo "<td align=center><a href='./skill.php' target=_blank><font size=4>咒文�
 echo "<td align=center><a href='./monster.php' target=_blank><font size=4>怪兽详细资料</font></a></td>";
 echo "<td align=center><a href='./combine.php' target=_blank><font size=4>配合法则</font></a></td>";
 echo "<td align=center><a href='./battle.php' target=_blank><font size=4>竞技场_M1</font></a></td></tr>";
-echo "<tr><td align=center colspan=3><a href='./xinde1.php' target=_blank><font size=4>攻略心得M1</font></a></td>";
-echo "<td align=center colspan=3><a href='./xinde2.php' target=_blank><font size=4>攻略心得M2</font></a></td>";
+echo "<tr><td align=center colspan=2><a href='./xinde1.php' target=_blank><font size=4>攻略心得M1</font></a></td>";
+echo "<td align=center colspan=2><a href='./xinde2.php' target=_blank><font size=4>攻略心得M2</font></a></td>";
+echo "<td align=center colspan=2><a href='./xinde3.php' target=_blank><font size=4>M1初期配合心得</font></a></td>";
 echo "</tr></table>";
 
 echo "</body></html>";
