@@ -714,13 +714,18 @@ edx=0x534d4150 ('SMAP') 中断处理据此判断内存块的类型
 es:di-->指向Address Range Descriptor Structure结构的地址
 返回值：
 CF clear 表示操作成功
-es:di->指向最后一个结构BaseAddrLow+LengthLow的头指针
-实际的内存数应为每个结构的LengthLow的和再加0x8000 <--这是我测试的结果。    
-ecx=结构大小，一般为20
-eax=0x534d4150（'SMAP'）
-ebx=0
-该中断应循环调用直至ebx==0并且CF清零，此时取得的每个结构的的LengthLow之和
-再加0x8000就是实际内存大小了。
+es:di->指向最后一个结构的头指针
+实际的内存数应为每个结构的LengthLow的和再加0x8000 <--这是我测试的结果。  
+该中断应循环调用直至ebx==0并且CF清零，<font color=red>循环调用时，切不可修改ebx的值，即
+不可将其再初始化为0。
+实际上，再次调用只需指定edi和eax即可：
+1：
+	mov $buf,%edi
+	mov $0xe820,%eax
+	int $0x15
+对于ecx和edx是否重新设定都可，但且不可修改ebx的值!!	
+</font>此时取得的每个结构的的LengthLow之和再加0x8000就是实际内存大小了。
+
 -----------Address Range Descriptor Structure结构-------------
 偏移       名称                描述
 0          BaseAddrLow         基地址的低32位
