@@ -2,7 +2,7 @@
 <?php
 echo "
 <center><font color=red size=5>一个完整的保护模式下（启用分页）软盘驱动的示例</font></center>
-<font color=blue size=2><pre>
+<font color=blue size=4><pre>
 Author:tybitsfox	2014-10-27
 本文可以分享，但必须注明转载出处。
 ----------------------makefile-----------------
