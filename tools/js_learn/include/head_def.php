@@ -5,10 +5,10 @@
 <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
 <script src="https://cdn.bootcss.com/jquery/1.10.2/jquery.min.js"></script>
 -->
-<link rel="stylesheet" href="http://localhost/css/bootstrap.min.css">
-<script src="http://localhost/css/jquery.min.js"></script>
-<link rel="stylesheet" href="http://localhost/css/summernote.css">
-<script src="http://localhost/css/summernote.js"></script>
+<link rel="stylesheet" href="http://localhost:8008/css/bootstrap.min.css">
+<script src="http://localhost:8008/css/jquery.min.js"></script>
+<link rel="stylesheet" href="http://localhost:8008/css/summernote.css">
+<script src="http://localhost:8008/css/summernote.js"></script>
 
 <?php
 //template format define:
