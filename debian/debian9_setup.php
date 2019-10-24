@@ -21,6 +21,22 @@ booting界面显示的错误为：Radeon kernel modesetting for r600 or later re
 7、重新启动，完成
 这是因为.bashrc错误而导致了默认的bash不能工作（闪退）所以，只能启动另外一个sh。忘记密码的话也是如此操作，使用password重新设定密码即可
 </font>";
+echo "<font color=blue>多声卡设置alsa默认声卡的方法：
+1、编辑或添加/etc/modprobe.d/alsa.conf文件。在文件中可以指定声卡的编号，而系统默认的声卡一般就是编号为0的设备，
+这种指定方法有两种：使用index指定，或者新的方法使用slots指定。下面是alsa.conf的配置文件：指定了es-1938的声卡为默认声卡
+##old style
+##ALSA portion
+#options snd cards_limit=2
+#alias snd-card-0 snd-es1938
+#alias snd-card-1 snd-hda-intel
+#options snd-es1938 index=0
+#options snd-hda-intel index=1
+##OSS/Free portion
+#alias sound-slot-0 snd-es1938
+#alias sound-slot-1 snd-hda-intel
+##new method
+options snd slots=snd-es1938,snd-hda-intel
+</font>";
 echo"软件的安装：
 1、apt-get install aptitude			debian9默认竟然没有这个
 2、apt-get install xserver-xorg
