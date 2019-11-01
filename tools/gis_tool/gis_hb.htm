@@ -1,0 +1,265 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+    <title>Untitled Page</title>
+</head>
+<body><pre>
+<a name="header">
+<a href="#amp">web服务器系统搭建</a><br>
+<a href="#mysql_struct">mysql数据库结构</a><br>
+<a href="#web_data">监控平台的安装</a><br>
+
+<a name="amp"><center><font size=5 color=red>土壤环境信息系统服务器搭建说明</font></center>
+本系统使用AMP搭建web服务器，AMP系指apache,mysql,php三套开源软件构建web应用平台的黄金组合，目前网络上有超过70%的web应用是由amp（lamp）所提供。<br>
+一、软件的下载，上述三款软件都是开源的，因此建议直接去各自的主站去下载，并对下载的压缩包进行MD5验证。
+    下面是我搭建开发平台时使用的压缩包：<br>
+    <a href="https://pan.baidu.com/s/1jI03jka">php压缩包</a>&nbsp;&nbsp;<a href="https://pan.baidu.com/s/1qYcArMW">apache压缩包</a>&nbsp;&nbsp;<a href="https://pan.baidu.com/s/1qXD7SnE">mysql压缩包</a>
+    <br>如果需自行下载，为满足本系统各种功能所需，建议版本不要太低：php&gt;5.5，apache&gt;2.4，mysql&gt;5.5 
+二、系统搭建，下载的amp包都是压缩包格式，解压至指定目录即可，我是将三个包都解压至D:/app/目录下，三个目录分别为：apache24，php55，mysql56。同时建立www目录
+    解压完成再进行简单的配置即可完成系统的搭建。
+<font color=blue>1、apache的配置：</font>进入D:/app/apache24/conf/目录，打开配置文件httpd.conf，下面是配置文件中修改的地方
+    ServerRoot "d:/app/Apache24"   
+    DocumentRoot "d:/app/www"
+    &lt;Directory "d:/app/www"&gt;
+    ScriptAlias /cgi-bin/ "d:/app/Apache24/cgi-bin/"
+    &lt;Directory "d:/app/Apache24/cgi-bin"&gt;
+    DirectoryIndex index.php index.html
+
+配置修改完成后，运行下列命令，将apache服务添加至windows启动服务中：
+httpd -k install -n"apache" ，如果该命令不能执行，一般是缺少必要的VC运行库文件，<a href='https://pan.baidu.com/s/1nv62BaD' target=_blank>下载</a>后（这是32位版本的）
+拷贝至：system32或者SysWOW64（64位版本）目录下即可.
+运行下列命令启动服务 
+net start apache 
+<font color=blue>2、php的配置：</font>进入D:/app/php55目录，打开配置文件php.ini，修改或添加如下设置
+extension_dir = "d:/php/php55/ext"
+extension=php_curl.dll
+extension=php_gd2.dll
+extension=php_mysql.dll
+extension=php_mysqli.dll
+display_errors = Off
+
+注意：该配置文件中必须要包含进extension=php_mysqli.dll设置，这是因为本系统使用了全新的mysql API来操作数据库。
+配置完并保存上述配置文件后，还要重新编辑apache24目录下的conf配置文件，添加php的支持：
+LoadModule php5_module "D:/app/php55/php5apache2_4.dll"
+PHPIniDir "D:/app/php55"
+AddType application/x-httpd-php .php
+此时，重启apache服务，查看phpinfo是否正常运行，如果此时出现服务启动错误，错误提示是无法加载php5apache2_4.dll时
+这应该是缺少了VC运行库文件：<a href='https://pan.baidu.com/s/1bo5kTFx' target=_blank>vcredist_x86.exe</a>安装后问题即可解决。
+<font color=blue>3、mysql的配置：</font>进入D:/app/mysql56目录，打开配置文件my.ini，添加如下配置：
+添加：
+[client]
+port=3306
+
+[mysql]
+default-character-set=utf8
+[mysqld]
+
+ basedir = "D:/app/mysql56"
+ datadir = "D:/app/mysql56/data"
+ port = 3306
+#server_id = localhost
+character-set-server=utf8
+default-storage-engine=INNODB
+
+该配置主要指定了mysql的默认访问端口，所使用的字符编码。由于系统的要求，字符编码必须采用utf8。编辑完成后
+添加服务：mysqld install
+启动服务：net start mysql
+
+至此，如果没有问题（可查看php_info()）则web系统搭建基本完成。
+<br><br><br><br><br><br><a href="#header">返回</a><br><br>
+<a name="mysql_struct"><center><font size=5 color=red>土壤环境信息系统数据库结构说明</font></center><font color=blue>
+使用数据库：MariaDB/MYSQL
+数据库名称：gis_hb (可修改)
+数据库表：
+MariaDB [gis_hb]&gt; show tables;
++------------------+
+| Tables_in_gis_hb |
++------------------+
+| area_info        |
+| auth             |
+| pt_link          |
+| soil_val         |
+| standard         |
+| station          |
+| station_ex       |
+| trail            |
++------------------+
+
+------------------------------------------------------------------------------------------------------
+
+一、表名：auth
+    用途：存储用户登录帐号及密码
+CREATE TABLE `auth` (
+  `uid` int(8) unsigned NOT NULL COMMENT '序号',
+  `user` varchar(16) NOT NULL COMMENT '用户名',
+  `pwd` varchar(256) NOT NULL COMMENT '密码',
+  `priv` int(8) unsigned NOT NULL COMMENT '权限'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 
+
+二、表名：area_info
+    用途：存储全国行政区划名称及代码
+CREATE TABLE `area_info` (
+  `aid` int(6) unsigned NOT NULL COMMENT '行政区划代码',
+  `aname` varchar(16) NOT NULL COMMENT '行政区划名称',
+  `bused` int(1) unsigned DEFAULT '0' COMMENT '本系统所属的行政区划',
+  PRIMARY KEY (`aid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+
+三、表名：standard
+    用途：存储2017年山东省土壤环境质量监测方案评价标准值（表三）
+CREATE TABLE `standard` (
+  `iid` int(12) unsigned NOT NULL COMMENT '项目id',
+  `iname` varchar(24) NOT NULL COMMENT '项目名称',
+  `isname` varchar(24) DEFAULT NULL COMMENT '子项目名称',
+  `iisd` int(12) unsigned NOT NULL COMMENT '子项目id',
+  `soil_type` int(2) unsigned NOT NULL COMMENT '土壤类型',
+  `soil_name` varchar(24) DEFAULT NULL COMMENT '土壤类型名称',
+  `std` double(7,2) NOT NULL COMMENT '标准值',
+  PRIMARY KEY (`iid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 
+
+四、表名：station
+    用途：存储点位基本信息
+CREATE TABLE `station` (
+  `aid` int(6) unsigned NOT NULL COMMENT '行政区划',
+  `sname` varchar(128) NOT NULL COMMENT '点位名称',
+  `sid` varchar(24) NOT NULL COMMENT '点位id',
+  `lng` varchar(16) NOT NULL COMMENT '经度',
+  `lat` varchar(16) NOT NULL COMMENT '维度',
+  `stype` int(1) unsigned NOT NULL COMMENT '点位类型',
+  PRIMARY KEY (`sid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 
+
+五、表名：station_ex
+    用途：存储点位详细信息，该表是表station的补充表
+CREATE TABLE `station_ex` (
+  `sid` varchar(24) NOT NULL COMMENT '点位id',
+  `fpoint` varchar(128) NOT NULL COMMENT '采样地点',
+  `ftime` varchar(48) NOT NULL COMMENT '采样时间',
+  `weather` varchar(24) NOT NULL COMMENT '天气',
+  `fcode` varchar(32) NOT NULL COMMENT '样品编号',
+  `fdeep` varchar(18) NOT NULL COMMENT '采样深度',
+  `altitude` varchar(8) NOT NULL COMMENT '海拔',
+  `fused` varchar(18) NOT NULL COMMENT '土地利用',
+  `ntype` varchar(18) NOT NULL COMMENT '作物类型',
+  `wtype` varchar(18) NOT NULL COMMENT '灌溉类型',
+  `etype` varchar(18) NOT NULL COMMENT '地形地貌',
+  `ftype` varchar(18) NOT NULL COMMENT '土壤类型',
+  `fqual` varchar(18) NOT NULL COMMENT '土壤质地',
+  `fcolor` varchar(18) NOT NULL COMMENT '土壤颜色',
+  `fdamp` varchar(18) NOT NULL COMMENT '土壤湿度',
+  `weight` varchar(18) NOT NULL COMMENT '样品重量',
+  `aeast` varchar(18) NOT NULL COMMENT '周边信息-东',
+  `awest` varchar(18) NOT NULL COMMENT '周边信息-西',
+  `asouth` varchar(18) NOT NULL COMMENT '周边信息-南',
+  `anorth` varchar(18) NOT NULL COMMENT '周边信息-北',
+  `coller` varchar(18) NOT NULL COMMENT '采样人',
+  `noter` varchar(18) NOT NULL COMMENT '记录人',
+  `checker` varchar(18) NOT NULL COMMENT '校对人',
+  PRIMARY KEY (`sid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 
+ 
+六、表名：soil_val
+    用途：存储监测数据
+CREATE TABLE `soil_val` (
+  `sid` varchar(24) NOT NULL COMMENT '站点id',
+  `iid` int(12) unsigned NOT NULL COMMENT '污染项目id',
+  `date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '监测时间',
+  `val` double(7,2) NOT NULL COMMENT '监测值',
+  `aid` int(6) unsigned NOT NULL COMMENT '行政区划',
+  PRIMARY KEY (`sid`,`iid`),
+  KEY `soil_aid_iid` (`aid`,`iid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4  
+
+七、表名：pt_link
+    用途：存储点位图片的文件路径
+CREATE TABLE `pt_link` (
+  `sid` varchar(24) NOT NULL COMMENT '站点id',
+  `link` varchar(256) NOT NULL COMMENT '点位图片链接',
+  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '拍摄日期',
+  `coment` varchar(256) DEFAULT NULL COMMENT '简要说明',
+  `lid` int(4) unsigned NOT NULL COMMENT '图片顺序0-base',
+  PRIMARY KEY (`sid`,`lid`),
+  KEY `pt_link_sid_lid` (`sid`,`lid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+
+八、表名：trail
+    用途：存储航迹坐标
+CREATE TABLE `trail` (
+  `ida` int(10) NOT NULL AUTO_INCREMENT COMMENT '自增量id',
+  `idx` int(6) unsigned NOT NULL COMMENT '航迹编号',
+  `lng` varchar(16) NOT NULL COMMENT '经度',
+  `lat` varchar(16) NOT NULL COMMENT '纬度',
+  `aid` int(6) unsigned NOT NULL COMMENT '区域代码',
+  PRIMARY KEY (`ida`)
+) ENGINE=InnoDB AUTO_INCREMENT=4552 DEFAULT CHARSET=utf8mb4 
+
+------------------------------------------------------------------------------------------------------
+</font>一个完整库结构并包含行政区划和监测项目信息数据的导出表<a href="./gis_hb_empty.sql">下载</a>
+下载完成后，使用如下命令将数据库导入：
+mysql&gt;use gis_hb;
+mysql&gt;source d:/gis_hb_empty.sql;
+这个初始化的表包含了两个有数据的表格：area_info:行政区划；standard:存储2017年山东省土壤环境质量监测方案评价标准值
+将库结构导入后，首先要修改行政区划表中默认的使用地市，该系统可自适应省市县三级应用，当选择了省级或地市级后，其所属
+的地市或县区会自动纳入系统，并作为子级的行政区划使用。初始的默认行政区划为山东省泰安市（370900），请使用下述命令修改：
+update area_info set bused = 1 where aid &gt;=370900 and aid &lt;370999 (本系统所在的行政区划代码,还有去掉没有数据的区划);
+数据库的录入操作如果是在windows系统下进行，还务必要注意字符编码的设置，录入的数据必须是utf8编码，不能采用windows下常用的GB2312
+或者unicode。编码转换可使用iconv之类的命令转换。待确认转换完成后在进行数据的录入。
+信息录入完成后还需建立一个新的账号以供web平台和数据存储、均值计算等其他服务器应用程序操作数据库，该账号目前为固定的：
+用户名：sdhl
+密码：  sdhl2016
+在以后的系统升级或更新时会对这一固定账号给出调整，以保证系统的安全！
+当上述信息都录入完成后，数据库基本建立完成了，以后对数据库的操作就不再需要人工干预了。
+
+
+
+
+
+
+
+<a href="#header">返回</a>
+<a name="web_data"><center><font size=5 color=red>土壤环境信息系统的安装</font></center>
+下载并解压<a href="https://github.com/bitsfox/gis_hb.git">平台安装包</a>，将解压目录及文件拷贝至D:/app/www/目录下.
+打开浏览器测试：http://localhost/gis_hb/login.php。 能正常打开及表示成功安装。
+由于本系统所用的数据库是按年度强制划分的（每年的数据库可以布置在不同的数据库服务器上）
+所以，在这个系统平台目录下有需要由维护人员定期修改（维护）的数据库配置文件：
+<font color=blue>d:/app/www/gis_hb/config/setup.php</font>
+在该文件中：<font color=red>注意：下述设置至关重要，所有对数据库的访问（web平台，数据存储，均值计算等）都依赖以下设置！</font>
+/////////////////下面添加的用于按年度访问不同数据库服务器上的数据
+	$DB_ADDR_TY				=	array('2016'=&gt;'127.0.0.1','2017'=&gt;'127.0.0.1');
+	$DB_PORT_TY				=	array('2016'=&gt;3306,'2017'=&gt;3306);
+	$DB_NAME_TY				=	array('2016'=&gt;'env2016','2017'=&gt;'env2017');
+数组变量$DB_ADDR_TY中包含了各个年度mysql数据库服务器的ip地址，添加的格式就是'年份'=&gt;'数据库服务器ip'，之间使用逗号分隔。
+数组变量$DB_PORT_TY中包含了各个年度mysql数据库服务器所使用的端口，添加格式同上。
+数组变量$DB_NAME_TY中包含了各个年度mysql数据库服务器上本系统所用数据库的名称，如果仅仅使用一个数据库服务器，即各个年度的数据库都在一个服务器上时，
+各个年度的数据库名称必须不同，如果各个年度的数据库在不同的服务器上时，对数据库的名称没有限制。
+<font color=gray size=2>示例，添加2018年服务器的信息：
+	$DB_ADDR_TY				=	array('2016'=&gt;'127.0.0.1','2017'=&gt;'127.0.0.1','2018'=&gt;'192.168.100.186');
+	$DB_PORT_TY				=	array('2016'=&gt;3306,'2017'=&gt;3306,'2018'=&gt;3306);
+	$DB_NAME_TY				=	array('2016'=&gt;'gis_hb','2017'=&gt;'gis_hb','2018'=&gt;'gis_hb2018');
+</font>
+<font color=red>百度地图开放平台ak码的申请</font>
+本系统使用了百度地图来显示点位和航迹线路，因此还需申请一个ak码（可免费申请，如果访问量大则申请付费的保证速度和访问量）。
+申请地址：<a href="http://lbsyun.baidu.com/" target=_blank>百度地图开放平台</a>
+<font color=blue>将您申请的ak码替换文件/app/www/gis_hb/config/main.php:
+$GIS_BAIDU_AK	=	您申请的ak码<font>
+
+
+<font size=5 color=red>注意：本系统对浏览器(用户端)的要求：由于本系统采用了最新的html5标准设计，因此：
+推荐使用能对html5完美支持的火狐浏览器、谷歌chrome浏览器以及opera浏览器。
+不建议使用微软ie10以上版本的浏览器，
+不能使用微软ie10及更低版本的浏览器！
+对于微软及国内各版本浏览器，本系统不给予可正常执行的保证！
+</font><font size=5 color=blue>本系统开发环境：
+Debian9/apache2.4.25/php7.0.19/MariaDB-server-10.1
+测试环境： Debian9/window7 采用了Firefox火狐浏览器</font>
+<br>--------2017-11-29添加--------------
+在image目录下添加了泰安站今年土壤的实测数据的数据库和点位资料
+
+<br><br><br><br><br>
+<br><br><br><br><br>
+<br><br><br><br><br>
+
+<a href="#header">返回</a>
+<br><br><br><br><br>
