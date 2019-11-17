@@ -60,6 +60,7 @@ if($pflag==0)
 	echo "<td align=center width=25% ><a href='./tin16/lll/dq9.php' target=_blank>勇者斗恶龙9</a></td>";
 	echo "<td align=center width=25% ><a href='./tin16/mmm/dq5.php' target=_blank>勇者斗恶龙5</a></td>";
 	echo "<td align=center width=25% ><a href='./tin16/nnn/dq8.php' target=_blank>勇者斗恶龙8</a></td>";
+	echo "<td align=center width=25% ><a href='./tin16/ooo/shachen.php' target=_blank>沙尘之锁</a></td>";
 	echo "</tr>";
 	echo "</table></center><br><br>";
 }
