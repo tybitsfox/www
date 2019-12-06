@@ -11,6 +11,7 @@ echo "<td align=center><a href='./hecheng1.php#pic01' target=_blank><font size=4
 echo "<td align=center><a href='./hecheng1.php#pic02' target=_blank><font size=4>主炮合成</font></a></td>";
 echo "<td align=center><a href='./hecheng1.php#pic03' target=_blank><font size=4>副炮合成</font></a></td>";
 echo "<td align=center><a href='./hecheng1.php#pic04' target=_blank><font size=4>SE合成</font></a></td></tr><tr>";
-echo "<td align=center colspan=4><a href='./hecheng1.php#pic05' target=_blank><font size=4>特殊材料合成</font></a></td></tr>";
+echo "<td align=center colspan=2><a href='./hecheng1.php#pic05' target=_blank><font size=4>特殊材料合成</font></a></td>";
+echo "<td align=center colspan=2><a href='./walk.php#hecheng' target=_blank><font size=4>极品垃圾交换物</font></a></td></tr>";
 echo "</table>";
 ?>

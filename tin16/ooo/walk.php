@@ -275,6 +275,19 @@ echo "<br><font size=4>
 关于传送失败,有人说等级120以上几率高,但好象是打败35个通缉后几率更高. <br>
 塑料巨人 25000G：超特技仙人那里的拐角处可以遇到。但是遇到的几率不是很高.怀念的造型啊……<br>
 机械-X 30000G：制药研究所周围。很好找。<br><br><br><br><br>";
+echo "<br><br><br><br><br><a name='hecheng'>
+赏金首掉落的垃圾兑换明细<br>
+<br>
+与众不同的垃圾<br>
+（蛇的浮雕、爆冲击发器、绯牡丹炮身、有男子气概的东西、等离子电磁线圈、绯牡丹速射装置）<br>
+<br>
+非常棒的垃圾<br>
+（等离子电磁线圈、蛇的浮雕、绯牡丹速射装置、蛇的爆缩机、绯牡丹炮身、道尔芯片11、爆冲击发器、等离子炮身、等离子电容器、有男子气概的东西）<br>
+一流机械垃圾<br>
+（绯牡丹速射装置、蛇的爆缩机、蛇的炮身、等离子电容器、有男子气概的东西、爆冲击发器、等离子炮身、道尔芯片12、等离子电磁线圈）<br>
+<br>
+旧文明垃圾<br>
+（道尔芯片13、蛇的浮雕 、等离子电磁线圈、等离子炮身、爆冲击发器、等离子电容器、绯牡丹速射装置、绯牡丹炮身、有男子气概的东西）<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>";
 echo "<a name='vvv'><br><center><img src='./shachenzhisuo.jpg' border=1 style='width:100%;cursor:pointer' onclick='javascript:window.open(this.src)' /></center><br><br><br></div>";
 
 ?>
