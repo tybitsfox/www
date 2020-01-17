@@ -110,7 +110,7 @@ echo "14、安装常用工具：
 	snd-pcm-oss.ko和snd-mixer-oss.ko这两个驱动模块，如果有的话，将其手动添加到/etc/modules文件中，让系统再启动时能自动加载这两个模块：
 	snd-pcm-oss
 	snd-mixer-oss<br>";
-echo "17、通过systemctl命令，启动自己在开机需要执行的程序
+echo "<font color=red>17、通过systemctl命令，启动自己在开机需要执行的程序</font>
 	在linux启动时一些个人写的获取天气，邮件以及对系统设置（调节亮度）的操作都需要在系统启动之后自动执行，之前我的做法是通过.bashrc之
 	类的脚本或者加入到conky或者i3的启动脚本中执行。但是，当不使用root登录时，有些操作不能再如上述操作启动了，因为有些操作需要权限，
 	因此这些需要开机运行的脚本我整合为一个符合作为systemctl服务而启动的脚本，将该脚本加入到/etc/init.d/目录下，再将该脚本的链接文件
@@ -132,6 +132,23 @@ echo "17、通过systemctl命令，启动自己在开机需要执行的程序
 	////////////在/etc/rc2.d/下加入上述脚本的启动链接///////
 	ln -s /etc/init.d/gttmpfan.sh  /etc/rc2.d/S20gttmpfan
 	完成！";
+echo "
+<font color=blue>18、手动设置并重启网络的注意事项</font>
+	手动修改了网络配置文件后，要通过service或者systemctl重启网络，一般都会遇到无法成功启动的问题。
+	使用service启动：
+	service networking restart
+	使用systemctl启动：
+	systemctl restart networking.service
+	这两个命令一般都无法正常的重新启动网络。
+	通过查看systemctl的启动配置文件(/lib/systemd/system/nerworking.service)发现，其实启动与关闭的操作
+	就是使用了ifup和ifdown命令，但是要带参数a。
+	因此，若要手动关闭网络时可以直接使用ifdown -a --exclude=lo,即不关闭lo
+	启动则是ifup -a即可。但实际上关闭可以正常执行，但启动却出现了问题。通过查看man得知带参数a的启动只能
+	对/etc/network/interfaces中带有auto属性的设备有效。因此要么将你的网卡加上auto属性，要么使用
+	ifup enp2s0指定你要启动的网卡即可正常启动。
+	网卡名称可通过ifquery --state查看获得，或直接查看interfaces配置文件!
+	
+	";	
 echo "<center><font color=blue>----------------------------------至此安装基本结束------------------------------------</font></center>
 下面是一些配置的修改：
 1、允许root使用ssh登录
