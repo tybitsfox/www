@@ -10,4 +10,5 @@ echo "<a href=topic.php#c_asm>关于汇编和c混编重定位的问题</a><br><b
 echo "<a href=topic.php#d_asm>用c函数编写内核代码的另一个意外</a><br><br>";
 echo "<a href=topic.php#d_page>启用分页机制后，任务切换出现的意外</a><br><br>";
 echo "<a href=topic.php#d_label>AT&T语法中对标号的释义</a><br><br>";
+echo "<a href=topic.php#switch_task>时钟中断中任务切换的实现机制</a><br><br>";
 ?>
