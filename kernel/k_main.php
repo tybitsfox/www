@@ -31,7 +31,9 @@ echo "<a href=./kernel_task.php target=_blank>引导及多任务源代码</a>&nb
 <a href=./k_f01.php target=_blank>保护模式下的软盘驱动代码</a><br><br>";
 echo "&nbsp;&nbsp;&nbsp;六、驱动编程资料:<br><br>";
 echo "<a href=./oss.org.cn/kernel-book/ldd3/index.html target=_blank>Linux设备驱动第三版</a>&nbsp;&nbsp;&nbsp;&nbsp;
-<a href=/www.brokenthorn.com/Resources/OSDevIndex.html target=_blank>操作系统开发系列</a><br><br>";
+<a href=/www.brokenthorn.com/Resources/OSDevIndex.html target=_blank>操作系统开发系列</a>&nbsp;&nbsp;&nbsp;&nbsp;
+<a href=./floppy.htm target=_blank>FDC82072a</a>
+<br><br>";
 echo "&nbsp;&nbsp;&nbsp;七、我的内核:<br><br>";
 echo "<a href=./kernel_mem.php target=_blank>内存映像</a>&nbsp;&nbsp;&nbsp;&nbsp;<br><br>";
 echo "</font></td></tr></table>";

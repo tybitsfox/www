@@ -14,6 +14,7 @@ echo "<div id='divcenter'><font size=4 color=blue>一、沙漠之世界（绿洲
 echo "<div id='divcenter'><font size=4 color=blue>二、水之世界（海贼之钥匙）</font><br><font size=4>
 	<font color=red>大地图陆上：</font><br>
 	史莱姆，食蚁兽，茄子怪，多拉奇，军蚁，杀手铁锹，荷伊米史莱姆，小龙，翼龙，飞猫，跳舞萝卜，刷子小僧，独眼小丑，剧毒蜥蜴，弓箭狗，水瓢虫<br>
+	(女孩版)热带史莱姆，杀人图腾<br>
 	<font color=red>大地图水上：</font><br>
 	小电鳗，半人鱼，魔壶小章鱼，杀手海浪，蟾蜍食人鱼，大王乌贼。<br>
 	<font color=red>西边洞窟：</font><br>
