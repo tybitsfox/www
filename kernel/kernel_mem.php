@@ -3,6 +3,89 @@
 echo "<center><font color=red size=4>好吧，虽然这一切都是我设计的，但我还是需要一张直观的内存分配一览表，以便更好的掌控整个内存的使用情况。</font></center><br>";
 echo "<center><font size=5 color=blue>[0M,1M)之间的内存分配</font></center><br>
 <table border=0 width=90%><tr align=center>
+<td style=\"background-color:#00ff00\" width=10%>[0,0x1000)IDT 256*8=0x800</td>
+<td style=\"background-color:#00ff00\" width=10%>[0x1000,0x2000)GDT 25*8=0xC8</td>
+<td style=\"background-color:#00ff00\" width=10%>[0x2000,0x3000)LDT 48*6=0x120</td>
+<td style=\"background-color:#00ff00\" width=10%>[0x3000,0x4000)TSS 112*6=0x2A0</td>
+<td style=\"background-color:gray\" width=15%>[0x4000,0x7c00)Free 15K</td>
+<td style=\"background-color:red\" width=15%>[0x7c00,0x10000)boot,head0 固定33K空间</td>
+<td style=\"background-color:red\" width=10%>[0x10000,0x11000)stack headstack 4K</td>
+<td style=\"background-color:#e08080\" width=10%>[0x11000,0x20000)buffer SYSTable 60K</td>
+<td style=\"background-color:#00ff00\" width=10%>[0x20000,0x22400)DMA buffer</td></tr></table>
+<br><table border=0 width=90%><tr align=center>
+<td style=\"background-color:gray\" width=5%>[0x22400,0x30000)Free 55K</td>
+<td style=\"background-color:#00ff00\" width=10%>[0x30000,0x40000)PDT 页目录表最多16张</td>
+<td style=\"background-color:#33ff33\" width=15%>[0x40000,0x60000)PT 内核页表 32张 映射128M</td>
+<td style=\"background-color:gray\" width=35%>[0x60000,0xb8000)Free 352k</td>
+<td style=\"background-color:#ff0000\" width=10%>[0xb8000,0xba000)CDA 显示缓冲区 8K</td>
+<td style=\"background-color:gray\" width=25%>[0xba000,0x100000)Free 280k</td>
+</tr></table>";
+echo "<center><font size=5 color=blue>[1M,2M)之间的内存分配</font></center><br>";
+echo "<table border=0 width=90%><tr align=center>
+<td style=\"background-color:#00ff00\" width=100%>[0x100000,0x200000)用户级页表<br>存放256个页表，可映射1G内存的用户空间</td>
+</tr></table>";
+echo "<center><font size=5 color=blue>[2M,3M)之间的内存分配</font></center><br>";
+echo "<table border=0 width=90%><tr align=center>
+<td style=\"background-color:red\" width=90%>[0x100000,0x2f0000)最终内核地址空间</td>
+<td style=\"background-color:#e08080\" width=10%>[0x2f0000,0x300000)SAFE_BUF 内核安全缓冲区</td>
+</tr></table>";
+echo "<center><font size=5 color=blue>[3M,4M)之间的内存分配</font></center><br>";
+echo "<table border=0 width=90%><tr align=center>
+<td style=\"background-color:#b8b800\" width=100%>[0x300000,0x400000)文件系统加载地址<br>(暂时未用)</td>
+</tr></table>";
+echo "<center><font size=5 color=blue>[4M,5M)之间的内存分配</font></center><br>";
+echo "<table border=0 width=90%><tr align=center>
+<td style=\"background-color:red\" width=20%>[0x400000,0x440000)TASK0地址空间</td>
+<td style=\"background-color:#00ffff\" width=12%>[0x440000,0x450000)TASK0用户堆栈</td>
+<td style=\"background-color:red\" width=20%>[0x450000,0x490000)TASK1地址空间</td>
+<td style=\"background-color:#00ffff\" width=12%>[0x490000,0x4A0000)TASK1用户堆栈</td>
+<td style=\"background-color:red\" width=20%>[0x4A0000,0x4E0000)TASK2地址空间</td>
+<td style=\"background-color:#00ffff\" width=16%>[0x4E0000,0x500000)TASK2用户堆栈</td>
+</tr></table>";
+echo "<center><font size=5 color=blue>[5M,6M)之间的内存分配</font></center><br>";
+echo "<table border=0 width=90%><tr align=center>
+<td style=\"background-color:red\" width=20%>[0x500000,0x540000)TASK3地址空间</td>
+<td style=\"background-color:#00ffff\" width=12%>[0x540000,0x550000)TASK3用户堆栈</td>
+<td style=\"background-color:red\" width=20%>[0x550000,0x590000)TASK4地址空间</td>
+<td style=\"background-color:#00ffff\" width=12%>[0x590000,0x5A0000)TASK4用户堆栈</td>
+<td style=\"background-color:red\" width=20%>[0x5A0000,0x5E0000)TASK5地址空间</td>
+<td style=\"background-color:#00ffff\" width=16%>[0x5E0000,0x600000)TASK5用户堆栈</td>
+</tr></table>";
+echo "<center><font size=5 color=blue>[6M,8M)之间的内存分配</font></center><br>";
+echo "<table border=0 width=90%><tr align=center>
+<td style=\"background-color:gray\" width=50%>[0x600000,0x700000)FREE~~</td>
+<td style=\"background-color:#00ffff\" width=10%>[0x700000,0x710000)内核堆栈</td>
+<td style=\"background-color:#00aaaa\" width=40%>[0x710000,0x800000)<br>6个任务的系统及堆栈</td>
+</tr></table>";
+
+echo "<br><br><br><br><br>";
+
+
+echo "<center><font size=5 color=blue>[0M,1M)之间的内存分配</font></center><br>
+<table border=0 width=90%><tr align=center>
+<td style=\"background-color:#00ff00\" width=10%>[0,0x800)IDT 256*8</td>
+<td style=\"background-color:gray\" width=2%>F</td>
+<td style=\"background-color:#00ff00\" width=10%>[0x900,0x9c8)GDT 25*8</td>
+<td style=\"background-color:gray\" width=2%>F</td>
+<td style=\"background-color:#00ff00\" width=10%>[0xa00,0xb20)LDT 48*6</td>
+<td style=\"background-color:gray\" width=2%>F</td>
+<td style=\"background-color:#00ff00\" width=10%>[0xc00,0xe20)TSS 112*6</td>
+<td style=\"background-color:gray\" width=14%>[0xe20,0x7c00)Free 27k+</td>
+<td style=\"background-color:red\" width=10%>[0x7c00,0x10000)boot,head0 固定33K空间</td>
+<td style=\"background-color:red\" width=10%>[0x10000,0x11000)stack</td>
+<td style=\"background-color:#e08080\" width=10%>[0x11000,0x20000)buffer</td>
+<td style=\"background-color:#00ff00\" width=10%>[0x20000,0x22400)DMA buffer</td></tr></table>
+<br><table border=0 width=90%><tr align=center>
+<td style=\"background-color:gray\" width=25%>[0x22400,0x70000)Free 246K</td>
+<td style=\"background-color:#00ff00\" width=10%>[0x70000,0x80000)PDT 页目录表最多16张</td>
+<td style=\"background-color:#33ff33\" width=10%>[0x80000,0xa0000)PT 内核页表32张128M</td>
+<td style=\"background-color:gray\" width=10%>[0xa0000,0xb8000)Free 24k</td>
+<td style=\"background-color:#ff0000\" width=10%>[0xb8000,0xba000)CDA 显示缓冲区</td>
+<td style=\"background-color:gray\" width=35%>[0xba000,0x100000)Free 280k</td>
+</tr></table>";
+echo "<br><br><br><br><br>";
+echo "<center><font size=5 color=blue>[0M,1M)之间的内存分配</font></center><br>
+<table border=0 width=90%><tr align=center>
 <td style=\"background-color:gray\" width=10%>[0,0x600)保留</td>
 <td style=\"background-color:#00ff00\" width=10%>[0x600,0x630)物理内存及软硬盘参数表</td>
 <td style=\"background-color:gray\" width=10%>[0x630,0x1000)保留</td>
