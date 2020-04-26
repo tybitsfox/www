@@ -12,4 +12,5 @@ echo "<a href=topic.php#d_page>启用分页机制后，任务切换出现的意�
 echo "<a href=topic.php#d_label>AT&T语法中对标号的释义</a><br><br>";
 echo "<a href=topic.php#switch_task>时钟中断中任务切换的实现机制</a><br><br>";
 echo "<a href=topic.php#make>makefile '@' '$' '$$' '-' '-n ' 使用小结</a><br><br>";
+echo "<a href=topic.php#lret>ret,lret,iret小结</a><br><br>";
 ?>

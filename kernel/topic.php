@@ -751,7 +751,7 @@ echo "<pre><font size=3>
      -mkdir aaadir；
 
 ' $ '符号的使用
-          美元符号$，主要扩展打开makefile中定义的变量
+          美元符号\$，主要扩展打开makefile中定义的变量
 
 ' $$ '符号的使用
           $$ 符号主要扩展打开makefile中定义的shell变量
@@ -784,5 +784,15 @@ $?   所有比目标新的依赖目标的集合。以空格分隔。
 
 $^   所有的依赖目标的集合。以空格分隔。如果在依赖目标中有多个重复的，那个这个变量会去除重复的依赖目标，只保留一份。
 
+</font></pre>";
+echo "<a name=lret></a><center><font color=red size=5>ret,lret,iret小结</font></center>";
+echo "<pre><font size=3>
+<center><table width=100% border=1><tr>
+<td width=30%>ret相当于：</td><td width=30%>lret相当于：</td><td width=40%>iret相当于：</td></tr><tr>
+<td width=30%>popl %eip<br>jmp %eip</td><td width=30%>popl %eip<br>popl %cs<br>jmp %cs,%eip</td>
+<td width=30%>popl %eip<br>pop %cs<br>popfl<br>popl %esp<br>pop %ss<br>jmp %cs,%eip
+</td></tr>
+
+</table></center>
 </font></pre>";
 ?>
