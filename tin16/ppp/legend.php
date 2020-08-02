@@ -7,7 +7,8 @@ body{ text-align:left}
 </style>
 </head><body>";
 echo "<div id='divcenter'><br><center><font size=6 color=red>金庸群侠传攻略</font></center><br><br>";
-echo "<a href='./gongfa1.php' target=_blank>功法介绍1</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='#gongfa'>功法介绍2</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='#ditu'>大地图</a><br><br>";
+echo "<a href='./gongfa1.php' target=_blank>功法介绍1</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='#gongfa'>功法介绍2</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='./wupin.php' target=_blank>物品</a>";
+echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='#ditu'>大地图</a><br><br>";
 echo "
 <p>
 	<span style='color:#E53333;'><strong>南贤居</strong></span> 
