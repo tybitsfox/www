@@ -8,7 +8,8 @@ body{ text-align:left}
 </head><body>";
 echo "<div id='divcenter'><br><center><font size=6 color=red>金庸群侠传攻略</font></center><br><br>";
 echo "<a href='./gongfa1.php' target=_blank>功法介绍1</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='#gongfa'>功法介绍2</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='./wupin.php' target=_blank>物品</a>";
-echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='#ditu'>大地图</a><br><br>";
+echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='#ditu'>大地图</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='./gonglue1.php#duiyou' target=_blank>队友</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='./gonglue1.php#prop' target=_blank>人物属性</a><br><br>";
+echo "<a href='./gonglue1.php' target=_blank>地图坐标</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='./gonglue1.php#book' target=_blank>书籍取得</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='./gonglue1.php#zhidian' target=_blank>游戏指点</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='./gonglue1.php#xiulian' target=_blank>修炼武功</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='./gonglue1.php#qiaomen' target=_blank>窍门及心得</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='./gonglue1.php#point' target=_blank>品德点</a>&nbsp;&nbsp;&nbsp;&nbsp;<br>";
 echo "
 <p>
 	<span style='color:#E53333;'><strong>南贤居</strong></span> 
