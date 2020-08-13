@@ -21,7 +21,7 @@ echo "<table border=0 width=100%><tr><td width=20%><a href=./lab.php#lab01>lsof�
 <td width=20%><a href=./lab_b.php#server02 target=_blank>ip摄像头视频流的相关操作</a></td>
 <td width=20%><a href='./b50.php' target=_blank>HTML颜色表</a></td>
 <td width=20%><a href='./android.php' target-_blank>连接安卓设备</a></td>
-<td width=20%></td>
+<td width=20%><a href='./mount_dlz.php' target=_blank>Mount 镜像</a></td>
 <td width=20%></td>
 </tr></table>";
 echo "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>";
