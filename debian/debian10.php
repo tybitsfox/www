@@ -20,6 +20,9 @@ dd bs=4M if=xxx.iso of=/dev/sdc
 已经习惯了这个命令，突然取消感觉很别扭，看debian的介绍，安装lamp时并没有多大变化：先安装apache2,然后安装mariadb，最后安装php7
 同时要安装php-mysql,libapache2-mod-php7.3,php-gd等
 
+<font size=4 color=red>常用的文件系统所属的包</font>
+mkfs.vfat,mkfs.msdos --> dosfstools
+mkfs.ntfs --> ntfs-3g
 </pre>";
 phpinfo();
 ?>
