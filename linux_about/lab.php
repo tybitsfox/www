@@ -22,6 +22,12 @@ echo "<table border=0 width=100%><tr><td width=20%><a href=./lab.php#lab01>lsof�
 <td width=20%><a href='./b50.php' target=_blank>HTML颜色表</a></td>
 <td width=20%><a href='./android.php' target-_blank>连接安卓设备</a></td>
 <td width=20%><a href='./mount_dlz.php' target=_blank>Mount 镜像</a></td>
+<td width=20%><a href='./bluetooth.php' target=_blank>蓝牙适配器</a></td>
+</tr><tr>
+<td width=20%><a href='./epsxe.php' target=_blank>epsxe的迁移</a></td>
+<td width=20%></td>
+<td width=20%></td>
+<td width=20%></td>
 <td width=20%></td>
 </tr></table>";
 echo "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>";
