@@ -9,7 +9,7 @@ table,th,td{font-size:14px;border:1px solid black;}
 </style>
 </head><body>";
 echo "<div id='divcenter'><br><center><font size=6 color=red>DQMS3D 攻略</font></center><br><br>";
-echo "<a href='./door.php' target=_blank>门攻略</a><br><br><font size=4>";
+echo "<a href='./door.php' target=_blank>门攻略</a><br><br><font size=3>";
 include_once("./aq.html");
 echo "</font></body></html>";
 ?>
