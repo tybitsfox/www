@@ -2,13 +2,15 @@
 echo "<html><head>
 <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
 <style type='text/css'>
-body{ text-align:left} 
+body{font-family:'YaHei Consolas Hybrid';-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
 #divcenter{margin:0 auto;width:90%}
+table {border-collapse: collapse;width:80%;}
+table,th,td{font-size:14px;border:1px solid black;}
 </style>
 </head><body>";
 echo "<div id='divcenter'><br><center><font size=6 color=red>DQMS3D 攻略</font></center><br><br>";
 echo "
-<table width=80% border=1>
+<table>
   <tr>
     <td>主线剧情门</td>
     <td>通关后剧情门</td>
@@ -70,7 +72,7 @@ echo "
   </tr>
 </table>
 <p>以下是支线门列表:</p>
-<table cellspacing='0' cellpadding='0' width=80% border=1>
+<table>
   <tr>
     <th width=30% height='14'>名称</th>
     <th width=30%>场所 </th>

@@ -1,4 +1,13 @@
 <?php
+echo "<html><head>
+<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+<style type='text/css'>
+body{font-family:'YaHei Consolas Hybrid';font-size:14px;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
+#divcenter{margin:0 auto;width:90%}
+table {border-collapse: collapse;width:80%;}
+table,th,td{font-size:14px;border:1px solid black;}
+</style>
+</head><body>";
 echo "
 <font color='#0000ff'>1 恶魔之书介绍：</font><br />
 在上几代游戏时，常常有这样的烦恼：怪物配合后，由于技能树数量的限制而不得不舍弃一些珍贵的技能。而到了新作DQM3D中，SE社出于方便玩家游戏的考虑，以配合时额外出现一只名为恶魔之书的怪物（即2体配合变成2只）来继承玩家所舍弃的那些技能树。<br />
@@ -49,4 +58,5 @@ echo "
 以F级+0的怪兽与A级+99的魔王之书配合为例，<br />
 任意怪兽(F+0)+魔王之书(A+99)=A级怪兽(A+99)+魔王之书(A+99)。
 ";
+echo "</body></html>";
 ?>

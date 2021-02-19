@@ -2,12 +2,14 @@
 echo "<html><head>
 <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
 <style type='text/css'>
-body{ text-align:left} 
+body{font-family:'YaHei Consolas Hybrid';-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
+table {border-collapse: collapse;width:80%;}
+table,th,td{font-size:14px;border:1px solid black;}
 #divcenter{margin:0 auto;width:90%}
 </style>
 </head><body>";
 echo "
-<table width=80% border='1'>
+<table>
   <tbody><tr bgcolor='#00FFFF'>
     <td colspan='2'>问题</td>
     <td width=30%>回答</td>
