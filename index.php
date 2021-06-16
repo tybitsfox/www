@@ -24,7 +24,7 @@ else
 
 include_once("./mystyle.css");
 echo "<body onload='time()'><a name=a01></a>";
-echo "<table class='aaaa'><tr><td width=750px align=left valign=top>";
+echo "<table class='aaaa'><tr><td width=800px align=left valign=top>";
 echo "<div class='menu'><ul>";
 $conn=mysqli_connect("localhost","taenv","taenv2014","web_data");
 //if(! $conn)
