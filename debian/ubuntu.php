@@ -102,5 +102,25 @@ libslang.so.2
 libncursesw.so.6
 完美的库文件都以放置在/usr/local/lib/old_lib目录下</pre></font>
 ";
+echo "<br><br><center><font size=5>AMD显卡的驱动安装</font></center>";
+echo "<font size=4><pre>
+一、相关信息查询命令：
+sudo lshw -c video
+lsmod | grep amd
+dmesg | grep amd
+二、安装驱动方法
+1、使用开源驱动，无需多说，系统安装时会自动安装
+2、使用第三方仓库，安装amd官方驱动
+添加私有源：sudo add-apt-repository ppa:oibaf/graphics-drivers
+然后执行如下命令：sudo apt update && sudo apt -y upgrade 即可
+保险其间，如果想卸载私有源驱动，可使用：
+sudo apt install ppa-purge
+sudo ppa-purge ppa:oibaf/graphics-drivers
+3、使用源代码直接编译
+进入amd主页，下载源代码，执行如下命令解压安装：
+tar -xf amdgpu-pro_*.tar.xz
+cd amdgpu-pro-XX.XX-XXXXXX
+./amdgpu-pro-install -y
+</pre></font><br><br><br><br>";
 
 
