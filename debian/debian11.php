@@ -71,5 +71,7 @@ libgtk-3
 epsxe需要alsa的音频驱动，而64位系统默认安装的是libasound2和libasound2-dev
 而非:i386的安装包，但是其plugins包可以安装i386的：
 安装libasound2-plugins:i386后测试，完美运行~~";
+echo "PPSSPP模拟器现在官网上已经不能直接下载linux版本的了，都移植到了flatpak上面了，幸好之前我保存了一个64位版本的压缩包，版本号为1.7.6
+解压即可运行，但在debian11下提示缺少libGLU,安装libglu1即可运行。";
 echo "</pre>";
 ?>
