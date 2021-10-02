@@ -1,5 +1,5 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!--显示时间的函数-->
+<!-- 显示时间的函数-->
  <script language=Javascript> 
    function time(){
 	       //获得显示时间的div
