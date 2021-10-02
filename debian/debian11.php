@@ -72,6 +72,18 @@ epsxe需要alsa的音频驱动，而64位系统默认安装的是libasound2和li
 而非:i386的安装包，但是其plugins包可以安装i386的：
 安装libasound2-plugins:i386后测试，完美运行~~";
 echo "PPSSPP模拟器现在官网上已经不能直接下载linux版本的了，都移植到了flatpak上面了，幸好之前我保存了一个64位版本的压缩包，版本号为1.7.6
-解压即可运行，但在debian11下提示缺少libGLU,安装libglu1即可运行。";
+解压即可运行，但在debian11下提示缺少libGLU,安装libglu1即可运行。
+七、关于GT730显卡的闭源驱动安装
+结果：安装失败
+首先，在安装完成开源驱动后(apt install xserver-xorg; apt install xinit)，安装了nvidia-detect以测试最佳闭源驱动包，浪潮机器上显示的是：
+nvidia-legacy-390xx-driver
+安装过程出现很多错误提示：
+W: Possible missing firmware /lib/firmware/nvidia/tu102/sec2/desc.bin for module nouveau
+....
+重启后无法进入系统,进入急救模式卸载闭源驱动依然无法进入系统。重装再次测试，这次通过网上搜索，确定了出现错误提示的原因：缺少闭源的固件firmware-linux-nonfree
+安装完闭源固件后，再次安装nvidia-legacy-390xx-driver，本次安装成功，没有任何错误或警告提示。可重启后依然无法进入系统。已经确定这个nvidia的闭源驱动无法正常使用了
+还是老老实实的用开源驱动吧。
+
+";
 echo "</pre>";
 ?>
