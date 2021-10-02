@@ -16,11 +16,11 @@ debian上只要安装 ia32-libs这个包（apt-get install ia32-libs)就可以�
 $ sudo apt-get install ia32-libs
 无法安装，找不到库，就用下面这个方法，
 打开多架构支持，然后更新
-$ sudo dpkg –add-architecture i386
+$ sudo dpkg --add-architecture i386
 $ sudo apt-get update
 $ sudo apt-get install ia32-libs
  如果没有ia32-libs就用
-$ sudo dpkg –add-architecture i386
+$ sudo dpkg --add-architecture i386
 $ sudo apt-get update
 $ sudo apt-get upgrade
 $ sudo apt-get install lib32ncurses5 lib32z1
