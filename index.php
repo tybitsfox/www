@@ -70,7 +70,8 @@ for($i=0;$i<9;$i++)
 }
 mysqli_free_result($result);
 mysqli_close($conn);
-echo "</td><td colspan=2 align=left valign=top><form name='form1' method='get' action='http://www.baidu.com/s' target=_blank><table class='aaaa'><tr><td align=left width=100px><input type=hidden name=action value=search size=0>站外搜索：</td><td align=left width=160px><input type=text name=word size=20 /></td><td align=left><input type=submit value='搜 索' />&nbsp;&nbsp;<input type=reset value='清空' /></td></tr><tr><td colspan=3>";
+echo "</td><td colspan=2 align=left valign=top><form name='form1' method='get' action='https://cn.bing.com/search' target=_blank><table class='aaaa'><tr><td align=left width=100px><input type=hidden name=action value=search size=0>站外搜索：</td><td align=left width=160px><input type=text name='q' size=20 /></td><td align=left><input type=submit value='搜 索' />&nbsp;&nbsp;<input type=reset value='清空' /></td></tr><tr><td colspan=3>";
+//echo "</td><td colspan=2 align=left valign=top><form name='form1' method='get' action='http://www.baidu.com/s' target=_blank><table class='aaaa'><tr><td align=left width=100px><input type=hidden name=action value=search size=0>站外搜索：</td><td align=left width=160px><input type=text name=word size=20 /></td><td align=left><input type=submit value='搜 索' />&nbsp;&nbsp;<input type=reset value='清空' /></td></tr><tr><td colspan=3>";
 /*if($_POST["action"]=="search")
 {
 	echo "查询结果：<br>";
