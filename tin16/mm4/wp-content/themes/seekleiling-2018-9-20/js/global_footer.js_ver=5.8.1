@@ -1,0 +1,88 @@
+(function($, root, undefined) {
+	//包含功能
+	//返回顶部
+	//文章页点赞动画
+	
+	/* 返回顶部 */
+	$(function() {
+		$("#totop").click(function() {
+			$("body,html").animate({
+				scrollTop: 0
+			})
+		});
+		if($(document).scrollTop() < $(window).height()) {
+			$(".totop").hide();
+		} else {
+			$(".totop").show();
+		}
+		$(window).scroll(function() {
+			if($(document).scrollTop() < $(window).height()) {
+				$(".totop").fadeOut("200");
+			} else {
+				$(".totop").fadeIn("200");
+			}
+		});
+	});
+
+	/* 文章页点赞动画 */
+	$(function() {
+		$.fn.postLike = function() {
+			if($(this).hasClass('single-content-dotgood__button__active')) {
+				$(".single-content-dotgood-reward").animate({bottom: '2.5rem',opacity: '1'}, 600);
+				$(".single-content-dotgood-reward").css({"z-index": "0"});
+				//原创文章的点赞动画
+				$(".single-content-dotgood__button-animation__done").animate({bottom: '2.5rem',opacity: '1'}, 600);
+				$(".single-content-dotgood__button-animation__done").delay(500).animate({opacity: '0'}, 400);
+				$(".single-content-dotgood__button-animation__done").animate({bottom: '1.25rem'});//button-animation__done动画
+				//转载文章的点赞动画
+				return false;//如果已点赞
+			} else {
+				$(this).addClass('single-content-dotgood__button__active');
+				$(this).removeClass('single-content-dotgood__button__normal');
+				var id = $(this).data("id"),
+					action = $(this).data('action'),
+					rateHolder = $(this).children('.count'); //遍历子类count
+				var ajax_data = {
+					action: "dotGood",
+					um_id: id,
+					um_action: action
+				};
+				$.post("/wp-admin/admin-ajax.php", ajax_data, function(data) {
+					$(rateHolder).html(data);
+				});
+				$(".single-content-dotgood__button-animation").animate({bottom: '2.25rem',opacity: '1'}, 800);
+				$(".single-content-dotgood__button-animation").animate({opacity: '0'}, 400, function() {
+					$(".single-content-dotgood-reward").delay(250).animate({bottom: '2.375rem',opacity: '1'}, 750);
+					$(".single-content-dotgood-reward").css({"z-index": "0"});
+				});
+				return false;//如果未点赞
+			}
+		};
+		$(".dotGood").click(function() {
+			$(this).postLike();
+		}); //点赞函数 主逻辑
+		var ua = navigator.userAgent.toLowerCase();
+		if(ua.indexOf("iphone")>-1||ua.indexOf("android")>-1||ua.indexOf("ipad")>-1){
+			$(".single-content-dotgood-reward__button__yes").click(function() {
+				window.open('http://leiling.org/about#zanzhu');
+				$(".single-content-dotgood-reward").css({"z-index": "-1","bottom": "1.625rem","opacity": "0"});
+			});//reward__button__yes弹出动作
+		}//判断是移动端
+		else {
+			$(".single-content-dotgood-reward__button__yes").click(function() {
+				$(".single-content-dotgood-reward-qrcode").css({"display": "block"});
+				$(".single-content-dotgood-reward").css({opacity: '0'});
+				$(".single-content-dotgood-reward").css({"z-index": "-1"});
+			});//reward__button__yes弹出动作
+		}//判断是PC端
+		$(".single-content-dotgood-reward__button__no").click(function() {
+			$(".single-content-dotgood-reward").animate({opacity: '0'}, 400 ,function(){
+				$(".single-content-dotgood-reward").css({"z-index": "-1","bottom": "1.625rem"});
+			});
+		});//reward__button__no关闭动作
+		$(".single-content-dotgood-reward-qrcode__close").click(function() {
+			$(".single-content-dotgood-reward-qrcode").css({"display": "none"});
+		});//reward-qrcode__close关闭动作
+		/** 点赞功能 dotgood.php style.css function.php customjs_footer.js **/
+	});
+})(jQuery, this);
