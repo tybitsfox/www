@@ -276,7 +276,7 @@ class gis_ctl implements tab_show
 		for($j=0;$j<$i;$j++)
 			array_push($dy,$this->ay[$j][0]); //取得aid数组
 		$a=new init_gis_mx($this->rq);
-		$ey=$a->get_unit();
+		$ey=$a->get_unit($this->rq);
 //		print_r($ey[1]);
 		$i=count($this->ay);
 		$j=count($ey);
