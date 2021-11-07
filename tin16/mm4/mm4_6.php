@@ -65,7 +65,6 @@ echo "正常版 引擎双隆美尔Z C我是用悟空 炮是逆鳞炮 配流浪�
 <p><span style='color: #0000FF; font-size: 18px;'>万能钥匙获得：登上间谍树，打开间谍眼，去交易所输入密码：19910528。进入后取得</span></p>
 <p><span style='color: #0000FF; font-size: 18px;'>进入太空舱：时光传送错误后进入岛中太空基地</span></p>
 
-
 </td></tr></table><br><br>";
 echo "</font></center>";
 ?>

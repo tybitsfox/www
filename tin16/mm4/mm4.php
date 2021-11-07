@@ -10,7 +10,8 @@ echo "<td align=center><a href='./mm4_3.php' target=_blank><font size=4>赏金�
 echo "<td align=center><a href='./mm4_4.php' target=_blank><font size=4>战车及装备</font></a></td></tr><tr>";
 echo "<td align=center><a href='./mm4_5.php' target=_blank><font size=4>支线任务</font></a></td>";
 echo "<td align=center><a href='./mm4_6.php' target=_blank><font size=4>人类装备</font></a></td></tr>";
-
+echo "<tr><td align=center><a href='./mm4_7.php' target=_blank><font size=4>烤串炮</font></a></td>";
+echo "<td align=center><a name='00'><font size=4>待添加</font></a></td></tr>";
 echo "</table><br><center><img src='./wp-content/mm4map1.jpg' border=1 style='width:90%;cursor:pointer' onclick='javascript:window.open(this.src)' /></center>";
 echo "</body>";
 ?>
