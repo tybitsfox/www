@@ -17,9 +17,15 @@ echo "<table width=90% border=1 cellspacing=0 cellpadding=1>
 <tr><td align=center>774</ta><td align=center>普通(地)</td><td align=center>925</td><td align=center>4连击</td><td align=center>近</td><td align=center>否</td><td align=center>普通</td><td align=center>无限</td><td align=center></td></tr>
 <tr><td align=center>188</ta><td align=center>普通</td><td align=center>1286</td><td align=center>1体</td><td align=center>长</td><td align=center>可</td><td align=center>高会心</td><td align=center>无限</td><td align=center></td></tr>
 <tr><td align=center>448</ta><td align=center>普通</td><td align=center>1568</td><td align=center>3连击</td><td align=center>近</td><td align=center>否</td><td align=center>普通</td><td align=center>无限</td><td align=center></td></tr>
+<tr><td align=center>111</ta><td align=center>普通</td><td align=center>3993</td><td align=center>全体</td><td align=center>长</td><td align=center>待测</td><td align=center>待测</td><td align=center>16</td><td align=center></td></tr>
+<tr><td align=center>222</ta><td align=center>火焰</td><td align=center>1724</td><td align=center>全体</td><td align=center>中</td><td align=center>待测</td><td align=center>待测</td><td align=center>99</td><td align=center></td></tr>
+<tr><td align=center>333</ta><td align=center>光束</td><td align=center>1439</td><td align=center>全体</td><td align=center>中</td><td align=center>否</td><td align=center>高会心</td><td align=center>无限</td><td align=center>推荐使用的属性武器</td></tr>
+<tr><td align=center>444</ta><td align=center>普通</td><td align=center>800</td><td align=center>单体5连击</td><td align=center>近</td><td align=center>待测</td><td align=center>待测</td><td align=center>无限</td><td align=center></td></tr>
+<tr><td align=center>555</ta><td align=center>音波</td><td align=center>1799</td><td align=center>全体3回</td><td align=center>中</td><td align=center>否</td><td align=center>普通</td><td align=center>48</td><td align=center>弹药不多，打面包树和云很有效</td></tr>
+<tr><td align=center>666</ta><td align=center>冷气</td><td align=center>1800</td><td align=center>全体</td><td align=center>中</td><td align=center>待测</td><td align=center>待测</td><td align=center>99</td><td align=center></td></tr>
 
-
-
+<tr><td align=center>777</ta><td align=center>电气</td><td align=center>1249</td><td align=center>单体3连射</td><td align=center>中</td><td align=center>待测</td><td align=center>待测</td><td align=center>无限</td><td align=center></td></tr>
+<tr><td align=center>888</ta><td align=center>通常</td><td align=center>1250</td><td align=center>单体3连射</td><td align=center>长</td><td align=center>否</td><td align=center>普通</td><td align=center>无限</td><td align=center>没有会心和破坏，但是长距离和无限弹药。对付傻瓜乔治有效</td></tr>
 
 </table><br>";
 echo "<font color=blue size=4>1、烧鸟；2、葱；3、鸡蛋；4、丸子；5、香菇；6、番茄； 7、魔芋；8、青椒</font>";

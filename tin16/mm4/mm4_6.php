@@ -64,7 +64,9 @@ echo "正常版 引擎双隆美尔Z C我是用悟空 炮是逆鳞炮 配流浪�
 </pre></td></tr><tr><td>
 <p><span style='color: #0000FF; font-size: 18px;'>万能钥匙获得：登上间谍树，打开间谍眼，去交易所输入密码：19910528。进入后取得</span></p>
 <p><span style='color: #0000FF; font-size: 18px;'>进入太空舱：时光传送错误后进入岛中太空基地</span></p>
-
+<p><span style='color: #0000FF; font-size: 18px;'>人类武器：贝壳破碎机，可以在打击的同时降低敌人的防御力。</span></p>
+<p><span style='color: #0000FF; font-size: 18px;'>战车属性武器攻击翻倍：所有属性武器都可以通过宇宙玩偶的属性加成提高攻击力。这种特性的宇宙玩偶是人类道具，需要下战车使用即可。宇宙玩偶的属性加成效果为<br>44：减轻伤害屏障<br>45：强化火焰和冷气<br>46：强化瓦斯和电气<br>47：强化光线和音波<br>51：消弱敌人耐性</span></p>
+<p><span style='color: #FF0000; font-size: 18px;'>版本升级和使用DLC：title目录下的三个目录分别为：0004000e（升级目录）00040000（存盘目录）004008c（DLC目录）只要将下载的相关目录文件拷贝至指定目录下即可。<br>但是一般DLC都是针对日版的所以要想DLC生效，概要修改citra设置-通用里面的地区为JPN</span></p>
 </td></tr></table><br><br>";
 echo "</font></center>";
 ?>
