@@ -20,7 +20,7 @@ echo "<tr><td align=center><a href='./job1.php' target=_blank>人类基本职业
 echo "<td align=center><a href='./job3.php' target=_blank>人类高级职业</a></td></tr>";
 echo "<tr><td align=center><a href='./prac_job.php' target=_blank>职业训练场所</a></td><td align=center><a href='./comb_job.php' target=_blank>职业组合</a></td>";
 echo "<td align=center><a href='./skills.php' target=_blank>特技一览</a></td></tr>";
-echo "<tr><td align=center><a href='./magic.php' target=_blank>咒文一览</a></td><td align=center></td><td align=center></td></tr></table><br>";
+echo "<tr><td align=center><a href='./magic.php' target=_blank>咒文一览</a></td><td align=center><a href='./stone.php' target=_blank>石板指南</a></td><td align=center></td></tr></table><br>";
 echo "<table width=60% border=1 cellspacing=0 cellpadding=1>";
 echo "<tr><td align=center><a href='./accessories.php' target=_blank>饰品一览</a></td><td align=center><a href='./item.php' target=_blank>物品一览</a></td>";
 echo "<td align=center><a href='./weapon.php' target=_blank>武器一览</a></td></tr>";
