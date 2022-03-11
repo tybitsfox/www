@@ -121,6 +121,7 @@ sudo ppa-purge ppa:oibaf/graphics-drivers
 tar -xf amdgpu-pro_*.tar.xz
 cd amdgpu-pro-XX.XX-XXXXXX
 ./amdgpu-pro-install -y
-</pre></font><br><br><br><br>";
-
-
+</pre></font><br><br>";
+echo "ubuntu使用fluxbox时挂载u盘出现乱码的解决：<br>
+mount -t vfat -o iocharset=utf8 /dev/sdc1 /mnt<br><br><br><br><br>";
+?>
