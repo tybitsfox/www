@@ -172,5 +172,7 @@ x/{m,n/} <br>
 重复字符x，至少m次，不多于n次，如：/o/{5,10/}/匹配5--10个o的行。<br>
 <br>
 ";
+echo "<font color=blue>例如下行：&lt;p &gt;&lt;a href=\"https://img.mamecn.com/uploadfile/2020/0430/20200430013530193.jpg\" target=\"_blank\"&gt;&lt;img alt=\"\\\" border=\"0\" onclick=\"javascript：window.open(this.src);\" onload=\"return imgzoom(this,600);\" src=\"https://img.mamecn.com/uploadfile/2020/0430/20200430013530193.jpg\"  /&gt;&lt;/a&gt;&lt;/p&gt;<br>需要提取里面的链接地址，则需要删除开头至第一个双引号的内容，同时删除剩余串字符中的第一个双引号至结尾的所有字符，sed表达式如下：<br>";
+echo "cat aa.txt |sed 's/^[^\"]*\"//g' | sed 's/\".*.$//g' > bb.txt<br>正则表达式含义为：从首字符开始(^)查找首个出现的（最小匹配）\"[^\"]*\"</font>";
 ?>
 </body><html>
