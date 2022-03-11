@@ -67,7 +67,7 @@ if($pflag==0)
 	echo "<td align=center width=25% ><a href='./tin16/mm4/mm4.php' target=_blank>重装机兵4</a></td>";
 	echo "<td align=center width=25% ><a href='./tin16/rrr/dhh4.php' target=_blank>大航海时代4</a></td>";
 	echo "</tr><tr>";
-	echo "<td align=center width=25% ><a href='./tin16/sss/gsd1.php' target=_blank>幻想水浒传</a></td>";
+	echo "<td align=center width=25% ><a href='./tin16/sss/gsd.php' target=_blank>幻想水浒传</a></td>";
 	echo "<td align=center width=25% ><a href='.' target=_blank></a></td>";
 	echo "<td align=center width=25% ><a href='.' target=_blank></a></td>";
 	echo "<td align=center width=25% ><a href='.' target=_blank></a></td>";

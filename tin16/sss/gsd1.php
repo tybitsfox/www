@@ -1,6 +1,6 @@
 <?php
 echo "<html><head><meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />";
-echo "<link href='./ff9.css' rel='stylesheet' type='text/css' media='all'/>";
+echo "<link href='../hhh/ff9.css' rel='stylesheet' type='text/css' media='all'/>";
 echo "</head><body>";
 echo "<center><font size=6>幻想水浒传1攻略</font>";
 echo "<p>首先是和父亲对话一起去找皇帝</p>
