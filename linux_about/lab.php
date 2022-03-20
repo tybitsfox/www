@@ -25,7 +25,7 @@ echo "<table border=0 width=100%><tr><td width=20%><a href=./lab.php#lab01>lsof�
 <td width=20%><a href='./bluetooth.php' target=_blank>蓝牙适配器</a></td>
 </tr><tr>
 <td width=20%><a href='./epsxe.php' target=_blank>epsxe的迁移</a></td>
-<td width=20%></td>
+<td width=20%><a href='./token.php' target=_blank>github和bitbucket的token使用</a></td>
 <td width=20%></td>
 <td width=20%></td>
 <td width=20%></td>
