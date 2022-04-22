@@ -3,6 +3,7 @@
 echo "<font size=6 color=#ff0000><center>内核准备资料</center></font><br><br><br>";
 echo "<table border=0 width=100%><tr width=100%><td width=50% valign=top>";
 echo "<font size=4>&nbsp;&nbsp;&nbsp;一、硬件资料：<br><br>";
+echo "<a href=./www.cnblogs.com/14290340.html target=_blank>x86_64汇编、寄存器介绍</a><br><br>";
 echo "<a href=./8042.php target=_blank>Intel 8042键盘控制器详细介绍</a><br><br>";
 echo "<a href=./8259A/mine.php#8259A target=_blank>8259A中断控制器</a><br><br>";
 echo "<a href=./8259A/mine.php#cmos target=_blank>CMOS信息</a><br><br>";

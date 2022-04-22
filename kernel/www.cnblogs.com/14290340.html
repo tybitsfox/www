@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="never" />
+    <meta http-equiv="Cache-Control" content="no-transform" />
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>【原创】X86_64/X86 GNU汇编、寄存器、内嵌汇编 - 沐多 - 博客园</title>
+    <link rel="stylesheet" href="http://localhost/kernel/www.cnblogs.com/css/blog-common.min.css" />
+    <link id="MainCss" rel="stylesheet" href="http://localhost/kernel/www.cnblogs.com/skins/coffee/bundle-coffee.min.css" />
+    <link id="highlighter-theme-cnblogs" type="text/css" rel="stylesheet" href="http://localhost/kernel/www.cnblogs.com/css/hljs/cnblogs.css" />
+    
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="http://localhost/kernel/www.cnblogs.com/skins/coffee/bundle-coffee-mobile.min.css" />
+    <script>
+        var currentBlogId = 385777;
+        var currentBlogApp = 'wsg1100';
+        var cb_enable_mathjax = true;
+        var isLogined = false;
+        var isBlogOwner = false;
+        var skinName = 'coffee';
+        var visitorUserId = '';
+        var hasCustomScript = false;
+        try {
+            if (hasCustomScript && document.referrer && document.referrer.indexOf('baidu.com') >= 0) {
+                Object.defineProperty(document, 'referrer', { value: '' });
+                Object.defineProperty(Document.prototype, 'referrer', { get: function(){ return ''; } });
+            }
+        } catch(error) { }
+        window.codeHighlightEngine = 1;
+        window.enableCodeLineNumber = false;
+        window.codeHighlightTheme = 'cnblogs';
+    </script>
+        <script>
+            var currentPostDateAdded = '2021-01-17 21:42';
+        </script>
+    <script src="https://common.cnblogs.com/scripts/jquery-2.2.0.min.js"></script>
+    <script src="http://localhost/kernel/www.cnblogs.com/js/blog-common.min.js"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+        tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']], processClass: 'math', processEscapes: true },
+        TeX: {
+        equationNumbers: { autoNumber: ['AMS'], useLabelIds: true },
+        extensions: ['extpfeil.js', 'mediawiki-texvc.js'],
+        Macros: {bm: "\\boldsymbol"}
+        },
+        'HTML-CSS': { linebreaks: { automatic: true } },
+        SVG: { linebreaks: { automatic: true } }
+        });
+    </script>
+    <script src="https://mathjax.cnblogs.com/2_7_5/MathJax.js?config=TeX-AMS-MML_HTMLorMML&amp;v=20200504"></script>
+    
+</head>
+<body class="skin-coffee has-navbar">
+    <a name="top"></a>
+    
+    
+<!--done-->
+<div id="home">
+<div id="header">
+	<div id="blogTitle">
+<!--done-->
+<h1>转载并致敬：<a id="Header1_HeaderTitle" class="headermaintitle HeaderMainTitle" href="https://www.cnblogs.com/wsg1100/">沐多</a>
+</h1>
+	</div><!--end: blogTitle 博客的标题和副标题 -->
+</div><!--end: header 头部 -->
+
+<div id="main">
+	<div id="mainContent">
+	<div class="forFlow">
+		<div id="post_detail">
+<!--done-->
+<div id="topics">
+	<div class="post">
+		<h1 class = "postTitle">
+			
+<a id="cb_post_title_url" class="postTitle2 vertical-middle" href="https://www.cnblogs.com/wsg1100/p/14290340.html">
+    <span role="heading" aria-level="2">【原创】X86_64/X86 GNU汇编、寄存器、内嵌汇编</span>
+    
+</a>
+		</h1>
+		<div class="clear"></div>
+		<div class="postBody">
+			<div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">
+<p>整理的X86_64/X86汇编、寄存器、C内嵌汇编笔记，主要用于查阅使用。</p>
+<p></p><div class="toc"><div class="toc-container-header">目录</div><ul><li><a href="#一汇编语言" rel="noopener">一、汇编语言</a></li><li><a href="#二指令" rel="noopener">二、指令</a><ul><li><a href="#数据传输指令" rel="noopener">数据传输指令</a></li><li><a href="#栈操作指令" rel="noopener">栈操作指令</a><ul><li><a href="#push" rel="noopener">push</a></li><li><a href="#pop" rel="noopener">pop</a></li></ul></li><li><a href="#运算指令" rel="noopener">运算指令</a></li><li><a href="#位操作" rel="noopener">位操作</a></li><li><a href="#比较操作指令" rel="noopener">比较操作指令</a><ul><li><a href="#标志寄存器" rel="noopener">标志寄存器</a></li></ul></li><li><a href="#流控制指令" rel="noopener">流控制指令</a></li></ul></li><li><a href="#三伪指令" rel="noopener">三、伪指令</a><ul><li><ul><li><a href="#equ" rel="noopener">.equ</a></li><li><a href="#rept" rel="noopener">.rept</a></li><li><a href="#endr" rel="noopener">.endr</a></li><li><a href="#lcomm" rel="noopener">.lcomm</a></li><li><a href="#globl" rel="noopener">.globl</a></li><li><a href="#type" rel="noopener">.type</a></li><li><a href="#ascii" rel="noopener">.ascii</a></li><li><a href="#byte" rel="noopener">.byte</a></li><li><a href="#section" rel="noopener">.section</a></li><li><a href="#变量" rel="noopener">变量</a></li></ul></li></ul></li><li><a href="#四x86_64寄存器" rel="noopener">四、X86_64寄存器</a></li><li><a href="#五常见汇编结构" rel="noopener">五、常见汇编结构</a><ul><li><a href="#1-函数调用传参" rel="noopener">1. 函数调用传参</a><ul><li><a href="#使用寄存器传参" rel="noopener">使用寄存器传参</a></li><li><a href="#使用栈传参" rel="noopener">使用栈传参</a></li></ul></li><li><a href="#2-变量赋值" rel="noopener">2. 变量赋值</a></li><li><a href="#3-指针" rel="noopener">3. 指针</a></li><li><a href="#4-结构" rel="noopener">4. 结构</a></li><li><a href="#5-循环" rel="noopener">5. 循环</a></li><li><a href="#6-if语句" rel="noopener">6. if语句</a></li><li><a href="#7-浮点数使用" rel="noopener">7. 浮点数使用</a></li></ul></li><li><a href="#六c嵌入汇编" rel="noopener">六、C嵌入汇编</a><ul><li><a href="#1基本内嵌" rel="noopener">1.基本内嵌</a></li><li><a href="#2扩展内嵌汇编" rel="noopener">2.扩展内嵌汇编</a><ul><li><a href="#21汇编模板" rel="noopener">2.1汇编模板</a></li><li><a href="#22操作数" rel="noopener">2.2操作数</a></li><li><a href="#23--clobber列表" rel="noopener">2.3  Clobber列表</a></li><li><a href="#24-volatile" rel="noopener">2.4 Volatile</a></li><li><a href="#25-常用约束" rel="noopener">2.5 常用约束</a></li><li><a href="#26约束修饰符" rel="noopener">2.6约束修饰符</a></li><li><a href="#27-一些有用的方法" rel="noopener">2.7 一些有用的方法</a></li></ul></li></ul></li><li><a href="#七编译" rel="noopener">七、编译</a><ul><li><ul><li><a href="#汇编与链接" rel="noopener">汇编与链接</a></li></ul></li></ul></li><li><a href="#参考资料" rel="noopener">参考资料</a></li></ul></div><p></p>
+<h2 id="一汇编语言">一、汇编语言</h2>
+<p>计算机的处理器有很多不同的架构，比如 x86-64、ARM、Power 等，每种处理器的指令集都不相同，那也就意味着汇编语言不同。目前的电脑，CPU 一般是 x86-64 架构，是 64 位机。</p>
+<p>C语言代码：</p>
+<pre><code class="language-c">#include &lt;stdio.h&gt;
+int main(int argc, char* argv[])
+{
+    printf("Hello %s!\n", "WSG");
+    return 0;
+}
+</code></pre>
+<p>编译为汇编：</p>
+<pre><code class="language-shell">gcc -S -O2 hello.c -o hello.s
+或
+clang -S -O2 hello.c -o hello.s
+</code></pre>
+<p>对应的汇编代码如下：</p>
+<pre><code class="language-x86asm">.file   "hello.c"
+        .section        .rodata.str1.1,"aMS",@progbits,1
+.LC0:
+        .string "WSG"
+.LC1:
+        .string "Hello %s!\n"
+        .section        .text.unlikely,"ax",@progbits
+.LCOLDB2:
+        .section        .text.startup,"ax",@progbits
+.LHOTB2:
+        .p2align 4,,15
+        .globl  main
+        .type   main, @function
+main:
+.LFB23:
+        .cfi_startproc
+        subq    $8, %rsp
+        .cfi_def_cfa_offset 16
+        movl    $.LC0, %edx
+        movl    $.LC1, %esi
+        movl    $1, %edi
+        xorl    %eax, %eax
+        call    __printf_chk
+        xorl    %eax, %eax
+        addq    $8, %rsp
+        .cfi_def_cfa_offset 8
+        ret
+        .cfi_endproc
+.LFE23:
+        .size   main, .-main
+        .section        .text.unlikely
+.LCOLDE2:
+        .section        .text.startup
+.LHOTE2:
+        .ident  "GCC: (Ubuntu 5.4.0-6ubuntu1~16.04.12) 5.4.0 20160609"
+        .section        .note.GNU-stack,"",@progbits
+
+</code></pre>
+<p>汇编语言的组成元素：<strong>指令、伪指令、标签和注释</strong>，每种元素独占一行</p>
+<p>指令：</p>
+<pre><code>助记符 操作数（源，目的）
+</code></pre>
+<p><strong>伪指令以"."开头，末尾没有冒号":"</strong>。伪指令是是辅助性的，汇编器在生成目标文件时会用到这些信息，但伪指令不是真正的 CPU 指令，就是写给汇编器的。每种汇编器的伪指令也不同，要查阅相应的手册。常见的汇编器伪指令如下。</p>
+<pre><code class="language-x86asm">.file   "hello.c"
+	.section        .rodata.str1.1,"aMS",@progbits,1
+</code></pre>
+<p><strong>标签</strong>以冒号“:”结尾，<strong>用于对伪指令生成的数据或指令做标记</strong>。标签很有用，它可以代表一段代码或者常量的地址（也就是在代码区或静态数据区中的位置）。可一开始，我们没法知道这个地址的具体值，必须生成目标文件后，才能算出来。所以，标签会简化汇编代码的编写。</p>
+<pre><code class="language-x86asm">.LC1:
+        .string "Hello %s!\n"
+</code></pre>
+<p><strong>注释</strong>以“#”号开头，与C语言中//表示注释是一样的。</p>
+<h2 id="二指令">二、指令</h2>
+<p>在代码中，助记符<code>movq</code>,<code>xorl</code>中的<code>mov</code>和<code>xor</code>是指令，而<code>q</code>和<code>l</code>叫做后缀，表示操作数的位数。后缀一共有 b, w, l, q 四种，分别代表 8 位、16 位、32 位和 64 位。</p>
+<p><img src="./skins/custom/images/asm-0.png" alt="" loading="lazy"></p>
+<p>比如，<code>movq</code> 中的 q 代表操作数是 8 个字节，也就是 64 位的。<code>movq</code> 就是把 8 字节从一个地方拷贝到另一个地方，而 <code>movl</code> 则是拷贝 4 个字节。</p>
+<p>而在指令中使用操作数，可以使用四种格式，它们分别是：<strong>立即数、寄存器、直接内存访问和间接内存访问。</strong></p>
+<p><img src="./skins/custom/images/%E5%AF%BB%E5%9D%80.png" alt="" loading="lazy"></p>
+<p>操作数可以表示立即数（常数）值、寄存器值或是来自内存的值。比例因子<span class="math inline">\(s\)</span>必须是1、2、4或者8.</p>
+<p><strong>立即数以 $ 开头，</strong> <strong>比如 $40</strong>。（下面这行代码是把 40 这个数字拷贝到 %eax 寄存器）。</p>
+<pre><code class="language-x86asm">movl $40, %eax
+</code></pre>
+<p>除此之外，在指令中最常见到的就是对寄存器的访问，<strong>GNU 的汇编器规定寄存器一定要以 % 开头</strong>。</p>
+<p><strong>直接内存访问：</strong>当我们在代码中看到操作数是一个数字时，它其实指的是内存地址。不要误以为它是一个数字，因为数字立即数必须以 $ 开头。另外，汇编代码里的标签，也会被翻译成直接内存访问的地址。比如<code>callq  _printf</code>中的<code>_printf</code>是一个函数入口的地址。汇编器帮我们计算出程序装载在内存时，每个字面量和过程的地址。</p>
+<p><strong>间接内存访问：</strong>带有括号，比如（%rbp），它是指 %rbp 寄存器的值所指向的地址。</p>
+<p>间接内存访问的完整形式是：</p>
+<blockquote>
+<p>偏移量（基址，索引值，字节数）这样的格式。</p>
+</blockquote>
+<p>其地址是：</p>
+<blockquote>
+<p>基址 + 索引值 * 字节数 + 偏移量</p>
+</blockquote>
+<p>举例来说：</p>
+<blockquote>
+<p>8(%rbp)，是比 %rbp 寄存器的值加 8。</p>
+<p>-8(%rbp)，是比 %rbp 寄存器的值减 8。</p>
+<p>（%rbp, %eax, 4）的值，等于 %rbp + %eax*4。这个地址格式相当于访问 C 语言中的数组中的元素，数组元素是 32 位的整数，其索引值是 %eax，而数组的起始位置是 %rbp。其中字节数只能取 1,2,4,8 四个值。</p>
+</blockquote>
+<p>几个常用的指令：</p>
+<h3 id="数据传输指令">数据传输指令</h3>
+<p><strong>mov</strong></p>
+<pre><code class="language-x86asm">mov 寄存器|内存|立即数, 寄存器|内存
+</code></pre>
+<p>这个指令最常用到，用于在寄存器或内存之间传递数据，或者把立即数加载到内存或寄存器。mov 指令的<strong>第一个参数是源</strong>，可以是寄存器、内存或立即数。<strong>第二个参数是目的地</strong>，可以是寄存器或内存。</p>
+<p><strong>lea</strong>：<strong>lea 是“load effective address”的意思，装载有效地址，实际是mov指令的变形。其操作不影响任何条件码</strong></p>
+<pre><code class="language-x86asm">lea 源，目的
+</code></pre>
+<p>参数为标准格式中给定的内存位置，但并不加载内存位置的内容，而是加载计算得出的地址。例如：如果寄存器%rdx的值为x，那么指令<code>leaq 7(%rdx,%rdx,4),%eax</code>将设置寄存器<code>%rax</code>的值为<code>5x+7</code>。</p>
+<p><strong>cld</strong></p>
+<p>该指令清除了标志寄存器中的DF位。 清除方向标志后，所有字符串操作（如stos，scas和其他操作）都会使索引寄存器esi或edi递增。</p>
+<p><strong>std</strong></p>
+<p>与cld相反，该指令置位了标志寄存器中的DF位。 置位方向标志后，所有字符串操作（如stos，scas和其他操作）都会使索引寄存器esi或edi递减。</p>
+<p><strong>stosl</strong></p>
+<p>stosl指令将eax复制到es：di中,若设置了EFLAGS中的方向位置位(即在STOSL指令前使用<code>STD</code>指令)则EDI自减4，否则(使用<code>CLD</code>指令)EDI自增4；</p>
+<p><strong>rep</strong></p>
+<p>重复执行%ecx次，如<code>rep; stosl</code>表示重复执行<code>stosl</code>，直到cx为0,例：</p>
+<pre><code class="language-x86asm">cld;rep;stosl
+</code></pre>
+<p>cld设置edi或同esi为递增方向，rep做(%ecx)次重复操作，stosl表示edi每次增加4。</p>
+<h3 id="栈操作指令">栈操作指令</h3>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>push 源</td>
+<td>把源压入栈</td>
+</tr>
+<tr>
+<td>pop 目的</td>
+<td>把栈顶的元素放入目的</td>
+</tr>
+</tbody>
+</table>
+<h4 id="push">push</h4>
+<pre><code class="language-x86asm">pushl %eax
+</code></pre>
+<p>相当于：</p>
+<pre><code class="language-x86asm">subl $4, %esp
+mvol %eax,(%esp)
+</code></pre>
+<pre><code class="language-x86asm">pushfl #表示将%eflage寄存器当前的数据入栈
+</code></pre>
+<h4 id="pop">pop</h4>
+<pre><code class="language-x86asm">popl %eax
+</code></pre>
+<p>相当于：</p>
+<pre><code class="language-x86asm">movl (%esp), %eax
+addl $4, %esp
+</code></pre>
+<h3 id="运算指令">运算指令</h3>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th style="text-align: center">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sub 源， 目的</td>
+<td style="text-align: center">把目的中值减去源的值</td>
+</tr>
+<tr>
+<td>imul 源， 目的</td>
+<td style="text-align: center">把目的乘上源</td>
+</tr>
+<tr>
+<td>clto</td>
+<td style="text-align: center">转换为8字（%rax符号扩展 →%rdx:%rax）</td>
+</tr>
+<tr>
+<td>xor 源， 目的</td>
+<td style="text-align: center">做异或运算</td>
+</tr>
+<tr>
+<td>or 源， 目的</td>
+<td style="text-align: center">或运算</td>
+</tr>
+<tr>
+<td>and 源， 目的</td>
+<td style="text-align: center">与运算</td>
+</tr>
+<tr>
+<td>inc 目的</td>
+<td style="text-align: center">加一</td>
+</tr>
+<tr>
+<td>dec 目的</td>
+<td style="text-align: center">减一</td>
+</tr>
+<tr>
+<td>neg 目的</td>
+<td style="text-align: center">取负值</td>
+</tr>
+<tr>
+<td>not 目的</td>
+<td style="text-align: center">按位取反</td>
+</tr>
+</tbody>
+</table>
+<p><strong>add 指令是做加法运算，它可以采取下面的格式：</strong></p>
+<pre><code class="language-x86asm">add 立即数， 寄存器 
+add 寄存器， 寄存器 
+add 内存， 寄存器 
+add 立即数， 内存 
+add 寄存器， 内存
+</code></pre>
+<p>比如，典型的 c=a+b 这样一个算术运算可能是这样的：</p>
+<pre><code class="language-x86asm">movl -4(%rbp), %eax    #把%rbp-4的值拷贝到%eax
+addl -8(%rbp), %eax   #把%rbp-8地址的值加到%eax上
+movl %eax, -12(%rbp)   #把%eax的值写到内存地址%rbp-12
+</code></pre>
+<p><strong>and</strong> 对两个操作数的内容进行逻辑与运算，并将结果存储到第二个操作数，将溢出标志位及进位标志设置为FALSE。</p>
+<p><strong>not</strong> 对操作数的每一位逻辑取反，也称为一个数的补数</p>
+<p><strong>or</strong> 对两个操作数进行逻辑或，并将结果存储到第二个操作数，将溢出标志位设置为FLASE</p>
+<p><strong>adc</strong> 带进位加法。将进位位与第一个操作数与第二个操作数相加，如果存在溢出，就将溢出及进位标志设置为真。</p>
+<p><strong>cdq</strong>将%eax中的字带符号扩展为%eax:%eax组成的双字。q表示这是一个双字（64字节）.这条指令通常在发出idivl指令之前。</p>
+<p><strong>cmp</strong> 比较两个整数，将第二个操作数减去第一个操作数，舍弃结果，设置标志位。</p>
+<p><strong>dec</strong>将寄存器或内存位置的数据减一。</p>
+<p><strong>div</strong>执行无符号除法。将%edx:%eax所含的双字除以指定寄存器或内存位置的值。运算后%eax包含商，%edx包含余数，如果商对于%eax来说过大，导致溢出，将触发中断0.</p>
+<p><strong>idiv</strong>执行有符号除法。</p>
+<p><strong>imul</strong>执行有符号乘法，将结果保存到第二个操作数。如果第二个操作数空缺，就默认为%eax,且完好的结果将存在%eax:%eax中</p>
+<p><strong>inc</strong>递增给定寄存器或地址。</p>
+<p><strong>mul</strong>执行无符号乘法，运算规则与imull相同</p>
+<p><strong>neg</strong>将给定寄存器或内存位置的内容补齐（二进制求补）</p>
+<p><strong>sbb</strong>错位减法，与adc用法相同。通常使用sub</p>
+<p><strong>sub</strong>将两个操作数相减，用第二个操作数减去第一个操作数，将结果保存的到第二个操作数，本指令可用于有符号整数及无符号整数</p>
+<h3 id="位操作">位操作</h3>
+<p><img src="./skins/custom/images/bit-opt.png" alt="" loading="lazy"></p>
+<p><strong>rcl</strong>将第一个操作数，向左循环移位给定次数，第一个操作数可以是立即数或寄存器%cl。循环移位包含进位标志，因此此指令实际上对33位而非32位进行操作。本指令将设置溢出标志</p>
+<p><strong>rcr</strong>向右循环移位，其他与上一条指令相同</p>
+<p><strong>rol</strong>向左循环移位，本指令设置溢出标志和进位标志，但不会将进位位作为循环移位的一部分。向左循环移位的次数可以通过立即寻址方式或寄存器%cl的值指定</p>
+<p><strong>ror</strong>向右循环移位，其他与上一条指令相同</p>
+<p><strong>sal</strong>算术左移，符号位移出至进位标志，最低有效位填充0，其他位左移。与一般左移相同，移动位数通过立即寻址方式或是寄存器%cl指定。</p>
+<p><strong>sar</strong>算术右移（填上符号位），最低有效位移出至进位标志，符号位被向右移入，并保留原符号位。其他位只是向右移。移动位数通过立即寻址方式或是寄存器%cl指定。</p>
+<p><strong>shl</strong>逻辑左移，将所有位左移（对符号位不做特殊处理）.将最左一位推入进位标志，移动位数通过立即寻址方式或是寄存器%cl指定。</p>
+<p><strong>shr</strong>逻辑右移，将所有位右移（对符号位不做特殊处理）.将最右一位推入进位标志，移动位数通过立即寻址方式或是寄存器%cl指定。</p>
+<h3 id="比较操作指令">比较操作指令</h3>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cmp 源1， 源2</td>
+<td>根据源1-源2设置状态码</td>
+</tr>
+<tr>
+<td>test 源1， 源2</td>
+<td>根据源1&amp; 源2设置状态码</td>
+</tr>
+</tbody>
+</table>
+<h4 id="标志寄存器">标志寄存器</h4>
+<blockquote>
+<p>OF: 溢出标志.最近的操作导致一个补码溢出---正溢出或负溢出。</p>
+<p>SF : 符号标志.最近的操作得到的结果为负数。</p>
+<p>ZF:零标志，最近的操作得出的结果为0。</p>
+<p>A 辅助进位标志。</p>
+<p>P 奇偶标志，如果最后一个结果的低字节由偶数个1，此标志为真。</p>
+<p>CF 进位标志，最近的操作使最高位产生了进位。可用来检查无符号操作的溢出。</p>
+</blockquote>
+<p><img src="./skins/custom/images/eflags.png" alt="" loading="lazy"></p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cli、sti</td>
+<td>清除IF标志位（CLear Interrupt flag）、置位IF标志（SeT Interrupt flag）</td>
+</tr>
+<tr>
+<td>pushfq、popfq</td>
+<td>将RFLAGS的值压栈和出栈</td>
+</tr>
+</tbody>
+</table>
+<p>例如，用一条ADD指令完成等价于t=a+b的功能，这里a、b和t都是整型。然后根据结果来设置条件码:</p>
+<blockquote>
+<p>CF		<code> (unsigned) t &lt; (unsigned) a</code>  无符号溢出</p>
+<p>ZF		<code>(t = 0)</code>											零</p>
+<p>SF		<code>(t &lt; 0)</code>											负数</p>
+<p>OF		<code>(a &lt; 0==b &lt; 0) &amp;&amp; (t &lt; 0 !=a &lt; 0)</code> 有符号溢出</p>
+</blockquote>
+<h3 id="流控制指令">流控制指令</h3>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>jmp 标签或地址</td>
+<td>跳转到某个位置的代码</td>
+</tr>
+<tr>
+<td>call 标签或地址</td>
+<td>把返回地址压入栈，并跳转到指定位置的代码</td>
+</tr>
+<tr>
+<td>ret</td>
+<td>从栈里弹出返回地址，并跳转过去</td>
+</tr>
+</tbody>
+</table>
+<p><strong>call</strong> 将%eip所指的下一个值入栈，并跳转到目的地址。这用于函数调用。目的地址也可以是星号后跟寄存器的形式，这种方式为间接函数调用。例如 <code>call *%eax</code>将调用%eax中所含地址所指的函数</p>
+<p><strong>int</strong> 引起给定数字的中断。</p>
+<p><strong>jxx</strong>条件分支。xx为条件（由前一条指令设置）为TRUE，就跳转到给定的地址；否则，执行下一条指令。条件代码如下：</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>含义</th>
+<th>状态码</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>je或jz</td>
+<td>跳转，如果相等(等于零)</td>
+<td>ZF</td>
+</tr>
+<tr>
+<td>jne或jnz</td>
+<td>跳转，如果不相等(等于零)</td>
+<td>~ZF</td>
+</tr>
+<tr>
+<td>js</td>
+<td>跳转，如果为负值</td>
+<td>SF</td>
+</tr>
+<tr>
+<td>jns</td>
+<td>跳转，如果不为负值</td>
+<td>~SF</td>
+</tr>
+<tr>
+<td>jg或jnle</td>
+<td>跳转，如果大于，有符号数</td>
+<td>~(SF^OF) &amp; ~ZF</td>
+</tr>
+<tr>
+<td>jge或jnl</td>
+<td>跳转，如果大于等于，有符号数</td>
+<td>~(SF^OF)</td>
+</tr>
+<tr>
+<td>jl或jnge</td>
+<td>跳转，如果小于，有符号数</td>
+<td>SF^OF</td>
+</tr>
+<tr>
+<td>jle或jne</td>
+<td>跳转，如果小于等于，有符号数</td>
+<td>SF^OF | ZF</td>
+</tr>
+<tr>
+<td>……</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>[n]a[e]—大于（无符号大于）、不大于、大于等于</li>
+<li>[n]b[e]—小于（无符号小于）</li>
+<li>[n]e—等于</li>
+<li>[n]z—0</li>
+<li>[n]g[e]—大于（带符号比较）</li>
+<li>[n]l[e]—小于（带符号比较）</li>
+<li>[n]c——进位标志集</li>
+<li>[n]o ——溢出标志集</li>
+<li>[p]p ——相等标志集</li>
+<li>[n]s ——符号标志集</li>
+<li>ecxz——%ecx为0</li>
+</ul>
+<p><strong>jmp</strong>无条件跳转。仅仅是将%eip设置为目的地址，目的地址也可以是星号后跟寄存器的形式，这种方式为间接函数调用。<code>jmp *%eax</code>用寄存器中的值作为跳转目标，<code>jmp *(%rax)</code>以内存地址%rax中的值作为跳转目标。</p>
+<p><strong>ret</strong>从栈种弹出值，并将%eip设置为该值，用于从函数调用返回。</p>
+<h2 id="三伪指令">三、伪指令</h2>
+<h4 id="equ">.equ</h4>
+<p><code>.equ</code>允许你为数字分配名称。例如</p>
+<pre><code class="language-x86asm">.equ LINUX_SYSCALL,0x80
+</code></pre>
+<p>此时<code>LINUX_SYSCALL</code>就是一个<strong>常量</strong>,使用如下</p>
+<pre><code class="language-x86asm">int $LINUX_SYSCALL
+</code></pre>
+<p>计算一段数据的长度</p>
+<pre><code class="language-x86asm">.section .data
+helloworld:
+	.ascii "hello world\n"
+helloworld_end;
+.equ helloworld_len, helloworld_end - helloworld
+</code></pre>
+<h4 id="rept">.rept</h4>
+<p><code>.rept</code>用于填充每一项，<code>.rept</code>告诉汇编程序将<code>.rept</code>和<code>.endr</code>之间的断重复指定次数.</p>
+<pre><code class="language-x86asm">.rept 30  #填充30字节0
+.byte 0
+.endr
+</code></pre>
+<h4 id="endr">.endr</h4>
+<p>结束以.rept定义的重复节(section)</p>
+<h4 id="lcomm">.lcomm</h4>
+<p><code>.locmm</code>指令将创建一个符号，代指一个存储位置。使用<code>.lcomm</code>创建一个符号my_buffer，代指<code>.bss</code>段中用作缓冲区的500字节存储位置。</p>
+<pre><code class="language-x86asm">.section .bss
+.locmm my_buffer, 500
+
+movl $my_buffer, %ecx #将缓冲区地址加载到%ecx中
+</code></pre>
+<h4 id="globl">.globl</h4>
+<p><code>.globl</code>声明一个全局符号。</p>
+<pre><code class="language-x86asm">.globl _start
+_start:
+</code></pre>
+<h4 id="type">.type</h4>
+<p><code>.type</code>指定一个符号作为某种类型。例如告诉链接器 符号power作为函数处理：</p>
+<pre><code class="language-x86asm">.type power, @function
+power：
+	……
+</code></pre>
+<p>如果其他程序中没有使用该函数，则这条指令可以不需要。<code>power：</code>将下一条指令的存储位置赋给符号power，这就是为什么调用该函数时需要如下执行:</p>
+<pre><code class="language-x86asm">call power
+</code></pre>
+<h4 id="ascii">.ascii</h4>
+<p>将给定带引号字符串转换为字节数据</p>
+<h4 id="byte">.byte</h4>
+<p>将逗号分隔符的值列表作为数据插入程序</p>
+<h4 id="section">.section</h4>
+<p>切换正在使用的节。通用节包括.text、.data、.bss</p>
+<h4 id="变量">变量</h4>
+<p>定义一个long型变量<code>begin</code>如下：</p>
+<pre><code class="language-x86asm">begin:
+	.long 0
+</code></pre>
+<h2 id="四x86_64寄存器">四、X86_64寄存器</h2>
+<p>x86-64 架构的 CPU 里有很多寄存器，我们在代码里最常用的是 16 个 64 位的通用寄存器，分别是：</p>
+<blockquote>
+<p><strong>%rax，%rbx，%rcx，%rdx，%rsi，%rdi，%rbp，%rsp，  %r8，%r9，%r10，%r11，%r12，%r13，%r14，%r15</strong>。</p>
+</blockquote>
+<p>这些寄存器在历史上有各自的用途，比如，rax 中的“a”，是 Accumulator(累加器) 的意思，这个寄存器是累加寄存器。</p>
+<p>但随着技术的发展，这些寄存器基本上都成为了通用的寄存器，不限于某种特定的用途。但是，为了方便软件的编写，我们还是做了一些约定，给这些寄存器划分了用途。针对 x86-64 架构有多个调用约定（Calling Convention），包括微软的 x64 调用约定（Windows 系统）、System V AMD64 ABI（Unix 和 Linux 系统）等，下面的内容属于后者：</p>
+<ul>
+<li>
+<p>%rax 除了其他用途外，通常在函数返回的时候，把返回值放在这里。</p>
+</li>
+<li>
+<p>%rsp 作为栈指针寄存器，指向栈顶。</p>
+</li>
+<li>
+<p>%rdi，%rsi，%rdx，%rcx，%r8，%r9 给函数传整型参数，依次对应第 1 参数到第 6 参数。超过 6 个参数使用。</p>
+</li>
+</ul>
+<p>如果程序要使用 %rbx，%rbp，%r12，%r13，%r14，%r15 这几个寄存器，是由被调用者（Callee）负责保护的，也就是写到栈里，在返回的时候要恢复这些寄存器中原来的内容。其他寄存器的内容，则是由调用者（Caller）负责保护，如果不想这些寄存器中的内容被破坏，那么要自己保护起来。</p>
+<p>上面这些寄存器的名字都是 64 位的名字，对于每个寄存器，我们还可以只使用它的一部分，并且另起一个名字。比如对于 %rax，如果使用它的前 32 位，就叫做 %eax，前 16 位叫 %ax，前 8 位（0 到 7 位）叫 %al，8 到 15 位叫 %ah。</p>
+<p><img src="./skins/custom/images/asm-1.png" alt="" loading="lazy"></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center">原本含义</th>
+<th style="text-align: center"></th>
+<th style="text-align: center">64位</th>
+<th style="text-align: center">32位</th>
+<th style="text-align: center">16位</th>
+<th style="text-align: center">高8位</th>
+<th style="text-align: center">低8位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center">Accumulator</td>
+<td style="text-align: center">累加器</td>
+<td style="text-align: center">rax</td>
+<td style="text-align: center">eax</td>
+<td style="text-align: center">ax</td>
+<td style="text-align: center">ah</td>
+<td style="text-align: center">al</td>
+</tr>
+<tr>
+<td style="text-align: center">Base</td>
+<td style="text-align: center">基地址</td>
+<td style="text-align: center">rbx</td>
+<td style="text-align: center">ebx</td>
+<td style="text-align: center">bx</td>
+<td style="text-align: center">bh</td>
+<td style="text-align: center">bl</td>
+</tr>
+<tr>
+<td style="text-align: center">Counter</td>
+<td style="text-align: center">计数器</td>
+<td style="text-align: center">rcx</td>
+<td style="text-align: center">ecx</td>
+<td style="text-align: center">cx</td>
+<td style="text-align: center">ch</td>
+<td style="text-align: center">cl</td>
+</tr>
+<tr>
+<td style="text-align: center">Data</td>
+<td style="text-align: center">数据</td>
+<td style="text-align: center">rdx</td>
+<td style="text-align: center">edx</td>
+<td style="text-align: center">dx</td>
+<td style="text-align: center">dh</td>
+<td style="text-align: center">dl</td>
+</tr>
+<tr>
+<td style="text-align: center">Source</td>
+<td style="text-align: center">源</td>
+<td style="text-align: center">rsi</td>
+<td style="text-align: center">esi</td>
+<td style="text-align: center">si</td>
+<td style="text-align: center"></td>
+<td style="text-align: center">sil</td>
+</tr>
+<tr>
+<td style="text-align: center">Destination</td>
+<td style="text-align: center">目的</td>
+<td style="text-align: center">rdi</td>
+<td style="text-align: center">edi</td>
+<td style="text-align: center">di</td>
+<td style="text-align: center"></td>
+<td style="text-align: center">dil</td>
+</tr>
+<tr>
+<td style="text-align: center">Stack Base Pointer</td>
+<td style="text-align: center">栈基址</td>
+<td style="text-align: center">rbp</td>
+<td style="text-align: center">ebp</td>
+<td style="text-align: center">bp</td>
+<td style="text-align: center"></td>
+<td style="text-align: center">bpl</td>
+</tr>
+<tr>
+<td style="text-align: center">Stack Pointer</td>
+<td style="text-align: center">栈指针</td>
+<td style="text-align: center">rsp</td>
+<td style="text-align: center">esp</td>
+<td style="text-align: center">sp</td>
+<td style="text-align: center"></td>
+<td style="text-align: center">spi</td>
+</tr>
+<tr>
+<td style="text-align: center">后增加的8个通用寄存器</td>
+<td style="text-align: center"></td>
+<td style="text-align: center">r8-r15</td>
+<td style="text-align: center">r8d-r15d</td>
+<td style="text-align: center">r8w-r15w</td>
+<td style="text-align: center"></td>
+<td style="text-align: center">r8b-r15b</td>
+</tr>
+</tbody>
+</table>
+<p>除了通用寄存器以外，有可能的话，还要了解下面的寄存器和它们的用途，我们写汇编代码时经常跟它们发生关联：</p>
+<ul>
+<li>
+<p>8 个 80 位的 x87 寄存器，用于做浮点计算；</p>
+</li>
+<li>
+<p>8 个 64 位的 MMX 寄存器，用于 MMX 指令（即多媒体指令），这 8 个跟 x87 寄存器在物理上是相同的寄存器。在传递浮点数参数的时候，要用 mmx 寄存器。</p>
+</li>
+<li>
+<p>16 个 128 位的 SSE 寄存器，用于 SSE 指令。 (SIMD )。</p>
+</li>
+<li>
+<p>指令寄存器，rip，保存指令地址。CPU 总是根据这个寄存器来读取指令。</p>
+</li>
+<li>
+<p>flags（64 位：rflags, 32 位：eflags）寄存器：每个位用来标识一个状态。比如，它们会用于比较和跳转的指令，比如 if 语句翻译成的汇编代码，就会用它们来保存 if 条件的计算结果。</p>
+</li>
+</ul>
+<h2 id="五常见汇编结构">五、常见汇编结构</h2>
+<h3 id="1-函数调用传参">1. 函数调用传参</h3>
+<h4 id="使用寄存器传参">使用寄存器传参</h4>
+<p>在 X86-64 架构下，有很多的寄存器，所以程序调用约定中规定尽量通过寄存器来传递参数，而且，只要参数不超过 6 个，都可以通过寄存器来传参，使用的寄存器如下：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center">32位名称</th>
+<th style="text-align: center">64位名称</th>
+<th style="text-align: center">所传参数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center">%edi</td>
+<td style="text-align: center">%rdi</td>
+<td style="text-align: center">参数1</td>
+</tr>
+<tr>
+<td style="text-align: center">%esi</td>
+<td style="text-align: center">%esi</td>
+<td style="text-align: center">参数2</td>
+</tr>
+<tr>
+<td style="text-align: center">%edx</td>
+<td style="text-align: center">%rdx</td>
+<td style="text-align: center">参数3</td>
+</tr>
+<tr>
+<td style="text-align: center">%ecx</td>
+<td style="text-align: center">%rcx</td>
+<td style="text-align: center">参数4</td>
+</tr>
+<tr>
+<td style="text-align: center">%r8d</td>
+<td style="text-align: center">%r8</td>
+<td style="text-align: center">参数5</td>
+</tr>
+<tr>
+<td style="text-align: center">%r9d</td>
+<td style="text-align: center">%r9</td>
+<td style="text-align: center">参数6</td>
+</tr>
+</tbody>
+</table>
+<h4 id="使用栈传参">使用栈传参</h4>
+<p>超过 6 个的参数的话，要再加上栈来传参：</p>
+<p>根据程序调用约定的规定，参数 1～6 是放在寄存器里的，参数 7 和 8 是放到栈里的，<strong>函数参数以逆序的方向入栈</strong>,先放参数 8，再放参数 7。</p>
+<pre><code class="language-x86asm">int fun1(int x1, int x2, int x3, int x4, int x5, int x6, int x7, int x8){
+    int c = 10; 
+    return x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + c;
+}
+println("fun1:" + fun1(1,2,3,4,5,6,7,8));
+</code></pre>
+<pre><code class="language-x86asm"># function-call2-craft.s 函数调用和参数传递
+    # 文本段,纯代码
+    .section    __TEXT,__text,regular,pure_instructions
+_fun1:
+    # 函数调用的序曲,设置栈指针
+    pushq   %rbp           # 把调用者的栈帧底部地址保存起来   
+    movq    %rsp, %rbp     # 把调用者的栈帧顶部地址,设置为本栈帧的底部
+    movl    $10, -4(%rbp)  # 变量c赋值为10,也可以写成 movl $10, (%rsp)
+    # 做加法
+    movl    %edi, %eax     # 第一个参数放进%eax
+    addl    %esi, %eax     # 加参数2
+    addl    %edx, %eax     # 加参数3
+    addl    %ecx, %eax     # 加参数4
+    addl    %r8d, %eax     # 加参数5
+    addl    %r9d, %eax     # 加参数6
+    addl    16(%rbp), %eax  # 加参数7
+    addl    24(%rbp), %eax  # 加参数8
+    
+    addl    -4(%rbp), %eax # 加上c的值
+    # 函数调用的尾声,恢复栈指针为原来的值
+    popq    %rbp           # 恢复调用者栈帧的底部数值
+    retq                   # 返回
+    .globl  _main          # .global伪指令让_main函数外部可见
+_main:                                  ## @main
+    
+    # 函数调用的序曲,设置栈指针
+    pushq   %rbp           # 把调用者的栈帧底部地址保存起来  
+    movq    %rsp, %rbp     # 把调用者的栈帧顶部地址,设置为本栈帧的底部
+    
+    subq    $16, %rsp      # 这里是为了让栈帧16字节对齐，实际使用可以更少
+    # 设置参数
+    movl    $1, %edi     # 参数1
+    movl    $2, %esi     # 参数2
+    movl    $3, %edx     # 参数3
+    movl    $4, %ecx     # 参数4
+    movl    $5, %r8d     # 参数5
+    movl    $6, %r9d     # 参数6
+    movl    $7, (%rsp)   # 参数7
+    movl    $8, 8(%rsp)  # 参数8
+    callq   _fun1                # 调用函数
+    # 为pritf设置参数
+    leaq    L_.str(%rip), %rdi   # 第一个参数是字符串的地址
+    movl    %eax, %esi           # 第二个参数是前一个参数的返回值
+    callq   _printf              # 调用函数
+    # 设置返回值。这句也常用 xorl %esi, %esi 这样的指令,都是置为零
+    movl    $0, %eax
+    addq    $16, %rsp    # 缩小栈
+    
+    # 函数调用的尾声,恢复栈指针为原来的值
+    popq    %rbp         # 恢复调用者栈帧的底部数值
+    retq                 # 返回
+    # 文本段,保存字符串字面量                                  
+    .section    __TEXT,__cstring,cstring_literals
+L_.str:                                 ## @.str
+    .asciz  "fun1 :%d \n"
+</code></pre>
+<p>其栈帧的变化过程，如下：</p>
+<p><img src="./skins/custom/images/func-arg.png" alt="" loading="lazy"></p>
+<p>使用栈来传递参数时，需要将<strong>函数参数以逆序的方向入栈</strong>，并发出<code>call</code>指令。调用后在将参数出栈：</p>
+<pre><code class="language-c">printf("The numer is %d"，88);
+</code></pre>
+<pre><code class="language-x86asm">.section .data
+test_string:
+.ascii "The numer is %d\0"
+.section .text
+
+pushl $88
+pushl $test_string
+call printf
+popl %eax
+popl %eax
+</code></pre>
+<h3 id="2-变量赋值">2. 变量赋值</h3>
+<p>汇编语言中全局变量访问方式与局部变量不同。全局变量通过直接寻址访问，而局部变量使用基址寻址方式，例如</p>
+<pre><code class="language-C">int my_global_var;
+int foo()
+{
+    int my_local_var;
+    
+    my_local_var = 1;
+    my_glocal_var = 2;
+    
+    return 0
+}
+</code></pre>
+<p>用汇编表示以上为：</p>
+<pre><code class="language-x86asm">.section .data
+.lcomm my_globl_var, 4
+
+.type foo, @function
+foo:
+	pushl %ebp #保存原栈基址
+	movl %esp, %ebp #令栈指针指向新基址指针
+	subl $4, %esp #为变量my_local_var保留空间
+	.equ my_local_var, -4 #用my_local_var寻找局部变量
+	
+	movl $1, my_local_var(%ebp)
+	movl $2, my_global_var
+	
+	movl %ebp, %esp #清除函数变量并返回
+	popl %ebp
+	ret
+</code></pre>
+<h3 id="3-指针">3. 指针</h3>
+<p>指针，它只是保存某个值的地址。全局变量：</p>
+<pre><code class="language-C">int global_data = 30;
+</code></pre>
+<p>其对应的汇编为:</p>
+<pre><code class="language-x86asm">.section .data
+global_data:
+	.long 30
+</code></pre>
+<p>C语言中取地址如下：</p>
+<pre><code class="language-c">p = &amp;global_data;
+</code></pre>
+<p>对应的汇编为：</p>
+<pre><code class="language-x86asm">movl $global_data, %eax
+</code></pre>
+<p>可以看到汇编语言中总是通说指针访问内存，也就是直接寻址方式，为了取得指针本身，必须采用立即寻址方式。</p>
+<p>局部变量略为复杂，C语言代码如下：</p>
+<pre><code class="language-c">void foo()
+{
+    int a;
+    int  *b;
+    
+    a = 30;
+    
+    b = &amp;a;
+    *b = 44;
+}
+</code></pre>
+<p>对应汇编如下：</p>
+<pre><code class="language-x86asm">foo:
+#标准函数开头
+	pushl %ebp
+	movl %ebp,%esp
+	
+	#保留两个字的内存
+	subl -8, %ebp
+	.equ A_VAR, -4
+	.equ B_VAR, -8
+	
+	#a = 30
+	movl $30, A_VAL(%ebp)
+	
+	#b = &amp;a
+	movl $A_VAR, B_VAR(%ebp)
+	addl %ebp, B_VAR(%ebp)
+	
+	#*b = 30
+	movl B_VAR(%ebp), %eax  #B
+	movl $30, (%eax)
+	
+#标准结束函数
+	movl %ebp ,%esp
+	popl %ebp
+	ret
+</code></pre>
+<p>要获取局部变量的地址，必须按基址寻址方式计算该地址。还有更简单的方式就是lea指令，该指令加载有效地址，会让计算机计算地址，然后在需要的时候加上地址：</p>
+<pre><code class="language-x86asm">#b = &amp;a
+leal A_VAR(%ebp), %eax
+movl %eax, B_VAR(%ebp)
+</code></pre>
+<h3 id="4-结构">4. 结构</h3>
+<p>结构时对内存块的简单描述，例如，在C语言中可以使用如下代码：</p>
+<pre><code class="language-c">struct person{
+    char pristname[40];
+    char lastname[40];
+    int age
+};
+</code></pre>
+<p>汇编中只是给予你一种使用84字节数据的方式。</p>
+<pre><code class="language-x86asm">.equ PERSON_SIZE, 84
+.equ PERSON_FIRSTNAME_OFFSET, 0
+.equ PERSON_LASTNAME_OFFSET, 40
+.equ PERSON_AGE_OFFSET, 80
+</code></pre>
+<p>当声明此类型的一个变量时，保留84字节空间就行，C代码如下：</p>
+<pre><code class="language-c">void foo()
+{
+    struct person p;
+    /**/
+    ……
+}
+</code></pre>
+<p>对应的汇编代码如下：</p>
+<pre><code class="language-x86asm">foo:
+	#标准开头
+	pushl %ebp
+	movl %esp, %ebp
+	
+	#为局部变量分配空间
+	subl $PERSON_SIZE, %esp 
+	#这是变量相对于%ebp的偏移量
+	.equ P_VAR, 0-PERSON_SIZE
+	
+	……
+	#标准结束
+	movl %ebp, %esp
+	pop %ebp
+	ret
+</code></pre>
+<p>访问结构体成员，必须使用基址寻址方式，偏移量为上面定义的值。如C语言设置年龄如下：</p>
+<pre><code class="language-c">p.age = 30;
+</code></pre>
+<p>对应的汇编入下：</p>
+<pre><code class="language-x86asm">movl $30, P_VAR + PERSON_AGE_OFFSET(%ebp)
+</code></pre>
+<h3 id="5-循环">5. 循环</h3>
+<p>C语言语句如下：</p>
+<pre><code class="language-c">while (a &lt;　b){
+    /*某些操作*/
+}
+/*结束循环*/
+</code></pre>
+<p>这些对应的汇编如下所示：</p>
+<pre><code class="language-x86asm">loop_begin:
+	movl a, %eax
+	movl b, %ebx
+	cmpl %eax, %ebx
+	jge loop_end
+	
+	loop_body:
+	#某些操作
+	jmp loop_begin
+	
+loop_end:
+#结束循环
+</code></pre>
+<p>上面说到寄存器%ecx可用作计数器，终止条件为0,loop 指令会递减%ecx，并在%ecx不为0 的条件下跳转到指定地址，例如，需执行某个语句100次C 语言如下：</p>
+<pre><code class="language-c">for (i = 0; i &lt; 100; i++){
+   /*某些操作*/
+}
+</code></pre>
+<p>汇编实现如下：</p>
+<pre><code class="language-x86asm">loop_initalize:
+	movl 100,%ecx
+loop_begin:
+	#某些操作
+	#递减%ecx，若%ecx不为0则继续循环
+	loop loop_begin
+	
+rest_of_program:
+</code></pre>
+<h3 id="6-if语句">6. if语句</h3>
+<pre><code class="language-c">if(a == b){
+    /*真分支操作*/
+}else{
+    /*假分支操作*/
+}
+/*真假汇合*/
+</code></pre>
+<p>在汇编中表示如下：</p>
+<pre><code class="language-x86asm">	#将a.b移入寄存器用于比较
+    movl a, %eax
+    movl b, %ebx
+
+    #比较
+    cmpl %eax, %ebx
+    #跳转到真分支
+    je true_branch
+fale_branch: #非必要标签，只是为了说明这是假分支
+#假分支代码
+
+#跳到真假汇合
+	jmp reconverge
+true_branch：
+	#真分支代码
+reconverge:
+</code></pre>
+<h3 id="7-浮点数使用">7. 浮点数使用</h3>
+<p>之前我们用的例子都是采用整数，现在使用浮点数来做运算。下面这段代码：</p>
+<pre><code class="language-c">float fun1(float a, float b){
+    float c = 2.0;
+    return a + b + c;
+}
+</code></pre>
+<p>使用 -O2 参数，把 C 语言的程序编译成汇编代码如下：</p>
+<pre><code class="language-x86asm">.file   "float.c"
+        .section        .text.unlikely,"ax",@progbits
+.LCOLDB1:
+        .text
+.LHOTB1:
+        .p2align 4,,15
+        .globl  fun1
+        .type   fun1, @function
+fun1:
+.LFB0:
+        .cfi_startproc
+        addss   %xmm0, %xmm1	#浮点数传参用XMM寄存器，加法用addss指令
+        addss   .LC0(%rip), %xmm1 #把常量2.0加到xmm0上，xmm0保存返回值
+        movaps  %xmm1, %xmm0
+        ret
+        .cfi_endproc
+.LFE0:
+        .size   fun1, .-fun1
+        .section        .text.unlikely
+.LCOLDE1:
+        .text
+.LHOTE1:
+        .section        .rodata.cst4,"aM",@progbits,4
+        .align 4
+.LC0:
+        .long   1073741824  ## float 2 常量
+        .ident  "GCC: (Ubuntu 5.4.0-6ubuntu1~16.04.12) 5.4.0 20160609"
+        .section        .note.GNU-stack,"",@progbits
+
+</code></pre>
+<p>这个代码的结构你应该熟悉了，栈帧的管理方式都是一样的，都要维护 %rbp 和 %rsp。不一样的地方，有几个地方：</p>
+<ul>
+<li>
+<p>传参。给函数传递浮点型参数，是要使用 <strong>XMM</strong> 寄存器。</p>
+</li>
+<li>
+<p>指令。浮点数的加法运算，使用的是<code> addss</code> 指令，它用于对单精度的标量浮点数做加法计算，这是一个 SSE1 指令。SSE1 是一组指令，主要是对单精度浮点数 (比如 C 或 Java 语言中的 float) 进行运算的，而 SSE2 则包含了一些双精度浮点数（比如 C 或 Java 语言中的 double）的运算指令。</p>
+</li>
+<li>
+<p>返回值。整型返回值是放在<code> %eax</code> 寄存器中，而浮点数返回值是放在<code> xmm0</code> 寄存器中的。调用者可以从这里取出来使用。</p>
+</li>
+</ul>
+<h2 id="六c嵌入汇编">六、C嵌入汇编</h2>
+<p>为什么要使用汇编语言有两个可能的原因。首先是，当我们接近硬件时，C受到限制。例如。没有C语句可直接修改处理器状态寄存器。第二个原因是创建高度优化的代码。(以下内容大多来源于<a href="https://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html" target="_blank" rel="noopener">GCC-Inline-Assembly-HOWTO</a>.)</p>
+<h3 id="1基本内嵌">1.基本内嵌</h3>
+<p>基本内联汇编的格式非常简单。它的基本形式是</p>
+<pre><code class="language-c">asm("assembly code");
+</code></pre>
+<p>例如：</p>
+<pre><code class="language-x86asm">asm("movl %ecx %eax"); /* moves the contents of ecx to eax */
+__asm__("movb %bh (%eax)"); /*moves the byte from bh to the memory pointed by eax */
+</code></pre>
+<p>在这里使用过<code>asm</code>和<code>__asm__</code>。两者都有效。如果关键字<code>asm</code>与我们程序中的某些内容冲突，我们可以使用<code>__asm__</code>。如果我们有多个指令，我们用双引号每行写一个，并在指令后面加上'\ n'和'\ t'。这是因为gcc将每个指令作为一个字符串发送至汇编器。如下：</p>
+<pre><code class="language-x86asm">__asm__ ("movl %eax, %ebx\n\t"
+          "movl $56, %esi\n\t"
+          "movl %ecx, $label(%edx,%ebx,$4)\n\t"
+          "movb %ah, (%ebx)");
+</code></pre>
+<p>如果在我们的代码中，我们更改一些寄存器中的内容并从asm返回而不恢复为修改前的值，则会发生一些不好的事情。这是因为GCC不知道寄存器内容的变化，这导致我们遇到麻烦，特别是当编译器进行一些优化时。它会假设某些寄存器包含某些变量的值，我们可能在没有通知GCC的情况下对其进行了更改，并且它仍然没有发生任何事情。我们可以做的是使用那些没有副作用的指令或在我们退出或等待某些事情崩溃时解决问题。这是我们想要一些扩展功能的地方。扩展的asm为我们提供了该功能。</p>
+<h3 id="2扩展内嵌汇编">2.扩展内嵌汇编</h3>
+<p>在基本的内联汇编中，只有指令。在扩展汇编中，我们还可以指定操作数。它允许我们指定输入寄存器，输出寄存器和破坏寄存器列表。指定要使用的寄存器并不是强制性的，我们可以将这个问题留给GCC，这可能更适合GCC的优化方案。无论如何，基本格式是：</p>
+<pre><code class="language-c">asm ( assembler template
+    : output operands               /*optional*/
+    : input operands                /*ooptional*/
+    : list of clobbered registers       /*ooptional*/
+    );
+</code></pre>
+<ul>
+<li><strong>assembler template</strong>由汇编指令组成.</li>
+<li>每个操作数由操作数约束字符串描述，后跟括号中的C表达式。</li>
+<li>冒号将汇编程序模板与第一个输出操作数分隔开，另一个冒号将最后一个输出操作数与第一个输入分开，如果有的话。</li>
+<li>逗号分隔每个组中的操作数。操作数的总数限制为10或机器描述中任何指令模式中的最大操作数数量，以较大者为准。</li>
+</ul>
+<blockquote>
+<p><em>asm</em>_(</p>
+<p>汇编语句模版:</p>
+<p>输出部分:</p>
+<p>输入部分:</p>
+<p>破坏描述部分:);</p>
+</blockquote>
+<p>例如：</p>
+<pre><code class="language-x86asm"> int a=10, b;
+ asm ("movl %1, %%eax; 
+     movl %%eax, %0;"
+     :"=r"(b)        /* output */
+     :"r"(a)         /* input */
+     :"%eax"         /* clobbered register */
+     );      
+</code></pre>
+<p>这里我们做的是使用汇编指令使'b'的值等于'a'的值。一些兴趣点是：</p>
+<ul>
+<li>“b”是输出操作数，由％0引用，“a”是输入操作数，由％1引用。</li>
+<li>“r”是对操作数的约束。我们稍后会详细介绍约束。目前，“r”向GCC表示使用任何寄存器来存储操作数。输出操作数约束应该有一个约束修饰符“=”。而这个修饰符表示它是输出操作数并且是只写的。</li>
+<li>寄存器名称前面有两个％的前缀。这有助于GCC区分操作数和寄存器。操作数具有单个％作为前缀。</li>
+<li>第三个冒号后的修改后的寄存器％eax告诉GCC％eax的值将在“asm”内修改，因此GCC不会使用该寄存器来存储任何其他值。</li>
+</ul>
+<p>当“asm”的执行完成时，“b”将反映更新的值，因为它被指定为输出操作数。换句话说，“asm”中对“b”的改变应该反映在“asm”之外。</p>
+<p>现在我们可以详细查看每个字段。</p>
+<h4 id="21汇编模板">2.1汇编模板</h4>
+<p>汇编程序模板包含插入C程序内的汇编指令集。格式如下：要么每条指令都用双引号括起来，要么整个指令组都在双引号内。每条指令也应以分隔符结束。有效分隔符是换行符（\ n）和分号（;）。'\ n'后面可能跟一个标签（\ t）。对应于C表达式的操作数由％0，％1 ......等表示。</p>
+<h4 id="22操作数">2.2操作数</h4>
+<p>C表达式用作“asm”中的汇编指令的操作数。每个操作数都被写为双引号中的第一个操作数约束。对于输出操作数，在引号内也会有一个约束修饰符，然后是C表达式，它代表操作数。即</p>
+<p>“约束”（C表达式）是一般形式。对于输出操作数，将有一个额外的修饰符。约束主要用于决定操作数的寻址模式。它们还用于指定要使用的寄存器。</p>
+<p>如果我们使用多个操作数，则用逗号分隔。</p>
+<p>在汇编程序模板中，每个操作数都由数字引用。编号如下进行。如果总共有n个操作数（包括输入和输出），则第一个输出操作数编号为0，按递增顺序继续，最后一个输入操作数编号为n-1。最大操作数是我们在上一节中看到的。</p>
+<p><strong>输出操作数表达式必须是左值</strong>。输入操作数不受此限制。他们可能是表达式。扩展的asm功能最常用于编译器本身不知道存在的机器指令;-)。如果无法直接寻址输出表达式（例如，它是位字段），则我们的约束必须允许寄存器。在这种情况下，GCC将使用寄存器作为asm的输出，然后将该寄存器内容存储到输出中。</p>
+<p>如上所述，<strong>普通输出操作数必须是只写的</strong>; GCC将假设在指令之前这些操作数中的值已经死亡且无需生成。扩展的asm还支持输入输出或读写操作数。</p>
+<blockquote>
+<p>所以现在我们专注于一些例子。我们想要将数字乘以5。为此，我们使用指令<code>lea</code>。</p>
+<pre><code class="language-x86asm">asm ("leal (%1,%1,4), %0"
+          : "=r" (five_times_x)
+          : "r" (x) 
+          );
+</code></pre>
+<p>这里我们的输入是'x'。我们没有指定要使用的寄存器。GCC将选择一些输入寄存器，一个用于输出，并按我们的意愿行事。如果我们希望输入和输出驻留在同一个寄存器中，我们可以指示GCC这样做。这里我们使用那些类型的读写操作数。通过指定适当的约束，例如。</p>
+<pre><code class="language-x86asm">sm ("leal (%0,%0,4), %0"
+          : "=r" (five_times_x)
+          : "0" (x) 
+          );
+</code></pre>
+<p>现在输入和输出操作数在同一个寄存器中。但是我们不知道哪个寄存器。现在，如果我们也要指定它，那么有一种方法。</p>
+<pre><code class="language-x86asm">asm ("leal (%%ecx,%%ecx,4), %%ecx"
+          : "=c" (x)
+          : "c" (x) 
+          );
+</code></pre>
+</blockquote>
+<p>从GCC 3.1版开始，<strong>GCC编译器就支持符号名称</strong>,在代码部分，操作数由百分号引用，后跟方括号内的相关符号名。它引用包含相同符号名的操作数列表之一中的条目。如xenomai线程切换代码示例：</p>
+<pre><code class="language-c">static inline void do_switch_threads(struct xnarchtcb *out_tcb,
+				     struct xnarchtcb *in_tcb,
+				     struct task_struct *outproc,
+				     struct task_struct *inproc)
+{
+	long ebx_out, ecx_out, edi_out, esi_out;
+
+	__asm__ __volatile__("pushfl\n\t"
+			     "pushl %%ebp\n\t"
+			     "movl %[spp_out_ptr],%%ecx\n\t"
+			     "movl %%esp,(%%ecx)\n\t"
+			     "movl %[ipp_out_ptr],%%ecx\n\t"
+			     "movl $1f,(%%ecx)\n\t"
+			     "movl %[spp_in_ptr],%%ecx\n\t"
+			     "movl %[ipp_in_ptr],%%edi\n\t"
+			     "movl (%%ecx),%%esp\n\t"
+			     "pushl (%%edi)\n\t"
+			     __CANARY_SWITCH
+			     "jmp  __switch_to\n\t"
+			     "1: popl %%ebp\n\t"
+			     "popfl\n\t"
+			     : "=b"(ebx_out),
+			       "=&amp;c"(ecx_out),
+			       "=S"(esi_out),
+			       "=D"(edi_out),
+			       "+a"(outproc),
+			       "+d"(inproc)
+			       __CANARY_OUTPUT
+			     : [spp_out_ptr] "m"(out_tcb-&gt;spp),
+			       [ipp_out_ptr] "m"(out_tcb-&gt;ipp),
+			       [spp_in_ptr] "m"(in_tcb-&gt;spp),
+			       [ipp_in_ptr] "m"(in_tcb-&gt;ipp)
+			       __CANARY_INPUT
+			     : "memory");
+}
+</code></pre>
+<p>其中的<strong>asm符号操作符使用单独的名称空间</strong>。也就是说，与C代码中的符号无关。但是必须在每个asm语句的符号必须唯一。</p>
+<h4 id="23--clobber列表">2.3  Clobber列表</h4>
+<p>一些指令破坏了一些硬件寄存器。我们必须在clobber-list中列出这些寄存器，即asm函数中第三个' <strong>：</strong> ' 之后的字段。这是为了告知gcc我们将自己使用和修改它们。所以gcc不会假设它加载到这些寄存器中的值是有效的。我们不应该在此列表中列出输入和输出寄存器。因为，gcc知道“asm”使用它们（因为它们被明确指定为约束）。如果指令隐式或显式地使用任何其他寄存器（并且输入或输出约束列表中不存在寄存器），则必须在破坏列表中指定这些寄存器。</p>
+<p>如果我们的指令可以改变条件代码寄存器，我们必须将“cc”添加到破坏寄存器列表中。</p>
+<p>如果我们的指令以不可预测的方式修改内存，请将“memory”添加到修饰寄存器列表中。这将导致GCC不在汇编器指令的寄存器中保持缓存的内存值。如果受影响的内存未在asm的输入或输出中列出，我们还必须添加<strong>volatile</strong>关键字。</p>
+<p>我们可以根据需要多次读取和编写被破坏的寄存器。考虑模板中多个指令的示例; 它假定子程序_foo接收在寄存器<code>eax</code>和<code>ecx</code>参数的参数。</p>
+<pre><code class="language-x86asm">asm ("movl %0,%%eax;
+              movl %1,%%ecx;
+              call _foo"
+             : /* no outputs */
+             : "g" (from), "g" (to)
+             : "eax", "ecx"
+             );
+</code></pre>
+<h4 id="24-volatile">2.4 Volatile</h4>
+<p>如果您熟悉内核源代码或类似的一些漂亮的代码，您必须已经看到许多函数声明为<code>volatile</code>或 <code>__volatile__</code>。我之前提到过关键字<code>asm</code>和<code>__asm__</code>。那这 <code>volatile</code>是什么？</p>
+<p>如果我们的汇编语句必须在我们放置的地方执行，（即不能作为优化移出循环），请将关键字<code>volatile</code>放在asm之后和（）之前。我们将其声明为</p>
+<pre><code class="language-c">asm volatile ( ... : ... : ... : ...);
+</code></pre>
+<p>使用<code>__volatile__</code>的时候，我们必须非常小心。</p>
+<p>C编译器的代码优化器也会优化内嵌asm代码。如果我们的程序集只是用于进行一些计算并且没有任何副作用，那么最好不要使用关键字<code>volatile</code>。避免gcc无法优化代码。</p>
+<p>在 一些有用的方法 中，我提供了许多内联asm函数的示例。在那里我们可以看到详细的clobber列表。</p>
+<h4 id="25-常用约束">2.5 常用约束</h4>
+<p>存在许多约束，其中仅频繁使用少数约束。我们将看看这些约束。</p>
+<ol>
+<li><strong>注册操作数约束（r）</strong></li>
+</ol>
+<p>使用此约束指定操作数时，它们将存储在通用寄存器（GPR）中。采用以下示例：</p>
+<pre><code class="language-c">asm ("movl %%eax, %0\n" :"=r"(myval));
+</code></pre>
+<p>这里变量myval保存在寄存器中，寄存器中的值 <code>eax</code>被复制到该寄存器中，并且值<code>myval</code>从该寄存器更新到存储器中。当指定“r”约束时，gcc可以将变量保存在任何可用的GPR中。要指定寄存器，必须使用特定的寄存器约束直接指定寄存器名称。他们是：</p>
+<pre><code>+---+--------------------+
+| r |    Register(s)     |
++---+--------------------+
+| a |   %eax, %ax, %al   |
+| b |   %ebx, %bx, %bl   |
+| c |   %ecx, %cx, %cl   |
+| d |   %edx, %dx, %dl   |
+| S |   %esi, %si        |
+| D |   %edi, %di        |
++---+--------------------+
+</code></pre>
+<ol start="2">
+<li><strong>内存操作数约束（m）</strong></li>
+</ol>
+<p>当操作数在存储器中时，对它们执行的任何操作将直接发生在存储器位置，而不是寄存器约束，寄存器约束首先将值存储在要修改的寄存器中，然后将其写回存储器位置。但是寄存器约束通常仅在它们对于指令绝对必要时才使用，或者它们显著加速了该过程。在需要在“asm”内更新C变量并且您真的不想使用寄存器来保存其值时，可以最有效地使用内存约束。例如，idtr的值存储在内存位置loc中：</p>
+<pre><code class="language-c">asm("sidt %0\n" : :"m"(loc));
+</code></pre>
+<ol start="3">
+<li><strong>匹配（数字）约束</strong></li>
+</ol>
+<p>在某些情况下，单个变量可以作为输入和输出操作数。可以通过使用匹配约束在“asm”中指定这种情况。</p>
+<pre><code class="language-c">asm ("incl %0" :"=a"(var):"0"(var));
+</code></pre>
+<p>我们在操作数小节中也看到了类似的例子。在此示例中，匹配约束，寄存器％eax用作输入和输出变量。var输入读取到％eax，更新后％eax在增量后再次存储在var中。这里的“0”指定与第0个输出变量相同的约束。也就是说，它指定var的输出实例应仅存储在％eax中。可以使用此约束：</p>
+<ul>
+<li>在从变量读取输入或修改变量并将修改写回同一变量的情况下。</li>
+<li>如果不需要输入和输出操作数的单独实例。</li>
+</ul>
+<p>使用匹配约束的最重要的影响是它们导致有效使用可用寄存器。</p>
+<ol start="4">
+<li><strong>memory</strong></li>
+</ol>
+<p><strong>volatile</strong></p>
+<p>将volatile属性添加到asm语句中，以指示编译器不要优化汇编部分代码。memory**</p>
+<p>它告诉编译器汇编程序指令可能会更改内存位置。将强制编译器在执行汇编程序指令之前先保存缓存里的值到内存，然后在加载它们。并且保留执行顺序，因为在使用内存破坏者执行asm语句后，所有变量的内容都是不可预测的。</p>
+<p>使所有缓存的值无效可能不是最佳的。除此之外，可以添加一个虚拟操作数来创建人工依赖项：</p>
+<h4 id="26约束修饰符">2.6约束修饰符</h4>
+<p>在使用约束时，为了更精确地控制约束的影响，GCC为我们提供了约束修饰符。最常用的约束修饰符是</p>
+<ol>
+<li>
+<p>“=”：表示该操作数对该指令是只写的; 先前的值被丢弃并由输出数据替换。</p>
+</li>
+<li>
+<p>“＆”：表示此操作数是一个earlyclobber操作数，在使用输入操作数完成指令之前修改该操作数。因此，该操作数可能不在于用作输入操作数的寄存器或任何存储器地址的一部分。如果输入操作数仅用作输入，则在写入早期结果之前，它可以绑定到earlyclobber操作数。</p>
+</li>
+</ol>
+<p><strong>更多约束描述</strong></p>
+<p><img src="./skins/custom/images/cored.svg" alt="" loading="lazy"></p>
+<h4 id="27-一些有用的方法">2.7 一些有用的方法</h4>
+<p>现在我们已经介绍了关于GCC内联汇编的基本理论，现在我们将集中讨论一些简单的例子。将内联asm函数编写为MACRO总是很方便。我们可以在内核代码中看到许多asm函数。（/usr/src/linux/include/asm/*.h）。</p>
+<ol>
+<li>首先，我们从一个简单的例子开始。我们将编写一个程序来相加两个数字。</li>
+</ol>
+<pre><code class="language-c">int main(void)
+{
+        int foo = 10, bar = 15;
+        __asm__ __volatile__("addl  %%ebx,%%eax"
+                             :"=a"(foo)
+                             :"a"(foo), "b"(bar)
+                             );
+        printf("foo+bar=%d\n", foo);
+        return 0;
+}
+</code></pre>
+<p>在这里，我们坚持要求GCC在％eax中存储foo，bar存储在％ebx中，我们也希望结果保存在％eax中。'='符号表示它是输出寄存器。现在我们可以用其他方式实现变量和整数相加。</p>
+<pre><code class="language-c">__asm__ __volatile__(
+                      "   lock       ;\n"
+                      "   addl %1,%0 ;\n"
+                      : "=m"  (my_var)
+                      : "ir"  (my_int), "m" (my_var)
+                      :                                 /* no clobber-list */
+                      );
+</code></pre>
+<p>这是一个原子加法。我们可以删除指令'lock'来删除原子性。在输出字段中，“= m”表示my_var是输出，它在内存中。类似地，“ir”表示，my_int是一个整数，应该驻留在某个寄存器中（回想一下我们上面看到的表）。clobber列表中没有寄存器。</p>
+<ol start="2">
+<li>现在我们将对一些寄存器/变量执行一些操作并比较该值。</li>
+</ol>
+<pre><code class="language-c">__asm__ __volatile__(  "decl %0; sete %1"
+                      : "=m" (my_var), "=q" (cond)
+                      : "m" (my_var) 
+                      : "memory"
+                      );
+</code></pre>
+<p>这里，my_var的值减1，如果结果值是<code>0</code> ，则设置变量cond。我们可以通过添加指令“lock; \ n \ t”作为汇编程序模板中的第一条指令来添加原子性。</p>
+<p>以类似的方式，我们可以使用“incl％0”而不是“decl％0”，以便增加my_var。</p>
+<p>这里要注意的是（i）my_var是驻留在内存中的变量。（ii）约束“= q”保证了cond在eax，ebx，ecx和edx寄存器其中之一中。（iii）我们可以看到内存在clobber列表中。即，代码正在改变内存的内容。</p>
+<ol start="3">
+<li>如何设置/清除寄存器中的位？</li>
+</ol>
+<pre><code class="language-c">__asm__ __volatile__(   "btsl %1,%0"
+                      : "=m" (ADDR)
+                      : "Ir" (pos)
+                      : "cc"
+                      );
+</code></pre>
+<p>这里，ADDR变量位置'pos'处的位（存储器变量）设置为<code>1，</code> 我们可以使用'btrl'代替'btsl'来清除该位。pos的约束“Ir”表示pos位于寄存器中，其值的范围为0-31（x86依赖约束）。也就是说，我们可以在ADDR设置/清除变量的第0到第31位。由于条件代码将被更改，我们将“cc”添加到clobberlist。</p>
+<ol start="4">
+<li>现在我们来看一些更复杂但有用的功能。字符串副本。</li>
+</ol>
+<pre><code class="language-c">static inline char * strcpy(char * dest,const char *src)
+{
+int d0, d1, d2;
+__asm__ __volatile__(  "1:\tlodsb\n\t"
+                       "stosb\n\t"
+                       "testb %%al,%%al\n\t"
+                       "jne 1b"
+                     : "=&amp;S" (d0), "=&amp;D" (d1), "=&amp;a" (d2)
+                     : "0" (src),"1" (dest) 
+                     : "memory");
+return dest;
+}
+</code></pre>
+<p>源地址存储在esi中，目标位于edi中，然后启动复制，当我们达到<strong>0时</strong>，复制完成。约束“＆S”，“＆D”，“＆a”表示寄存器esi，edi和eax是early clobber寄存器，即它们的内容将在函数完成之前改变。这里也很清楚为什么memory在clobberlist中。</p>
+<p>我们可以看到一个类似的函数移动一个double words。请注意，该函数声明为宏。</p>
+<pre><code class="language-asm">#define mov_blk(src, dest, numwords) \
+__asm__ __volatile__ (                                          \
+                       "cld\n\t"                                \
+                       "rep\n\t"                                \
+                       "movsl"                                  \
+                       :                                        \
+                       : "S" (src), "D" (dest), "c" (numwords)  \
+                       : "%ecx", "%esi", "%edi"                 \
+                       )
+</code></pre>
+<p>这里我们没有输出，因此寄存器ecx，esi和edi的内容发生的变化是块移动的副作用。所以我们必须将它们添加到clobber列表中.</p>
+<ol start="5">
+<li>在Linux中，使用GCC内联汇编实现系统调用。让我们看看如何实现系统调用。所有系统调用都写成宏（linux / unistd.h）。例如，具有三个参数的系统调用被定义为宏，如下所示。</li>
+</ol>
+<pre><code class="language-c">#define _syscall3(type,name,type1,arg1,type2,arg2,type3,arg3) \
+type name(type1 arg1,type2 arg2,type3 arg3) \
+{ \
+long __res; \
+__asm__ volatile (  "int $0x80" \
+                  : "=a" (__res) \
+                  : "0" (__NR_##name),"b" ((long)(arg1)),"c" ((long)(arg2)), \
+                    "d" ((long)(arg3))); \
+__syscall_return(type,__res); \
+}
+</code></pre>
+<p>每当进行具有三个参数的系统调用时，上面显示的宏用于进行调用。系统调用号放在eax中，然后是ebx，ecx，edx中的每个参数。最后，“int 0x80”是使系统调用工作的指令。可以从eax收集返回值。</p>
+<p>每个系统调用都以类似的方式实现。退出是一个单个参数系统调用，让我们看看它的代码是什么样的。它如下所示。</p>
+<pre><code class="language-c">{
+        asm("movl $1,%%eax;         /* SYS_exit is 1 */
+             xorl %%ebx,%%ebx;      /* Argument is in ebx, it is 0 */
+             int  $0x80"            /* Enter kernel mode */
+             );
+}
+
+</code></pre>
+<p>退出的数量是“1”，这里，它的参数是0。所以我们安排eax包含1和ebx包含0和by <code>int $0x80</code>，<code>exit(0)</code>执行。这就是退出的方式。</p>
+<h2 id="七编译">七、编译</h2>
+<h4 id="汇编与链接">汇编与链接</h4>
+<p>汇编：</p>
+<pre><code class="language-shell">as -o xxxx xxxx.s
+as -32 -o xxxx xxxx.s #汇编32位
+</code></pre>
+<p>将汇编代码汇编成动态链接库(<code>-shared</code>)：</p>
+<pre><code class="language-sh">ld -shared xxx.o yyy.o -o libzzz.so
+</code></pre>
+<p>使用动态链接。</p>
+<pre><code class="language-shell">ld -dynamic-linker /lib/ld-linux.so.2 -o xxxx xxxx.o -lc -lzzz
+</code></pre>
+<p><code>-lc</code>表示链接到库c,也就是<code>libc.so</code>，<code>-dynamic-linker</code>链接动态库。</p>
+<h2 id="参考资料">参考资料</h2>
+<p><a href="https://sourceware.org/binutils/docs/as/index.html" target="_blank" rel="noopener">GNU汇编器手册</a></p>
+<p>版权声明：本文为本文为博主原创文章，转载请注明出处。如有问题，欢迎指正。博客地址：<a href="https://www.cnblogs.com/wsg1100/" target="_blank" rel="noopener">https://www.cnblogs.com/wsg1100/</a></p>
+
+</div>
+<div id="MySignature" role="contentinfo">
+    <div>作者：<a href="http://www.cnblogs.com/wsg1100/" target="_blank">wsg1100</a></div>
+<div>出处：<a href="http://www.cnblogs.com/wsg1100/" target="_blank">http://www.cnblogs.com/wsg1100/</a></div>
+<div>本文版权归作者和博客园共有，欢迎转载，但必须给出原文链接，并保留此段声明，否则保留追究法律责任的权利。 </div>
+</div>
+		</div>
+	</div>
+	
+	
+</div><!--end: topics 文章、评论容器-->
+
+<script>
+    var cb_entryId = 14290340, cb_entryCreatedDate = '2021-01-17 21:42', cb_postType = 1, cb_postTitle = '【原创】X86_64/X86 GNU汇编、寄存器、内嵌汇编';
+    var allowComments = true, cb_blogId = 385777, cb_blogApp = 'wsg1100', cb_blogUserGuid = '7e999067-b854-4fb5-ff22-08d4ef52ecb5';
+    mermaidRender.render()
+    markdown_highlight()
+    zoomManager.apply("#cnblogs_post_body img:not(.code_img_closed):not(.code_img_opened)");
+    updatePostStats(
+            [cb_entryId],
+            function(id, count) { $("#post_view_count").text(count) },
+            function(id, count) { $("#post_comment_count").text(count) })
+</script>
+<a id="!comments"></a>
+<div id="blog-comments-placeholder"></div>
+</div>
+
+	</div><!--end: forFlow -->
+	</div><!--end: mainContent 主体内容容器-->
+
+	<div id="sideBar">
+		<div id="sideBarMain">
+			<div id="sidebar_news" class="newsItem">
+            <script>loadBlogNews();</script>
+</div>
+<div id="sidebar_c3"></div>
+			<div id="calendar"><div id="blog-calendar" style="display:none"></div><script>loadBlogDefaultCalendar();</script></div>
+			
+			<DIV id="leftcontentcontainer">
+				<div id="blog-sidecolumn"></div>
+                    <script>loadBlogSideColumn();</script>
+			</DIV>
+			
+		</div><!--end: sideBarMain -->
+	</div><!--end: sideBar 侧边栏容器 -->
+	<div class="clear"></div>
+	</div><!--end: main -->
+	<div class="clear"></div>
+</div><!--end: home 自定义的最大容器 -->
+</body>
+</html>
