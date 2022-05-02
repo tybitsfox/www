@@ -27,6 +27,7 @@ echo "<a href=./boot.php target=_blank>引导程序boot的编写及生成</a>&nb
 echo "</font></td><td width=50% valign=top>";
 echo "<font size=4>&nbsp;&nbsp;&nbsp;四、杂谈、心得:<br><br>";
 echo "<a href=./topic_dir.php target=_blank>linux0.11内核学习杂谈、心得</a><br><br>";
+echo "<a href=./about_64.php target=_blank>64位系统相关</a><br><br>";
 echo "&nbsp;&nbsp;&nbsp;五、引导及多任务测试:<br><br>";
 echo "<a href=./kernel_task.php target=_blank>引导及多任务源代码</a>&nbsp;&nbsp;&nbsp;&nbsp;
 <a href=./k_f01.php target=_blank>保护模式下的软盘驱动代码</a><br><br>";
