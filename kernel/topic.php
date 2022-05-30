@@ -794,5 +794,53 @@ echo "<pre><font size=3>
 </td></tr>
 
 </table></center>
-</font></pre>";
+</font></pre><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>";
+echo "<a name=x64></a><center><font color=red size=5>64位系统下编译32位c和汇编程序及模块</font></center>";
+echo "<pre>---------------makefile:-------------------------
+t02:t02.o f01.o
+    gcc -m32 -o t02 t02.o f01.o
+t02.o:t02.c
+    gcc -m32 -c -o t02.o t02.c -I/workarea/cprogram/include
+f01.o:f01.s
+    as --32 -o f01.o f01.s
+clean:
+    -rm *.o t02
+----------------------------------------------------------
+--------------------f01.s--------------------------------
+.code32
+.type myadd,@function
+.global myadd
+myadd:
+    pushl %ebp
+    movl %esp,%ebp
+    pushl %ebx
+    pushl %eax
+    movl 8(%ebp),%ebx
+#   movl 12(%ebp),%eax
+    movl (%ebx),%eax
+    addl 12(%ebp),%eax
+    movl %eax,(%ebx)
+    popl %eax
+    popl %ebx
+    movl %ebp,%esp
+    popl %ebp
+    ret
+----------------------------------------------------------
+-------------------t02.c--------------------------------
+#include\"clsscr.h\"
+void myadd(int *a,int b);
+int main(int argc,char **argv)
+{
+    int i,j;
+    i=12;j=23;
+    myadd(&i,j);
+    printf(\"i=%d\\n\",i);
+    return 0;
+};
+----------------------------------------------------------
+ubuntu20.04 64位系统下要编译出32位c程序除了makefile中要求的-m32 --32选项外，还需要如下软件包的支持：
+
+    $ sudo apt-get install build-essential module-assistant
+    $ sudo apt-get install gcc-multilib g++-multilib  其中g++可暂时不安装
+</pre><br><br><br><br><br><br><br><br><br><br><br><br><br>";
 ?>
