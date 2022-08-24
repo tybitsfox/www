@@ -36,7 +36,7 @@ mysqli_set_charset($conn,"utf8");
 for($i=0;$i<6;$i++)
 {
 //	$sqlstr="select count(*) from menu_tb where idx = ".$i;
-	$sqlstr="select * from menu_tb where idx = ".$i;
+	$sqlstr="select * from menu_tb where idx = $i";
 	$result=mysqli_query($conn,$sqlstr);
 //	if(!$result)
 //	{die("valid error");}
@@ -45,10 +45,10 @@ for($i=0;$i<6;$i++)
 	{
 		if($j==0)
 		{
-			echo "<li><a class='hide' href='#a01'>".$row[0]."</a><ul>";
+			echo "<li><a class='hide' href='#a01'>$row[0]</a><ul>";
 			$j=1;
 		}
-		echo "<li><a href='./openall.php?subid=".$i."&submenu=".$row[1]."&url=".$row[3]."' title='".$row[4]."' target=_blank>".$row[1]."</a></li>";
+		echo "<li><a href='./openall.php?subid=$i&submenu=$row[1]&url=$row[3]' title='$row[4]' target=_blank>$row[1]</a></li>";
 	}
 	echo "</ul></li>";
 //	$j=$row[0];
@@ -66,12 +66,12 @@ $result=mysqli_query($conn,$sqlstr);
 for($i=0;$i<9;$i++)
 {
 	$row=mysqli_fetch_row($result);
-	echo "<br><a href='./openall.php?subid=".$row[5]."&submenu=".$row[1]."&url=".$row[3]."' title='".$row[4]."' target=_blank>".$row[1]."</a><br>";
+	echo "<br><a href='./openall.php?subid=$row[5]&submenu=$row[1]&url=$row[3]' title='$row[4]' target=_blank>$row[1]</a><br>";
 }
 mysqli_free_result($result);
 mysqli_close($conn);
-echo "</td><td colspan=2 align=left valign=top><form name='form1' method='get' action='https://cn.bing.com/search' target=_blank><table class='aaaa'><tr><td align=left width=100px><input type=hidden name=action value=search size=0>站外搜索：</td><td align=left width=160px><input type=text name='q' size=20 /></td><td align=left><input type=submit value='搜 索' />&nbsp;&nbsp;<input type=reset value='清空' /></td></tr><tr><td colspan=3>";
-//echo "</td><td colspan=2 align=left valign=top><form name='form1' method='get' action='http://www.baidu.com/s' target=_blank><table class='aaaa'><tr><td align=left width=100px><input type=hidden name=action value=search size=0>站外搜索：</td><td align=left width=160px><input type=text name=word size=20 /></td><td align=left><input type=submit value='搜 索' />&nbsp;&nbsp;<input type=reset value='清空' /></td></tr><tr><td colspan=3>";
+//echo "</td><td colspan=2 align=left valign=top><form name='form1' method='get' action='https://cn.bing.com/search' target=_blank><table class='aaaa'><tr><td align=left width=100px><input type=hidden name=action value=search size=0>站外搜索：</td><td align=left width=160px><input type=text name='q' size=20 /></td><td align=left><input type=submit value='搜 索' />&nbsp;&nbsp;<input type=reset value='清空' /></td></tr><tr><td colspan=3>";
+echo "</td><td colspan=2 align=left valign=top><form name='form1' method='get' action='http://www.baidu.com/s' target=_blank><table class='aaaa'><tr><td align=left width=100px><input type=hidden name=action value=search size=0>站外搜索：</td><td align=left width=160px><input type=text name=word size=20 /></td><td align=left><input type=submit value='搜 索' />&nbsp;&nbsp;<input type=reset value='清空' /></td></tr><tr><td colspan=3>";
 /*if($_POST["action"]=="search")
 {
 	echo "查询结果：<br>";
