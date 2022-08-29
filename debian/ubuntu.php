@@ -1,6 +1,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <?php
 echo "<center><font size=5 color=red>Ubuntu 20.04安装笔记</font></center>";
+echo "2022-8-29 setup ubuntu22.04升级或下载总是提示：连接失败,IP:91.189.91.39 80,主镜像或cn.archive.ubuntu.com都是国外服务器，被狗日的墙了<br>换个国内的源服务器吧，<font size=6 color=red>FUCK YOU CCP!!!</font><br>";
 echo "<font size=4 color=blue><pre>
 install:
 aptitude
