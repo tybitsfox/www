@@ -1,16 +1,16 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <?php
 $pflag=0;
-if($_POST[action]==login)
+if($_POST["action"] == "login")
 {
-	if($_POST[user]=="tian" && $_POST[password]=="yong")
+	if($_POST["user"]=="tian" && $_POST["password"]=="yong")
 	{
 		//echo "<center><font size=6 color=#00ffff >hello world~~~~~~~~~~</font></center>";
 		$pflag=1;
 	}
 	else
 	{
-		if($_POST[user]=="fedora" && $_POST[password]=="tian8")
+		if($_POST["user"]=="fedora" && $_POST["password"]=="tian8")
 		{
 			$pflag=1109;
 		}
@@ -19,7 +19,7 @@ if($_POST[action]==login)
 			echo "<center><font size=6 color=#ff0000>error</font></center>";
 			//$pflag=1;
 			$pflag=2;
-			ignore_user_abort();
+	//		ignore_user_abort();
 		}
 	}
 }
@@ -34,7 +34,7 @@ if($pflag==0)
 	echo "<tr><td align=right valign=middle>密码：</td>";
 	echo "<td colspan=2 align=left valign=middle> <input type=password name=password size=20 /></td></tr>";
 	echo "<tr><td colspan=3 align=center valign=middle ><input type=submit value=\"登录\" />&nbsp;&nbsp;<input type=reset value=\"重置\" /></td></tr></form>";
-	echo "<table width=100%><tr><td width=100%><br><br></td></tr></table>";
+	echo "<table width=100%><tr><td width=100%><br><br></td></tr></table>"; 
 	include("awnl.php");
 	echo "<br><center><table width=60%><tr>";
 	echo "<td align=center width=25% ><a href='./tin16/fengshen.php' target=_blank>FC封神榜</a></td>";
