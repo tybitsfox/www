@@ -26,7 +26,7 @@ echo "<table border=0 width=100%><tr><td width=20%><a href=./lab.php#lab01>lsof�
 </tr><tr>
 <td width=20%><a href='./epsxe.php' target=_blank>epsxe的迁移</a></td>
 <td width=20%><a href='./token.php' target=_blank>github和bitbucket的token使用</a></td>
-<td width=20%></td>
+<td width=20%><a href='./lab.php#lab19'>AppImage说明</a></td>
 <td width=20%></td>
 <td width=20%></td>
 </tr></table>";
@@ -566,4 +566,57 @@ echo "<font color=black><pre>
 电子基盘：  system(\"wine ./MAME.exe mjelctrn  -window\");
 对于天开眼还可以选择不同的显示模式，如：system(\"wine ./tinyd.exe -video gdi tenkaibb -window\");
 </pre></font>";
+echo "<a name=lab19></a><font size=5 color=blue><center>AppImage说明</center></font><br>
+<font color=black><pre>
+Linux 下Appimage 压缩与解压
+
+appimage自身支持直接压缩和解压
+
+--appimage-extract
+
+    extracts the contents from the embedded filesystem image, then exits. This is useful if you are using an AppImage on a system on which FUSE is not available
+    从嵌入的文件系统映像中提取内容，然后退出。如果您在FUSE不可用的系统上使用AppImage，这将非常有用
+
+$ xxxx.AppImage --appimage-extract
+
+    linuxdeployqt 可以用来给可执行程序复制引用库、制作AppRun、快捷方式并压缩。
+    appimagetool 则可以直接压缩 “已经打包好的appimage解压后的文件夹（上一步解压的文件夹）。
+
+请注意使用appimagetool压缩时，只检验文件夹内是否存在快捷方式和AppRun，至于需要连接的库不再验证，如果自己解压后手动删除了引用库会造成新压缩后文件无法使用。
+
+$ appimagetool xxxx包含AppImage内容的文件夹
+
+appimagetool 可从此处下载：wget 'https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage'
+
+根据上述说明，我尝试着下载并打包了我最爱的ePSXe模拟器，该模拟器是32位的应用
+因为喜爱，我一直将该应用所依赖的各种库都完好的保存着，所以，非常适合做成Appimage格式的应用包：
+一、下载了appimagetool-x86_64.AppImage（上述链接是arch的）。
+二、按照Appimage的格式要求整理目录结构和文件
+1、建立目录squashfs-root，在目录下放置图标文件ePSXe.png和软链接.DirIcon
+2、建立一个desktop文件ePSXe.desktop：<font color=blue>
+[Desktop Entry]
+Type=Application
+Name=ePSXe
+GenericName=PlayStation 1 Emulator
+Comment=Fast PlayStation 1 emulator
+Icon=ePSXe
+Exec=ePsxe
+Categories=Game;Emulator;</font>
+3、建立可执行的AppRun脚本文件：<font color=red>
+#!/bin/bash
+APPDIR=\$(dirname '$0')
+export LD_LIBRARY_PATH=\$APPDIR/usr/lib/
+exec '\$APPDIR/usr/bin/ePsxe'</font>
+4、建立目录usr,usr/bin,usr/lib
+将可执行文件ePsxe 放置在bin目录下
+将所有依赖的库文件放置在lib目录下
+---------------------------------------------------
+ok!执行./appimagetool-x86_64.AppImage squashfs-root
+该程序不会检查程序执行的依赖库，但会检查图标,快捷方式等文件。如果没有错误，即可生成AppImage文件了
+
+
+
+
+
+</pre>/<font>";
 ?>
