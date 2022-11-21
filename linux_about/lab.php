@@ -614,6 +614,34 @@ exec '\$APPDIR/usr/bin/ePsxe'</font>
 ok!执行./appimagetool-x86_64.AppImage squashfs-root
 该程序不会检查程序执行的依赖库，但会检查图标,快捷方式等文件。如果没有错误，即可生成AppImage文件了
 
+*********************************非AppImage格式的citra应用相关****************************************
+
+在citra官网上下载的citra只是一个gz的压缩包，解压后即可运行，但库的依赖问题就留给了用户。
+我在ubuntu22.04上下载的最新版直接运行没有问题，但是拷贝到21.04版的办公本本上就出现了运行库的问题了，除了两个qt库外（直接下载）
+还有一些常用的库出了问题，例如：
+libstdc++.so.6: version ‘GLIBCXX_3.4.30‘ not found
+通过查询，库文件是存在的，使用strings命令发现版本号低于程序的要求：
+strings libstdc++.so.6 |grep GLIBCXX
+GLIBCXX_3.4.14
+GLIBCXX_3.4.15
+GLIBCXX_3.4.16
+GLIBCXX_3.4.17
+GLIBCXX_3.4.18
+GLIBCXX_3.4.19
+GLIBCXX_3.4.20
+GLIBCXX_3.4.21
+GLIBCXX_3.4.22
+GLIBCXX_3.4.23
+GLIBCXX_3.4.24
+GLIBCXX_3.4.25
+GLIBCXX_3.4.26
+GLIBCXX_3.4.27
+GLIBCXX_3.4.28
+GLIBCXX_DEBUG_MESSAGE_LENGTH
+
+apt update后已经是最新版了，这只能说明最新的citra不能在ubuntu21.04上运行了。
+解决的方法就是区官网下载之前的版本，也就是只能用底版本的了。
+
 
 
 
