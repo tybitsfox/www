@@ -1,4 +1,4 @@
-<html><title>tr命令简介</title>
+<html><title>sed命令简介</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <body TEXT="#000000" LINK="#AA0000" VLINK="#AA0055" ALINK="#AA0000" STYLE="font-size:18px; font-family:宋体, Arial; font-weight:bolder; line-height:130%;">
 <?php
@@ -158,8 +158,9 @@ $ <br>
 匹配一个不在指定范围内的字符，如：/[^A-RT-Z]ed/匹配不包含A-R和T-Z的一个字母开头，紧跟ed的行。<br>
 /(../) <br>
 保存匹配的字符，如s//(love/)able//1rs，loveable被替换成lovers。<br>
-& <br>
-保存搜索字符用来替换其他字符，如s/love/**&**/，love这成**love**。<br>
+<font color=red>& <br>
+保存搜索字符用来替换其他字符，如s/love/**&**/，love这成**love**。!!非常重要的查找字符串保存符！！<br>
+例如：查找Q开头的字符串，并将正行字符串添加HTML颜色标注：sed 's/^Q.*/&lt;font color=blue>&<\/font>/'</font><br>
 /< <br>
 锚定单词的开始，如://<br>
 /> <br>
