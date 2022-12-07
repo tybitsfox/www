@@ -641,6 +641,17 @@ GLIBCXX_DEBUG_MESSAGE_LENGTH
 
 apt update后已经是最新版了，这只能说明最新的citra不能在ubuntu21.04上运行了。
 解决的方法就是区官网下载之前的版本，也就是只能用底版本的了。
+这里一并记录下citra关于升级包和DLC的安装和使用：
+版本升级都是安装在：
+.local/share/citra-emu/sdmc/Nintendo 3DS/0...00/00...0/title/0004000e/这个目录下
+例如mm4的v1.1升级包就安装在该目录下的000afd00目录中。删除或重命名即可禁止升级包
+而DLC则是安装在：
+.local/share/citra-emu/sdmc/Nintendo 3DS/0...00/00...0/title/0004000c/这个目录下
+也就是在title目录下的三个目录：
+00040000	这个是正常的游戏（存盘）目录
+0004000e	这个是升级包目录
+0004000c	这个是DLC目录
+DLC安装后可能会有无效的情况，这里还要对模拟器的设置进行写修改：将语言设置为日语，再进入游戏就可激活DLC了
 
 
 
