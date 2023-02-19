@@ -2,6 +2,16 @@
 <?php
 echo "<center><font size=5 color=red>Ubuntu 20.04安装笔记</font></center>";
 echo "2022-8-29 setup ubuntu22.04升级或下载总是提示：连接失败,IP:91.189.91.39 80,主镜像或cn.archive.ubuntu.com都是国外服务器，被狗日的墙了<br>换个国内的源服务器吧，<font size=6 color=red>FUCK YOU CCP!!!</font><br>";
+echo "<font size=5 color=red>Ubuntu20.04系统重启时黑屏的解决办法</font><br>";
+echo "<pre>
+首先在黑屏界面使用Ctrl+Alt+F2进入命令行模式，先在login后面输入刚进去时设置的用户名按enter，再输入密码enter，发现成功进入系统！这说明系统运行
+完全正常！那么系统黑屏的原因很大可能就是Ubuntu系统自带的Nouveau显卡驱动和Nvidia显卡不兼容了。这时候可以在命令行后面输入：
+sudo vim /etc/default/grub
+找到quiet splash并在后面添加nomodeset
+然后输入下面指令，进行grub配置文件更新
+sudo update-grub
+重启系统后应该就可解决问题了。
+</pre>";
 echo "<font size=4 color=blue><pre>
 install:
 aptitude
