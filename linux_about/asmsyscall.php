@@ -15,7 +15,8 @@ echo ("<font color=#ff00ff size=5><pre>
 中存放的是系统调用的功能号，而传给系统调用的参数则必须按顺序放到寄存器 ebx，ecx，edx，esi，edi
 中，当系统调用完成之后，返回值可以在寄存器 eax 中获得。
 
-所有的系统调用功能号都可以在文件 /usr/include/bits/syscall.h 中找到，为了便于使用，它们是用 SYS_<name> 这样的宏来定义的，如 
+所有的系统调用功能号都可以在文件 /usr/include/bits/syscall.h(in debian11: /usr/include/i386-linux-gnu/asm/unistd_32.h;
+/usr/include/i386-linux-gnu/bits/syscall.h) 中找到，为了便于使用，它们是用 SYS_<name> 这样的宏来定义的，如 
 SYS_write、SYS_exit 等。例如，经常用到的 write 函数是如下定义的：
 
 ssize_t write(int fd, const void *buf, size_t count);
