@@ -56,5 +56,13 @@ ExecStart：指定待启动的程序<br>
 WantedBy：指定服务类型，为多用户所用则指定multi-user.target<br><br>
 编辑完上述脚本后执行systemctl enable iniget.servive.即可在/etc/systemd/system/multi-user.target.wants/目录下建立一个链接。设置完成<br>
 </font>";
-phpinfo();
+//phpinfo();
+echo "<font color=red size=5>Debian11禁止内核自动加载声卡驱动</font><br>";
+echo "<pre>
+我的浪潮服务器有个多余的intel声卡（像是显卡自带的）模块，每次安装系统都会加载两个声卡驱动，并且自debian9以后声卡的加载顺序还是随机的，
+为了屏蔽这个无用的声卡模块的加载可在/etc/modprobe.d/目录下添加文件：
+snd_hda_intel-blacklist.conf，该文件一行配置即可解决：
+
+blacklist snd_hda_intel
+</pre>";
 ?>
