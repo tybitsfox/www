@@ -85,6 +85,7 @@ echo "<br><br><a href='./php_hl/login.php' target=_blank>监控平台登录</a>&
 echo "<br><br><a href='./huili/index.php' target=_blank>管家测试</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='./huili/test/js_test/j01.php' target=_blank>设置</a><br><br>";
 echo "<a href='./tools/js_learn/index.php' target=_blank>jquery学习</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./www.veryhuo.com/php/index.html>PHP4手册</a>";
 echo "<br><br><a href='http://ff10.ffsky.cn/' target=_blank>最终幻想10</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='http://ff12.ffsky.cn/' target=_blank>最终幻想12</a>";
+echo "<br><br><a href='https://fanyi.baidu.com/?aldtype=85#en/zh/' target=_blank>翻译</a>";
 echo "</body>";
 }
 //echo "end of search....<br>";
