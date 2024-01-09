@@ -89,7 +89,7 @@ openssl des3 -e -in a.txt -out b.txt
 echo "<font size=4 color=red >openssl可配合tar完成加密打包操作：
 加密压缩打包：
 tar cjvf - targetfiles | openssl des3 -salt -k password -out targetfile.tar.bz2
-cjvf后面的 '-' 代表了指定待打包的文件，因为f后面默认指定的是生成的打包后的目标文件名，所以，若要省略 '-',则需要去掉参数'f',上述命令也可以写为：
+cjvf后面的 '-'加空格，代表了抵消前一参数f，因为f后面默认跟随的是生成的打包后的目标文件名，所以，若要省略 '-',则需要去掉参数'f',上述命令也可以写为：
 tar cjv targetfiles | openssl des3 -salt -k password -out targetfile.tar.bz2
 解密解压解包：
 openssl des3 -d -salt -k password -in targetfile.tar.bz2 | tar xjvf - -C /home/aaa/
