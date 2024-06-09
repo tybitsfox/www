@@ -8,6 +8,7 @@ select count(*) from fq_d_master where unix_timestamp(date) = 121890027;<br>
 <br><br><br><br><br><br><br></font>";
 echo "<a name=mysql_youhua></a><pre>";
 include_once("./env2016.txt");
+include_once("./mysql.txt");
 echo "</pre>";
 ?>
 
