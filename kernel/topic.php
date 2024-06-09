@@ -843,4 +843,30 @@ ubuntu20.04 64位系统下要编译出32位c程序除了makefile中要求的-m32
     $ sudo apt-get install build-essential module-assistant
     $ sudo apt-get install gcc-multilib g++-multilib  其中g++可暂时不安装
 </pre><br><br><br><br><br><br><br><br><br><br><br><br><br>";
+echo "<a name=asm_div></a><center><font color=red size=5>汇编指令mul和div使用避坑</font></center>";
+echo "<pre>
+一、这两条指令都是使用eax作为默认的操作寄存器，存放被乘数和被除数，
+二、当使用div指令时应注意商不要溢出，否则会引发int 0中断，因此应适时选择divb,divw,divl使用，
+三、当使用divw和divl指令时，为避免出现歧义，不要使用edx存放除数，（暂未测试）
+四、mul指令所涉及的寄存器：
+
+	mulb	操作的寄存器：乘数=8位寄存器；		被乘数=al；		结果=ax			（注：如此时ah != 0,ah不会参与计算，且会被覆盖）
+	mulw	操作的寄存器：乘数=16位寄存器；		被乘数=ax；		结果=dx:ax		（dx无需清空， 且会被覆盖）
+	mull	操作的寄存器：乘数=32位寄存器；		被乘数=eax； 		结果=edx:eax		（edx无需清空，且会被覆盖）
+
+五、div指令所涉及的寄存器：
+
+	divb	操作的寄存器：除数=8位寄存器；		被除数=ax；		结果：al=商，ah=余数	（注：此时dx不参与计算，dx无需清空）
+	divw	操作的寄存器：除数=16位寄存器；		被除数=dx:ax；		结果：ax=商，dx=余数	（如被除数不大于16位，则dx务必清零，否则影响结果或引发int0）
+	divl	操作的寄存器：除数=32位寄存器；		被除数=edx:eax；		结果：eax=商，edx=余数	（如被除数不大于32位，则edx务必清零，否则影响结果或引发int0）
+
+
+
+
+
+
+
+</pre>";
+
+
 ?>

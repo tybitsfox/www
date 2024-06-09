@@ -4,8 +4,8 @@ loadscript("/huili/css/summernote.js","js");
 </script>
 <?php
 //{{{ init
-if(!defined("HOME_CALLED") || !isset($_SESSION['GLO_VAR']))
-	die("access denied!");
+//if(!defined("HOME_CALLED") || !isset($_SESSION['GLO_VAR']))
+//	die("access denied!");
 /*下面的变量定义，区分了具体应用模块：
 模块序号：（0）环评咨询；（1）环境工程；（2）环境监测；（3）项目验收；（4）清洁生产；（5）危废处理；（6）应急预案；
 		  （7）排污申报
