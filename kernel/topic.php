@@ -886,6 +886,23 @@ echo "<pre>
 
 
 </pre>";
+echo "<a name=objcopy></a><center><font color=red size=5>objcopy拷贝c语言编写的模块文件生成目标文件过大的问题</font></center>";
+echo "<pre>
+2024-7-2，在使用objcopy生成目标文件时，偶然发现c编写的模块生成的目标文件有120多M，通过objdump查看模块文件发现了一个.note.gnu.property的章节，
+首先在ubuntu20.04版本上发现的，添加参数 -R .note.gnu.property后生成的目标文件大小正常。
 
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>";
 
 ?>

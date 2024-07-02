@@ -15,5 +15,5 @@ echo "<a href=topic.php#make>makefile '@' '$' '$$' '-' '-n ' 使用小结</a><br
 echo "<a href=topic.php#lret>ret,lret,iret小结</a><br><br>";
 echo "<a href=topic.php#x64>64位系统下编译32位c和32位汇编程序和模块</a><br><br>";
 echo "<a href=topic.php#asm_div>汇编指令mul和div</a><br><br>";
-
+echo "<a href=topic.php#objcopy>objcopy生成c编写的模块文件时生成目标文件过大的问题</a><br><br>>";
 ?>
