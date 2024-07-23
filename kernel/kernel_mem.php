@@ -3,25 +3,33 @@
 echo "<center><font color=red size=4>好吧，虽然这一切都是我设计的，但我还是需要一张直观的内存分配一览表，以便更好的掌控整个内存的使用情况。</font></center><br>";
 echo "<center>Updated on 2024-7-23	Version:toys</center><br>";
 echo "<center><font size=5 color=blue>[0M,1M)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
-echo "<td style=\"background-color:#00ff00\" width=10%>[0,0x3fff]GDT 2048*8=0x4000</td>
-<td style=\"background-color:#00ff00\" width=10%>[0x4000,0x47ff]IDT 256*8=0x800</td>
-<td style=\"background-color:#e08080\" width=10%>[0x4800,0x4fff]COIDX 256*8=0x800</td>
-<td style=\"background-color:#00ff00\" width=10%>[0x5000,0x7fff]PDT 0x1000*3=0x3000</td>
-<td style=\"background-color:yellow\" width=15%>[0x8000,0xffff]DMA 0x8000</td>
-<td style=\"background-color:gray\" width=25%>[0x10000,0x8ffff]kbuffer 512K空间</td>
-<td style=\"background-color:red\" width=10%>[0x90000,0x9efff]TSS 60*1024=0xf000</td>
-<td style=\"background-color:#0000ff\" width=10%>[0x9f000,0x9ffff]LDT 512*8=0x1000</td>
-<td style=\"background-color:#00ff00\" width=10%>[0xa0000,0xfffff]DISP&BIOS 384k</td>
+echo "<td style=\"background-color:#00ff00\" width=20%>[0,0x3fff] GDT 2048*8=0x4000</td>
+<td style=\"background-color:#00ff00\" width=20%>[0x4000,0x47ff] IDT 256*8=0x800</td>
+<td style=\"background-color:#e08080\" width=20%>[0x4800,0x4fff] COIDX 256*8=0x800</td>
+<td style=\"background-color:#00ff00\" width=20%>[0x5000,0x7fff] PDT 0x1000*3=0x3000</td>
+<td style=\"background-color:yellow\" width=20%>[0x8000,0xffff] DMA 0x8000</td></tr><tr>
+<td colspan=2 style=\"background-color:gray\" width=40%>[0x10000,0x8ffff] kbuffer 512K空间</td>
+<td style=\"background-color:red\" width=20%>[0x90000,0x9efff] TSS 60*1024=0xf000</td>
+<td style=\"background-color:#0000ff\" width=20%>[0x9f000,0x9ffff] LDT 512*8=0x1000</td>
+<td style=\"background-color:#00ff00\" width=20%>[0xa0000,0xfffff] DISP&BIOS 384k</td>
 </tr></table>";
 echo "<center><font size=5 color=blue>[1M,2M)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
-echo "<td style=\"background-color:#00ff00\" width=20%>[0x100000,0x1007ff] INT entry functions 256*8=0x800</td>
-<td style=\"background-color:#00aaaa\" width=80%>[0x100800,0x1fffff] KERNEL code</td><tr></table><br>";
+echo "<td style=\"background-color:#00ff00\" width=20%>[0x100000,0x1007ff] 2k 中断入口函数 256*8=0x800</td>
+<td style=\"background-color:#00aaaa\" width=50%>[0x100800,0x1dffff] 894k KERNEL code</td>
+<td style=\"background-color:#e08080\" width=15%>[0x1e0000,0x1effff] 64k TASK0 stack</td>
+<td style=\"background-color:#00aaaa\" width=15%>[0x1f0000,0x1fffff] 64k KERNEL stack</td><tr></table><br>";
 echo "<center><font size=5 color=blue>[2M,3M)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
-echo "<td style=\"background-color:#00ff00\" width=10%>[0x200000,0x2000ff] struct _SYS_DATA len:0x100</td>
-<td style=\"background-color:gray\" width=10%>[0x200100,0x20ffff]  GAP	size:64k-0x100</td>
-<td style=\"background-color:#00aaaa\" width=20%>[0x200100,0x20ffff]  GAP	size:64k-0x100</td>
+echo "<td style=\"background-color:#00ff00\" width=15%>[0x200000,0x2000ff] struct _SYS_DATA 0x100</td>
+<td style=\"background-color:gray\" width=10%>[0x200100,0x20ffff]  GAP	64k-0x100</td>
+<td style=\"background-color:#00aaaa\" width=25%>[0x210000,0x21xxxx] 位图128k->4G 依据实际内存大小xxxx=0x7ff</td>
+<td style=\"background-color:orange\" width=20%>[0x21xxxx,0x21yyyy] 内核页表2 依据实际内存大小yyyy=0xdfff</td>
+<td style=\"background-color:gray\" width=30%>[0x21yyyy,0x2fffff] Free kernel memory</td><tr></table><br>";
+echo "<center><font size=5 color=blue>[3M,kern_mem)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
+echo "<td style=\"background-color:gray\" width=85%>[0x300000,zzzzzz) 待分配内核空间</td>
+<td style=\"background-color:#e08080\" width=15%>[zzzzzz,kern_mem) 待分配任务内核堆栈</td>";
+echo "</tr></table><br>";
 
-<tr></table><br>";
+
 
 
 
