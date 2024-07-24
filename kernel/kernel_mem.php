@@ -1,14 +1,46 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <?php
+$headfile=$_SERVER["DOCUMENT_ROOT"]."/kernel/include/head_def.php";
+include_once($headfile);
+?>
+<script>
+$(document).ready(function(){
+		$("#flip1").click(function(){
+				$("#panel1").slideToggle("slow");
+				});
+		});
+$(document).ready(function(){
+		$("#flip").click(function(){
+				$("#panel").slideToggle("slow");
+				});
+		});
+</script>
+<style>
+#flip,#flip1:hover {cursor:pointer;}
+#panel,#flip,#panel1,#flip1
+{
+	padding:5px;
+	text-align:center;
+	background-color:#e5eecc;
+	border:solid 1px #e5eecc;
+}
+#panel,#panel1
+{
+	padding:50px;
+	display:none;
+}
+</style>
+
+<?php
 echo "<center><font color=red size=4>好吧，虽然这一切都是我设计的，但我还是需要一张直观的内存分配一览表，以便更好的掌控整个内存的使用情况。</font></center><br>";
 echo "<center>Updated on 2024-7-23	Version:toys</center><br>";
 echo "<center><font size=5 color=blue>[0M,1M)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
-echo "<td style=\"background-color:#00ff00\" width=20%>[0,0x3fff] GDT 2048*8=0x4000</td>
-<td style=\"background-color:#00ff00\" width=20%>[0x4000,0x47ff] IDT 256*8=0x800</td>
-<td style=\"background-color:#e08080\" width=20%>[0x4800,0x4fff] COIDX 256*8=0x800</td>
-<td style=\"background-color:#00ff00\" width=20%>[0x5000,0x7fff] PDT 0x1000*3=0x3000</td>
-<td style=\"background-color:yellow\" width=20%>[0x8000,0xffff] DMA 0x8000</td></tr><tr>
-<td colspan=2 style=\"background-color:gray\" width=40%>[0x10000,0x8ffff] kbuffer 512K空间</td>
+echo "<td style=\"background-color:#00ff00\" width=20%>[0,0x3fff] 全局描述符表GDT size:2048*8=0x4000</td>
+<td style=\"background-color:#00ff00\" width=20%>[0x4000,0x47ff] 中断描述符表IDT size:256*8=0x800</td>
+<td style=\"background-color:#e08080\" width=20%>[0x4800,0x4fff] 中断例程地址表COIDX size:256*8=0x800</td>
+<td style=\"background-color:#00ff00\" width=20%>[0x5000,0x7fff] 内核页目录页表PDT size:0x1000*3=0x3000</td>
+<td style=\"background-color:yellow\" width=20%>[0x8000,0xffff] DMA缓冲区 size:0x8000</td></tr><tr>
+<td colspan=2 style=\"background-color:gray\" width=40% align=center>[0x10000,0x8ffff] kbuffer内核缓冲区 size:512K空间<br>将来可用于TSS结构存储区域</td>
 <td style=\"background-color:red\" width=20%>[0x90000,0x9efff] TSS 60*1024=0xf000</td>
 <td style=\"background-color:#0000ff\" width=20%>[0x9f000,0x9ffff] LDT 512*8=0x1000</td>
 <td style=\"background-color:#00ff00\" width=20%>[0xa0000,0xfffff] DISP&BIOS 384k</td>
@@ -23,12 +55,12 @@ echo "<td style=\"background-color:#00ff00\" width=15%>[0x200000,0x2000ff] struc
 <td style=\"background-color:gray\" width=10%>[0x200100,0x20ffff]  GAP	64k-0x100</td>
 <td style=\"background-color:#00aaaa\" width=25%>[0x210000,0x21xxxx] 位图128k->4G 依据实际内存大小xxxx=0x7ff</td>
 <td style=\"background-color:orange\" width=20%>[0x21xxxx,0x21yyyy] 内核页表2 依据实际内存大小yyyy=0xdfff</td>
-<td style=\"background-color:gray\" width=30%>[0x21yyyy,0x2fffff] Free kernel memory</td><tr></table><br>";
+<td style=\"background-color:#e5eecc\" width=30%><div style='width:100%;margin:0 auto';><div id='flip'>[0x21yyyy,0x2fffff] Free kernel memory</div></td></tr></tr><td width=%15>   </td><td width=10%>  </td><td width=25%>   </td><td width=20%>   </td><td width=30%><div id= 'panel'>hello world</div></div></td></tr></table><br>";
 echo "<center><font size=5 color=blue>[3M,kern_mem)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
-echo "<td style=\"background-color:gray\" width=85%>[0x300000,zzzzzz) 待分配内核空间</td>
-<td style=\"background-color:#e08080\" width=15%>[zzzzzz,kern_mem) 待分配任务内核堆栈</td>";
+echo "<td style=\"background-color:#e5eecc\" width=85%><div style='width:100%;margin:0 auto';><div id='flip1'>[0x300000,zzzzzz) 待分配内核空间</div></td>
+<td style=\"background-color:#e08080\" width=15%>[zzzzzz,kern_mem) 待分配任务内核堆栈</td></tr><tr>";
+echo "<td width=85%><div id= 'panel1'>hello world</div></div></td><td width=15%>  </td>";
 echo "</tr></table><br>";
-
 
 
 
