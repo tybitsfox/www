@@ -3,7 +3,13 @@
 echo "<center><font size=5 color=red>Ubuntu 20.04安装笔记</font></center>";
 echo "2022-8-29 setup ubuntu22.04升级或下载总是提示：连接失败,IP:91.189.91.39 80,主镜像或cn.archive.ubuntu.com都是国外服务器，被狗日的墙了<br>换个国内的源服务器吧，<font size=6 color=red>FUCK YOU CCP!!!</font><br>";
 echo "<br><font color=blue size=5>64位ubuntu22.04下编译执行32位程序</font><br>
-<pre>需要安装的库：lib32z1,lib32z1-dev</pre><br><br>";
+<pre>首先确认你有一个64位架构的内核： dpkg --print-architecture
+64位系统会显示：amd64
+然后确认你打开了多架构支持功能：dpkg --print-foreign-architectures
+若输出：i386，则系统已经打开了多架构支持，否则：sudo dpkg --add-architecture i386;	sudo apt -get update
+然后安装支持的32位运行库：需要安装的库：lib32z1,lib32z1-dev
+这里说明一下：原来的32位运行库为ia32-libs，自ubuntu13.1之后该库被剔除，改用:lib32z1 lib32ncurses5 lib32bz2-1.0之一替代即可。
+编译32位c代码时还需要以下gcc库支持：sudo apt-get install gcc-multilib g++-multilib</pre><br><br>";
 echo "<font size=5 color=red>Ubuntu20.04系统重启时黑屏的解决办法</font><br>";
 echo "<pre>
 首先在黑屏界面使用Ctrl+Alt+F2进入命令行模式，先在login后面输入刚进去时设置的用户名按enter，再输入密码enter，发现成功进入系统！这说明系统运行
