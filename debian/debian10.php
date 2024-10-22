@@ -65,4 +65,13 @@ snd_hda_intel-blacklist.conf，该文件一行配置即可解决：
 
 blacklist snd_hda_intel
 </pre>";
+echo "<font color=red size=5>禁止一些普通应用程序的频繁升级</font><br><pre>ubuntu22以后的版本很多应用直接通过snap安装的，在卸载掉snap以后，一些必须的应用像firefox,thunderbird
+只能添加源自己安装了，但是这些源一般更新速度很慢，每次更新非常的耗费时间。而他们的更新作为个人用户也不是显得如此重要，因此我们可以通过如下命令来阻止其频繁的更新：
+sudo apt-mark hold firefox
+sudo apt-mark hold thunderbird
+下列命令可列出系统上已经阻止更新的包信息：
+sudo apt-mark showhold
+下列命令可解除阻止更新：
+sudo apt-mark unhold firefox
+</pre>";
 ?>
