@@ -35,15 +35,15 @@ $(document).ready(function(){
 echo "<center><font color=red size=4>好吧，虽然这一切都是我设计的，但我还是需要一张直观的内存分配一览表，以便更好的掌控整个内存的使用情况。</font></center><br>";
 echo "<center>Updated on 2024-7-23	Version:toys</center><br>";
 echo "<center><font size=5 color=blue>[0M,1M)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
-echo "<td style=\"background-color:#00ff00\" width=20%>[0,0x3fff] 全局描述符表GDT size:2048*8=0x4000</td>
-<td style=\"background-color:#00ff00\" width=20%>[0x4000,0x47ff] 中断描述符表IDT size:256*8=0x800</td>
-<td style=\"background-color:#e08080\" width=20%>[0x4800,0x4fff] 中断例程地址表COIDX size:256*8=0x800</td>
-<td style=\"background-color:#00ff00\" width=20%>[0x5000,0x7fff] 内核页目录页表PDT size:0x1000*3=0x3000</td>
-<td style=\"background-color:yellow\" width=20%>[0x8000,0xffff] DMA缓冲区 size:0x8000</td></tr><tr>
-<td colspan=2 style=\"background-color:gray\" width=40% align=center>[0x10000,0x8ffff] kbuffer内核缓冲区 size:512K空间<br>将来可用于TSS结构存储区域</td>
-<td style=\"background-color:red\" width=20%>[0x90000,0x9efff] TSS 60*1024=0xf000</td>
-<td style=\"background-color:#0000ff\" width=20%>[0x9f000,0x9ffff] LDT 512*8=0x1000</td>
-<td style=\"background-color:#00ff00\" width=20%>[0xa0000,0xfffff] DISP&BIOS 384k</td>
+echo "<td style=\"background-color:#00ff00\" width=5%>[0,0x3fff]<br>全局描述符表GDT<br>size:2048*8=0x4000</td>
+<td style=\"background-color:#00aaaa\" width=5%>[0x4000,0x47ff]<br>中断描述符表IDT<br>size:256*8=0x800</td>
+<td style=\"background-color:#e08080\" width=5%>[0x4800,0x4fff]<br>中断例程地址表COIDX<br>size:256*8=0x800</td>
+<td style=\"background-color:#00ff00\" width=5%>[0x5000,0x7fff]<br>内核页目录页表PDT<br>size:0x1000*3=0x3000</td>
+<td style=\"background-color:yellow\" width=80%>[0x8000,0x7ffff] DMA缓冲区 size:0x77fff=480k</td></tr><tr></table><table border=0 width=90%><tr align=center>
+<td style=\"background-color:gray\" width=10% align=center>[0xr80000,0x8ffff]内核缓冲区<br>将来可用于TSS结构存储区域<br>size:0x10000=64K</td>
+<td style=\"background-color:red\" width=10%>[0x90000,0x9efff]<br>TSS结构链表<br>size:60*1024=0xf000</td>
+<td style=\"background-color:#00aaaa\" width=5%>[0x9f000,0x9ffff]<br>8个LDT<br>512*8=0x1000</td>
+<td style=\"background-color:#00ff00\" width=75%>[0xa0000,0xfffff] DISP&BIOS 384k</td>
 </tr></table>";
 echo "<center><font size=5 color=blue>[1M,2M)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
 echo "<td style=\"background-color:#00ff00\" width=20%>[0x100000,0x1007ff] 2k 中断入口函数 256*8=0x800</td>
