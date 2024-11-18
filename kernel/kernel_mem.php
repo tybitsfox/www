@@ -46,20 +46,19 @@ echo "<td style=\"background-color:#00ff00\" width=5%>[0,0x3fff]<br>全局描述
 <td style=\"background-color:#00ff00\" width=75%>[0xa0000,0xfffff] DISP&BIOS 384k</td>
 </tr></table>";
 echo "<center><font size=5 color=blue>[1M,2M)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
-echo "<td style=\"background-color:#00ff00\" width=20%>[0x100000,0x1007ff] 2k 中断入口函数 256*8=0x800</td>
-<td style=\"background-color:#00aaaa\" width=50%>[0x100800,0x1dffff] 894k KERNEL code</td>
-<td style=\"background-color:#e08080\" width=15%>[0x1e0000,0x1effff] 64k TASK0 stack</td>
-<td style=\"background-color:#00aaaa\" width=15%>[0x1f0000,0x1fffff] 64k KERNEL stack</td><tr></table><br>";
+echo "<td style=\"background-color:#00ff00\" width=5%>[0x100000,0x1007ff]<br>2k中断入口函数<br>256*8=0x800</td>
+<td style=\"background-color:#00aaaa\" width=80%>[0x100800,0x1dffff]<br>KERNEL code<br>size:894k</td>
+<td style=\"background-color:#e08080\" width=5%>[0x1e0000,0x1effff]<br>TASK0 stack<br>64k</td>
+<td style=\"background-color:#00aaaa\" width=5%>[0x1f0000,0x1fffff]<br>KERNEL stack<br>64k</td><tr></table><br>";
 echo "<center><font size=5 color=blue>[2M,3M)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
-echo "<td style=\"background-color:#00ff00\" width=15%>[0x200000,0x2000ff] struct _SYS_DATA 0x100</td>
-<td style=\"background-color:gray\" width=10%>[0x200100,0x20ffff]  GAP	64k-0x100</td>
-<td style=\"background-color:#00aaaa\" width=25%>[0x210000,0x21xxxx] 位图128k->4G 依据实际内存大小xxxx=0x7ff</td>
-<td style=\"background-color:orange\" width=20%>[0x21xxxx,0x21yyyy] 内核页表2 依据实际内存大小yyyy=0xdfff</td>
-<td style=\"background-color:#e5eecc\" width=30%><div style='width:100%;margin:0 auto';><div id='flip'>[0x21yyyy,0x2fffff] Free kernel memory</div></td></tr></tr><td width=%15>   </td><td width=10%>  </td><td width=25%>   </td><td width=20%>   </td><td width=30%><div id= 'panel'>hello world</div></div></td></tr></table><br>";
+echo "<td style=\"background-color:#00ff00\" width=5%>[0x200000,0x2000ff]<br> _SYS_DATA<br>size:0x100</td>
+<td style=\"background-color:gray\" width=5%>[0x200100,0x20ffff]<br> GAP <br>64k-0x100</td>
+<td style=\"background-color:#00aaaa\" width=5%>[0x210000,0x21xxxx]<br>位图128k->4G依实际内存<br>xxxx=0x7ff</td>
+<td style=\"background-color:orange\" width=5%>[0x21xxxx,0x21yyyy]<br>内核页表2依据内存<br>yyyy=0xdfff</td>
+<td style=\"background-color:#e5eecc\" width=80%>[0x220000,0x2fffff]<br>文件系统结构,total:1139k<br>size:896K</td></tr></table><br>";
 echo "<center><font size=5 color=blue>[3M,kern_mem)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
-echo "<td style=\"background-color:#e5eecc\" width=85%><div style='width:100%;margin:0 auto';><div id='flip1'>[0x300000,zzzzzz) 待分配内核空间</div></td>
-<td style=\"background-color:#e08080\" width=15%>[zzzzzz,kern_mem) 待分配任务内核堆栈</td></tr><tr>";
-echo "<td width=85%><div id= 'panel1'>hello world</div></div></td><td width=15%>  </td>";
+echo "<td style=\"background-color:#e5eecc\" width=15%>[0x300000,0x33CC00]<br>文件系统结构<br>size:243k</td>
+<td style=\"background-color:#e08080\" width=85%>[0x340000,kern_mem)<br>待分配任务内核堆栈<br>size:781k</td></tr><tr>";
 echo "</tr></table><br>";
 
 
