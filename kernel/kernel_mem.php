@@ -60,6 +60,10 @@ echo "<center><font size=5 color=blue>[3M,kern_mem)之间的内存分配</font><
 echo "<td style=\"background-color:#e5eecc\" width=15%>[0x300000,0x33CC00]<br>文件系统结构<br>size:243k</td>
 <td style=\"background-color:#e08080\" width=85%>[0x340000,kern_mem)<br>待分配任务内核堆栈<br>size:781k</td></tr><tr>";
 echo "</tr></table><br>";
+echo "<center><font size=5 color=blue>[4M,kern_mem)之间的内存分配</font></center><br><center>kern_mem的定义：内存<=16M kern_mem=4M；内存<=64M kern_mem=8M； 内存<=256M kern_mem=16M； 内存<=512M kern_mem=32M； 内存<=1024M kern_mem=64M；else kern_mem=256M<br><br></center>";
+echo "<table border=0 width=90%><tr align=center>";
+echo "<td style=\"background-color:#e08080\" width=100%>[0x400000,kern_mem)<br>待分配任务内核堆栈 kalloc分配的内存<br>size:0~kern_mem</td></tr><tr>";
+echo "</tr></table><br>";
 
 
 
