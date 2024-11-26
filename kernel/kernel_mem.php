@@ -53,8 +53,8 @@ echo "<td style=\"background-color:#00ff00\" width=5%>[0x100000,0x1007ff]<br>2k�
 echo "<center><font size=5 color=blue>[2M,3M)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
 echo "<td style=\"background-color:#00ff00\" width=5%>[0x200000,0x2000ff]<br> _SYS_DATA<br>size:0x100</td>
 <td style=\"background-color:gray\" width=5%>[0x200100,0x20ffff]<br> GAP <br>64k-0x100</td>
-<td style=\"background-color:#00aaaa\" width=5%>[0x210000,0x21xxxx]<br>位图128k->4G依实际内存<br>xxxx=0x7ff</td>
-<td style=\"background-color:orange\" width=5%>[0x21xxxx,0x21yyyy]<br>内核页表2依据内存<br>yyyy=0xdfff</td>
+<td style=\"background-color:#00aaaa\" width=5%>[0x210000,0x210fff]<br>位图128k->4G依实际内存<br>size=0x7ff</td>
+<td style=\"background-color:orange\" width=5%>[0x211000,0x21efff]<br>内核页表2依据内存<br>size=0xdfff</td>
 <td style=\"background-color:#e5eecc\" width=80%>[0x220000,0x2fffff]<br>文件系统结构,total:1139k<br>size:896K</td></tr></table><br>";
 echo "<center><font size=5 color=blue>[3M,kern_mem)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
 echo "<td style=\"background-color:#e5eecc\" width=15%>[0x300000,0x33CC00]<br>文件系统结构<br>size:243k</td>
