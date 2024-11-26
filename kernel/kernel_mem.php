@@ -55,10 +55,13 @@ echo "<td style=\"background-color:#00ff00\" width=5%>[0x200000,0x2000ff]<br> _S
 <td style=\"background-color:gray\" width=5%>[0x200100,0x20ffff]<br> GAP <br>64k-0x100</td>
 <td style=\"background-color:#00aaaa\" width=5%>[0x210000,0x210fff]<br>位图128k->4G依实际内存<br>size=0x7ff</td>
 <td style=\"background-color:orange\" width=5%>[0x211000,0x21efff]<br>内核页表2依据内存<br>size=0xdfff</td>
-<td style=\"background-color:#e5eecc\" width=80%>[0x220000,0x2fffff]<br>文件系统结构,total:1139k<br>size:896K</td></tr></table><br>";
-echo "<center><font size=5 color=blue>[3M,kern_mem)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
-echo "<td style=\"background-color:#e5eecc\" width=15%>[0x300000,0x33CC00]<br>文件系统结构<br>size:243k</td>
-<td style=\"background-color:#e08080\" width=85%>[0x340000,kern_mem)<br>待分配任务内核堆栈<br>size:781k</td></tr><tr>";
+<td style=\"background-color:red\" width=5%>[0x21f000,0x25Afff]<br>vm页目录表<br>依据任务数量<br>size=60*4K</td>
+<td style=\"background-color:orange\" width=5%>[0x25b000,0x269fff]<br>vmst结构表<br>依据任务数量<br>size=60*1K</td>
+
+<td style=\"background-color:#e5eecc\" width=70%>[0x26a000,0x2fffff)<br>文件系统结构,total:1139k<br>size:596K</td></tr></table><br>";
+echo "<center><font size=5 color=blue>[3M,4M)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
+echo "<td style=\"background-color:#e5eecc\" width=50%>[0x300000,0x387bff]<br>文件系统结构<br>size:543k</td>
+<td style=\"background-color:#e08080\" width=55%>[0x387c00,0x3fffff)<br>待分配任务内核堆栈<br>size:481k</td></tr><tr>";
 echo "</tr></table><br>";
 echo "<center><font size=5 color=blue>[4M,kern_mem)之间的内存分配</font></center><br><center>kern_mem的定义：内存<=16M kern_mem=4M；内存<=64M kern_mem=8M； 内存<=256M kern_mem=16M； 内存<=512M kern_mem=32M； 内存<=1024M kern_mem=64M；else kern_mem=256M<br><br></center>";
 echo "<table border=0 width=90%><tr align=center>";
