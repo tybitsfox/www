@@ -40,7 +40,7 @@ echo "<td style=\"background-color:#00ff00\" width=5%>[0,0x3fff]<br>全局描述
 <td style=\"background-color:#e08080\" width=5%>[0x4800,0x4fff]<br>中断例程地址表COIDX<br>size:256*8=0x800</td>
 <td style=\"background-color:#00ff00\" width=5%>[0x5000,0x7fff]<br>内核页目录页表PDT<br>size:0x1000*3=0x3000</td>
 <td style=\"background-color:yellow\" width=80%>[0x8000,0x7ffff] DMA缓冲区 size:0x77fff=480k</td></tr><tr></table><table border=0 width=90%><tr align=center>
-<td style=\"background-color:gray\" width=10% align=center>[0xr80000,0x8ffff]内核缓冲区<br>将来可用于TSS结构存储区域<br>size:0x10000=64K</td>
+<td style=\"background-color:gray\" width=10% align=center>[0x80000,0x8ffff]内核缓冲区<br>将来可用于TSS结构存储区域<br>size:0x10000=64K</td>
 <td style=\"background-color:red\" width=10%>[0x90000,0x9efff]<br>TSS结构链表<br>size:60*1024=0xf000</td>
 <td style=\"background-color:#00aaaa\" width=5%>[0x9f000,0x9ffff]<br>8个LDT<br>512*8=0x1000</td>
 <td style=\"background-color:#00ff00\" width=75%>[0xa0000,0xfffff] DISP&BIOS 384k</td>
@@ -58,10 +58,10 @@ echo "<td style=\"background-color:#00ff00\" width=6%>[0x200000,0x2000ff]<br> _S
 <td style=\"background-color:red\" width=16%>[0x21f000,0x25Afff]<br>vm页目录表<br>依据任务数量<br>size=60*4K</td>
 <td style=\"background-color:orange\" width=25%>[0x25b000,0x2a5fff]<br>vmst结构表<br>依据任务数量<br>size=60*20*256=300K</td>
 
-<td style=\"background-color:#e5eecc\" width=35%>[0x2a6000,0x2fffff)<br>文件系统结构,total:1139k<br>size:360K</td></tr></table><br>";
+<td style=\"background-color:#e5eecc\" width=35%>[0x2a6000,0x2fffff]<br>文件系统结构,total:1139k<br>size:360K</td></tr></table><br>";
 echo "<center><font size=5 color=blue>[3M,4M)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
-echo "<td style=\"background-color:#e5eecc\" width=75%>[0x300000,0x3c2bff]<br>文件系统结构<br>size:779k</td>
-<td style=\"background-color:#e08080\" width=25%>[0x3c2c00,0x3fffff)<br>待分配任务内核堆栈<br>size:245k</td></tr><tr>";
+echo "<td style=\"background-color:#e5eecc\" width=75%>[0x300000,0x3c2bff]<br>文件系统结构<br>size:779k</td><td style=\"background-color:gray\" width=%5>[0x3c2c00,0x3d0000)<br>GAP for mbitmap<br>size:53k</td>
+<td style=\"background-color:#e08080\" width=20%>[0x3d0000,0x3fffff]<br>待分配任务内核堆栈<br>size:192k</td></tr><tr>";
 echo "</tr></table><br>";
 echo "<center><font size=5 color=blue>[4M,kern_mem)之间的内存分配</font></center><br><center>kern_mem的定义：内存<=16M kern_mem=4M；内存<=64M kern_mem=8M； 内存<=256M kern_mem=16M； 内存<=512M kern_mem=32M； 内存<=1024M kern_mem=64M；else kern_mem=256M<br><br></center>";
 echo "<table border=0 width=90%><tr align=center>";
