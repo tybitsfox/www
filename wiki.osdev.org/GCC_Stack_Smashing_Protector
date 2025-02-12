@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Stack Smashing Protector - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"58f3148f6461e938b54e79cf","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Stack_Smashing_Protector","wgTitle":"Stack Smashing Protector","wgCurRevisionId":20864,"wgRevisionId":20864,"wgArticleId":2628,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","Security"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Stack_Smashing_Protector","wgRelevantArticleId":2628,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[]
+,"wgRedirectedFrom":"GCC_Stack_Smashing_Protector","wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgInternalRedirectTargetUrl":"/Stack_Smashing_Protector","wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["mediawiki.action.view.redirect","site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+<link rel="canonical" href="Stack_Smashing_Protector"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Stack_Smashing_Protector rootpage-Stack_Smashing_Protector skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Stack Smashing Protector</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"><span class="mw-redirectedfrom">(Redirected from <a href="https://wiki.osdev.org/index.php?title=GCC_Stack_Smashing_Protector&amp;redirect=no" class="mw-redirect" title="GCC Stack Smashing Protector">GCC Stack Smashing Protector</a>)</span></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="GCC_Stack_Smashing_Protector#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="GCC_Stack_Smashing_Protector#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>The <b>Stack Smashing Protector</b> (<b>SSP</b>) compiler feature helps detect stack buffer overrun by aborting if a secret value on the stack is changed. This serves a dual purpose in making the occurrence of such bugs visible and as exploit mitigation against return-oriented programming. SSP merely detects stack buffer overruns, they are not prevented. The detection can be beaten by preparing the input such that the stack canary is overwritten with the correct value and thus does not offer perfect protection. The stack canary is native word sized and if chosen randomly, an attacker will have to guess the right value among 2^32 or 2^64 combinations (and revealing the bug if the guess is wrong), or resort to clever means of determining it.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="GCC_Stack_Smashing_Protector#Description"><span class="tocnumber">1</span> <span class="toctext">Description</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="GCC_Stack_Smashing_Protector#Usage"><span class="tocnumber">2</span> <span class="toctext">Usage</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="GCC_Stack_Smashing_Protector#Implementation"><span class="tocnumber">3</span> <span class="toctext">Implementation</span></a></li>
+<li class="toclevel-1 tocsection-4"><a href="GCC_Stack_Smashing_Protector#Secure_Handling"><span class="tocnumber">4</span> <span class="toctext">Secure Handling</span></a></li>
+<li class="toclevel-1 tocsection-5"><a href="GCC_Stack_Smashing_Protector#libssp"><span class="tocnumber">5</span> <span class="toctext">libssp</span></a></li>
+<li class="toclevel-1 tocsection-6"><a href="GCC_Stack_Smashing_Protector#See_Also"><span class="tocnumber">6</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-7"><a href="GCC_Stack_Smashing_Protector#Articles"><span class="tocnumber">6.1</span> <span class="toctext">Articles</span></a></li>
+<li class="toclevel-2 tocsection-8"><a href="GCC_Stack_Smashing_Protector#Threads"><span class="tocnumber">6.2</span> <span class="toctext">Threads</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="GCC_Stack_Smashing_Protector#External_Links"><span class="tocnumber">6.3</span> <span class="toctext">External Links</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Description">Description</span></h2>
+<p>Compilers implement this feature by selecting appropriate functions, storing the stack canary during the function prologue, checking the value in the epilogue, and invoking a failure handler if it was changed. For instance, consider the code:
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">str</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="kt">char</span><span class="w"> </span><span class="n">buffer</span><span class="p">[</span><span class="mi">16</span><span class="p">];</span><span class="w"></span>
+<span class="w">	</span><span class="n">strcpy</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">str</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>SSP automatically illustratively transforms that code into this:
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cm">/* Note how buffer overruns are undefined behavior and the compilers tend to</span>
+<span class="cm">   optimize these checks away if you wrote them yourself, this only works</span>
+<span class="cm">   robustly because the compiler did it itself. */</span><span class="w"></span>
+<span class="k">extern</span><span class="w"> </span><span class="kt">uintptr_t</span><span class="w"> </span><span class="n">__stack_chk_guard</span><span class="p">;</span><span class="w"></span>
+<span class="k">noreturn</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">__stack_chk_fail</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">str</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="kt">uintptr_t</span><span class="w"> </span><span class="n">canary</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">__stack_chk_guard</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="kt">char</span><span class="w"> </span><span class="n">buffer</span><span class="p">[</span><span class="mi">16</span><span class="p">];</span><span class="w"></span>
+<span class="w">	</span><span class="n">strcpy</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">str</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="p">(</span><span class="n">canary</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">canary</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">__stack_chk_guard</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">)</span><span class="w"></span>
+<span class="w">		</span><span class="n">__stack_chk_fail</span><span class="p">();</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>Note how the secret value is stored in a global variable (initialized at program
+load time) and is copied into the stack frame, and how it is safely erased from
+the stack as part of the check. Since stacks grow downwards on many architectures,
+the canary gets overwritten whenever input to strcpy is more than 16 characters.
+The caller return pointer exploited in return-oriented programming attacks is
+not accessed until after the value was validated, thus preventing such attacks.
+</p><p>The detection method works because it is impossible to get the correct value via
+trial and error. Since one incorrect canary value prevents further alterations,
+an attacker cannot keep trying until the correct value is found. In the example
+above, if the canary contained a zero byte, it would be impossible to guess its
+existence and position by trial and error. This forces the attacker to either
+not attack, or be detected and be unable to alter the stack any further. This
+does not mean that the buffer cannot be exploited. For example, if 16 bytes are
+written to the buffer above and it is not null-terminated, unintended behaviour
+can still take place later on during program execution.
+</p><p>Note how there is only a single protective value, not every variable is
+protected in this manner. One heuristic ordering often used, with the stack
+growing downwards, is first storing the canary, then buffers (that might
+overflow into each other) and finally all the small variables unaffected by
+overruns. This is based on the idea that it is generally less dangerous if
+arrays are modified, compared to variables that hold flags, pointers and
+function pointers, which may more seriously alter execution.
+</p><p>Some compilers randomize the order of stack variables and randomize the stack
+frame layout, which further complicates determining the right input with the
+intended malicious effect.
+</p>
+<h2><span class="mw-headline" id="Usage">Usage</span></h2>
+<p>Compilers such as <a href="GCC" title="GCC">GCC</a> enable this feature if requested through compiler
+options, or if the compiler supplier enabled it by default. It is worth
+considering enabling it by default if your operating system is security
+conscious and you provide support. It is possible to use it in your entire
+operating system (even kernel and standard library, perhaps excluding ports with
+really poor code quality). A feature enabled with a <tt>-ffoo</tt> option can be
+disabled with the <tt>-fno-foo</tt> counterpart. Several options exist that
+provide different variants of SSP:
+</p><p><b>-fstack-protector</b>: Check for stack smashing in functions with vulnerable
+objects. This includes functions with buffers larger than 8 bytes or calls to
+alloca.
+</p><p><b>-fstack-protector-strong</b>: Like <tt>-fstack-protector</tt>, but also
+includes functions with local arrays or references to local frame addresses.
+</p><p><b>-fstack-protector-all</b>: Check for stack smashing in every function.
+</p><p>Some operating systems have extended their compiler with more relevant options:
+</p><p><b>-fstack-shuffle</b>: (Found in OpenBSD) Randomize the order of stack variables
+at compile time. This helps find bugs.
+</p><p>When you activate the feature, the compiler will attempt to link in libssp and
+libssp_nonshared (if statically linked) for run-time support. This is disabled
+if you pass <tt>-nostdlib</tt> as you do when linking a kernel and you'll need to
+supply your own implementation. For user-space, you have two options:
+</p>
+<ul><li>Supply your own implementation in libc (so libc can take advantage of the feature) and install empty libssp and libssp_nonshared libraries (or change your toolchain to not use them).</li>
+<li>Use the libssp implementation that comes with GCC.</li></ul>
+<p>It should also be noted that with the optimisations enabled via <tt>-O&lt;n&gt;</tt> in GCC, the compiler may or may not "inline" a function. If a function has been inlined, then <b>stack smash protection will not work for that function.</b> To prevent this, one must use the <tt>noinline</tt> attribute like so:
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">__attribute__</span><span class="w"> </span><span class="p">((</span><span class="n">noinline</span><span class="p">))</span><span class="w"> </span><span class="n">foo</span><span class="p">(</span><span class="w"> </span><span class="cm">/* args */</span><span class="w"> </span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="c1">// Code goes here</span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>Disabling inlining in GCC can be done with the <tt>-fno-inline</tt> compile flag, however, that will not inline functions with the <tt>inline</tt> attribute. The <tt>-fno-inline-functions</tt> will not inline functions optimised with <tt>-O&lt;n&gt;</tt>; but that has been proven ineffective for GCC versions 3.4.5 and over (<a rel="nofollow" class="external text" href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=28120">see bug report</a>).
+</p><p>If any tests do not work when trying to trip the protective mechanism, this may be the reason why it does not work!
+</p>
+<h2><span class="mw-headline" id="Implementation">Implementation</span></h2>
+<p>Run-time support needs only two components: A global variable and a check
+failure handler. For instance, a minimal implementation could be:
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdint.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span><span class="cp"></span>
+
+<span class="cp">#if UINT32_MAX == UINTPTR_MAX</span>
+<span class="cp">#define STACK_CHK_GUARD 0xe2dee396</span>
+<span class="cp">#else</span>
+<span class="cp">#define STACK_CHK_GUARD 0x595e9fbd94fda766</span>
+<span class="cp">#endif</span>
+
+<span class="kt">uintptr_t</span><span class="w"> </span><span class="n">__stack_chk_guard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">STACK_CHK_GUARD</span><span class="p">;</span><span class="w"></span>
+
+<span class="n">__attribute__</span><span class="p">((</span><span class="k">noreturn</span><span class="p">))</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="n">__stack_chk_fail</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="cp">#if __STDC_HOSTED__</span>
+<span class="w">	</span><span class="n">abort</span><span class="p">();</span><span class="w"></span>
+<span class="cp">#elif __is_myos_kernel</span>
+<span class="w">	</span><span class="n">panic</span><span class="p">(</span><span class="s">&quot;Stack smashing detected&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="cp">#endif</span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>Note how the secret guard value is hard-coded rather than being decided during
+program load. You should have the program loader (the bootloader in the case of
+the kernel) randomize the values. You can do this by putting the guard value in
+a special segment that the loader knows to randomize. The numbers shown here are
+not special, they are just examples of randomly generated numbers. You can still
+take advantage of the bug-discovering properties of SSP even if the guard value
+is not cryptographically secure (unless you anticipate sufficiently obscure bugs
+that intelligently circumvent SSP).
+</p><p>Alternatively, you could have an early phase in your code that initializes the
+guard value, perhaps written in assembly or in C but built without stack smash
+protection. This approach adds code complexity and early phases where language
+features are not online. You may take such approaches with thread-local storage,
+errno, paging, GDT, scheduling, and so on, and suddenly a bootstrap is very
+complex with many dependencies between language features. Once a function built
+with stack-smashing protection is run, the guard value cannot be changed or a
+spurious failure will occur.
+</p>
+<h2><span class="mw-headline" id="Secure_Handling">Secure Handling</span></h2>
+<p>Beware how you implement the stack smash detection handler: This code is only
+run in cases where the bug was triggered innocently, or where the bug is being
+exploited maliciously. By now the attacker is assumed to have at least
+corrupted an unknown amount of this thread's stack. This means the environment
+is hostile. The stack is currently under your control and none of the new local
+variables are affected. Note however that the stack smash protection may have
+occurred from a signal handler or another inopportune time where another thread
+holds locks to critical standard library state or such. Beware how if pointers
+to caller stack variables are currently inside the standard library, and using
+standard library functions accesses that memory, the attacker may control the
+stack smash detection handler even.
+</p><p>Assuming a handler invocation implies an intelligent exploit is happening, the
+best course of action is is:
+</p>
+<ul><li>Eliminate attacker influence.</li>
+<li>Alert user or system administrator of a potential breach.</li>
+<li>Diagnose the details of the buffer overrun so the defect can be fixed.</li></ul>
+<p>You should assume the worst if you wish to eliminate the attacker influence. The
+used exploit may well be combined with other exploited vulnerabilities, and a
+sufficiently skilled attacker may even influence and exploit the actions of the
+handler. There are many creative ways an attacker could influence the handler or
+even take advantage of it:
+</p>
+<ul><li>Pointers to earlier stack variables (now to be considered potentially corrupted) could be stored somewhere and accessed by the functions you use.</li>
+<li>The handler could be run at a very inopportune time where the process is fragile, perhaps from a signal handler, perhaps the current thread owns non-recursive locks you could deadlock.</li>
+<li>Printing a stack trace (if at all possible) and other diagnostic information to the stderr file descriptor (which might not even exist in this process, but instead fd 2 is used for another purpose) might result in the output being sent to the attacker. This is imaginable for a webserver, which perhaps includes the stderr contents in an error response. The attacker could learn things this way he isn't supposed to.</li>
+<li>The thread might be multi-threaded and who knows how that might interact with a thread that is malfunctioning and compromised. It could have pointers to variables on the stack of the compromised thread, and SSP won't help if it accesses those.</li></ul>
+<p>Your approach should be to discard the process as soon as possible. Use only
+async-signal-safe functions, preferably without state that could influence them.
+Don't write to any standard streams but open the terminal anew or write to the
+system log. Ensure none of these operations fail (for instance, if the process
+is in a chroot or out of file descriptors).
+</p><p>The ideal approach is perhaps to have a special system call that does these
+tasks and invoke it unconditionally and immediately. Kernel code must not trust
+user-space code or be unsafely influenced by it, so it can be considered
+safe. It can then stop all threads in the process, investigate where the issue
+seemed to occur in the process, and alert the user or system administrator
+appropriately.
+</p>
+<h2><span class="mw-headline" id="libssp">libssp</span></h2>
+<p>Alternatively to your own implementation, you can use the implementation that comes with GCC. This means you have to build libssp as part of your toolchain.
+</p><p><b>TODO</b>: I have never built it for osdev purposes before, but I guess that you do <tt>make all-target-libssp</tt> and <tt>make install-target-libssp</tt> like with libstdc++. It's probable that depends on libc for no good reason at all (as the gcc developers put fortify source functions in it and it wants to check whether they work).
+</p><p>The libssp approach is to have an initialization function marked as attribute constructor, which is run among the global constructors during process startup. This means SSP isn't properly online during the early parts of process initialization (but perhaps that's not a problem if all those C stack frames are gone before that point and the default null guard value was used until now). The startup code then proceeds to attempt opening <tt>/dev/urandom</tt> which might fail if you are in a chroot, are out of file descriptors, or your system doesn't have such a file (perhaps by design). If it fails, it falls back on a reasonable but known value. You can read the <a rel="nofollow" class="external text" href="https://gcc.gnu.org/viewcvs/gcc/trunk/libssp/ssp.c?view=markup#l67">libssp initialization code here</a>.
+</p><p>The libssp <tt>__stack_chk_fail</tt> implementation tries to open the terminal, construct an error message with alloca, then use write to output it. If the terminal isn't accessible, it tries the system log. It then attempts to destroy the process by invoking <tt>__builtin_trap()</tt>, writing a 0 to the int at -1 (which is also undefined behavior and an unaligned pointer, in addition to probably crashing), and finally attempting to <tt>_exit().</tt> This exiting strategy doesn't feel super robust. You can read the <a rel="nofollow" class="external text" href="https://gcc.gnu.org/viewcvs/gcc/trunk/libssp/ssp.c?view=markup#l96">libssp handler code here</a>.
+</p><p>Read the secure handling section above and read the code, then decide whether you want this linked into your programs, or whether it is cleaner to make your own implementation. You can also modify this code as part of your <a href="OS_Specific_Toolchain" title="OS Specific Toolchain">OS Specific Toolchain</a>.
+</p>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="Articles">Articles</span></h3>
+<ul><li><a href="Undefined_Behavior_Sanitization" title="Undefined Behavior Sanitization">Undefined Behavior Sanitization</a></li></ul>
+<h3><span class="mw-headline" id="Threads">Threads</span></h3>
+<ul><li><a href="http://forum.osdev.org/viewtopic.php?t=28571" class="extiw" title="topic:28571">GCC stack protector - false positive?</a></li></ul>
+<h3><span class="mw-headline" id="External_Links">External Links</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html">GCC optimization options documentation</a> in which <tt>-fstack-protector</tt> is detailed</li>
+<li><a rel="nofollow" class="external text" href="http://www.trl.ibm.com/projects/security/ssp/">GCC extension for protecting applications from stack-smashing attacks</a></li>
+<li><a href="https://wikipedia.org/wiki/Buffer_overflow_protection" class="extiw" title="wikipedia:Buffer overflow protection">Buffer overflow protection</a> on Wikipedia</li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211144205
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.030 seconds
+Real time usage: 0.550 seconds
+Preprocessor visited node count: 51/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 6113/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:2628-0!canonical and timestamp 20250211144204 and revision id 20864.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Stack_Smashing_Protector&amp;oldid=20864">https://wiki.osdev.org/index.php?title=Stack_Smashing_Protector&amp;oldid=20864</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:Security" title="Category:Security">Security</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Stack+Smashing+Protector" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="GCC_Stack_Smashing_Protector#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Stack_Smashing_Protector" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="mw-list-item"><a href="./Talk:Stack_Smashing_Protector" rel="discussion" title="Discussion about the content page [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Stack_Smashing_Protector"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Stack_Smashing_Protector&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Stack_Smashing_Protector&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Stack_Smashing_Protector" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Stack_Smashing_Protector" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Stack_Smashing_Protector&amp;oldid=20864" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Stack_Smashing_Protector&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 5 June 2017, at 19:46.</li>
+	<li id="footer-info-0">This page has been accessed 10,025 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Stack_Smashing_Protector&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.030","walltime":"0.550","ppvisitednodes":{"value":51,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":6113,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250211144205","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":655});});</script>
+</body>
+</html>

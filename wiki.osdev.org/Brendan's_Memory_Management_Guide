@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Brendan's Memory Management Guide - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"ef94dd61969b11171f49243f","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Brendan's_Memory_Management_Guide","wgTitle":"Brendan's Memory Management Guide","wgCurRevisionId":23066,"wgRevisionId":23066,"wgArticleId":3809,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Memory management"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Brendan's_Memory_Management_Guide","wgRelevantArticleId":3809,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],
+"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Brendan_s_Memory_Management_Guide rootpage-Brendan_s_Memory_Management_Guide skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Brendan's Memory Management Guide</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Brendan's_Memory_Management_Guide#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Brendan's_Memory_Management_Guide#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Brendan's_Memory_Management_Guide#Overview"><span class="tocnumber">1</span> <span class="toctext">Overview</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="Brendan's_Memory_Management_Guide#&quot;Heap&quot;_(Dynamic_Memory_Management)"><span class="tocnumber">2</span> <span class="toctext">"Heap" (Dynamic Memory Management)</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="Brendan's_Memory_Management_Guide#Virtual_Memory_Management"><span class="tocnumber">3</span> <span class="toctext">Virtual Memory Management</span></a></li>
+<li class="toclevel-1 tocsection-4"><a href="Brendan's_Memory_Management_Guide#Physical_Memory_Management"><span class="tocnumber">4</span> <span class="toctext">Physical Memory Management</span></a></li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Overview">Overview</span></h2>
+<p>Memory management is something that all OS developers need to deal with sooner or later. It is a very broad topic; and has a tendency to appear very easy at first, but grow into something far more complicated than originally anticipated. This leads to a likelihood of people making design decisions that seem perfectly fine (and work well) initially while the OS is small, where these design decisions become significant problems later on.
+</p><p>In the hope of reducing the chance of design decisions become significant problems later on, "memory management" should be split into 3 separate concepts:
+</p>
+<ul><li>"Heap" (Dynamic Memory Management)</li>
+<li>Virtual Memory Management</li>
+<li>Physical Memory Management</li></ul>
+<p>Please note that this is only a guide, intended to help beginners become aware of various issues and become prepared to handle the complexity that is (eventually) involved. It is not intended to be something that must be followed to the letter, nor is it intended to cover all the possible ways that memory management might be done.
+</p>
+<h2><span id=".22Heap.22_.28Dynamic_Memory_Management.29"></span><span class="mw-headline" id="&quot;Heap&quot;_(Dynamic_Memory_Management)">"Heap" (Dynamic Memory Management)</span></h2>
+<p>This is the highest level layer, and the layer that normal software uses.
+</p><p>In general different processes typically use memory managers designed for whichever language the process is written in (including simple "malloc/free" used by C programs, garbage collection systems in Java, etc). For this reason "heap" typically has nothing to do with the OS itself and is part of a language's run-time. However; in special cases (e.g. where maximum performance/efficiency is needed) a process may bypass the language's generic memory management and implement its own memory management that's custom designed for that application's data structures and usage patterns.
+</p><p>Also; processes tend to allocate and free memory very frequently; and it's a bad idea to call the kernel's API every time an allocation or deallocation is made. For this reason processes allocate a larger amount of virtual memory (from the kernel's virtual memory manager) and then carve it up into smaller pieces as needed.
+</p><p>Essentially; the purpose is to allow processes to use whatever method they like for managing their memory themselves; while avoiding the overhead of excessive use of the kernel's API.
+</p><p>A kernel might also have something for generic dynamic memory management (e.g. "kmalloc()" and "kfree()" that mimics the "malloc/free" that would've been in the C standard library); but might have custom designed allocators for managing specific data structures, or multiple different memory managers for different purposes. However, this is not very different to the memory management done by a process, and the kernel's "heap" would still just allocate larger areas using the virtual memory manager and then carve it up.
+</p><p>Things that tend to complicate this memory manager include:
+</p>
+<ul><li>satisfying the caller's alignment requirements</li>
+<li>multiple "pools" (e.g. one pool per thread or per CPU, or different pools for different types of data) to improve cache locality/scalability/efficiency</li>
+<li>attributes that effect how memory is allocated (e.g. "allocate fast without caring about fragmentation because it will be freed soon anyway" vs. "take extra time to minimize fragmentation because this is memory will be in use for a long time")</li>
+<li>higher level interface to things like memory mapped files and "memory attributes"</li>
+<li>additional information for debugging and detecting common programmer errors (e.g. freeing the same memory twice)</li></ul>
+<h2><span class="mw-headline" id="Virtual_Memory_Management">Virtual Memory Management</span></h2>
+<p>The purpose of virtual memory management is to manage virtual address spaces; including creating and destroying virtual address spaces and mapping/unmapping "things" into them.
+</p><p>Initially a virtual memory manager can be extremely simple - e.g. when the "heap" for the process (or kernel) asks to make an area of its virtual address space become "usable RAM" the virtual memory manager could just find any pieces of the requested area that aren't already "usable RAM" and allocate physical memory (using the physical memory manager) and map it into the virtual address space; and when the "heap" for the process (or kernel) asks to make an area "not usable RAM" the virtual memory manager could just find any pieces that aren't already "not usable RAM", unmap it, and deallocate it (using the physical memory manager).
+</p><p>However; the virtual memory manager is responsible for a number of "tricks" intended to reduce RAM consumption, improve performance, or provide additional functionality. These tricks may include:
+</p>
+<ul><li>pretending an area is "usable RAM" when no RAM is allocated initially, and RAM is only allocated if/when the area is actually used (to avoid wasting RAM when the area is allocated by "heap" but not used)</li>
+<li>pretending a file has been loaded from disk into an area, when the file initially wasn't (to improve performance, reduce file IO, and avoid wasting RAM for parts of the file that aren't accessed)</li>
+<li>pretending there's more virtual memory than there is physical memory by transfering data to/from swap space (and discarding pages from memory mapped files where the data can be obtained from the file if needed again) while trying to ensure the most likely to be needed data is in memory (to improve the amount of memory software can use)</li>
+<li>tricks to improve the efficiency of communication between processes (e.g. shared memory areas, moving entire page tables from one virtual address space to another, etc)</li></ul>
+<p>Please note that these "tricks" aren't necessarily just for processes alone; and the kernel itself may benefit from them. For example, I use the "pretend area is usable RAM when no RAM is allocated initially" trick a lot in my kernels.
+</p><p>The virtual memory manager is also responsible for maintaining security (ensuring software can't access things it shouldn't be allowed to access, ensuring data that one process freed can't be accessed next time it's allocated, etc).
+</p><p>Things that tend to complicate the virtual memory manager (in addition to the tricks and security issues) include:
+</p>
+<ul><li>performance and scalability (e.g. lockless/blockless and "O(1)" algorithms)</li>
+<li>lazy TLB invalidation schemes (to reduce overhead on multi-CPU systems)</li>
+<li>support for multiple page sizes</li>
+<li>page/cache coloring and NUMA optimizations (to reduce cache miss costs)</li>
+<li>"compressed data in RAM" as first level swap space (so you can have 5 GiB of data in RAM when there's only 4 GiB of RAM)</li>
+<li>pre-fetching things from disk (memory mapped files and swap space) when RAM becomes free and disks aren't doing much (to reduce overhead later if/when the data is needed)</li>
+<li>tracking statistics (how much memory each process thinks it's using, how much each process is actually using, how many pages fetched from disk per second, etc). This can include how often each page of data is used (used to estimate "most likely to be needed" and decide which page/s to send to swap space)</li>
+<li>notifying other software when RAM is running out (so that things like file system caches, web browser HTML caches, etc. can free their caches) to avoid or reduce the use of swap space</li>
+<li>support for memory mapped IO areas (e.g. mapping video display memory into a virtual address space so a video driver can access it)</li>
+<li>supporting various cachability types (write-through, write-combining, etc) for both normal processes and device drivers (including using PAT to make up for a lack of MTRRs for memory mapped devices)</li>
+<li>higher level interface for special restrictions device drivers may have (e.g. needing buffers of "physically contiguous" memory and/or memory below a certain address)</li></ul>
+<p>There is one "beginner mistake" that is common enough to be worth mentioning specifically. The mistake is mapping the physical address space "as is" into kernel space. This prevents the kernel from benefiting from all of the tricks and optimisations that the virtual memory manager does. It can also waste memory for the additional page tables, etc. needed to map things that have no reason to be mapped into kernel space to begin with; and also typically results in "poor locality" (as the data the kernel does need to access is spread throughout data the kernel doesn't need to access). It also creates a massive security risk - any bug in the kernel (or CPU - e.g. Meltdown) may allow an attacker to access everything in RAM (and not just things that actually needed to be mapped in kernel space). Finally it fails when the physical address space is larger than kernel space and results in ugly work-arounds for those cases. Unfortunately, once upon a time a beginner (who didn't know any better at the time) made this mistake, and their kernel grew until it was too late to fix the problem because too many other pieces of their kernel depended on it, and their "still broken" kernel became a well known open source kernel that people look at to understand memory management.
+</p>
+<h2><span class="mw-headline" id="Physical_Memory_Management">Physical Memory Management</span></h2>
+<p>The physical memory manager is all about managing the physical address space (in the same way that virtual memory management is for managing virtual address spaces). Part of this is managing free physical RAM; and part of it is managing things that aren't RAM at all (e.g. memory mapped PCI device areas, MTRRs, etc).
+</p><p>By far the most frequent case (and the part that has to be optimized the most) is allocating and freeing individual physical pages of RAM where it makes no difference what the physical address is. I strongly recommend implementing an allocator specifically for this use case, that's built on the concept of fast/"O(1)" free page stack/s.
+</p><p>However, the physical memory manager also has to support special requests (typically from device drivers and nothing else) for physical memory that has specific requirements. These requests for physically contiguous areas, areas that are below a certain physical address, etc. The worst case is for buffers that will be used by legacy/ISA DMA controllers, where the buffer has to be below 0x01000000, must be physically contiguous and must not cross a 64 KiB boundary. Satisfying these requests requires a slower allocator. For this reason it's a good idea to split "usable physical RAM" into 2 or more zones, where some RAM (e.g. RAM below 0x01000000) uses one allocator designed to be able to handle the much less common special requests, and other zones use an allocator designed for much more frequent "allocate/free one page" use case.
+</p><p>Note that these allocators have no need to access the data within free pages, and only allocates/frees them. There is no reason for free pages of RAM to be mapped into any virtual address space.
+</p><p>For managing things that aren't RAM, you need a map of the physical address space that says which areas are used for what. For example, when you're trying to initialize a new PCI device (to configure its "BARs") you want to search for an area that isn't ROM, isn't used by another device and isn't RAM. This information includes "cacheability attributes" and is used to configure (and manage) the CPU's MTRRs. The physical address space map should also contain information for RAM - e.g. is it volatile or non-volatile, is it hot-pluggable, etc.
+</p><p>Things that tend to complicate the physical memory manager (beyond what was mentioned above) include:
+</p>
+<ul><li>performance and scalability (e.g. lockless/blockless and "O(1)" algorithms)</li>
+<li>support for multiple page sizes</li>
+<li>page/cache coloring and NUMA optimizations (to reduce cache miss costs)</li>
+<li>tracking statistics (how much RAM in each "zone" is used/free)</li>
+<li>fault tolerance (e.g. faulty RAM detection and avoidance)</li>
+<li>power management (e.g. keep all frequently accessed data in some RAM chips, so other RAM chips can spend most of their time in lower power states)</li>
+<li>hot-plug RAM (removal and insertion)</li>
+<li>support for virtual memory ballooning (a technique virtual machines/hypervisors use to reclaim memory guests aren't using)</li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211123600
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.006 seconds
+Real time usage: 0.007 seconds
+Preprocessor visited node count: 13/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 0/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:3809-0!canonical and timestamp 20250211123600 and revision id 23066.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Brendan%27s_Memory_Management_Guide&amp;oldid=23066">https://wiki.osdev.org/index.php?title=Brendan%27s_Memory_Management_Guide&amp;oldid=23066</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Category</a>: <ul><li><a href="./Category:Memory_management" title="Category:Memory management">Memory management</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Brendan%27s+Memory+Management+Guide" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Brendan's_Memory_Management_Guide#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Brendan's_Memory_Management_Guide" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:Brendan%27s_Memory_Management_Guide&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Brendan's_Memory_Management_Guide"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Brendan%27s_Memory_Management_Guide&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Brendan%27s_Memory_Management_Guide&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Brendan's_Memory_Management_Guide" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Brendan%27s_Memory_Management_Guide" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Brendan%27s_Memory_Management_Guide&amp;oldid=23066" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Brendan%27s_Memory_Management_Guide&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 31 October 2018, at 19:39.</li>
+	<li id="footer-info-0">This page has been accessed 3,440 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Brendan%27s_Memory_Management_Guide&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.006","walltime":"0.007","ppvisitednodes":{"value":13,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":0,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250211123600","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":114});});</script>
+</body>
+</html>

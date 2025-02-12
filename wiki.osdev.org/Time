@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Time And Date - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"e63e4dcbf0c6712f11f17f13","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Time_And_Date","wgTitle":"Time And Date","wgCurRevisionId":25774,"wgRevisionId":25774,"wgArticleId":1903,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Time"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Time_And_Date","wgRelevantArticleId":1903,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgRedirectedFrom":"Time","wgMFDisplayWikibaseDescriptions":{"search":
+false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgInternalRedirectTargetUrl":"/Time_And_Date","wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["mediawiki.action.view.redirect","site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+<link rel="canonical" href="Time_And_Date"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Time_And_Date rootpage-Time_And_Date skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Time And Date</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"><span class="mw-redirectedfrom">(Redirected from <a href="https://wiki.osdev.org/index.php?title=Time&amp;redirect=no" class="mw-redirect" title="Time">Time</a>)</span></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Time#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Time#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>Users, the filesystem, the scheduler, system applications, and some user applications will all need to know the date and/or time to various accuracies.
+Some applications will need to be started, sent signals, or sent messages when the clock strikes a certain time.
+To provide these services, the OS needs to obtain the current time during boot and maintain this time.
+</p><p>There are three important subdivisions of "time" in a system: human time, filesystem time, and scheduler timeslice "ticks". Human
+time can be measured in seconds (or even days, for longer times), where "ticks" must always be .01 seconds or smaller.
+An important design decision is whether to keep these time formats separate, or whether to merge them together.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Time#Maintaining_The_Time_Internally"><span class="tocnumber">1</span> <span class="toctext">Maintaining The Time Internally</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="Time#Obtaining_The_Initial_Time_And_Date"><span class="tocnumber">2</span> <span class="toctext">Obtaining The Initial Time And Date</span></a>
+<ul>
+<li class="toclevel-2 tocsection-3"><a href="Time#Battery-Backed_Clock"><span class="tocnumber">2.1</span> <span class="toctext">Battery-Backed Clock</span></a></li>
+<li class="toclevel-2 tocsection-4"><a href="Time#Network_Time"><span class="tocnumber">2.2</span> <span class="toctext">Network Time</span></a>
+<ul>
+<li class="toclevel-3 tocsection-5"><a href="Time#Internet"><span class="tocnumber">2.2.1</span> <span class="toctext">Internet</span></a></li>
+</ul>
+</li>
+<li class="toclevel-2 tocsection-6"><a href="Time#LAN"><span class="tocnumber">2.3</span> <span class="toctext">LAN</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-7"><a href="Time#Internal_OS_Time_Formats"><span class="tocnumber">3</span> <span class="toctext">Internal OS Time Formats</span></a>
+<ul>
+<li class="toclevel-2 tocsection-8"><a href="Time#Human_Timescales"><span class="tocnumber">3.1</span> <span class="toctext">Human Timescales</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="Time#Filesystem_Timestamps"><span class="tocnumber">3.2</span> <span class="toctext">Filesystem Timestamps</span></a></li>
+<li class="toclevel-2 tocsection-10"><a href="Time#Scheduler_Timeslices"><span class="tocnumber">3.3</span> <span class="toctext">Scheduler Timeslices</span></a></li>
+<li class="toclevel-2 tocsection-11"><a href="Time#Historical_Dates"><span class="tocnumber">3.4</span> <span class="toctext">Historical Dates</span></a></li>
+<li class="toclevel-2 tocsection-12"><a href="Time#Example_Time_Formats"><span class="tocnumber">3.5</span> <span class="toctext">Example Time Formats</span></a></li>
+<li class="toclevel-2 tocsection-13"><a href="Time#&quot;Scientific&quot;_Format"><span class="tocnumber">3.6</span> <span class="toctext">"Scientific" Format</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-14"><a href="Time#Which_Time?"><span class="tocnumber">4</span> <span class="toctext">Which Time?</span></a></li>
+<li class="toclevel-1 tocsection-15"><a href="Time#Complexities"><span class="tocnumber">5</span> <span class="toctext">Complexities</span></a></li>
+<li class="toclevel-1 tocsection-16"><a href="Time#See_Also"><span class="tocnumber">6</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-17"><a href="Time#Articles"><span class="tocnumber">6.1</span> <span class="toctext">Articles</span></a></li>
+<li class="toclevel-2 tocsection-18"><a href="Time#Threads"><span class="tocnumber">6.2</span> <span class="toctext">Threads</span></a></li>
+<li class="toclevel-2 tocsection-19"><a href="Time#External_Links"><span class="tocnumber">6.3</span> <span class="toctext">External Links</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Maintaining_The_Time_Internally">Maintaining The Time Internally</span></h2>
+<p>During operation, a typical OS will use a local hardware timer to drive its own internal time keeping code -- often called the "system clock".
+On an x86 system, there are two to four timers available: the <a href="PIT" class="mw-redirect" title="PIT">PIT</a>, the <a href="RTC" title="RTC">RTC</a>, the <a href="TSC" title="TSC">TSC</a>, or the local <a href="APIC" title="APIC">APIC</a> (older systems may not have a TSC
+or an APIC). These timers may produce an interrupt (or may even be polled) at regular intervals to inform the OS of the passage of time.
+Using at least one of these timers is probably necessary to control and generate scheduler timeslice ticks.
+It takes very little additional code in the driver to also use that timer to update the system clock. The OS may only need to
+know how often the chosen timer ticks during one second, and keep a counter -- or the system clock may be designed to tick at
+the same speed as the chosen timer.
+</p><p>However, some of these timers are only accurate to within a handful of seconds a day, so it may be desirable to benchmark the system
+clock to a reference, periodically, even while the system is running.
+</p><p>It is also possible not to use a timer to update the system clock at all, and only use an "accurate" external reference when the system tries to
+access the system clock. Depending on the reference used, this method may only be accurate to 1 second, it may be slow, it may be needed often
+(for file system accesses, especially), and the format used often isn't what the OS wants.
+</p>
+<h2><span class="mw-headline" id="Obtaining_The_Initial_Time_And_Date">Obtaining The Initial Time And Date</span></h2>
+<p>When the computer is turned off, obviously system software cannot keep an internal clock updated using a timer. So when the computer is rebooted,
+the OS needs to use some other method for obtaining an initial time and date. There are really only two automated methods. If those methods fail,
+the only fallback method that exists is to ask a user to enter the date/time.
+</p>
+<h3><span class="mw-headline" id="Battery-Backed_Clock">Battery-Backed Clock</span></h3>
+<p>For x86 PCs, there's a special "Real Time Clock" (RTC), which is "combined" with the system's <a href="CMOS" title="CMOS">CMOS</a>. It has its own battery
+so that it keeps running when the computer is turned off and the contents of its memory are not lost. See the <a href="CMOS" title="CMOS">CMOS</a> article for
+information on reading the time and date from the RTC.
+</p><p>Almost any other system besides x86 will also have some kind of battery-backed Date/Time clock.
+</p><p>The downside to this is that the battery will always eventually die, and may not get replaced. It is a good idea to check the results
+of reading any battery-backed clock for "sane" values.
+</p>
+<h3><span class="mw-headline" id="Network_Time">Network Time</span></h3>
+<p>Getting some kind of network time is a superior method for achieving accuracy and consistency across machines. The downside is that the end-user's computer may not be (currently) connected to a network, or the server may go down.
+</p>
+<h4><span class="mw-headline" id="Internet">Internet</span></h4>
+<p><a rel="nofollow" class="external text" href="http://ntp.org/">NTP</a> is a good protocol with a very large <a rel="nofollow" class="external text" href="https://www.ntppool.org/en/">pool</a> of free servers which may be automatically selected by DNS. It uses UDP on port 123. (<a rel="nofollow" class="external text" href="https://en.wikipedia.org/wiki/Network_Time_Protocol">Wikipedia article</a>)
+</p><p>The <a rel="nofollow" class="external text" href="https://en.wikipedia.org/wiki/Time_Protocol">TIME protocol</a> is extremely simple: attach a TCP socket to port 37 on a <a rel="nofollow" class="external text" href="http://tf.nist.gov/tf-cgi/servers.cgi">NIST server</a>, read a 32bit bigendian value (seconds since midnight, Jan 1, 1900, UTC), and close the socket. This has caveats: it's not as accurate as NTP; the value will roll over in 2036; and as stated on the server page, using the complete machinery of TCP to retrieve only 32 bits is not kind to the server's bandwidth. The Unix rdate command uses the TIME protocol.
+</p>
+<h3><span class="mw-headline" id="LAN">LAN</span></h3>
+<p>The official NTP <a rel="nofollow" class="external text" href="http://ntp.org/downloads.html">software</a> can easily be configured to serve NTP on a LAN (or indeed the Internet).
+</p><p>It's very easy to write a TIME server, (it's as easy as a server can be,) and using TCP to retrieve 32 bits often doesn't matter on a LAN.
+</p><p>It's just as easy to write your own protocol for LAN use. You can make resolution and range better than NIST, but it may be hard to equal NTP's accuracy. There is at least one professional precedent: Diskless Plan 9 computers get the time from their file server.
+</p>
+<h2><span class="mw-headline" id="Internal_OS_Time_Formats">Internal OS Time Formats</span></h2>
+<p>Choosing a good time format, and writing the code to support this format can be more complex than it seems at first. As said above, the humans,
+the filesystem, and the scheduler all have somewhat different needs when it comes to time. They operate on different timescales. You can create
+a separate format for each, or, it can make more sense for the OS to maintain a single universal time format with higher accuracy.
+All possible choices have downsides, either in complexity or in wasted computer resources. It is important to note that <b>there is no standard yet</b>,
+and there may be no best choice to make.
+</p>
+<h3><span class="mw-headline" id="Human_Timescales">Human Timescales</span></h3>
+<p>In the short term, humans are comfortable dealing with seconds. A time format that is specified to times shorter than seconds is partially wasted
+on humans. In fact, presenting users with <i>too much</i> accuracy can confuse them and decrease their productivity.
+</p><p>On the other hand, once a file (for example) is more than a year old, a user will no longer care about what second it was created. So in the longer
+term, users are going to be much more interested in a time specified in days.
+</p><p>This may argue for a system time that is kept in seconds -- or perhaps a more flexible format that is initially in seconds and then switches to something
+like <a href="Julian_Day_Number" title="Julian Day Number">Julian Day Number</a> for longer periods of time. Or for a system that is specified with shorter intervals than seconds, but that only displays
+a limited amount of the actual time information available.
+</p>
+<h3><span class="mw-headline" id="Filesystem_Timestamps">Filesystem Timestamps</span></h3>
+<p>Almost every filesystem uses a predefined time format. Once again, there is no standard. If your OS only supports one filesystem, it may be smart
+to match your OS time format to the one that the filesystem uses, so that you never need to do conversions. Many filesystems use time formats that
+are specified in seconds, which can cause "less than perfect" results for utilities such as "make" -- if the utility is badly designed. When you
+design an OS, you will need to make a decision about whether to coddle the bad design decisions of other people, to help make their software work.
+</p>
+<h3><span class="mw-headline" id="Scheduler_Timeslices">Scheduler Timeslices</span></h3>
+<p>On a multitasking OS, the length of time that each thread is allowed to run is often based on a little piece of time called a "timeslice".
+This is an <b>extremely</b> important function of an OS, so it is quite important to have some kind of counter available that measures time
+on this timescale. One major obstacle to having a universal time format for your OS is if your timeslices are variable-length, because this
+may make it very difficult to establish the minimum length of time that your universal time format needs to represent.
+</p>
+<h3><span class="mw-headline" id="Historical_Dates">Historical Dates</span></h3>
+<p>Keep in mind that Accounting packages, Databases, and other programs may need to store dates from the past century, such as birthdates. If you
+try hard to imagine such a thing, it's even possible to imagine wanting to store actual historical dates from many centuries ago. So, once again,
+you may need to make a less-than-optimal choice for your time format, in order to support this feature.
+</p>
+<h3><span class="mw-headline" id="Example_Time_Formats">Example Time Formats</span></h3>
+<p>The *NIX time format keeps track of 32bit seconds since the start of year 1970. This value becomes obsolete around the year 2100, and cannot store
+some historical dates.
+</p><p>The Windows time format uses a 64-bit unsigned value of the number of 100-nanosecond (100 x 10<sup>-9</sup> second) intervals since January 1, 1601.
+This value becomes obsolete in about 50 thousand years. Why 1601? It can be considered the start of a 400-year cycle of leap years, which makes conversion
+into a date simpler. It is also very close to the actual beginning of the use of the Gregorian Calendar (the one most people use).
+The slight drawback is that you need 8 bytes of storage, everywhere you want to store a date. Which is a lot of places. Which you could use for
+storing things such as file version numbers, instead.
+</p><p>BCOS uses something very similar, except using signed milliseconds from Y2K, rather than unsigned 100 nanosecond intervals from 1601.
+</p>
+<h3><span id=".22Scientific.22_Format"></span><span class="mw-headline" id="&quot;Scientific&quot;_Format">"Scientific" Format</span></h3>
+<p>There is in fact a measurement of time that is used in Astronomy, called <a href="Julian_Day_Number" title="Julian Day Number">Julian Day Number</a>. For reasons regarding historical calendar systems,
+it starts measuring time from noon, UTC, January 1, 4713 BC, and it measures time in days with a floating point value. At the very least, you can
+consider it to be a standard, in an area that is very lacking in standards. Because it is a standard, there is code available for converting
+JDN's to calendar dates. In any case, once you have divided out the seconds and fractions of seconds from any time format, you are left with "days".
+Which means that the difference between your number and the Julian Day Number is merely an offset. Of course, it is possible to truncate JDNs, and
+use them as integers. See the <a href="Julian_Day_Number" title="Julian Day Number">Julian Day Number</a> article for some date calculation code examples.
+</p><p><br />
+</p>
+<h2><span id="Which_Time.3F"></span><span class="mw-headline" id="Which_Time?">Which Time?</span></h2>
+<p>Once you've determined what format to use for keeping track of time, it's important to decide <b>which</b> time you'll keep track of. In general there are
+three different times: the user's "wall clock" time, local standard time and UTC ("Universal Co-ordinated Time").
+</p><p>At any instant, UTC is the same everywhere around the world. Local standard time depends on which time zone you're in (for example, my local standard time
+is always UTC + 9.5 hours). "Wall clock time" is the same as local standard time unless daylight savings is in effect (for example, my wall clock time is
+UTC + 9.5 hours except during summer where it becomes UTC + 10.5 hours).
+</p><p>OSes that were created before the internet existed were built assuming that the user would set the computer's battery-backed clock to wall-clock time,
+so that the computer could easily function as a clock for the computer's owner. The OS assumed that it may need to take responsibility for adjusting
+the computer's actual battery-backed clock for Daylight Savings Time. Old versions of Windows do this.
+This can cause problems when the computer dual-boots two OSes that both expect to adjust the battery-backed clock for daylight savings time
+(so that it's accidentally changed by 2 hours instead of one). See <a rel="nofollow" class="external free" href="http://www.cl.cam.ac.uk/~mgk25/mswish/ut-rtc.html">http://www.cl.cam.ac.uk/~mgk25/mswish/ut-rtc.html</a> for a
+detailed discussion of this problem.
+</p><p>With distributed computing, however, comes the need to synchonize multiple computer clocks. The obvious way to do that is to use UTC for setting the clocks
+on all systems. The OS has the responsibility of converting UTC to wall clock time (including all the complexity of Daylight Savings) before displaying
+the time to the user. This is what Linux does. If you have a system that dual-boots both types of OSes, and both of them try to read the battery-backed
+clock, then obviously you will have an unfixable conflict between them.
+</p><p>Some solutions:
+</p>
+<ul><li>do not use the battery-backed clock</li>
+<li>make using the battery-backed clock optional</li>
+<li>allow the superuser to set a flag for using the battery-backed clock either way</li></ul>
+<p>The <b>stupid</b> thing to do is to force the clock to be only one way or the other. As an indication of how unworkable this is, even Windows can use the clock either way. <a rel="nofollow" class="external text" href="https://www.howtogeek.com/323390/how-to-fix-windows-and-linux-showing-different-times-when-dual-booting/">(But, of course, it doesn't support its non-default very well.)</a>
+</p>
+<h2><span class="mw-headline" id="Complexities">Complexities</span></h2>
+<p>Regardless of what you do you will eventually need to convert the time format that your OS uses into other time formats. Unfortunately time itself is not a simple thing, and conversion between time formats can be quite complex (especially if done accurately). Also there are some problems maintaining the OSs time that don't involve conversions. The things you may need to watch out for include:
+</p>
+<dl><dt>Time Zones</dt>
+<dd>This is mostly for converting between local standard time and UTC. Most OSs have a database so that each time zone can be given a name or location (for example, "Adelaide, South Australia" rather than "UTC +9.5 hours"). A map of timezones and their locations can be found here: <a rel="nofollow" class="external autonumber" href="https://upload.wikimedia.org/wikipedia/commons/e/e7/Timezones2008.png">[1]</a> (1.23MB)</dd>
+<dt>Daylight Savings</dt>
+<dd>This is a nightmare. Some countries have different time zone rules for each state, some countries have different time zone rules for each local area within a state (the USA is particularly messed up). Worse still is that some areas decide what they are going to do each year so that it's impossible to work it out in advance, and for most areas the daylight savings rules are subject to the whims of politicians. For some OSs daylight savings information is also kept within the same database as time zone information, so that a user can tell the OS where they are and the OS can figure out the appropriate time zone and daylight savings rules from this. Daylight savings can be especially problematic for dates in the past.</dd>
+<dt>Leap Years</dt>
+<dd>As you all know, a year isn't exactly 365 days. The Gregorian leap year rules are that if a year is a multiple of 4 then it's a leap year, unless it happens to be a new century and it can't be divided by 400. For example, the years 2004, 1996 and 1968 are leap years, the years 1700, 1800, and 1900 are not leap years, but years 2000, 1600 and 2400 are. This keeps the date in synchronization with the seasons.</dd>
+<dt>Leap Seconds</dt>
+<dd>Due to standards bodies, atomic clocks, and gravitational influences, a day is not exactly 86400 seconds long (and on average each day is slightly longer than the last). To account for this an extra leap second is added (roughly one second each 5 years). A list of when leap seconds have been added can be found at <a rel="nofollow" class="external free" href="http://tf.nist.gov/pubs/bulletin/leapsecond.htm">http://tf.nist.gov/pubs/bulletin/leapsecond.htm</a>. This is beyond the timekeeping accuracy of any computer clock, but may be an issue if you want to create very accurate answers when subtracting one time from another in your format.</dd>
+<dt>Calendars</dt>
+<dd>Most of the world uses the Gregorian calendar, but some people don't and some use other calendars in conjunction with the Gregorian calendar. If you intend to make your OS international, or if you convert your time format into Gregorian dates before 1920 then you may want to research other calendars and (for past dates) the history of calendars. An excellent starting point for this can be found at <a rel="nofollow" class="external autonumber" href="http://www.tondering.dk/claus/calendar.html">[2]</a>.</dd>
+<dt>Fixing Drift</dt>
+<dd>Any timer in a system may run slow or fast, and that may be detectable -- either by the user or the OS. It may be desirable to add or subtract a small extra amount of time on each timer tick.</dd>
+<dt>Accuracy</dt>
+<dd>Unfortunately, the electronics in PCs isn't as accurate as it could be, and over time (regardless of everything else) the computer's time will become inaccurate. Some OSs ignore this problem and allow the user to change or adjust the time whenever they like. This causes problems with some utilities (if you've ever got a "modification time in the future" error message from 'make' you'll know why). For other OSs (often the OSs that are designed for servers that are never turned off) there's a way of adjusting the time in a more subtle way, with many tiny changes rather than a larger sudden change. An example of this is the 'adjtimex' utility on *nix systems. However, enforcing such subtle changes may make life difficult for users if the internal clock is far wrong. I (eekee) once had a situation where the system clock was off by 8 years, and ntpd was patched to ignore its option to allow sudden changes. ntpd made tiny changes effectively accelerating the time to about 3 times normal speed, so the computer's clock wouldn't have been correct for over 2.5 years! If an OS doesn't set its idea of the time from an authoritative external source on boot, (and sometimes you can't because there's no network,) then it must either query the user on boot, or allow the user to adjust the time whenever they like. And some users will get very annoyed with having to manually enter the time every boot.</dd></dl>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="Articles">Articles</span></h3>
+<ul><li><a href="Timer_Interrupt_Sources" title="Timer Interrupt Sources">Timer Interrupt Sources</a></li>
+<li><a href="Programmable_Interval_Timer" title="Programmable Interval Timer">Programmable Interval Timer</a></li>
+<li><a href="CMOS" title="CMOS">CMOS</a></li>
+<li><a href="RTC" title="RTC">RTC</a></li>
+<li><a href="APIC" title="APIC">APIC</a></li>
+<li><a href="Julian_Day_Number" title="Julian Day Number">Julian Day Number</a></li></ul>
+<h3><span class="mw-headline" id="Threads">Threads</span></h3>
+<ul><li><a href="http://forum.osdev.org/viewtopic.php?t=11485" class="extiw" title="topic:11485">Time: How do you store time in your OS?</a></li></ul>
+<h3><span class="mw-headline" id="External_Links">External Links</span></h3>
+<!-- 
+NewPP limit report
+Cached time: 20250211125159
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.012 seconds
+Real time usage: 0.013 seconds
+Preprocessor visited node count: 73/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 0/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:1903-0!canonical and timestamp 20250211125159 and revision id 25774.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Time_And_Date&amp;oldid=25774">https://wiki.osdev.org/index.php?title=Time_And_Date&amp;oldid=25774</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Category</a>: <ul><li><a href="./Category:Time" title="Category:Time">Time</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Time+And+Date" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Time#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Time_And_Date" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="mw-list-item"><a href="./Talk:Time_And_Date" rel="discussion" title="Discussion about the content page [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Time_And_Date"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Time_And_Date&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Time_And_Date&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Time_And_Date" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="./Special:RecentChangesLinked/Time_And_Date" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Time_And_Date&amp;oldid=25774" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Time_And_Date&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 28 March 2021, at 08:37.</li>
+	<li id="footer-info-0">This page has been accessed 4,439 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Time_And_Date&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.012","walltime":"0.013","ppvisitednodes":{"value":73,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":0,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250211125159","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":122});});</script>
+</body>
+</html>

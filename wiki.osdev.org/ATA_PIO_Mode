@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>ATA PIO Mode - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"d446b01252de86311eb3a549","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"ATA_PIO_Mode","wgTitle":"ATA PIO Mode","wgCurRevisionId":27609,"wgRevisionId":27609,"wgArticleId":2239,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","ATA"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"ATA_PIO_Mode","wgRelevantArticleId":2239,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{
+"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-ATA_PIO_Mode rootpage-ATA_PIO_Mode skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">ATA PIO Mode</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="ATA_PIO_Mode#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="ATA_PIO_Mode#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>According to the ATA specs, PIO mode must always be supported by all ATA-compliant drives as the default data transfer mechanism.
+</p><p>PIO mode uses a tremendous amount of CPU resources because every byte of data transferred between the disk and the CPU must be sent through the CPU's <a href="Inline_Assembly/Examples#I\O_access" title="Inline Assembly/Examples">IO port bus</a> (not the memory). On some CPUs, PIO mode can still achieve actual transfer speeds of 16MB per sec, but no other processes on the machine will get any CPU time.
+</p><p>However, when a computer is just beginning to boot, there are no other processes. So PIO mode is an excellent and simple interface to utilize during bootup until the system goes into multitasking mode.
+</p><p>Please note that this article deals with what are now styled PATA hard disks, as opposed to SATA hard disks.
+</p><p><br />
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="ATA_PIO_Mode#Hardware"><span class="tocnumber">1</span> <span class="toctext">Hardware</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="ATA_PIO_Mode#Master/Slave_Drives"><span class="tocnumber">2</span> <span class="toctext">Master/Slave Drives</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="ATA_PIO_Mode#Primary/Secondary_Bus"><span class="tocnumber">3</span> <span class="toctext">Primary/Secondary Bus</span></a></li>
+<li class="toclevel-1 tocsection-4"><a href="ATA_PIO_Mode#400ns_delays"><span class="tocnumber">4</span> <span class="toctext">400ns delays</span></a></li>
+<li class="toclevel-1 tocsection-5"><a href="ATA_PIO_Mode#Cache_Flush"><span class="tocnumber">5</span> <span class="toctext">Cache Flush</span></a></li>
+<li class="toclevel-1 tocsection-6"><a href="ATA_PIO_Mode#Bad_Sectors"><span class="tocnumber">6</span> <span class="toctext">Bad Sectors</span></a></li>
+<li class="toclevel-1 tocsection-7"><a href="ATA_PIO_Mode#Detection_and_Initialization"><span class="tocnumber">7</span> <span class="toctext">Detection and Initialization</span></a>
+<ul>
+<li class="toclevel-2 tocsection-8"><a href="ATA_PIO_Mode#Floating_Bus"><span class="tocnumber">7.1</span> <span class="toctext">Floating Bus</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="ATA_PIO_Mode#Detecting_Controller_IO_Ports"><span class="tocnumber">7.2</span> <span class="toctext">Detecting Controller IO Ports</span></a></li>
+<li class="toclevel-2 tocsection-10"><a href="ATA_PIO_Mode#Standard_and_Non-standard_Detection"><span class="tocnumber">7.3</span> <span class="toctext">Standard and Non-standard Detection</span></a></li>
+<li class="toclevel-2 tocsection-11"><a href="ATA_PIO_Mode#IDENTIFY_command"><span class="tocnumber">7.4</span> <span class="toctext">IDENTIFY command</span></a>
+<ul>
+<li class="toclevel-3 tocsection-12"><a href="ATA_PIO_Mode#&quot;Command_Aborted&quot;"><span class="tocnumber">7.4.1</span> <span class="toctext">"Command Aborted"</span></a></li>
+<li class="toclevel-3 tocsection-13"><a href="ATA_PIO_Mode#Interesting_information_returned_by_IDENTIFY"><span class="tocnumber">7.4.2</span> <span class="toctext">Interesting information returned by IDENTIFY</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-14"><a href="ATA_PIO_Mode#Addressing_Modes"><span class="tocnumber">8</span> <span class="toctext">Addressing Modes</span></a>
+<ul>
+<li class="toclevel-2 tocsection-15"><a href="ATA_PIO_Mode#Absolute/Relative_LBA"><span class="tocnumber">8.1</span> <span class="toctext">Absolute/Relative LBA</span></a></li>
+<li class="toclevel-2 tocsection-16"><a href="ATA_PIO_Mode#Registers"><span class="tocnumber">8.2</span> <span class="toctext">Registers</span></a>
+<ul>
+<li class="toclevel-3 tocsection-17"><a href="ATA_PIO_Mode#Error_Register"><span class="tocnumber">8.2.1</span> <span class="toctext">Error Register</span></a></li>
+<li class="toclevel-3 tocsection-18"><a href="ATA_PIO_Mode#Drive_/_Head_Register_(I/O_base_+_6)"><span class="tocnumber">8.2.2</span> <span class="toctext">Drive / Head Register (I/O base + 6)</span></a></li>
+<li class="toclevel-3 tocsection-19"><a href="ATA_PIO_Mode#Status_Register_(I/O_base_+_7)"><span class="tocnumber">8.2.3</span> <span class="toctext">Status Register (I/O base + 7)</span></a></li>
+<li class="toclevel-3 tocsection-20"><a href="ATA_PIO_Mode#Alternate_Status_Register_(Control_base_+_0)"><span class="tocnumber">8.2.4</span> <span class="toctext">Alternate Status Register (Control base + 0)</span></a></li>
+<li class="toclevel-3 tocsection-21"><a href="ATA_PIO_Mode#Device_Control_Register_(Control_base_+_0)"><span class="tocnumber">8.2.5</span> <span class="toctext">Device Control Register (Control base + 0)</span></a></li>
+<li class="toclevel-3 tocsection-22"><a href="ATA_PIO_Mode#Drive_Address_Register_(Control_base_+_1)"><span class="tocnumber">8.2.6</span> <span class="toctext">Drive Address Register (Control base + 1)</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-23"><a href="ATA_PIO_Mode#Resetting_a_drive_/_Software_Reset"><span class="tocnumber">9</span> <span class="toctext">Resetting a drive / Software Reset</span></a></li>
+<li class="toclevel-1 tocsection-24"><a href="ATA_PIO_Mode#IRQs"><span class="tocnumber">10</span> <span class="toctext">IRQs</span></a>
+<ul>
+<li class="toclevel-2 tocsection-25"><a href="ATA_PIO_Mode#Handling_an_IRQ"><span class="tocnumber">10.1</span> <span class="toctext">Handling an IRQ</span></a></li>
+<li class="toclevel-2 tocsection-26"><a href="ATA_PIO_Mode#Polling_the_Status_vs._IRQs"><span class="tocnumber">10.2</span> <span class="toctext">Polling the Status vs. IRQs</span></a></li>
+<li class="toclevel-2 tocsection-27"><a href="ATA_PIO_Mode#Preempting/Preventing_IRQs_from_firing:"><span class="tocnumber">10.3</span> <span class="toctext">Preempting/Preventing IRQs from firing:</span></a></li>
+<li class="toclevel-2 tocsection-28"><a href="ATA_PIO_Mode#Read/Write_Multiple"><span class="tocnumber">10.4</span> <span class="toctext">Read/Write Multiple</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-29"><a href="ATA_PIO_Mode#x86_Directions"><span class="tocnumber">11</span> <span class="toctext">x86 Directions</span></a>
+<ul>
+<li class="toclevel-2 tocsection-30"><a href="ATA_PIO_Mode#28_bit_PIO"><span class="tocnumber">11.1</span> <span class="toctext">28 bit PIO</span></a></li>
+<li class="toclevel-2 tocsection-31"><a href="ATA_PIO_Mode#Writing_28_bit_LBA"><span class="tocnumber">11.2</span> <span class="toctext">Writing 28 bit LBA</span></a></li>
+<li class="toclevel-2 tocsection-32"><a href="ATA_PIO_Mode#48_bit_PIO"><span class="tocnumber">11.3</span> <span class="toctext">48 bit PIO</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-33"><a href="ATA_PIO_Mode#CHS_mode"><span class="tocnumber">12</span> <span class="toctext">CHS mode</span></a></li>
+<li class="toclevel-1 tocsection-34"><a href="ATA_PIO_Mode#x86_Code_Examples"><span class="tocnumber">13</span> <span class="toctext">x86 Code Examples</span></a>
+<ul>
+<li class="toclevel-2 tocsection-35"><a href="ATA_PIO_Mode#Detecting_device_types"><span class="tocnumber">13.1</span> <span class="toctext">Detecting device types</span></a></li>
+<li class="toclevel-2 tocsection-36"><a href="ATA_PIO_Mode#ATA_Driver"><span class="tocnumber">13.2</span> <span class="toctext">ATA Driver</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-37"><a href="ATA_PIO_Mode#Comments"><span class="tocnumber">14</span> <span class="toctext">Comments</span></a></li>
+<li class="toclevel-1 tocsection-38"><a href="ATA_PIO_Mode#See_Also"><span class="tocnumber">15</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-39"><a href="ATA_PIO_Mode#Wiki_Pages"><span class="tocnumber">15.1</span> <span class="toctext">Wiki Pages</span></a></li>
+<li class="toclevel-2 tocsection-40"><a href="ATA_PIO_Mode#Threads"><span class="tocnumber">15.2</span> <span class="toctext">Threads</span></a></li>
+<li class="toclevel-2 tocsection-41"><a href="ATA_PIO_Mode#External_Links"><span class="tocnumber">15.3</span> <span class="toctext">External Links</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Hardware">Hardware</span></h2>
+<p>The ATA disk specification is built around an older specification called ST506. With ST506, each disk drive was connected to a controller board by two cables -- a data cable, and a command cable. The controller board was plugged into a motherboard bus. The CPU communicated with the controller board through the CPU's IO ports, which were directly connected to the motherboard bus.
+</p><p>What the original IDE specification did was to detach the disk controller boards from the motherboard, and stick one controller onto each disk drive, permanently. When the CPU accessed a disk IO port, there was a chip that shorted the CPU's IO bus pins directly onto the IDE cable -- so the CPU could directly access the drive's controller board. The data transfer mechanism between the CPU and the controller board remained the same, and is now called PIO mode.
+(Nowadays, the disk controller chips just copy the electrical signals between the IO port bus and the IDE cable, until the drive goes into some other mode than PIO.)
+</p><p><br />
+</p>
+<h2><span id="Master.2FSlave_Drives"></span><span class="mw-headline" id="Master/Slave_Drives">Master/Slave Drives</span></h2>
+<p>There is only one wire dedicated to selecting which drive on each bus is active. It is either electrically "high" or "low", which means that there can never be more than two devices operational on any ATA bus. They are called the master and the slave devices, for no particular reason. The terms 'master' and 'slave' have largely been abandoned as they inaccurately portray the master drive as having some kind of superiority over the slave drive, or that the latter is dependent on the master. However, these terms will be used in this document. The functionality of the master and slave drives is almost completely identical. There is a special IO port bit that allows a driver to select either drive as the target drive for each command byte.
+</p>
+<h2><span id="Primary.2FSecondary_Bus"></span><span class="mw-headline" id="Primary/Secondary_Bus">Primary/Secondary Bus</span></h2>
+<p>Current disk controller chips almost always support two ATA buses per chip. There is a standardized set of IO ports to control the disks on the buses. The first two buses are called the Primary and Secondary ATA bus, and are almost always controlled by IO ports 0x1F0 through 0x1F7, and 0x170 through 0x177, respectively (unless you change it). The associated Device Control Registers/Alternate Status ports are IO ports 0x3F6, and 0x376, respectively. The standard IRQ for the Primary bus is IRQ14 and IRQ15 for the Secondary bus.
+</p><p>If the next two buses exist, they are normally controlled by IO ports 0x1E8 through 0x1EF, and 0x168 through 0x16F, respectively. The associated Device Control Registers/Alternate Status ports are IO ports 0x3E6, and 0x366.
+</p><p>The actual control registers and IRQs for each bus can often be determined by enumerating the PCI bus, finding all the disk controllers, and reading the information from each controller's PCI Configuration Space. So, technically, PCI enumeration should be done before ATA device detection. However, this method is not exactly reliable.
+</p><p>When the system boots, according to the specs, the PCI disk controller is supposed to be in "Legacy/Compatibility" mode. This means it is supposed to use the standardized IO port settings. You may have no real choice but to rely on that fact.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="400ns_delays">400ns delays</span></h2>
+<p>The method suggested in the ATA specs for sending ATA commands tells you to check the BSY and DRQ bits before trying to send a command. This means that you need to read a Status Register (Alternate Status is a good choice) <i>for the proper drive</i> before sending the next command. Which means that you need to select the correct device <i>first</i>, before you can read that status (and then send all the other values to the other IO ports).
+Which means that a drive select may always happen <i>just before</i> a status read. This is bad. Many drives require a little time to respond to a "select", and push their status onto the bus. The suggestion is to read the Status register <b>FIFTEEN TIMES</b>, and only pay attention to the value returned by the last one -- after selecting a new master or slave device. The point being that you can assume an IO port read takes at least 30ns, so doing the first fourteen creates a 420ns delay -- which allows the drive time to push the correct voltages onto the bus.
+</p><p>Reading IO ports to create delays wastes a lot of CPU cycles. So, it is actually smarter to have your driver remember the last value sent to each Drive Select IO port, to avoid doing unneeded drive selections, if the value did not change. If you do not send a drive select, then you only have to read the Status Register <b>once</b>.
+</p><p>Alternately, you never want to send new commands to a drive that is already servicing a previous command, anyway. Your driver <b>always</b> needs to block if the current device is actively modifying BSY/DRQ/ERR, and your device driver always already knows that the device is in that condition (because the driver just sent the command to the device, and it hasn't been marked "complete" yet). Once a drive has actually completed a command, it will always clear BSY and DRQ. You can simply verify this, <i>before</i> your next Device Select command -- that the previously selected device cleared BSY and DRQ properly at command completion. Then you will never have to check if they are clear <b>after</b> a Device Select -- so you will not have to read the Status Register after the Device Select at all.
+</p><p>There is a similar problem after writing the Command Register, with the ERR/DF bits. They are two slightly different kinds of errors that can terminate a command. BSY and DRQ will be cleared, but ERR or DF remain set <i>until just after you write a new command to the Command Register</i>. If you are using polling (see below), you should account for the fact that your first four reads of the Status Register, after sending your command byte, may have the ERR or DF bits still set accidentally. (If you are using IRQs, the Status will always be correct by the time the IRQ is serviced.)
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Cache_Flush">Cache Flush</span></h2>
+<p>On some drives it is necessary to "manually" flush the hardware write cache after every write command. This is done by sending the 0xE7 command to the Command Register (then waiting for BSY to clear). If a driver does not do this, then subsequent write commands can fail invisibly, or "temporary bad sectors" can be created on your disk.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Bad_Sectors">Bad Sectors</span></h2>
+<p>For practical purposes, there are three different types of bad sectors on an ATA disk.
+</p>
+<ul><li>Sectors that can't be written (permanent)</li>
+<li>Sectors that can't be read (permanent)</li>
+<li>Sectors that can't be read (temporary)</li></ul>
+<p>Some disk manufacturers have a feature that allows a small supply of "spare" sectors on the disk to be remapped onto permanent bad sectors. However, that feature is non-standard and completely manufacturer-specific. In general, an OS/filesystem will need to keep a "bad sector list" for each partition of each drive, and work around the bad sectors.
+</p><p>As said above, there are also "temporary bad sectors". When you read them you will get a hardware error, just like for a permanently bad sector. If you write to that sector, however, the write will work perfectly and the sector will turn back into a good sector. Temporary bad sectors can happen as a result of unflushed write caches, power spikes, or power failures.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Detection_and_Initialization">Detection and Initialization</span></h2>
+<h3><span class="mw-headline" id="Floating_Bus">Floating Bus</span></h3>
+<p>The disk that was selected last (by the BIOS, during boot) is supposed to maintain control of the electrical values on each IDE bus. If there is no disk connected to the bus at all, then the electrical values on the bus will all go "high" (to +5 volts). A computer will read this as an 0xFF byte -- this is a condition called a "floating" bus. This is an excellent way to find out if there are no drives on a bus. <b>Before sending any data to the IO ports,</b> read the Regular Status byte. The value 0xFF is an illegal status value, and indicates that the bus has no drives. The reason to read the port before writing anything is that the act of writing can easily cause the voltages of the wires to go screwy for a millisecond (since there may be nothing attached to the wires to control the voltages!), and mess up any attempt to measure "float".
+</p><p>Measuring "float" is a shortcut for detecting that drives do not exist. Reading a non-0xFF value is not completely definitive. The definitive test for detecting drives is the <a href="ATA_PIO_Mode#IDENTIFY_command">#IDENTIFY command</a>.
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Detecting_Controller_IO_Ports">Detecting Controller IO Ports</span></h3>
+<p>Detecting controller IO ports is probably a waste of time. During boot, the IO ports assigned to the ATA bus are supposed to be located at standardized addresses. If they are not there, your only chance of finding them is to enumerate the disk controllers on the PCI bus. Alternately, if the ports <i>are</i> at the standard addresses, then "detecting" them gains you nothing. However, you will see controller detection code around, and it is a good thing to be able to recognize it, and know what it is for. If you suspect you know the location of a set of ATA controller IO ports, and there is at least one drive attached to that bus, then you can "detect" those IO ports. ATA controller IO ports are mostly read/write ports. This means that if you write a value to (for example) the "SectorCount" IO port, then you are supposed to be able to read the same value back again, to see what it is set to. This read/write function is performed by the master drive on the bus, unless the slave drive both exists and is selected. One caveat is that if you write a value to a "non-existent" IO port, you may be able to read that value back off the bus, if you read it immediately. So, generally, the way ATA IO port detection software works is to write a byte to one suspected ATA IO port, write a different byte to a different ATA IO port, then read back and verify the two values written to the two ports. If both bytes verify, then the IO ports are read/write ports, and they can be presumed to be ATA controller IO ports. On the Primary bus, ports 0x1F2 through 0x1F5 should all be read/write.
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Standard_and_Non-standard_Detection">Standard and Non-standard Detection</span></h3>
+<p>All current BIOSes have standardized the use of the IDENTIFY command to detect the existence of all types of ATA bus devices ... PATA, PATAPI, SATAPI, SATA.
+</p><p>There are two other nonstandard techniques that are not recommended. The first is to select a device (then do a 400ns delay) then read the device's Status Register. For ATA devices that are not "sleeping", the RDY bit will always be set. This should be detectable, just so long as you have already tested for float (where <i>all</i> the bits are always set). If there is no device, then the Status value will be 0. This method does not work for detecting ATAPI devices -- their RDY bit is always <b>clear</b> (until they get their first PACKET command).
+</p><p>The other method is to use the Execute Device Diagnostics command (0x90). It supposedly sets bits in the Error Register (0x1F1 on the Primary bus) to show the existence of master and slave devices on the bus.
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="IDENTIFY_command">IDENTIFY command</span></h3>
+<p>To use the IDENTIFY command, select a target drive by sending 0xA0 for the master drive, or 0xB0 for the slave, to the "drive select" IO port. On the Primary bus, this would be port 0x1F6. Then set the Sectorcount, LBAlo, LBAmid, and LBAhi IO ports to 0 (port 0x1F2 to 0x1F5). Then send the IDENTIFY command (0xEC) to the Command IO port (0x1F7).
+Then read the Status port (0x1F7) again. If the value read is 0, the drive does not exist. For any other value: poll the Status port (0x1F7) until bit 7 (BSY, value = 0x80) clears. Because of some ATAPI drives that do not follow spec, at this point you need to check the LBAmid and LBAhi ports (0x1F4 and 0x1F5) to see if they are non-zero. If so, the drive is not ATA, and you should stop polling. Otherwise, continue polling one of the Status ports until bit 3 (DRQ, value = 8) sets, or until bit 0 (ERR, value = 1) sets.
+</p><p>At that point, if ERR is clear, the data is ready to read from the Data port (0x1F0). Read 256 16-bit values, and store them.
+</p><p><br />
+</p>
+<h4><span id=".22Command_Aborted.22"></span><span class="mw-headline" id="&quot;Command_Aborted&quot;">"Command Aborted"</span></h4>
+<p>ATAPI or SATA devices are supposed to respond to an ATA IDENTIFY command by immediately reporting an error in the Status Register, rather than setting BSY, then DRQ, then sending 256 16 bit values of PIO data. These devices will also write specific values to the IO ports, that can be read. Seeing ATAPI specific values on those ports after an IDENTIFY is definitive proof that the device is ATAPI -- on the Primary bus, IO port 0x1F4 will read as 0x14, and IO port 0x1F5 will read as 0xEB. If a normal ATA drive should ever happen to abort an IDENTIFY command, the values in those two ports will be 0. A SATA device will report 0x3c, and 0xc3 instead. See below for a code example.
+</p><p><b>However</b>, at least a few real ATAPI drives do not set the ERR flag after aborting an ATA IDENTIFY command. So do not depend completely on the ERR flag after an IDENTIFY.
+</p><p><br />
+</p>
+<h4><span class="mw-headline" id="Interesting_information_returned_by_IDENTIFY">Interesting information returned by IDENTIFY</span></h4>
+<ul><li>uint16_t 0: is useful if the device is not a hard disk.</li></ul>
+<ul><li>uint16_t 83: Bit 10 is set if the drive supports LBA48 mode.</li></ul>
+<ul><li>uint16_t 88: The bits in the low byte tell you the supported UDMA modes, the upper byte tells you which UDMA mode is active. If the active mode is         not the highest supported mode, you may want to figure out why. <i>Notes: The returned uint16_t should look like this in binary: 0000001 00000001. Each bit corresponds to a single mode. E.g. if the decimal number is 257, that means that only UDMA mode 1 is supported and running (the binary number above) if the binary number is 515, the binary looks like this, 00000010 00000011, that means that UDMA modes 1 and 2 are supported, and 2 is running.   This is true for every mode. If it does not look like that, e.g 00000001 00000011, as stated above, you may want to find out why. The formula for finding out the decimal number is 257 * 2 ^ position + 2 ^position - 1.</i></li></ul>
+<ul><li>uint16_t 93 from a master drive on the bus: Bit 11 is supposed to be set if the drive detects an 80 conductor cable. <i>Notes: if the bit is set then 80 conductor cable is present and UDMA modes &gt; 2 can be used; if bit is clear then there may or may not be an 80 conductor cable and UDMA modes &gt; 2 shouldn't be used but might work fine. Because this bit is "master device only", if there is a slave device and no master there is no way information about cable type (and would have to assume UDMA modes &gt; 2 can't be used).</i></li></ul>
+<ul><li>uint16_t 60 &amp; 61 taken as a uint32_t contain the total number of 28 bit LBA addressable sectors on the drive. (If non-zero, the drive supports LBA28.)</li></ul>
+<ul><li>uint16_t 100 through 103 taken as a uint64_t contain the total number of 48 bit addressable sectors on the drive. (Probably also proof that LBA48 is supported.)</li></ul>
+<h2><span class="mw-headline" id="Addressing_Modes">Addressing Modes</span></h2>
+<p>Currently there are three addressing modes to select particular sectors to read or write on a disk. They are 28 bit LBA, 48 bit LBA, and CHS. CHS mode is obsolete, but is discussed quickly below. The number of bits in the LBA modes refer to the number of significant bits in the sector "address", called an LBA. In 28 bit mode, LBAs from 0 to 0x0FFFFFFF are legal. This gives a total of 256M sectors, or 128GB of addressable space. So 28 bit LBA mode is also obsolete for many current drives. However, 28 bit PIO mode is faster than 48 bit addressing, so it may be a better choice for drives or partitions that do not violate the maximum LBA value limitation.
+</p><p><br />
+</p>
+<h3><span id="Absolute.2FRelative_LBA"></span><span class="mw-headline" id="Absolute/Relative_LBA">Absolute/Relative LBA</span></h3>
+<p>All the ATA commands that use LBA addressing require "absolute" LBAs (ie. the sector offset from the very beginning of the disk -- completely ignoring <a href="Partition_Table" title="Partition Table">partition</a> boundaries). At first glance, it might seem most efficient to store the LBA values in this same format in your OS. However, this is not the case. It is always necessary to validate the LBAs that are passed into your driver, as truly belonging to the partition that is being accessed. It ends up being smartest to use partition-relative LBA addressing in your code, because you then never need to test if the LBA being accessed is "off the front" of your current partition. So you only need to do half as many tests. This makes up for the fact that you need to add the absolute LBA of the beginning of the current partition to every "relative" LBA value passed to the driver. At the same time, doing this can give you access to one additional LBA address bit. (See the <a href="ATA_PIO_Mode#ATA_Driver">"33 bit LBA" driver</a> code below.)
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Registers">Registers</span></h3>
+<p>An ATA bus typically has ten I/O ports which control its behavior. For the primary bus, these I/O ports are usually 0x1F0 (the "I/O" port base) through 0x1F7 and 0x3F6 (the "Control" port base) through 0x3F7. For the secondary bus, they are usually 0x170 through 0x177 and 0x376 through 0x377. Some systems may have non-standard port locations for the ATA busses, in which case it may be helpful to consult the section on PCI to determine how to retrieve port addresses for various devices in the system.
+</p><p>The values in these tables are relative to the so-called port base; a port offset of 1 from the I/O port base actually refers to port 0x1F1 (0x1F0 + 1 = 0x1F1). This is done because the base port may vary depending on the hardware in any given system. Also, some of these I/O ports map to different registers based on whether they are being read from or written to.
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Offset from
+<p>"I/O" base
+</p>
+</th>
+<th>Direction
+</th>
+<th>Function
+</th>
+<th>Description
+</th>
+<th>Param. size LBA28/LBA48
+</th></tr>
+<tr>
+<td>0
+</td>
+<td>R/W
+</td>
+<td>Data Register
+</td>
+<td>Read/Write PIO <b>data</b> bytes
+</td>
+<td>16-bit / 16-bit
+</td></tr>
+<tr>
+<td>1
+</td>
+<td>R
+</td>
+<td>Error Register
+</td>
+<td>Used to retrieve any error generated by the last ATA command executed.
+</td>
+<td>8-bit / 16-bit
+</td></tr>
+<tr>
+<td>1
+</td>
+<td>W
+</td>
+<td>Features Register
+</td>
+<td>Used to control command specific interface features.
+</td>
+<td>8-bit / 16-bit
+</td></tr>
+<tr>
+<td>2
+</td>
+<td>R/W
+</td>
+<td>Sector Count Register
+</td>
+<td>Number of sectors to read/write (0 is a special value).
+</td>
+<td>8-bit / 16-bit
+</td></tr>
+<tr>
+<td>3
+</td>
+<td>R/W
+</td>
+<td>Sector Number Register (LBAlo)
+</td>
+<td>This is CHS / LBA28 / LBA48 specific.
+</td>
+<td>8-bit / 16-bit
+</td></tr>
+<tr>
+<td>4
+</td>
+<td>R/W
+</td>
+<td>Cylinder Low Register / (LBAmid)
+</td>
+<td>Partial Disk Sector address.
+</td>
+<td>8-bit / 16-bit
+</td></tr>
+<tr>
+<td>5
+</td>
+<td>R/W
+</td>
+<td>Cylinder High Register / (LBAhi)
+</td>
+<td>Partial Disk Sector address.
+</td>
+<td>8-bit / 16-bit
+</td></tr>
+<tr>
+<td>6
+</td>
+<td>R/W
+</td>
+<td>Drive / Head Register
+</td>
+<td>Used to select a drive and/or head. Supports extra address/flag bits.
+</td>
+<td>8-bit / 8-bit
+</td></tr>
+<tr>
+<td>7
+</td>
+<td>R
+</td>
+<td>Status Register
+</td>
+<td>Used to read the current status.
+</td>
+<td>8-bit / 8-bit
+</td></tr>
+<tr>
+<td>7
+</td>
+<td>W
+</td>
+<td>Command Register
+</td>
+<td>Used to send ATA commands to the device.
+</td>
+<td>8-bit / 8-bit
+</td></tr>
+</tbody></table>
+<p><br />
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Offset from
+<p>"Control" base
+</p>
+</th>
+<th>Direction
+</th>
+<th>Function
+</th>
+<th>Description
+</th>
+<th>Param. size LBA28/LBA48
+</th></tr>
+<tr>
+<td>0
+</td>
+<td>R
+</td>
+<td>Alternate Status Register
+</td>
+<td>A duplicate of the Status Register which does not affect interrupts.
+</td>
+<td>8-bit / 8-bit
+</td></tr>
+<tr>
+<td>0
+</td>
+<td>W
+</td>
+<td>Device Control Register
+</td>
+<td>Used to reset the bus or enable/disable interrupts.
+</td>
+<td>8-bit / 8-bit
+</td></tr>
+<tr>
+<td>1
+</td>
+<td>R
+</td>
+<td>Drive Address Register
+</td>
+<td>Provides drive select and head select information.
+</td>
+<td>8-bit / 8-bit
+</td></tr>
+</tbody></table>
+<p><br />
+</p>
+<h4><span class="mw-headline" id="Error_Register">Error Register</span></h4>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Bit
+</th>
+<th>Abbreviation
+</th>
+<th>Function
+</th></tr>
+<tr>
+<td>0
+</td>
+<td>AMNF
+</td>
+<td>Address mark not found.
+</td></tr>
+<tr>
+<td>1
+</td>
+<td>TKZNF
+</td>
+<td>Track zero not found.
+</td></tr>
+<tr>
+<td>2
+</td>
+<td>ABRT
+</td>
+<td>Aborted command.
+</td></tr>
+<tr>
+<td>3
+</td>
+<td>MCR
+</td>
+<td>Media change request.
+</td></tr>
+<tr>
+<td>4
+</td>
+<td>IDNF
+</td>
+<td>ID not found.
+</td></tr>
+<tr>
+<td>5
+</td>
+<td>MC
+</td>
+<td>Media changed.
+</td></tr>
+<tr>
+<td>6
+</td>
+<td>UNC
+</td>
+<td>Uncorrectable data error.
+</td></tr>
+<tr>
+<td>7
+</td>
+<td>BBK
+</td>
+<td>Bad Block detected.
+</td></tr></tbody></table>
+<p><br />
+</p>
+<h4><span id="Drive_.2F_Head_Register_.28I.2FO_base_.2B_6.29"></span><span class="mw-headline" id="Drive_/_Head_Register_(I/O_base_+_6)">Drive / Head Register (I/O base + 6)</span></h4>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Bit
+</th>
+<th>Abbreviation
+</th>
+<th>Function
+</th></tr>
+<tr>
+<td>0 - 3
+</td>
+<td>
+</td>
+<td>In CHS addressing, bits 0 to 3 of the head. In LBA addressing, bits 24 to 27 of the block number.
+</td></tr>
+<tr>
+<td>4
+</td>
+<td>DRV
+</td>
+<td>Selects the drive number.
+</td></tr>
+<tr>
+<td>5
+</td>
+<td>1
+</td>
+<td>Always set.
+</td></tr>
+<tr>
+<td>6
+</td>
+<td>LBA
+</td>
+<td>Uses CHS addressing if clear or LBA addressing if set.
+</td></tr>
+<tr>
+<td>7
+</td>
+<td>1
+</td>
+<td>Always set.
+</td></tr></tbody></table>
+<p><br />
+</p>
+<h4><span id="Status_Register_.28I.2FO_base_.2B_7.29"></span><span class="mw-headline" id="Status_Register_(I/O_base_+_7)">Status Register (I/O base + 7)</span></h4>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Bit
+</th>
+<th>Abbreviation
+</th>
+<th>Function
+</th></tr>
+<tr>
+<td>0
+</td>
+<td>ERR
+</td>
+<td>Indicates an error occurred. Send a new command to clear it (or nuke it with a Software Reset).
+</td></tr>
+<tr>
+<td>1
+</td>
+<td>IDX
+</td>
+<td>Index. Always set to zero.
+</td></tr>
+<tr>
+<td>2
+</td>
+<td>CORR
+</td>
+<td>Corrected data. Always set to zero.
+</td></tr>
+<tr>
+<td>3
+</td>
+<td>DRQ
+</td>
+<td>Set when the drive has PIO data to transfer, or is ready to accept PIO data.
+</td></tr>
+<tr>
+<td>4
+</td>
+<td>SRV
+</td>
+<td>Overlapped Mode Service Request.
+</td></tr>
+<tr>
+<td>5
+</td>
+<td>DF
+</td>
+<td>Drive Fault Error (<b>does not set ERR</b>).
+</td></tr>
+<tr>
+<td>6
+</td>
+<td>RDY
+</td>
+<td>Bit is clear when drive is spun down, or after an error. Set otherwise.
+</td></tr>
+<tr>
+<td>7
+</td>
+<td>BSY
+</td>
+<td>Indicates the drive is preparing to send/receive data (wait for it to clear). In case of 'hang' (it never clears), do a software reset.
+</td></tr></tbody></table>
+<p>Technically, when BSY is set, the other bits in the Status byte are meaningless. It is also generally a Bad Idea to test the "Seek Complete" (DSC) bit, because it has been deprecated and replaced by the newer SRV bit.
+</p><p><br />
+</p>
+<h4><span id="Alternate_Status_Register_.28Control_base_.2B_0.29"></span><span class="mw-headline" id="Alternate_Status_Register_(Control_base_+_0)">Alternate Status Register (Control base + 0)</span></h4>
+<p>Reading the Device Control Register port gets you the value of the Alternate Status Register, instead.
+The value of Alternate Status is always the same as the Regular Status port (0x1F7 on the Primary bus), but reading the Alternate Status port does not affect interrupts. (See Preempting IRQs, below).
+</p><p><br />
+</p>
+<h4><span id="Device_Control_Register_.28Control_base_.2B_0.29"></span><span class="mw-headline" id="Device_Control_Register_(Control_base_+_0)">Device Control Register (Control base + 0)</span></h4>
+<p>There is an additional IO port that changes the behavior of each ATA bus, called the Device Control Register (on the Primary bus, port 0x3F6). Each ATA bus has its own Control Register.
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Bit
+</th>
+<th>Abbreviation
+</th>
+<th>Function
+</th></tr>
+<tr>
+<td>0
+</td>
+<td>n/a
+</td>
+<td>Always set to zero.
+</td></tr>
+<tr>
+<td>1
+</td>
+<td>nIEN
+</td>
+<td>Set this to stop the current device from sending interrupts.
+</td></tr>
+<tr>
+<td>2
+</td>
+<td>SRST
+</td>
+<td>Set, then clear (after 5us), this to do a "Software Reset" on all ATA drives on a bus, if one is misbehaving.
+</td></tr>
+<tr>
+<td>3
+</td>
+<td>n/a
+</td>
+<td>Reserved.
+</td></tr>
+<tr>
+<td>4
+</td>
+<td>n/a
+</td>
+<td>Reserved.
+</td></tr>
+<tr>
+<td>5
+</td>
+<td>n/a
+</td>
+<td>Reserved.
+</td></tr>
+<tr>
+<td>6
+</td>
+<td>n/a
+</td>
+<td>Reserved.
+</td></tr>
+<tr>
+<td>7
+</td>
+<td>HOB
+</td>
+<td>Set this to read back the High Order Byte of the last LBA48 value sent to an IO port.
+</td></tr></tbody></table>
+<p>All other bits are reserved and should always be clear. In general, you will want to leave HOB, SRST, and nIEN cleared. Set each Device Control Register to 0 once, during boot.
+</p>
+<h4><span id="Drive_Address_Register_.28Control_base_.2B_1.29"></span><span class="mw-headline" id="Drive_Address_Register_(Control_base_+_1)">Drive Address Register (Control base + 1)</span></h4>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Bit
+</th>
+<th>Abbreviation
+</th>
+<th>Function
+</th></tr>
+<tr>
+<td>0
+</td>
+<td>DS0
+</td>
+<td>Drive 0 select. Clears when drive 0 selected.
+</td></tr>
+<tr>
+<td>1
+</td>
+<td>DS1
+</td>
+<td>Drive 1 select. Clears when drive 1 selected.
+</td></tr>
+<tr>
+<td>2 - 5
+</td>
+<td>HS0 - HS3
+</td>
+<td>One's compliment representation of the currently selected head.
+</td></tr>
+<tr>
+<td>6
+</td>
+<td>WTG
+</td>
+<td>Write gate; goes low while writing to the drive is in progress.
+</td></tr>
+<tr>
+<td>7
+</td>
+<td>n/a
+</td>
+<td>Reserved for compatibility with floppy drive controllers which may use this bit.
+</td></tr></tbody></table>
+<h2><span id="Resetting_a_drive_.2F_Software_Reset"></span><span class="mw-headline" id="Resetting_a_drive_/_Software_Reset">Resetting a drive / Software Reset</span></h2>
+<p>For non-ATAPI drives, the only method a driver has of resetting a drive after a major error is to do a "software reset" on the bus. Set bit 2 (SRST, value = 4) in the proper Control Register for the bus. This will reset <b>both</b> ATA devices on the bus. Then, you have to clear that bit again, yourself. The master drive on the bus is automatically selected. ATAPI drives set values on their LBA_LOW and LBA_HIGH IO ports, but are not supposed to reset or even terminate their current command.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="IRQs">IRQs</span></h2>
+<p>Note: When a command terminates with an error, it does <b>not</b> generate an IRQ. It is smart to check the Alternate Status Register a few times per second to see if the ERR bit has set. Otherwise, you will not know until your command times out.
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Handling_an_IRQ">Handling an IRQ</span></h3>
+<p>In the early days, the only intent of an IRQ was to inform the IRQ handler that the drive was ready to send or accept data. The expectation was that the IRQ handler itself would perform a PIO based data transfer of the next data block, immediately.
+Now things are not so simple. One or both of the drives on the bus may be in DMA mode, or have data block sizes other than 256 16-bit values.
+Also, there is more emphasis now on returning as quickly as possible out of the IRQ handler routine. So the question is: what is the minimal set of operations that an IRQ handler needs to do?
+</p><p>If you are using IRQ sharing, you will need to check the PCI Busmaster Status byte, to verify that the IRQ came from the disk.
+If it did, it is necessary to read the Regular Status Register once, to make the disk clear its interrupt flag.
+If the ERR bit in the Status Register is set (bit 0, value = 1), you may want to read and save the "error details" value from the Error IO port (0x1F1 on
+the Primary bus).
+</p><p>If the transfer was a READ DMA operation, you <i>must</i> read the value from the Busmaster Status Register. Since the IRQ handler probably doesn't know whether the operation was a DMA operation or not, you will probably end up checking the Busmaster Status byte after all IRQs (if the bus is controlled by a PCI controller at all -- which it almost certainly is).
+If that byte has its ERR bit set (bit 1, value = 2), you may want to save the current values in the disk's LBA IO ports -- they can tell you which sector on the drive generated the error. You will also need to clear the error bit, by writing a 2 to it.
+</p><p>You will also need to send EOI (0x20) to both PICs, to clear their interrupt flags. Then you need to set a flag to "unblock" the driver, and let it know that another IRQ has occurred -- so the driver can do any necessary data transfer.
+</p><p>Note: if you are still in singletasking mode, and polling the Regular Status Register in PIO mode only, then the only thing the IRQ handler needs to do is send EOI to the PICs. You may even want to set the Control Register's nIEN bit, to try to shut off disk IRQs completely.
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Polling_the_Status_vs._IRQs">Polling the Status vs. IRQs</span></h3>
+<p>When a driver issues a PIO read or write command, it needs to wait until the drive is ready before transferring data. There are two ways to know when the drive is ready for the data. The drive will send an IRQ when it is good and ready. Or, a driver can poll one of the Status ports (either the Regular or Alternate Status).
+</p><p>There are two advantages to polling, and one gigantic disadvantage.
+Advantages: Polling responds more quickly than an IRQ. The logic of polling is much simpler than waiting on an IRQ.
+</p><p>The disadvantage: In a multitasking environment, polling will eat up all your CPU time. However, in singletasking mode this is not an issue (the CPU has nothing better to do) -- so polling is a good thing, then.
+</p><p><b>How to poll</b> (waiting for the drive to be ready to transfer data):
+Read the Regular Status port until bit 7 (BSY, value = 0x80) clears, and bit 3 (DRQ, value = 8) sets -- or until bit 0 (ERR, value = 1) or bit 5 (DF, value = 0x20) sets. If neither error bit is set, the device is ready right then.
+</p><p><br />
+</p>
+<h3><span id="Preempting.2FPreventing_IRQs_from_firing:"></span><span class="mw-headline" id="Preempting/Preventing_IRQs_from_firing:">Preempting/Preventing IRQs from firing:</span></h3>
+<p>If a driver ever reads the Regular Status port after sending a command to a drive, the "response" IRQ may never happen. If you <i>want</i> to receive IRQs, then always read the Alternate Status port, instead of the Regular Status port. But sometimes IRQs are just wasteful, and it is a good idea to make them go away.
+</p><p>A much more complete way to prevent ATA IRQs from happening is to set the nIEN bit in the Control Register of a particular <i>selected drive</i>. This should prevent the drive on the bus from sending any IRQs at all, until you clear the bit again. <b>However, it may not always work!</b> Several programmers have reported problems making nIEN work.
+Drives only respond to <i>newly written values</i> of nIEN when they are the selected drive on the bus. That is, if a drive is selected, and you set nIEN, then select the other drive with the Drive Select Register, then clear nIEN -- then the first drive should "remember" forever that it was told not to send IRQs -- until you select it again, and write a 0 to the nIEN bit in the Control Register.
+</p><p><br />
+</p>
+<h3><span id="Read.2FWrite_Multiple"></span><span class="mw-headline" id="Read/Write_Multiple">Read/Write Multiple</span></h3>
+<p>One way of trying to reduce the number of IRQs in <b>multitasking</b> PIO mode is to use the READ MULTIPLE (0xC4), and WRITE MULTIPLE (0xC5) commands. These commands make the drive buffer "blocks" of sectors, and only send one IRQ per block, rather than one IRQ per sector. See uint16_t 47 and 59 of the IDENTIFY command, to determine the number of sectors in a block. You can also try to use the SET MULTIPLE MODE (0xC6) command, to change the sectors per block.
+</p><p><b>NOTE:</b> Overall, PIO mode is a slow transfer method. Under real working conditions, almost any drive should be controlled by a DMA driver, and should not be using PIO. Trying to speed up PIO mode by preempting IRQs (or any other method) is mostly a waste of time and effort. ATA drives that are 400MB or smaller may not support Multiword DMA mode 0, however. If you want to support drives that size, then perhaps a <i>little</i> effort spent on PIO mode drivers is worthwhile.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="x86_Directions">x86 Directions</span></h2>
+<h3><span class="mw-headline" id="28_bit_PIO">28 bit PIO</span></h3>
+<p>Assume you have a sectorcount byte and a 28 bit LBA value. A sectorcount of 0 means 256 sectors = 128K.
+</p><p>Notes: When you send a command byte and the RDY bit of the Status Registers is clear, you may have to wait (technically up to 30 seconds) for the drive to spin up, before DRQ sets. You may also need to ignore ERR and DF the first four times that you read the Status, if you are polling.
+</p><p>An example of a 28 bit LBA PIO mode read on the Primary bus:
+</p>
+<ol><li>Send 0xE0 for the "master" or 0xF0 for the "slave", ORed with the highest 4 bits of the LBA to port 0x1F6: outb(0x1F6, 0xE0 | (slavebit &lt;&lt; 4) | ((LBA &gt;&gt; 24) &amp; 0x0F))</li>
+<li>Send a NULL byte to port 0x1F1, if you like (it is ignored and wastes lots of CPU time): outb(0x1F1, 0x00)</li>
+<li>Send the sectorcount to port 0x1F2: outb(0x1F2, (unsigned char) count)</li>
+<li>Send the low 8 bits of the LBA to port 0x1F3: outb(0x1F3, (unsigned char) LBA))</li>
+<li>Send the next 8 bits of the LBA to port 0x1F4: outb(0x1F4, (unsigned char)(LBA &gt;&gt; 8))</li>
+<li>Send the next 8 bits of the LBA to port 0x1F5: outb(0x1F5, (unsigned char)(LBA &gt;&gt; 16))</li>
+<li>Send the "READ SECTORS" command (0x20) to port 0x1F7: outb(0x1F7, 0x20)</li>
+<li>Wait for an IRQ or poll.</li>
+<li>Transfer 256 16-bit values, a uint16_t at a time, into your buffer from I/O port 0x1F0. (In assembler, REP INSW works well for this.)</li>
+<li>Then loop back to waiting for the next IRQ (or poll again -- see next note) for <i>each successive sector</i>.</li></ol>
+<p>Note for polling PIO drivers:
+After transferring the last uint16_t of a PIO data block to the data IO port, give the drive a 400ns delay to reset its DRQ bit (and possibly set BSY again, while emptying/filling its buffer to/from the drive).
+</p><p>Note on the "magic bits" sent to port 0x1f6: Bit 6 (value = 0x40) is the LBA bit. This must be set for either LBA28 or LBA48 transfers. It must be clear for CHS transfers. Bits 7 and 5 are obsolete for <b>current</b> ATA drives, but must be set for backwards compatibility with very old (ATA1) drives.
+</p>
+<h3><span class="mw-headline" id="Writing_28_bit_LBA">Writing 28 bit LBA</span></h3>
+<p>To write sectors in 28 bit PIO mode, send command "WRITE SECTORS" (0x30) to the Command port. Do <b>not</b> use <b>REP</b> OUTSW to transfer data. There must be a tiny delay between each OUTSW output uint16_t. A jmp $+2 size of delay. Make sure to do a Cache Flush (ATA command 0xE7) after each write command completes.
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="48_bit_PIO">48 bit PIO</span></h3>
+<p>Reading sectors using 48 bit PIO is very similar to the 28 bit method:
+</p><p>(Notes: A sector count of 0 means 65536 sectors = 32MB. Try not to send bytes to the same IO port twice in a row. Doing so is <b>much</b> slower than doing two outb() commands to <b>different</b> IO ports. The important thing is that the high byte of the sector count, features and LBA bytes 4, 5, &amp; 6 go to their respective ports <b>before the low bytes</b>.)
+</p><p>Assume you have a sectorcount uint16_t and a 6 byte LBA value. Mentally number the LBA bytes as 1 to 6, from low to high.
+Send the 2 byte sector count to port 0x1F2 (high byte first), and the six LBA byte pairs to ports 0x1F3 through 0x1F5 in some appropriate order.
+</p><p>An example:
+</p>
+<ol><li>Send 0x40 for the "master" or 0x50 for the "slave" to port 0x1F6: outb(0x1F6, 0x40 | (slavebit &lt;&lt; 4))</li>
+<li>outb (0x1F2, sectorcount high byte)</li>
+<li>outb (0x1F3, LBA4)</li>
+<li>outb (0x1F4, LBA5)</li>
+<li>outb (0x1F5, LBA6)</li>
+<li>outb (0x1F2, sectorcount low byte)</li>
+<li>outb (0x1F3, LBA1)</li>
+<li>outb (0x1F4, LBA2)</li>
+<li>outb (0x1F5, LBA3)</li>
+<li>Send the "READ SECTORS EXT" command (0x24) to port 0x1F7: outb(0x1F7, 0x24)</li></ol>
+<p>Note on the "magic bits" sent to port 0x1f6: Bit 6 (value = 0x40) is the LBA bit. This must be set for either LBA28 or LBA48 transfers. It must be clear for CHS transfers. Any drive that can support LBA48 will ignore all other bits on this port for an LBA48 command. You can set them if it will make your code cleaner (to use the same magic bits as LBA28).
+</p><p>To write sectors in 48 bit PIO mode, send command "WRITE SECTORS EXT" (0x34), instead. (As before, do not use REP OUTSW when writing.) And remember to do a Cache Flush after each write command completes.
+</p><p>After the command byte is sent, transfer each sector of data in exactly the same way as for a 28 bit PIO Read/Write command.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="CHS_mode">CHS mode</span></h2>
+<p>Cylinder, Head, Sector mode is completely obsolete, but there are a few things to know about it, for legacy reasons.
+</p><p>The oldest drives had many glass "platters", and two read/write "heads" per platter. The heads are always lined up, vertically. One head of one of the platters was usually used for "timing". As all the platters rotated, each head traced out a circle, and all the heads together traced out a "cylinder." Each circle traced out by each head was subdivided into some number of "sectors." Each sector could be used for storing 512 bytes of data. Selecting the Cylinder, Head, and Sector became an addressing mode.
+</p><p>Changing the cylinder meant moving the whole head assembly, which was to be avoided if possible.
+</p><p>But the important point is that none of this information has been true for the last 20 years -- except that computers kept accessing data via artificial CHS addressing.
+</p><p>In CHS mode, every drive has a "geometry" -- the legal ranges for the CHS values. The typical maximum legal values are Cyl = 0 to 1023, Head = 0 to 15, Sector = 1 to 63.
+</p><p><b>Please note that Sector = 0 is always illegal! That is a common cause of errors.</b> (It is also possible that some hardware / drives will accept Cylinder values as high as 65537.)
+</p><p>Converting CHS addressing to LBA is straightforward: (Cylinder * TotalHeads + SelectedHead) * SectorsPerTrack + (SectorNum - 1). Sometimes programs will ask for a CHS address, and you will need to do that calculation by hand.
+</p><p>Accessing sectors in CHS mode is basically identical to doing 28 bit LBA reads and writes, except that you leave the LBA bit (value = 0x40) turned off when writing the Bit Flags port, and you send various CHS bytes instead of LBA bytes to the IO ports.
+</p><p>An example:
+</p>
+<ol><li>Send 0xA0 for the "master" or 0xB0 for the "slave", ORed with the Head Number to port 0x1F6: outb(0x1F6, 0xA0 | (slavebit &lt;&lt; 4) | Head Number)</li>
+<li>outb (0x1F2, bytecount/512 = sectorcount)</li>
+<li>outb (0x1F3, Sector Number -- the S in CHS)</li>
+<li>outb (0x1F4, Cylinder Low Byte)</li>
+<li>outb (0x1F5, Cylinder High Byte)</li>
+<li>Send the "READ SECTORS" command (0x20) to port 0x1F7: outb(0x1F7, 0x20)</li></ol>
+<p>To write, send command "WRITE SECTORS" (0x30).
+</p><p>Note on the "magic bits" sent to port 0x1f6: Bit 6 (value = 0x40) is the LBA bit. This must be clear for CHS transfers, as said above. Bits 7 and 5 are obsolete for <b>current</b> ATA drives, but must be set for backwards compatibility with very old (ATA1) drives.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="x86_Code_Examples">x86 Code Examples</span></h2>
+<h3><span class="mw-headline" id="Detecting_device_types">Detecting device types</span></h3>
+<p>(Using a Software Reset -- adapted from PypeClicker)
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cm">/* on Primary bus: ctrl-&gt;base =0x1F0, ctrl-&gt;dev_ctl =0x3F6. REG_CYL_LO=4, REG_CYL_HI=5, REG_DEVSEL=6 */</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">detect_devtype</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">slavebit</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">DEVICE</span><span class="w"> </span><span class="o">*</span><span class="n">ctrl</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">ata_soft_reset</span><span class="p">(</span><span class="n">ctrl</span><span class="o">-&gt;</span><span class="n">dev_ctl</span><span class="p">);</span><span class="w">		</span><span class="cm">/* waits until master drive is ready again */</span><span class="w"></span>
+<span class="w">	</span><span class="n">outb</span><span class="p">(</span><span class="n">ctrl</span><span class="o">-&gt;</span><span class="n">base</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">REG_DEVSEL</span><span class="p">,</span><span class="w"> </span><span class="mh">0xA0</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">slavebit</span><span class="o">&lt;&lt;</span><span class="mi">4</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="n">inb</span><span class="p">(</span><span class="n">ctrl</span><span class="o">-&gt;</span><span class="n">dev_ctl</span><span class="p">);</span><span class="w">			</span><span class="cm">/* wait 400ns for drive select to work */</span><span class="w"></span>
+<span class="w">	</span><span class="n">inb</span><span class="p">(</span><span class="n">ctrl</span><span class="o">-&gt;</span><span class="n">dev_ctl</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="n">inb</span><span class="p">(</span><span class="n">ctrl</span><span class="o">-&gt;</span><span class="n">dev_ctl</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="n">inb</span><span class="p">(</span><span class="n">ctrl</span><span class="o">-&gt;</span><span class="n">dev_ctl</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">cl</span><span class="o">=</span><span class="n">inb</span><span class="p">(</span><span class="n">ctrl</span><span class="o">-&gt;</span><span class="n">base</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">REG_CYL_LO</span><span class="p">);</span><span class="w">	</span><span class="cm">/* get the &quot;signature bytes&quot; */</span><span class="w"></span>
+<span class="w">	</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">ch</span><span class="o">=</span><span class="n">inb</span><span class="p">(</span><span class="n">ctrl</span><span class="o">-&gt;</span><span class="n">base</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">REG_CYL_HI</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">	</span><span class="cm">/* differentiate ATA, ATAPI, SATA and SATAPI */</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cl</span><span class="o">==</span><span class="mh">0x14</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">ch</span><span class="o">==</span><span class="mh">0xEB</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">ATADEV_PATAPI</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cl</span><span class="o">==</span><span class="mh">0x69</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">ch</span><span class="o">==</span><span class="mh">0x96</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">ATADEV_SATAPI</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cl</span><span class="o">==</span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">ch</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">ATADEV_PATA</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cl</span><span class="o">==</span><span class="mh">0x3c</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">ch</span><span class="o">==</span><span class="mh">0xc3</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">ATADEV_SATA</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="n">ATADEV_UNKNOWN</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p><br />
+</p>
+<h3><span class="mw-headline" id="ATA_Driver">ATA Driver</span></h3>
+<p>A complete singletasking (polling) PIO mode driver for reading a hard disk
+(Note: the following routines should all include some form of OS-specific timeout.)
+</p>
+<div class="mw-highlight mw-highlight-lang-asm mw-content-ltr" dir="ltr"><pre><span></span><span class="c1">; do a singletasking PIO ATA read</span>
+<span class="c1">; inputs: ebx = # of sectors to read, edi -&gt; dest buffer, esi -&gt; driverdata struct, ebp = 4b LBA</span>
+<span class="c1">; Note: ebp is a &quot;relative&quot; LBA -- the offset from the beginning of the partition</span>
+<span class="c1">; outputs: ebp, edi incremented past read; ebx = 0</span>
+<span class="c1">; flags: zero flag set on success, carry set on failure (redundant)</span>
+<span class="nl">read_ata_st:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">push</span><span class="w"> </span><span class="no">edx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">push</span><span class="w"> </span><span class="no">ecx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">push</span><span class="w"> </span><span class="no">eax</span><span class="w"></span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">ebx</span><span class="p">,</span><span class="w"> </span><span class="no">ebx</span><span class="w">			</span><span class="c1">; # of sectors &lt; 0 is a &quot;reset&quot; request from software</span>
+<span class="w">	</span><span class="nf">js</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.reset</span><span class="w"></span>
+<span class="w">	</span><span class="nf">cmp</span><span class="w"> </span><span class="no">ebx</span><span class="p">,</span><span class="w"> </span><span class="mi">0x3fffff</span><span class="w">		</span><span class="c1">; read will be bigger than 2GB? (error)</span>
+<span class="w">	</span><span class="nf">stc</span><span class="w"></span>
+<span class="w">	</span><span class="nf">jg</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.r_don</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">edx</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">esi</span><span class="w"> </span><span class="err">+</span><span class="w"> </span><span class="no">dd_prtlen</span><span class="p">]</span><span class="w">	</span><span class="c1">; get the total partition length (sectors)</span>
+<span class="w">	</span><span class="nf">dec</span><span class="w"> </span><span class="no">edx</span><span class="w">				</span><span class="c1">; (to avoid handling &quot;equality&quot; case)</span>
+<span class="w">	</span><span class="nf">cmp</span><span class="w"> </span><span class="no">edx</span><span class="p">,</span><span class="w"> </span><span class="no">ebp</span><span class="w">			</span><span class="c1">; verify ebp is legal (within partition limit)</span>
+<span class="w">	</span><span class="nf">jb</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.r_don</span><span class="w">			</span><span class="c1">; (carry is set automatically on an error)</span>
+<span class="w">	</span><span class="nf">cmp</span><span class="w"> </span><span class="no">edx</span><span class="p">,</span><span class="w"> </span><span class="no">ebx</span><span class="w">			</span><span class="c1">; verify ebx is legal (forget about the ebx = edx case)</span>
+<span class="w">	</span><span class="nf">jb</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.r_don</span><span class="w"></span>
+<span class="w">	</span><span class="nf">sub</span><span class="w"> </span><span class="no">edx</span><span class="p">,</span><span class="w"> </span><span class="no">ebx</span><span class="w">			</span><span class="c1">; verify ebp + ebx - 1 is legal</span>
+<span class="w">	</span><span class="nf">inc</span><span class="w"> </span><span class="no">edx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">cmp</span><span class="w"> </span><span class="no">edx</span><span class="p">,</span><span class="w"> </span><span class="no">ebp</span><span class="w">			</span><span class="c1">; (the test actually checks ebp &lt;= edx - ebx + 1)</span>
+<span class="w">	</span><span class="nf">jb</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.r_don</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">esi</span><span class="w"> </span><span class="err">+</span><span class="w"> </span><span class="no">dd_dcr</span><span class="p">]</span><span class="w">		</span><span class="c1">; dx = alt status/DCR</span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w">			</span><span class="c1">; get the current status</span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">0x88</span><span class="w">			</span><span class="c1">; check the BSY and DRQ bits -- both must be clear</span>
+<span class="w">	</span><span class="nf">je</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.stat_ok</span><span class="w"></span>
+<span class="nl">.reset:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">call</span><span class="w"> </span><span class="no">srst_ata_st</span><span class="w"></span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">ebx</span><span class="p">,</span><span class="w"> </span><span class="no">ebx</span><span class="w">			</span><span class="c1">; bypass any read on a &quot;reset&quot; request</span>
+<span class="w">	</span><span class="nf">jns</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.stat_ok</span><span class="w"></span>
+<span class="w">	</span><span class="nf">xor</span><span class="w"> </span><span class="no">ebx</span><span class="p">,</span><span class="w"> </span><span class="no">ebx</span><span class="w">			</span><span class="c1">; force zero flag on, carry clear</span>
+<span class="w">	</span><span class="nf">jmp</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.r_don</span><span class="w"></span>
+<span class="nl">.stat_ok:</span><span class="w"></span>
+<span class="c1">; preferentially use the 28bit routine, because it&#39;s a little faster</span>
+<span class="c1">; if ebp &gt; 28bit or esi.stLBA &gt; 28bit or stLBA+ebp &gt; 28bit or stLBA+ebp+ebx &gt; 28bit, use 48 bit</span>
+<span class="w">	</span><span class="nf">cmp</span><span class="w"> </span><span class="no">ebp</span><span class="p">,</span><span class="w"> </span><span class="mi">0xfffffff</span><span class="w"></span>
+<span class="w">	</span><span class="nf">jg</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.setreg</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">eax</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">esi</span><span class="w"> </span><span class="err">+</span><span class="w"> </span><span class="no">dd_stLBA</span><span class="p">]</span><span class="w"></span>
+<span class="w">	</span><span class="nf">cmp</span><span class="w"> </span><span class="no">eax</span><span class="p">,</span><span class="w"> </span><span class="mi">0xfffffff</span><span class="w"></span>
+<span class="w">	</span><span class="nf">jg</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.setreg</span><span class="w"></span>
+<span class="w">	</span><span class="nf">add</span><span class="w"> </span><span class="no">eax</span><span class="p">,</span><span class="w"> </span><span class="no">ebp</span><span class="w"></span>
+<span class="w">	</span><span class="nf">cmp</span><span class="w"> </span><span class="no">eax</span><span class="p">,</span><span class="w"> </span><span class="mi">0xfffffff</span><span class="w"></span>
+<span class="w">	</span><span class="nf">jg</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.setreg</span><span class="w"></span>
+<span class="w">	</span><span class="nf">add</span><span class="w"> </span><span class="no">eax</span><span class="p">,</span><span class="w"> </span><span class="no">ebx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">cmp</span><span class="w"> </span><span class="no">eax</span><span class="p">,</span><span class="w"> </span><span class="mi">0xfffffff</span><span class="w"></span>
+<span class="nl">.setreg:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">esi</span><span class="w"> </span><span class="err">+</span><span class="w"> </span><span class="no">dd_tf</span><span class="p">]</span><span class="w">		</span><span class="c1">; dx = IO port base (&quot;task file&quot;)</span>
+<span class="w">	</span><span class="nf">jle</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.read28</span><span class="w">		</span><span class="c1">; test the flags from the eax cmp&#39;s above</span>
+<span class="nl">.read48:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">ebx</span><span class="p">,</span><span class="w"> </span><span class="no">ebx</span><span class="w">		</span><span class="c1">; no more sectors to read?</span>
+<span class="w">	</span><span class="nf">je</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.r_don</span><span class="w"></span>
+<span class="w">	</span><span class="nf">call</span><span class="w"> </span><span class="no">pio48_read</span><span class="w">		</span><span class="c1">; read up to 256 more sectors, updating registers</span>
+<span class="w">	</span><span class="nf">je</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.read48</span><span class="w">	</span><span class="c1">; if successful, is there more to read?</span>
+<span class="w">	</span><span class="nf">jmp</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.r_don</span><span class="w"></span>
+<span class="nl">.read28:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">ebx</span><span class="p">,</span><span class="w"> </span><span class="no">ebx</span><span class="w">		</span><span class="c1">; no more sectors to read?</span>
+<span class="w">	</span><span class="nf">je</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.r_don</span><span class="w"></span>
+<span class="w">	</span><span class="nf">call</span><span class="w"> </span><span class="no">pio28_read</span><span class="w">		</span><span class="c1">; read up to 256 more sectors, updating registers</span>
+<span class="w">	</span><span class="nf">je</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.read28</span><span class="w">	</span><span class="c1">; if successful, is there more to read?</span>
+<span class="nl">.r_don:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">pop</span><span class="w"> </span><span class="no">eax</span><span class="w"></span>
+<span class="w">	</span><span class="nf">pop</span><span class="w"> </span><span class="no">ecx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">pop</span><span class="w"> </span><span class="no">edx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">ret</span><span class="w"></span>
+
+
+<span class="c1">;ATA PI0 28bit singletasking disk read function (up to 256 sectors)</span>
+<span class="c1">; inputs: ESI -&gt; driverdata info, EDI -&gt; destination buffer</span>
+<span class="c1">; BL = sectors to read, DX = base bus I/O port (0x1F0, 0x170, ...), EBP = 28bit &quot;relative&quot; LBA</span>
+<span class="c1">; BSY and DRQ ATA status bits must already be known to be clear on both slave and master</span>
+<span class="c1">; outputs: data stored in EDI; EDI and EBP advanced, EBX decremented</span>
+<span class="c1">; flags: on success Zero flag set, Carry clear</span>
+<span class="nl">pio28_read:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">add</span><span class="w"> </span><span class="no">ebp</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">esi</span><span class="w"> </span><span class="err">+</span><span class="w"> </span><span class="no">dd_stLBA</span><span class="p">]</span><span class="w">	</span><span class="c1">; convert relative LBA to absolute LBA</span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">ecx</span><span class="p">,</span><span class="w"> </span><span class="no">ebp</span><span class="w">			</span><span class="c1">; save a working copy</span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">bl</span><span class="w">		</span><span class="c1">; set al= sector count (0 means 256 sectors)</span>
+<span class="w">	</span><span class="nf">or</span><span class="w"> </span><span class="no">dl</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">		</span><span class="c1">; dx = sectorcount port -- usually port 1f2</span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">cl</span><span class="w">		</span><span class="c1">; ecx currently holds LBA</span>
+<span class="w">	</span><span class="nf">inc</span><span class="w"> </span><span class="no">edx</span><span class="w">			</span><span class="c1">; port 1f3 -- LBAlow</span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">ch</span><span class="w"></span>
+<span class="w">	</span><span class="nf">inc</span><span class="w"> </span><span class="no">edx</span><span class="w">			</span><span class="c1">; port 1f4 -- LBAmid</span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w"></span>
+<span class="w">	</span><span class="nf">bswap</span><span class="w"> </span><span class="no">ecx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">ch</span><span class="w">		</span><span class="c1">; bits 16 to 23 of LBA</span>
+<span class="w">	</span><span class="nf">inc</span><span class="w"> </span><span class="no">edx</span><span class="w">			</span><span class="c1">; port 1f5 -- LBAhigh</span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">cl</span><span class="w">			</span><span class="c1">; bits 24 to 28 of LBA</span>
+<span class="w">	</span><span class="nf">or</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">byte</span><span class="w"> </span><span class="p">[</span><span class="no">esi</span><span class="w"> </span><span class="err">+</span><span class="w"> </span><span class="no">dd_sbits</span><span class="p">]</span><span class="w">	</span><span class="c1">; master/slave flag | 0xe0</span>
+<span class="w">	</span><span class="nf">inc</span><span class="w"> </span><span class="no">edx</span><span class="w">				</span><span class="c1">; port 1f6 -- drive select</span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w"></span>
+
+<span class="w">	</span><span class="nf">inc</span><span class="w"> </span><span class="no">edx</span><span class="w">			</span><span class="c1">; port 1f7 -- command/status</span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">0x20</span><span class="w">		</span><span class="c1">; send &quot;read&quot; command to drive</span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w"></span>
+
+<span class="c1">; ignore the error bit for the first 4 status reads -- ie. implement 400ns delay on ERR only</span>
+<span class="c1">; wait for BSY clear and DRQ set</span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">ecx</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w"></span>
+<span class="nl">.lp1:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w">		</span><span class="c1">; grab a status byte</span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">0x80</span><span class="w">		</span><span class="c1">; BSY flag set?</span>
+<span class="w">	</span><span class="nf">jne</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.retry</span><span class="w"></span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="w">		</span><span class="c1">; DRQ set?</span>
+<span class="w">	</span><span class="nf">jne</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.data_rdy</span><span class="w"></span>
+<span class="nl">.retry:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">dec</span><span class="w"> </span><span class="no">ecx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">jg</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.lp1</span><span class="w"></span>
+<span class="c1">; need to wait some more -- loop until BSY clears or ERR sets (error exit if ERR sets)</span>
+
+<span class="nl">.pior_l:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w">		</span><span class="c1">; grab a status byte</span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">0x80</span><span class="w">		</span><span class="c1">; BSY flag set?</span>
+<span class="w">	</span><span class="nf">jne</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.pior_l</span><span class="w">	</span><span class="c1">; (all other flags are meaningless if BSY is set)</span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">0x21</span><span class="w">		</span><span class="c1">; ERR or DF set?</span>
+<span class="w">	</span><span class="nf">jne</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.fail</span><span class="w"></span>
+<span class="nl">.data_rdy:</span><span class="w"></span>
+<span class="c1">; if BSY and ERR are clear then DRQ must be set -- go and read the data</span>
+<span class="w">	</span><span class="nf">sub</span><span class="w"> </span><span class="no">dl</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="w">		</span><span class="c1">; read from data port (ie. 0x1f0)</span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">cx</span><span class="p">,</span><span class="w"> </span><span class="mi">256</span><span class="w"></span>
+<span class="w">	</span><span class="na">rep</span><span class="w"> </span><span class="nf">insw</span><span class="w">		</span><span class="c1">; gulp one 512b sector into edi</span>
+<span class="w">	</span><span class="nf">or</span><span class="w"> </span><span class="no">dl</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="w">		</span><span class="c1">; &quot;point&quot; dx back at the status register</span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w">		</span><span class="c1">; delay 400ns to allow drive to set new values of BSY and DRQ</span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w"></span>
+
+<span class="c1">; After each DRQ data block it is mandatory to either:</span>
+<span class="c1">; receive and ack the IRQ -- or poll the status port all over again</span>
+
+<span class="w">	</span><span class="nf">inc</span><span class="w"> </span><span class="no">ebp</span><span class="w">			</span><span class="c1">; increment the current absolute LBA</span>
+<span class="w">	</span><span class="nf">dec</span><span class="w"> </span><span class="no">ebx</span><span class="w">			</span><span class="c1">; decrement the &quot;sectors to read&quot; count</span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">bl</span><span class="p">,</span><span class="w"> </span><span class="no">bl</span><span class="w">		</span><span class="c1">; check if the low byte just turned 0 (more sectors to read?)</span>
+<span class="w">	</span><span class="nf">jne</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.pior_l</span><span class="w"></span>
+
+<span class="w">	</span><span class="nf">sub</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="w">		</span><span class="c1">; &quot;point&quot; dx back at the base IO port, so it&#39;s unchanged</span>
+<span class="w">	</span><span class="nf">sub</span><span class="w"> </span><span class="no">ebp</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">esi</span><span class="w"> </span><span class="err">+</span><span class="w"> </span><span class="no">dd_stLBA</span><span class="p">]</span><span class="w">	</span><span class="c1">; convert absolute lba back to relative</span>
+<span class="c1">; &quot;test&quot; sets the zero flag for a &quot;success&quot; return -- also clears the carry flag</span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">0x21</span><span class="w">		</span><span class="c1">; test the last status ERR bits</span>
+<span class="w">	</span><span class="nf">je</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.done</span><span class="w"></span>
+<span class="nl">.fail:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">stc</span><span class="w"></span>
+<span class="nl">.done:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">ret</span><span class="w"></span>
+
+
+<span class="c1">;ATA PI0 33bit singletasking disk read function (up to 64K sectors, using 48bit mode)</span>
+<span class="c1">; inputs: bx = sectors to read (0 means 64K sectors), edi -&gt; destination buffer</span>
+<span class="c1">; esi -&gt; driverdata info, dx = base bus I/O port (0x1F0, 0x170, ...), ebp = 32bit &quot;relative&quot; LBA</span>
+<span class="c1">; BSY and DRQ ATA status bits must already be known to be clear on both slave and master</span>
+<span class="c1">; outputs: data stored in edi; edi and ebp advanced, ebx decremented</span>
+<span class="c1">; flags: on success Zero flag set, Carry clear</span>
+<span class="nl">pio48_read:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">xor</span><span class="w"> </span><span class="no">eax</span><span class="p">,</span><span class="w"> </span><span class="no">eax</span><span class="w"></span>
+<span class="w">	</span><span class="nf">add</span><span class="w"> </span><span class="no">ebp</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">esi</span><span class="w"> </span><span class="err">+</span><span class="w"> </span><span class="no">dd_stLBA</span><span class="p">]</span><span class="w">	</span><span class="c1">; convert relative LBA to absolute LBA</span>
+<span class="c1">; special case: did the addition overflow 32 bits (carry set)?</span>
+<span class="w">	</span><span class="nf">adc</span><span class="w"> </span><span class="no">ah</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w">			</span><span class="c1">; if so, ah = LBA byte #5 = 1</span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">ecx</span><span class="p">,</span><span class="w"> </span><span class="no">ebp</span><span class="w">			</span><span class="c1">; save a working copy of 32 bit absolute LBA</span>
+
+<span class="c1">; for speed purposes, never OUT to the same port twice in a row -- avoiding it is messy but best</span>
+<span class="c1">;outb (0x1F2, sectorcount high)</span>
+<span class="c1">;outb (0x1F3, LBA4)</span>
+<span class="c1">;outb (0x1F4, LBA5)			-- value = 0 or 1 only</span>
+<span class="c1">;outb (0x1F5, LBA6)			-- value = 0 always</span>
+<span class="c1">;outb (0x1F2, sectorcount low)</span>
+<span class="c1">;outb (0x1F3, LBA1)</span>
+<span class="c1">;outb (0x1F4, LBA2)</span>
+<span class="c1">;outb (0x1F5, LBA3)</span>
+<span class="w">	</span><span class="nf">bswap</span><span class="w"> </span><span class="no">ecx</span><span class="w">		</span><span class="c1">; make LBA4 and LBA3 easy to access (cl, ch)</span>
+<span class="w">	</span><span class="nf">or</span><span class="w"> </span><span class="no">dl</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">		</span><span class="c1">; dx = sectorcount port -- usually port 1f2</span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">bh</span><span class="w">		</span><span class="c1">; sectorcount -- high byte</span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">cl</span><span class="w"></span>
+<span class="w">	</span><span class="nf">inc</span><span class="w"> </span><span class="no">edx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w">		</span><span class="c1">; LBA4 = LBAlow, high byte (1f3)</span>
+<span class="w">	</span><span class="nf">inc</span><span class="w"> </span><span class="no">edx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">ah</span><span class="w">		</span><span class="c1">; LBA5 was calculated above</span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w">		</span><span class="c1">; LBA5 = LBAmid, high byte (1f4)</span>
+<span class="w">	</span><span class="nf">inc</span><span class="w"> </span><span class="no">edx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w">		</span><span class="c1">; LBA6 is always 0 in 32 bit mode</span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w">		</span><span class="c1">; LBA6 = LBAhigh, high byte (1f5)</span>
+
+<span class="w">	</span><span class="nf">sub</span><span class="w"> </span><span class="no">dl</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">bl</span><span class="w">		</span><span class="c1">; sectorcount -- low byte (1f2)</span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">ax</span><span class="p">,</span><span class="w"> </span><span class="no">bp</span><span class="w">		</span><span class="c1">; get LBA1 and LBA2 into ax</span>
+<span class="w">	</span><span class="nf">inc</span><span class="w"> </span><span class="no">edx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w">		</span><span class="c1">; LBA1 = LBAlow, low byte (1f3)</span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">ah</span><span class="w">		</span><span class="c1">; LBA2</span>
+<span class="w">	</span><span class="nf">inc</span><span class="w"> </span><span class="no">edx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w">		</span><span class="c1">; LBA2 = LBAmid, low byte (1f4)</span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">ch</span><span class="w">		</span><span class="c1">; LBA3</span>
+<span class="w">	</span><span class="nf">inc</span><span class="w"> </span><span class="no">edx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w">		</span><span class="c1">; LBA3 = LBAhigh, low byte (1f5)</span>
+
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">byte</span><span class="w"> </span><span class="p">[</span><span class="no">esi</span><span class="w"> </span><span class="err">+</span><span class="w"> </span><span class="no">dd_sbits</span><span class="p">]</span><span class="w">	</span><span class="c1">; master/slave flag | 0xe0</span>
+<span class="w">	</span><span class="nf">inc</span><span class="w"> </span><span class="no">edx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">and</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">0x50</span><span class="w">		</span><span class="c1">; get rid of extraneous LBA28 bits in drive selector</span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w">		</span><span class="c1">; drive select (1f6)</span>
+
+<span class="w">	</span><span class="nf">inc</span><span class="w"> </span><span class="no">edx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">0x24</span><span class="w">		</span><span class="c1">; send &quot;read ext&quot; command to drive</span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w">		</span><span class="c1">; command (1f7)</span>
+
+<span class="c1">; ignore the error bit for the first 4 status reads -- ie. implement 400ns delay on ERR only</span>
+<span class="c1">; wait for BSY clear and DRQ set</span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">ecx</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w"></span>
+<span class="nl">.lp1:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w">		</span><span class="c1">; grab a status byte</span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">0x80</span><span class="w">		</span><span class="c1">; BSY flag set?</span>
+<span class="w">	</span><span class="nf">jne</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.retry</span><span class="w"></span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="w">		</span><span class="c1">; DRQ set?</span>
+<span class="w">	</span><span class="nf">jne</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.data_rdy</span><span class="w"></span>
+<span class="nl">.retry:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">dec</span><span class="w"> </span><span class="no">ecx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">jg</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.lp1</span><span class="w"></span>
+<span class="c1">; need to wait some more -- loop until BSY clears or ERR sets (error exit if ERR sets)</span>
+
+<span class="nl">.pior_l:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w">		</span><span class="c1">; grab a status byte</span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">0x80</span><span class="w">		</span><span class="c1">; BSY flag set?</span>
+<span class="w">	</span><span class="nf">jne</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.pior_l</span><span class="w">	</span><span class="c1">; (all other flags are meaningless if BSY is set)</span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">0x21</span><span class="w">		</span><span class="c1">; ERR or DF set?</span>
+<span class="w">	</span><span class="nf">jne</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.fail</span><span class="w"></span>
+<span class="nl">.data_rdy:</span><span class="w"></span>
+<span class="c1">; if BSY and ERR are clear then DRQ must be set -- go and read the data</span>
+<span class="w">	</span><span class="nf">sub</span><span class="w"> </span><span class="no">dl</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="w">		</span><span class="c1">; read from data port (ie. 0x1f0)</span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">cx</span><span class="p">,</span><span class="w"> </span><span class="mi">256</span><span class="w"></span>
+<span class="w">	</span><span class="na">rep</span><span class="w"> </span><span class="nf">insw</span><span class="w">		</span><span class="c1">; gulp one 512b sector into edi</span>
+<span class="w">	</span><span class="nf">or</span><span class="w"> </span><span class="no">dl</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="w">		</span><span class="c1">; &quot;point&quot; dx back at the status register</span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w">		</span><span class="c1">; delay 400ns to allow drive to set new values of BSY and DRQ</span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w"></span>
+
+<span class="c1">; After each DRQ data block it is mandatory to either:</span>
+<span class="c1">; receive and ack the IRQ -- or poll the status port all over again</span>
+
+<span class="w">	</span><span class="nf">inc</span><span class="w"> </span><span class="no">ebp</span><span class="w">			</span><span class="c1">; increment the current absolute LBA (overflowing is OK!)</span>
+<span class="w">	</span><span class="nf">dec</span><span class="w"> </span><span class="no">ebx</span><span class="w">			</span><span class="c1">; decrement the &quot;sectors to read&quot; count</span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">bx</span><span class="p">,</span><span class="w"> </span><span class="no">bx</span><span class="w">		</span><span class="c1">; check if &quot;sectorcount&quot; just decremented to 0</span>
+<span class="w">	</span><span class="nf">jne</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.pior_l</span><span class="w"></span>
+
+<span class="w">	</span><span class="nf">sub</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="w">		</span><span class="c1">; &quot;point&quot; dx back at the base IO port, so it&#39;s unchanged</span>
+<span class="w">	</span><span class="nf">sub</span><span class="w"> </span><span class="no">ebp</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">esi</span><span class="w"> </span><span class="err">+</span><span class="w"> </span><span class="no">dd_stLBA</span><span class="p">]</span><span class="w">	</span><span class="c1">; convert absolute lba back to relative</span>
+<span class="c1">; this sub handles the &gt;32bit overflow cases correcty, too</span>
+<span class="c1">; &quot;test&quot; sets the zero flag for a &quot;success&quot; return -- also clears the carry flag</span>
+<span class="w">	</span><span class="nf">test</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">0x21</span><span class="w">		</span><span class="c1">; test the last status ERR bits</span>
+<span class="w">	</span><span class="nf">je</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.done</span><span class="w"></span>
+<span class="nl">.fail:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">stc</span><span class="w"></span>
+<span class="nl">.done:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">ret</span><span class="w"></span>
+
+
+<span class="c1">; do a singletasking PIO ata &quot;software reset&quot; with DCR in dx</span>
+<span class="nl">srst_ata_st:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">push</span><span class="w"> </span><span class="no">eax</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w"></span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w">			</span><span class="c1">; do a &quot;software reset&quot; on the bus</span>
+<span class="w">	</span><span class="nf">xor</span><span class="w"> </span><span class="no">eax</span><span class="p">,</span><span class="w"> </span><span class="no">eax</span><span class="w"></span>
+<span class="w">	</span><span class="nf">out</span><span class="w"> </span><span class="no">dx</span><span class="p">,</span><span class="w"> </span><span class="no">al</span><span class="w">			</span><span class="c1">; reset the bus to normal operation</span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w">			</span><span class="c1">; it might take 4 tries for status bits to reset</span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w">			</span><span class="c1">; ie. do a 400ns delay</span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w"></span>
+<span class="nl">.rdylp:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">in</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">dx</span><span class="w"></span>
+<span class="w">	</span><span class="nf">and</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">0xc0</span><span class="w">			</span><span class="c1">; check BSY and RDY</span>
+<span class="w">	</span><span class="nf">cmp</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">0x40</span><span class="w">			</span><span class="c1">; want BSY clear and RDY set</span>
+<span class="w">	</span><span class="nf">jne</span><span class="w"> </span><span class="no">short</span><span class="w"> </span><span class="no">.rdylp</span><span class="w"></span>
+<span class="w">	</span><span class="nf">pop</span><span class="w"> </span><span class="no">eax</span><span class="w"></span>
+<span class="w">	</span><span class="nf">ret</span><span class="w"></span>
+</pre></div>
+<p><br />
+</p>
+<h2><span class="mw-headline" id="Comments">Comments</span></h2>
+<p>ATA Execute Drive Diagnostic command (0x90) may not work right in Bochs.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="Wiki_Pages">Wiki Pages</span></h3>
+<ul><li><a href="ATA_Command_Matrix" title="ATA Command Matrix">ATA Command Matrix</a></li>
+<li><a href="MBR_(x86)" title="MBR (x86)">Master Boot Record (x86)</a></li>
+<li><a href="Partition_Table" title="Partition Table">Partition Table (x86)</a></li>
+<li><a href="PCI_IDE_Controller" title="PCI IDE Controller">IDE Controller</a></li></ul>
+<h3><span class="mw-headline" id="Threads">Threads</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="http://www.osdev.org/phpBB2/viewtopic.php?t=12268">How to w/r harddisk in pmode? (ASM Code from Dex)</a></li>
+<li><a rel="nofollow" class="external text" href="http://www.osdev.org/phpBB2/viewtopic.php?t=15314">ATA PIO code library (ASM code from XCHG)</a></li>
+<li><a rel="nofollow" class="external text" href="https://forum.osdev.org/viewtopic.php?f=1&amp;t=33152&amp;p=285620#p285620">problem with reading and writing to hard disc (C code for reading/writing with PIO28)</a></li></ul>
+<h3><span class="mw-headline" id="External_Links">External Links</span></h3>
+<ul><li><a rel="nofollow" class="external free" href="http://www.t13.org">http://www.t13.org</a> -- T13, the group that creates the ATA standard</li>
+<li><a rel="nofollow" class="external free" href="http://www.ata-atapi.com">http://www.ata-atapi.com</a> -- Public Domain C driver sourcecode, including SATA, Busmatering DMA, ATAPI -- not perfect, but good.</li>
+<li><a rel="nofollow" class="external text" href="http://hddguru.com/content/en/documentation/">HDD Guru</a> -- The actual ATA specs from the first one that was released in 1994 to the 8th one in 2006.</li>
+<li>An example of <a rel="nofollow" class="external text" href="http://msdn.microsoft.com/en-us/library/windows/hardware/ff559006(v=vs.85).aspx">the structure of the data returned by the IDENTIFY Command</a> (in case you wanted to know what most of the fields were for).</li>
+<li><a rel="nofollow" class="external text" href="http://www.fysnet.net/media_storage_devices.htm">A book</a> written by somebody on the forum about ATA and SATA.</li>
+<li><a rel="nofollow" class="external text" href="https://github.com/omarrx024/xos/blob/master/kernel/blkdev/ata.asm">ATA PIO driver in assembly.</a></li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211131819
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.074 seconds
+Real time usage: 0.344 seconds
+Preprocessor visited node count: 164/1000000
+Post‐expand include size: 1134/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 3/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 52477/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    1.019      1 -total
+ 71.74%    0.731      7 Template:Wikitable
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:2239-0!canonical and timestamp 20250211131818 and revision id 27609.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=ATA_PIO_Mode&amp;oldid=27609">https://wiki.osdev.org/index.php?title=ATA_PIO_Mode&amp;oldid=27609</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:ATA" title="Category:ATA">ATA</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=ATA+PIO+Mode" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="ATA_PIO_Mode#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="ATA_PIO_Mode" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="mw-list-item"><a href="./Talk:ATA_PIO_Mode" rel="discussion" title="Discussion about the content page [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="ATA_PIO_Mode"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=ATA_PIO_Mode&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=ATA_PIO_Mode&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/ATA_PIO_Mode" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/ATA_PIO_Mode" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=ATA_PIO_Mode&amp;oldid=27609" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=ATA_PIO_Mode&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-lang" class="vector-menu mw-portlet mw-portlet-lang vector-menu-portal portal" aria-labelledby="p-lang-label" role="navigation"  >
+	<h3
+		id="p-lang-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">In other languages</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li class="interlanguage-link interwiki-de mw-list-item"><a href="http://www.lowlevel.eu/wiki/AT_Attachment" title="AT Attachment – Deutsch" lang="de" hreflang="de" class="interlanguage-link-target"><span>Deutsch</span></a></li></ul>
+		
+	</div>
+</nav>
+
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 31 January 2023, at 21:30.</li>
+	<li id="footer-info-0">This page has been accessed 23,703 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=ATA_PIO_Mode&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.074","walltime":"0.344","ppvisitednodes":{"value":164,"limit":1000000},"postexpandincludesize":{"value":1134,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":3,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":52477,"limit":5000000},"timingprofile":["100.00%    1.019      1 -total"," 71.74%    0.731      7 Template:Wikitable"]},"cachereport":{"timestamp":"20250211131819","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":93});});</script>
+</body>
+</html>

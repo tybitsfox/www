@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Non Maskable Interrupt - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"459543a503135a764b1cd01a","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Non_Maskable_Interrupt","wgTitle":"Non Maskable Interrupt","wgCurRevisionId":29100,"wgRevisionId":29100,"wgArticleId":1913,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","Interrupts"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Non_Maskable_Interrupt","wgRelevantArticleId":1913,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],
+"wgRedirectedFrom":"NMI","wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgInternalRedirectTargetUrl":"/Non_Maskable_Interrupt","wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["mediawiki.action.view.redirect","site","mediawiki.page.ready","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+<link rel="canonical" href="Non_Maskable_Interrupt"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Non_Maskable_Interrupt rootpage-Non_Maskable_Interrupt skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Non Maskable Interrupt</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"><span class="mw-redirectedfrom">(Redirected from <a href="https://wiki.osdev.org/index.php?title=NMI&amp;redirect=no" class="mw-redirect" title="NMI">NMI</a>)</span></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="NMI#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="NMI#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>The <b>Non-Maskable Interrupt</b> (<b>NMI</b>) is a hardware-driven interrupt much like the PIC interrupts, but the NMI goes either directly to the CPU, or via another controller (e.g., the ISP)---in which case it can be masked.
+</p>
+<h2><span class="mw-headline" id="About">About</span></h2>
+<p>NMIs occur for RAM errors and unrecoverable hardware problems. For newer computers these things may be handled using machine check exceptions and/or SMI. For the newest chipsets (at least for Intel) there's also a pile of TCO stuff ("total cost of ownership") that is tied into it all (with a special "TCO IRQ" and connections to SMI/SMM, etc). All of the TCO stuff can be connected to an onboard ethernet controller, and (at least part of it) is intended for remote monitoring of the system. Unfortunately, the chipset documentation doesn't say how BIOSes normally configure the chipset, and the chipsets themselves support several different options in each case. For example, for a RAM error it could be handled by the chipset itself, it could generate an SMI (where the BIOS/SMM handler does "RAM scrubbing" in software), it could generate a "TCO interrupt", etc. If you add it all up it's a huge complex mess (TCO + SMI + SMBus + Northbridge + PCI bus/controller/s + PCI-to-LPC-bridge + god-knows-what) that can be completely different between motherboards (even motherboards with the same chipset).
+</p><p>The short version of this story is that there's only really 2 reasons for an NMI. The first reason is a hardware failure. The second reason is a "watchdog timer", which can be used to detect when the kernel itself locks up (and is sometimes also used for more accurate profiling as it allows EIP to be sampled even when IRQs are disabled).
+</p><p>If a hardware failure caused an NMI then there's no way to figure out which piece of hardware caused the NMI. In this case you may want to inform the user that a hardware error has occurred, and then the kernel should shutdown/reset the machine.
+</p><p>For the watchdog timer, it must be setup by the OS first. This can actually be done even when the chipset itself doesn't have a special watchdog timer for it (e.g. setting the PIT, RTC/CMOS IRQ or a HPET IRQ to "NMI, send to all CPUs" in the I/O APIC). In this case you want the watchdog timer to be fast (i.e. no slow hardware task switching and cache flushing) and you'd also want all CPUs to share the same timer, which means all CPUs would receive the same IRQ at the same time.
+</p><p>As an alternative, you could also use the local APIC's timer or the performance monitoring counter overflow for a "per CPU" watchdog timer.
+</p>
+<h2><span class="mw-headline" id="Usage">Usage</span></h2>
+<p>The NMI is enabled (set high) by the memory module when a memory parity error occurs.
+</p><p>Be careful about disabling the NMI and the PIC for extended periods of time (mind you, watchdog timers typically use NMIs).
+</p><p>On the XT the NMI can be masked by setting bit 7 on I/O port 0xA0. On the AT the NMI can be masked by setting bit 7 on I/O port 0x70. This port is shared with the CMOS RAM index register using bits 0 through 6 of I/O port 0x70. The CMOS RTC expects a read from or write to the data port 0x71 after any write to index port 0x70 or it may go into an undefined state. There may also need to be an <a href="Inline_Assembly/Examples#I/O_access" title="Inline Assembly/Examples">I/O delay</a> between accessing the index and data registers. The index port 0x70 may be a write-only port and always return 0xFF on read. Hence the bit masking below to preserve bits 0 through 6 of the CMOS index register may not work, nor may it be possible to retrieve the current state of the NMI mask from port 0x70.
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">NMI_enable</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">outb</span><span class="p">(</span><span class="mh">0x70</span><span class="p">,</span><span class="w"> </span><span class="n">inb</span><span class="p">(</span><span class="mh">0x70</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0x7F</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">inb</span><span class="p">(</span><span class="mh">0x71</span><span class="p">);</span><span class="w"></span>
+<span class="w"> </span><span class="p">}</span><span class="w"></span>
+
+<span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">NMI_disable</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">outb</span><span class="p">(</span><span class="mh">0x70</span><span class="p">,</span><span class="w"> </span><span class="n">inb</span><span class="p">(</span><span class="mh">0x70</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mh">0x80</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">inb</span><span class="p">(</span><span class="mh">0x71</span><span class="p">);</span><span class="w"></span>
+<span class="w"> </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>When an NMI occurs you can check the system control port A and B at I/O addresses 0x92 and 0x61 respectively to get an indication of what caused the error:
+</p><p>System Control Port A (0x92) layout:
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>BIT
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td>0</td>
+<td>Alternate hot reset
+</td></tr>
+<tr>
+<td>1</td>
+<td>Alternate gate A20
+</td></tr>
+<tr>
+<td>2</td>
+<td>Reserved
+</td></tr>
+<tr>
+<td>3</td>
+<td>Security Lock
+</td></tr>
+<tr>
+<td>4*</td>
+<td>Watchdog timer status
+</td></tr>
+<tr>
+<td>5</td>
+<td>Reserved
+</td></tr>
+<tr>
+<td>6</td>
+<td>HDD 2 drive activity
+</td></tr>
+<tr>
+<td>7</td>
+<td>HDD 1 drive activity
+</td></tr></tbody></table>
+<p>System Control Port B (0x61)
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Bit
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td>0</td>
+<td>Timer 2 tied to speaker
+</td></tr>
+<tr>
+<td>1</td>
+<td>Speaker data enable
+</td></tr>
+<tr>
+<td>2</td>
+<td>Parity check enable
+</td></tr>
+<tr>
+<td>3</td>
+<td>Channel check enable
+</td></tr>
+<tr>
+<td>4</td>
+<td>Refresh request
+</td></tr>
+<tr>
+<td>5</td>
+<td>Timer 2 output
+</td></tr>
+<tr>
+<td>6*</td>
+<td>Channel check
+</td></tr>
+<tr>
+<td>7*</td>
+<td>Parity check
+</td></tr></tbody></table>
+<p>The important bits are indicated with an '*'.  The Channel Check bit indicates a failure on the bus, probably by a peripheral device such as a modem, sound card, NIC, etc, while the Parity check bit indicates a memory read or write failure.
+</p>
+<!-- 
+NewPP limit report
+Cached time: 20250211131948
+Cache expiry: 86400
+Reduced expiry: false
+Complications: []
+CPU time usage: 0.018 seconds
+Real time usage: 0.150 seconds
+Preprocessor visited node count: 13/1000000
+Post‐expand include size: 324/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 3/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 1831/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    1.000      1 -total
+ 89.79%    0.898      2 Template:Wikitable
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:1913-0!canonical and timestamp 20250211131948 and revision id 29100.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Non_Maskable_Interrupt&amp;oldid=29100">https://wiki.osdev.org/index.php?title=Non_Maskable_Interrupt&amp;oldid=29100</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:Interrupts" title="Category:Interrupts">Interrupts</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Non+Maskable+Interrupt" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="NMI#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Non_Maskable_Interrupt" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="mw-list-item"><a href="./Talk:Non_Maskable_Interrupt" rel="discussion" title="Discussion about the content page [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Non_Maskable_Interrupt"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Non_Maskable_Interrupt&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Non_Maskable_Interrupt&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Non_Maskable_Interrupt" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Non_Maskable_Interrupt" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Non_Maskable_Interrupt&amp;oldid=29100" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Non_Maskable_Interrupt&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-lang" class="vector-menu mw-portlet mw-portlet-lang vector-menu-portal portal" aria-labelledby="p-lang-label" role="navigation"  >
+	<h3
+		id="p-lang-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">In other languages</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li class="interlanguage-link interwiki-de mw-list-item"><a href="http://www.lowlevel.eu/wiki/Non_Maskable_Interrupt" title="Non Maskable Interrupt – Deutsch" lang="de" hreflang="de" class="interlanguage-link-target"><span>Deutsch</span></a></li></ul>
+		
+	</div>
+</nav>
+
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 7 June 2024, at 13:39.</li>
+	<li id="footer-info-0">This page has been accessed 11,102 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Non_Maskable_Interrupt&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.018","walltime":"0.150","ppvisitednodes":{"value":13,"limit":1000000},"postexpandincludesize":{"value":324,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":3,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":1831,"limit":5000000},"timingprofile":["100.00%    1.000      1 -total"," 89.79%    0.898      2 Template:Wikitable"]},"cachereport":{"timestamp":"20250211131948","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":255});});</script>
+</body>
+</html>

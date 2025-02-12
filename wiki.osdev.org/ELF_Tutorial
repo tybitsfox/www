@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>ELF Tutorial - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"b9d5cf679ce6782df453a3c5","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"ELF_Tutorial","wgTitle":"ELF Tutorial","wgCurRevisionId":29211,"wgRevisionId":29211,"wgArticleId":3429,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using duplicate arguments in template calls","Pages using deprecated source tags","In Progress","Level 2 Tutorials","Executable Formats"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"ELF_Tutorial","wgRelevantArticleId":3429,"wgIsProbablyEditable":false,
+"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","mmv.head","mmv.bootstrap.autostart","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-ELF_Tutorial rootpage-ELF_Tutorial skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">ELF Tutorial</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="ELF_Tutorial#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="ELF_Tutorial#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><center>
+<table style="border: 1px solid #cfcfbf; margin-top: 25px; margin-bottom: 25px; background-color: #f0f0ff; text-align: center;">
+<tbody><tr>
+<td>
+<p><a href="./File:Under_Construction.png" class="image" title="This page is under construction!"><img alt="This page is under construction!" src="images/1/14/Under_Construction.png" decoding="async" width="50" height="50" data-file-width="50" data-file-height="50" /></a>
+This page or section is a work in progress and may thus be incomplete. Its content may be changed in the near future.
+</p>
+</td>
+<td>
+</td></tr></tbody></table>
+</center><table style="font-size:95%; line-height:1.5em; padding:0.25em; float:right; margin: 0 0 8px 15px; clear:right; border:1px solid #aaaaaa; background:#eee; text-align:center;;"><tbody><tr><th>Difficulty level</th></tr><tr><td><a href="./File:Difficulty_2.png" class="image"><img alt="Difficulty 2.png" src="images/a/a1/Difficulty_2.png" decoding="async" width="46" height="14" data-file-width="46" data-file-height="14" /></a><br />Medium</td></tr></tbody></table><table style="font-size:95%; line-height:1.5em; padding:0.25em; float:right; margin: 0 0 8px 15px; clear: right; border:1px solid #aaaaaa; background:#eee; text-align:center; width:200px; ;"><tbody><tr><th style="background:#ffce7b; padding:0.3em; font-size:1.1em;"><a href="Executable_Formats" title="Executable Formats">Executable Formats</a></th></tr><tr><th>Microsoft</th></tr><tr><td><div>
+<p><b>16 bit:</b><br />
+<a href="COM" title="COM">COM</a><br />
+<a href="MZ" title="MZ">MZ</a><br />
+<a href="NE" title="NE">NE</a><br />
+<b>Mixed (16/32 bit):</b><br />
+<a href="LE" title="LE">LE</a><br />
+<b>32/64 bit:</b><br />
+<a href="PE" title="PE">PE</a><br />
+<a href="COFF" title="COFF">COFF</a><br />
+</p>
+</div></td></tr><tr><th>*nix</th></tr><tr><td><div>
+<p><a href="A.out" title="A.out">a.out</a><br />
+<a href="ELF" title="ELF">ELF</a><br />
+</p>
+</div></td></tr><tr><th>Apple</th></tr><tr><td><div>
+<p><a href="Mach-O" title="Mach-O">Mach-O</a><br />
+</p>
+</div></td></tr></tbody></table>
+<p>This tutorial describes the steps to loading ELF files targeting the i386 (32-bit architecture, little-endian byte order). All code in the tutorial is in the form of C compatible C++ and strives to teach by example, by using simplified (and sometimes naive), neat, and functional snippets of code. It may later be expanded to cover other types of ELF files, or formats targeting other architectures or machine types.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="ELF_Tutorial#ELF_Data_Types"><span class="tocnumber">1</span> <span class="toctext">ELF Data Types</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="ELF_Tutorial#The_ELF_Header"><span class="tocnumber">2</span> <span class="toctext">The ELF Header</span></a>
+<ul>
+<li class="toclevel-2 tocsection-3"><a href="ELF_Tutorial#Checking_the_ELF_Header"><span class="tocnumber">2.1</span> <span class="toctext">Checking the ELF Header</span></a>
+<ul>
+<li class="toclevel-3 tocsection-4"><a href="ELF_Tutorial#Loading_the_ELF_File"><span class="tocnumber">2.1.1</span> <span class="toctext">Loading the ELF File</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-5"><a href="ELF_Tutorial#The_ELF_Section_Header"><span class="tocnumber">3</span> <span class="toctext">The ELF Section Header</span></a>
+<ul>
+<li class="toclevel-2 tocsection-6"><a href="ELF_Tutorial#Accessing_Section_Headers"><span class="tocnumber">3.1</span> <span class="toctext">Accessing Section Headers</span></a></li>
+<li class="toclevel-2 tocsection-7"><a href="ELF_Tutorial#Section_Names"><span class="tocnumber">3.2</span> <span class="toctext">Section Names</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-8"><a href="ELF_Tutorial#ELF_Sections"><span class="tocnumber">4</span> <span class="toctext">ELF Sections</span></a>
+<ul>
+<li class="toclevel-2 tocsection-9"><a href="ELF_Tutorial#The_Symbol_Table"><span class="tocnumber">4.1</span> <span class="toctext">The Symbol Table</span></a>
+<ul>
+<li class="toclevel-3 tocsection-10"><a href="ELF_Tutorial#Accessing_the_Value_of_a_Symbol"><span class="tocnumber">4.1.1</span> <span class="toctext">Accessing the Value of a Symbol</span></a></li>
+</ul>
+</li>
+<li class="toclevel-2 tocsection-11"><a href="ELF_Tutorial#The_String_Table"><span class="tocnumber">4.2</span> <span class="toctext">The String Table</span></a></li>
+<li class="toclevel-2 tocsection-12"><a href="ELF_Tutorial#The_BSS_and_SHT_NOBITS"><span class="tocnumber">4.3</span> <span class="toctext">The BSS and SHT_NOBITS</span></a></li>
+<li class="toclevel-2 tocsection-13"><a href="ELF_Tutorial#Relocation_Sections"><span class="tocnumber">4.4</span> <span class="toctext">Relocation Sections</span></a>
+<ul>
+<li class="toclevel-3 tocsection-14"><a href="ELF_Tutorial#Relocation_Example"><span class="tocnumber">4.4.1</span> <span class="toctext">Relocation Example</span></a></li>
+<li class="toclevel-3 tocsection-15"><a href="ELF_Tutorial#Relocating_a_Symbol"><span class="tocnumber">4.4.2</span> <span class="toctext">Relocating a Symbol</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-16"><a href="ELF_Tutorial#The_ELF_Program_Header"><span class="tocnumber">5</span> <span class="toctext">The ELF Program Header</span></a></li>
+<li class="toclevel-1 tocsection-17"><a href="ELF_Tutorial#See_Also"><span class="tocnumber">6</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-18"><a href="ELF_Tutorial#Articles"><span class="tocnumber">6.1</span> <span class="toctext">Articles</span></a></li>
+<li class="toclevel-2 tocsection-19"><a href="ELF_Tutorial#External_Links"><span class="tocnumber">6.2</span> <span class="toctext">External Links</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="ELF_Data_Types">ELF Data Types</span></h2>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="cp">#</span><span class="w"> </span><span class="cp">include</span><span class="w"> </span><span class="cpf">&lt;stdint.h&gt;</span><span class="cp"></span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">Elf32_Half</span><span class="p">;</span><span class="w">	</span><span class="c1">// Unsigned half int</span>
+<span class="k">typedef</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">Elf32_Off</span><span class="p">;</span><span class="w">	</span><span class="c1">// Unsigned offset</span>
+<span class="k">typedef</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">Elf32_Addr</span><span class="p">;</span><span class="w">	</span><span class="c1">// Unsigned address</span>
+<span class="k">typedef</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">Elf32_Word</span><span class="p">;</span><span class="w">	</span><span class="c1">// Unsigned int</span>
+<span class="k">typedef</span><span class="w"> </span><span class="kt">int32_t</span><span class="w">  </span><span class="n">Elf32_Sword</span><span class="p">;</span><span class="w">	</span><span class="c1">// Signed int</span>
+</pre></div>
+<p>The ELF file format is made to function on a number of different architectures, many of which support different data widths. For support across multiple machine types, the ELF format provides a set of guidelines for fixed width types that make up the layout of the section and data represented within object files. You may choose to name your types differently or use types defined in stdint.h directly, but they should conform to those shown above.
+</p>
+<h2><span class="mw-headline" id="The_ELF_Header">The ELF Header</span></h2>
+<p>The ELF file format has only one header with fixed placement: the ELF header, present at the beginning of every file. The format itself is extremely flexible as the positioning, size, and purpose of every header (save the ELF header) is described by another header in the file.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="cp"># define ELF_NIDENT	16</span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="kt">uint8_t</span><span class="w">		</span><span class="n">e_ident</span><span class="p">[</span><span class="n">ELF_NIDENT</span><span class="p">];</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Half</span><span class="w">	</span><span class="n">e_type</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Half</span><span class="w">	</span><span class="n">e_machine</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">	</span><span class="n">e_version</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Addr</span><span class="w">	</span><span class="n">e_entry</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Off</span><span class="w">	</span><span class="n">e_phoff</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Off</span><span class="w">	</span><span class="n">e_shoff</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">	</span><span class="n">e_flags</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Half</span><span class="w">	</span><span class="n">e_ehsize</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Half</span><span class="w">	</span><span class="n">e_phentsize</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Half</span><span class="w">	</span><span class="n">e_phnum</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Half</span><span class="w">	</span><span class="n">e_shentsize</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Half</span><span class="w">	</span><span class="n">e_shnum</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Half</span><span class="w">	</span><span class="n">e_shstrndx</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">Elf32_Ehdr</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+<p>The ELF header is the first header in an ELF file and it provides important information about the file (such as the machine type, architecture and byte order, etc.) as well as a means of identifying and checking whether the file is valid. The ELF header also provides information about other sections in the file, since they can appear in any order, vary in size, or may be absent from the file altogether. Universal to all ELF files are the first 4 bytes (the magic number) which are used identify the file. When working with the file through the <b>Elf32_Ehdr</b> type defined above, these 4 bytes are accessible from indexes 0 - 3 of the field <b>e_ident</b>.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="k">enum</span><span class="w"> </span><span class="nc">Elf_Ident</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">EI_MAG0</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="c1">// 0x7F</span>
+<span class="w">	</span><span class="n">EI_MAG1</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="c1">// &#39;E&#39;</span>
+<span class="w">	</span><span class="n">EI_MAG2</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="c1">// &#39;L&#39;</span>
+<span class="w">	</span><span class="n">EI_MAG3</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="c1">// &#39;F&#39;</span>
+<span class="w">	</span><span class="n">EI_CLASS</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="c1">// Architecture (32/64)</span>
+<span class="w">	</span><span class="n">EI_DATA</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="c1">// Byte Order</span>
+<span class="w">	</span><span class="n">EI_VERSION</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="c1">// ELF Version</span>
+<span class="w">	</span><span class="n">EI_OSABI</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="c1">// OS Specific</span>
+<span class="w">	</span><span class="n">EI_ABIVERSION</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="c1">// OS Specific</span>
+<span class="w">	</span><span class="n">EI_PAD</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">9</span><span class="w">  </span><span class="c1">// Padding</span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="cp"># define ELFMAG0	0x7F </span><span class="c1">// e_ident[EI_MAG0]</span>
+<span class="cp"># define ELFMAG1	&#39;E&#39;  </span><span class="c1">// e_ident[EI_MAG1]</span>
+<span class="cp"># define ELFMAG2	&#39;L&#39;  </span><span class="c1">// e_ident[EI_MAG2]</span>
+<span class="cp"># define ELFMAG3	&#39;F&#39;  </span><span class="c1">// e_ident[EI_MAG3]</span>
+
+<span class="cp"># define ELFDATA2LSB	(1)  </span><span class="c1">// Little Endian</span>
+<span class="cp"># define ELFCLASS32	(1)  </span><span class="c1">// 32-bit Architecture</span>
+</pre></div>
+<p>The first field in the header consists of 16 bytes, many of which provide important information about the ELF file such as the intended architecture, byte order, and ABI information. Since this tutorial focuses on implementing an x86 compatible loader, only relevant value definitions have been included.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="k">enum</span><span class="w"> </span><span class="nc">Elf_Type</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">ET_NONE</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="c1">// Unkown Type</span>
+<span class="w">	</span><span class="n">ET_REL</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="c1">// Relocatable File</span>
+<span class="w">	</span><span class="n">ET_EXEC</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">  </span><span class="c1">// Executable File</span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="cp"># define EM_386		(3)  </span><span class="c1">// x86 Machine Type</span>
+<span class="cp"># define EV_CURRENT	(1)  </span><span class="c1">// ELF Current Version</span>
+</pre></div>
+<p>The file header also provides information about the machine type and file type. Once again, only the relevant definitions have been included above.
+</p>
+<h3><span class="mw-headline" id="Checking_the_ELF_Header">Checking the ELF Header</span></h3>
+<p>Before an ELF file can be loaded, linked, relocated or otherwise processed, it's important to ensure that the machine trying to perform the aforementioned is able to do. This entails that the file is a valid ELF file targeting the local machine's architecture, byte order and CPU type, and that any operating system specific semantics are satisfied.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="kt">bool</span><span class="w"> </span><span class="nf">elf_check_file</span><span class="p">(</span><span class="n">Elf32_Ehdr</span><span class="w"> </span><span class="o">*</span><span class="n">hdr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">hdr</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_ident</span><span class="p">[</span><span class="n">EI_MAG0</span><span class="p">]</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">ELFMAG0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;ELF Header EI_MAG0 incorrect.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_ident</span><span class="p">[</span><span class="n">EI_MAG1</span><span class="p">]</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">ELFMAG1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;ELF Header EI_MAG1 incorrect.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_ident</span><span class="p">[</span><span class="n">EI_MAG2</span><span class="p">]</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">ELFMAG2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;ELF Header EI_MAG2 incorrect.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_ident</span><span class="p">[</span><span class="n">EI_MAG3</span><span class="p">]</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">ELFMAG3</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;ELF Header EI_MAG3 incorrect.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>Assuming that an ELF file has already been loaded into memory (either by the bootloader or otherwise), the first step to loading an ELF file is checking the ELF header for the magic number that should be present at the begining of the file. A minimal implementation of this could simply treat the image of file in memory as a string and do a comparison against a predefined string. In the example above, the comparision is done byte by byte through the ELF header type, and provides detailed feedback when the method encounters an error.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="kt">bool</span><span class="w"> </span><span class="nf">elf_check_supported</span><span class="p">(</span><span class="n">Elf32_Ehdr</span><span class="w"> </span><span class="o">*</span><span class="n">hdr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">elf_check_file</span><span class="p">(</span><span class="n">hdr</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;Invalid ELF File.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_ident</span><span class="p">[</span><span class="n">EI_CLASS</span><span class="p">]</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">ELFCLASS32</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;Unsupported ELF File Class.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_ident</span><span class="p">[</span><span class="n">EI_DATA</span><span class="p">]</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">ELFDATA2LSB</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;Unsupported ELF File byte order.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_machine</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">EM_386</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;Unsupported ELF File target.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_ident</span><span class="p">[</span><span class="n">EI_VERSION</span><span class="p">]</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">EV_CURRENT</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;Unsupported ELF File version.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_type</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">ET_REL</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_type</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">ET_EXEC</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;Unsupported ELF File type.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>The next step to loading an ELF object is to check that the file in question is intended to run on the machine that has loaded it. Again, the ELF header provides the necessary information about the file's intended target. The code above assumes that you have implemented a function called <b>elf_check_file</b>() (or used the one provided above), and that the local machine is i386, little-endian and 32-bit. It also only allows for executable and relocatable files to be loaded, although this can be changed as necessary.
+</p>
+<h4><span class="mw-headline" id="Loading_the_ELF_File">Loading the ELF File</span></h4>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="nf">elf_load_rel</span><span class="p">(</span><span class="n">Elf32_Ehdr</span><span class="w"> </span><span class="o">*</span><span class="n">hdr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="kt">int</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elf_load_stage1</span><span class="p">(</span><span class="n">hdr</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">ELF_RELOC_ERR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;Unable to load ELF file.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elf_load_stage2</span><span class="p">(</span><span class="n">hdr</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">ELF_RELOC_ERR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;Unable to load ELF file.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="c1">// TODO&#160;: Parse the program header (if present)</span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_entry</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="nf">elf_load_file</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Ehdr</span><span class="w"> </span><span class="o">*</span><span class="n">hdr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">Elf32_Ehdr</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">file</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">elf_check_supported</span><span class="p">(</span><span class="n">hdr</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;ELF File cannot be loaded.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">switch</span><span class="p">(</span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_type</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="k">case</span><span class="w"> </span><span class="nl">ET_EXEC</span><span class="p">:</span><span class="w"></span>
+<span class="w">			</span><span class="c1">// TODO&#160;: Implement</span>
+<span class="w">			</span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">		</span><span class="k">case</span><span class="w"> </span><span class="nl">ET_REL</span><span class="p">:</span><span class="w"></span>
+<span class="w">			</span><span class="k">return</span><span class="w"> </span><span class="n">elf_load_rel</span><span class="p">(</span><span class="n">hdr</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<h2><span class="mw-headline" id="The_ELF_Section_Header">The ELF Section Header</span></h2>
+<p>The ELF format defines a lot of different types of section and their relevant headers, not all of which are present in every file, and there's no guarantee on which order they appear in. Thus, in order to parse and process these sections the format also defines section headers, which contain information such as section names, sizes, locations and other relevant information. The list of all the section headers in an ELF image is referred to as the section header table.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">	</span><span class="n">sh_name</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">	</span><span class="n">sh_type</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">	</span><span class="n">sh_flags</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Addr</span><span class="w">	</span><span class="n">sh_addr</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Off</span><span class="w">	</span><span class="n">sh_offset</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">	</span><span class="n">sh_size</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">	</span><span class="n">sh_link</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">	</span><span class="n">sh_info</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">	</span><span class="n">sh_addralign</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">	</span><span class="n">sh_entsize</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">Elf32_Shdr</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+<p>The section header table contains a number of important fields, some of which have different meanings for different sections. Another point of interest is that the <b>sh_name</b> field does not point directly to a string, instead it gives the offset of a string in the section name string table (the index of the table itself is defined in the ELF header by the field <b>e_shstrndx</b>). Each header also defines the position of the actual section in the file image in the field <b>sh_offset</b>, as an offset from the beginning of the file.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="cp"># define SHN_UNDEF	(0x00) </span><span class="c1">// Undefined/Not Present</span>
+<span class="cp"># define SHN_ABS    0xFFF1 </span><span class="c1">// Absolute symbol</span>
+
+<span class="k">enum</span><span class="w"> </span><span class="nc">ShT_Types</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">SHT_NULL</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">   </span><span class="c1">// Null section</span>
+<span class="w">	</span><span class="n">SHT_PROGBITS</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">   </span><span class="c1">// Program information</span>
+<span class="w">	</span><span class="n">SHT_SYMTAB</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">   </span><span class="c1">// Symbol table</span>
+<span class="w">	</span><span class="n">SHT_STRTAB</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w">   </span><span class="c1">// String table</span>
+<span class="w">	</span><span class="n">SHT_RELA</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w">   </span><span class="c1">// Relocation (w/ addend)</span>
+<span class="w">	</span><span class="n">SHT_NOBITS</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w">   </span><span class="c1">// Not present in file</span>
+<span class="w">	</span><span class="n">SHT_REL</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">9</span><span class="p">,</span><span class="w">   </span><span class="c1">// Relocation (no addend)</span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="k">enum</span><span class="w"> </span><span class="nc">ShT_Attributes</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">SHF_WRITE</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="mh">0x01</span><span class="p">,</span><span class="w"> </span><span class="c1">// Writable section</span>
+<span class="w">	</span><span class="n">SHF_ALLOC</span><span class="w">	</span><span class="o">=</span><span class="w"> </span><span class="mh">0x02</span><span class="w">  </span><span class="c1">// Exists in memory</span>
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+<p>Above are a number of constants that are relevant to the tutorial (a good deal more exist). The enumeration <b>ShT_Types</b> defines a number of different types of sections, which correspond to values stored in the field <b>sh_type</b> in the section header. Similarly, <b>ShT_Attributes</b> corresponds to the field <b>sh_flags</b>, but are bit flags rather than stand-alone values.
+</p>
+<h3><span class="mw-headline" id="Accessing_Section_Headers">Accessing Section Headers</span></h3>
+<p>Getting access to the section header itself isn't very difficult: It's position in the file image is defined by <b>e_shoff</b> in the ELF header and the number of section headers is in turn defined by <b>e_shnum</b>. Notably, the first entry in the section header is a NULL entry; that is to say, fields in the header are 0. The section headers are continuous, so given a pointer to the first entry, subsequent entries can be accessed with simple pointer arithmetic or array operations.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">Elf32_Shdr</span><span class="w"> </span><span class="o">*</span><span class="nf">elf_sheader</span><span class="p">(</span><span class="n">Elf32_Ehdr</span><span class="w"> </span><span class="o">*</span><span class="n">hdr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">Elf32_Shdr</span><span class="w"> </span><span class="o">*</span><span class="p">)((</span><span class="kt">int</span><span class="p">)</span><span class="n">hdr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_shoff</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">Elf32_Shdr</span><span class="w"> </span><span class="o">*</span><span class="nf">elf_section</span><span class="p">(</span><span class="n">Elf32_Ehdr</span><span class="w"> </span><span class="o">*</span><span class="n">hdr</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">idx</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="o">&amp;</span><span class="n">elf_sheader</span><span class="p">(</span><span class="n">hdr</span><span class="p">)[</span><span class="n">idx</span><span class="p">];</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>The two methods above provide convenient access to section headers on a by-index basis using the principles noted above, and they will be used frequently in the example code that follows.
+</p>
+<h3><span class="mw-headline" id="Section_Names">Section Names</span></h3>
+<p>One notable procedure is accessing section names (since, as mentioned before, the header only provides an offset into the section name string table), which is also fairly simple. The whole operation can be broken down into a simple series of steps:
+</p>
+<ol><li>Get the section header index for the string table from the ELF header (stored in <b>e_shstrndx</b>). Make sure to check the index against <b>SHN_UNDEF</b>, as the table may not be present.</li>
+<li>Access the section header at the given index and find the table offset (stored in <b>sh_offset</b>).</li>
+<li>Calculate the position of the string table in memory using the offset.</li>
+<li>Create a pointer to the name's offset into the string table.</li></ol>
+<p>An example of the process is shown in the two convenience methods below.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="nf">elf_str_table</span><span class="p">(</span><span class="n">Elf32_Ehdr</span><span class="w"> </span><span class="o">*</span><span class="n">hdr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_shstrndx</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SHN_UNDEF</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">hdr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">elf_section</span><span class="p">(</span><span class="n">hdr</span><span class="p">,</span><span class="w"> </span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_shstrndx</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">sh_offset</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="nf">elf_lookup_string</span><span class="p">(</span><span class="n">Elf32_Ehdr</span><span class="w"> </span><span class="o">*</span><span class="n">hdr</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">offset</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">strtab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elf_str_table</span><span class="p">(</span><span class="n">hdr</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">strtab</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="n">strtab</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">offset</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>Note that before you attempt to access the name of a section, you should first check that the section has a name (the offset given by sh_name is not equal to <b>SHN_UNDEF</b>).
+</p>
+<h2><span class="mw-headline" id="ELF_Sections">ELF Sections</span></h2>
+<p>ELF object files can have a very large number of sections, however, it is important to note that only some sections need to be processed during program loading, and not all of them may exist within the object file itself (i.e. the BSS). This segment will describe a number of sections that should be processed during program loading (given they are present).
+</p>
+<h3><span class="mw-headline" id="The_Symbol_Table">The Symbol Table</span></h3>
+<p>The symbol table is a section (or a number of sections) that exist within the ELF file and define the location, type, visibility and other traits of various symbols declared in the original source, created during compilation or linking, or otherwise present in the file. Since an ELF object can have multiple symbol tables, it is necessary to either iterate over the file's section headers, or to follow a reference from another section in order to access one.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">		</span><span class="n">st_name</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Addr</span><span class="w">		</span><span class="n">st_value</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">		</span><span class="n">st_size</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="kt">uint8_t</span><span class="w">			</span><span class="n">st_info</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="kt">uint8_t</span><span class="w">			</span><span class="n">st_other</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Half</span><span class="w">		</span><span class="n">st_shndx</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">Elf32_Sym</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+<p>Each symbol table entry contains a number of notable bits of information such as the symbol name (<b>st_name</b>, may be <b>STN_UNDEF</b>), the symbol's value (<b>st_value</b>, may be absolute or relative address of value), and the field <b>st_info</b> which contains both the symbol type and binding. As an aside, the first entry in each symbol table is a NULL entry, so all of it's fields are 0.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="cp"># define ELF32_ST_BIND(INFO)	((INFO) &gt;&gt; 4)</span>
+<span class="cp"># define ELF32_ST_TYPE(INFO)	((INFO) &amp; 0x0F)</span>
+
+<span class="k">enum</span><span class="w"> </span><span class="nc">StT_Bindings</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">STB_LOCAL</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="c1">// Local scope</span>
+<span class="w">	</span><span class="n">STB_GLOBAL</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="c1">// Global scope</span>
+<span class="w">	</span><span class="n">STB_WEAK</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">  </span><span class="c1">// Weak, (ie. __attribute__((weak)))</span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="k">enum</span><span class="w"> </span><span class="nc">StT_Types</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">STT_NOTYPE</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="c1">// No type</span>
+<span class="w">	</span><span class="n">STT_OBJECT</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="c1">// Variables, arrays, etc.</span>
+<span class="w">	</span><span class="n">STT_FUNC</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">  </span><span class="c1">// Methods or functions</span>
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+<p>As mentioned above, <b>st_info</b> contains both the symbol type and biding, so the 2 macros above provide access to the individual values. The enumeration <b>StT_Types</b> provides a number of possible symbol types, and <b>StB_Bindings</b> provides possible symbol bindings.
+</p>
+<h4><span class="mw-headline" id="Accessing_the_Value_of_a_Symbol">Accessing the Value of a Symbol</span></h4>
+<p>Some operation such as linking and relocation require the value of a symbol (or rather, the address thereof). Although the symbol table entries do define a field <b>st_value</b>, it may only contain a relative address. Below is an example of how to compute the absolute address of the value of the symbol. The code has been broken up into multple smaller section so that it is easier to understand.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">elf_get_symval</span><span class="p">(</span><span class="n">Elf32_Ehdr</span><span class="w"> </span><span class="o">*</span><span class="n">hdr</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">uint</span><span class="w"> </span><span class="n">idx</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">table</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SHN_UNDEF</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">idx</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SHN_UNDEF</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Shdr</span><span class="w"> </span><span class="o">*</span><span class="n">symtab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elf_section</span><span class="p">(</span><span class="n">hdr</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">	</span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">symtab_entries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">symtab</span><span class="o">-&gt;</span><span class="n">sh_size</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">symtab</span><span class="o">-&gt;</span><span class="n">sh_entsize</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">idx</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">symtab_entries</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;Symbol Index out of Range (%d:%u).</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">idx</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="n">ELF_RELOC_ERR</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+
+<span class="w">	</span><span class="kt">int</span><span class="w"> </span><span class="n">symaddr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">hdr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">symtab</span><span class="o">-&gt;</span><span class="n">sh_offset</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Sym</span><span class="w"> </span><span class="o">*</span><span class="n">symbol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="p">((</span><span class="n">Elf32_Sym</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">symaddr</span><span class="p">)[</span><span class="n">idx</span><span class="p">];</span><span class="w"></span>
+</pre></div>
+<p>The above performs a check against both the symbol table index and the symbol index; if either is undefined, 0 is returned. Otherwise the section header entry for the symbol table at the given index is accessed. It then checks that the symbol table index is not outside the bounds of the symbol table. If the check fails an error message is displayed and an error code is returned, otherwise the symbol table entry at the given index is is retrieved.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">symbol</span><span class="o">-&gt;</span><span class="n">st_shndx</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SHN_UNDEF</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="c1">// External symbol, lookup value</span>
+<span class="w">		</span><span class="n">Elf32_Shdr</span><span class="w"> </span><span class="o">*</span><span class="n">strtab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elf_section</span><span class="p">(</span><span class="n">hdr</span><span class="p">,</span><span class="w"> </span><span class="n">symtab</span><span class="o">-&gt;</span><span class="n">sh_link</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">hdr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">strtab</span><span class="o">-&gt;</span><span class="n">sh_offset</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">symbol</span><span class="o">-&gt;</span><span class="n">st_name</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">		</span><span class="k">extern</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="nf">elf_lookup_symbol</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">name</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elf_lookup_symbol</span><span class="p">(</span><span class="n">name</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">		</span><span class="k">if</span><span class="p">(</span><span class="n">target</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">			</span><span class="c1">// Extern symbol not found</span>
+<span class="w">			</span><span class="k">if</span><span class="p">(</span><span class="n">ELF32_ST_BIND</span><span class="p">(</span><span class="n">symbol</span><span class="o">-&gt;</span><span class="n">st_info</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">STB_WEAK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">				</span><span class="c1">// Weak symbol initialized as 0</span>
+<span class="w">				</span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">			</span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">				</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;Undefined External Symbol&#160;: %s.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">);</span><span class="w"></span>
+<span class="w">				</span><span class="k">return</span><span class="w"> </span><span class="n">ELF_RELOC_ERR</span><span class="p">;</span><span class="w"></span>
+<span class="w">			</span><span class="p">}</span><span class="w"></span>
+<span class="w">		</span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">			</span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">target</span><span class="p">;</span><span class="w"></span>
+<span class="w">		</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>If the section to which the symbol is relative (given by <b>st_shndx</b>) is equal to <b>SHN_UNDEF</b>, the symbol is external and must be linked to its definition. The string table is retrieved for the current symbol table (the string table for a given symbol table is available in the table's section header in <b>sh_link</b>), and the symbol's name is found in the string table. Next the function <b>elf_lookup_symbol</b>() is used to find a symbol definition by name (this function is not provided, a minimal implementation always return NULL). If the symbol definition is found, it is returned. If the symbol has the <b>STB_WEAK</b> flag (is a weak symbol) 0 is returned, otherwise an error message is displayed and an error code returned.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="w">	</span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="p">(</span><span class="n">symbol</span><span class="o">-&gt;</span><span class="n">st_shndx</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SHN_ABS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="c1">// Absolute symbol</span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="n">symbol</span><span class="o">-&gt;</span><span class="n">st_value</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="c1">// Internally defined symbol</span>
+<span class="w">		</span><span class="n">Elf32_Shdr</span><span class="w"> </span><span class="o">*</span><span class="n">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elf_section</span><span class="p">(</span><span class="n">hdr</span><span class="p">,</span><span class="w"> </span><span class="n">symbol</span><span class="o">-&gt;</span><span class="n">st_shndx</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">hdr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">symbol</span><span class="o">-&gt;</span><span class="n">st_value</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">target</span><span class="o">-&gt;</span><span class="n">sh_offset</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p><br />
+If the value of <b>sh_ndx</b> is equal to <b>SHN_ABS</b>, the symbol's value is absolute and is returned immediately. If <b>sh_ndx</b> doesn't contain a special value, that means the symbol is defined in the local ELF object. Since the value given by <b>sh_value</b> is relative to a section defined <b>sh_ndx</b>, the relevant section header entry is accessed, and the symbol's address is computed by adding the address of the file in memory to the symbol's value with its section offset.
+</p>
+<h3><span class="mw-headline" id="The_String_Table">The String Table</span></h3>
+<p>The string table conceptually is quite simple: it's just a number of consecutive zero-terminated strings. String literals used in the program are stored in one of the tables. There are a number of different string tables that may be present in an ELF object such as .strtab (the default string table), .shstrtab (the section string table) and .dynstr (string table for dynamic linking). Any time the loading process needs access to a string, it uses an offset into one of the string tables. The offset may point to the beginning of a zero-terminated string or somewhere in the middle or even to the zero terminator itself, depending on usage and scenario. The size of the string table itself is specified by <b>sh_size</b> in the corresponding section header entry.
+</p><p>The simplest program loader may copy all string tables into memory, but a more complete solution would omit any that are not necessary during runtime such, notably those not flagged with <b>SHF_ALLOC</b> in their respective section header (such as .shstrtab, since section names aren't used in program runtime).
+</p>
+<h3><span class="mw-headline" id="The_BSS_and_SHT_NOBITS">The BSS and SHT_NOBITS</span></h3>
+<p>The BSS (the section named ".bss") is in the simplest way of describing it: A block of memory which has been zeroed. The BSS is the area in memory where variables with global lifetime that haven't been initialized (or have been initialized to 0 or NULL) are stored. The section header for the BSS defines its <b>sh_type</b> as <b>SHT_NOBITS</b>, which means that it isn't present in the file image, and must be allocated during runtime. A simple and naive way of allocating a BSS is to malloc some memory and zero it out with a memset. Failing to zero the BSS can cause unexpected behavious from any loaded programs. Another thing to note is that the BSS should be allocated before performing any operation that relies on relative addressing (such as relocation), as failing to do so can cause code to reference garbage memory or fault.
+</p><p>While the BSS is one specific example, any section that is of type <b>SHT_NOBITS</b> and has the attribute <b>SHF_ALLOC</b> should be allocated early on during program loading. Since this tutorial is intended to be general and unspecific, the example below will follow the trend and use the simplest example for allocating sections.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">elf_load_stage1</span><span class="p">(</span><span class="n">Elf32_Ehdr</span><span class="w"> </span><span class="o">*</span><span class="n">hdr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Shdr</span><span class="w"> </span><span class="o">*</span><span class="n">shdr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elf_sheader</span><span class="p">(</span><span class="n">hdr</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">	</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="c1">// Iterate over section headers</span>
+<span class="w">	</span><span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_shnum</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">Elf32_Shdr</span><span class="w"> </span><span class="o">*</span><span class="n">section</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">shdr</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">		</span><span class="c1">// If the section isn&#39;t present in the file</span>
+<span class="w">		</span><span class="k">if</span><span class="p">(</span><span class="n">section</span><span class="o">-&gt;</span><span class="n">sh_type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SHT_NOBITS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">			</span><span class="c1">// Skip if it the section is empty</span>
+<span class="w">			</span><span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">section</span><span class="o">-&gt;</span><span class="n">sh_size</span><span class="p">)</span><span class="w"> </span><span class="k">continue</span><span class="p">;</span><span class="w"></span>
+<span class="w">			</span><span class="c1">// If the section should appear in memory</span>
+<span class="w">			</span><span class="k">if</span><span class="p">(</span><span class="n">section</span><span class="o">-&gt;</span><span class="n">sh_flags</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">SHF_ALLOC</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">				</span><span class="c1">// Allocate and zero some memory</span>
+<span class="w">				</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">mem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">malloc</span><span class="p">(</span><span class="n">section</span><span class="o">-&gt;</span><span class="n">sh_size</span><span class="p">);</span><span class="w"></span>
+<span class="w">				</span><span class="n">memset</span><span class="p">(</span><span class="n">mem</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">section</span><span class="o">-&gt;</span><span class="n">sh_size</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">				</span><span class="c1">// Assign the memory offset to the section offset</span>
+<span class="w">				</span><span class="n">section</span><span class="o">-&gt;</span><span class="n">sh_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">mem</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">hdr</span><span class="p">;</span><span class="w"></span>
+<span class="w">				</span><span class="n">DEBUG</span><span class="p">(</span><span class="s">&quot;Allocated memory for a section (%ld).</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">section</span><span class="o">-&gt;</span><span class="n">sh_size</span><span class="p">);</span><span class="w"></span>
+<span class="w">			</span><span class="p">}</span><span class="w"></span>
+<span class="w">		</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>The example above allocates as much memory as necessary for the section, described by the <b>sh_size</b> field of the section's header. Although the function in the example only seeks out sections that needs to be allocated, it can be modified to perform other operation that should be performed early on into the loading process.
+</p>
+<h3><span class="mw-headline" id="Relocation_Sections">Relocation Sections</span></h3>
+<p>Relocatable ELF files have many uses in kernel programming, especially as modules and drivers that can be loaded at startup, and are especially useful because they are position independent, thus can easily be placed after the kernel or starting at some convenient address, and don't require their own address space to function. The process of relocation itself is conceptually simple, but may get more difficult with the introduction of complex relocation types.
+</p><p>Relocation starts with a table of relocation entries, which can be located using the relevant section header. There are actually two different kinds of relocation structures; one with an explicit added (section type <b>SHT_RELA</b>), one without (section type <b>SHT_REL</b>). Relocation entires in the table are continuous and the number of entries in a given table can be found by dividing the size of the table (given by <b>sh_size</b> in the section header) by the size of each entry (given by <b>sh_entsize</b>). Each relocation table is specific to a single section, so a single file may have multiple relocation tables (but all entries within a given table will be the same relocation structure type).
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Addr</span><span class="w">		</span><span class="n">r_offset</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">		</span><span class="n">r_info</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">Elf32_Rel</span><span class="p">;</span><span class="w"></span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Addr</span><span class="w">		</span><span class="n">r_offset</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">		</span><span class="n">r_info</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Sword</span><span class="w">		</span><span class="n">r_addend</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">Elf32_Rela</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+<p>The above are the definitions for the different structure types for relocations. Of note if the value stored in <b>r_info</b>, as the upper byte designates the entry in the symbol table to which the relocation applies, whereas the lower byte stores the type of relocation that should be applied. Note that an ELF file may have multiple symbol tables, thus the index of the section header table that refers to the symbol table to which these relocation apply can be found in the <b>sh_link</b> field on this relocation table's section header. The value in <b>r_offset</b> gives the relative position of the symbol that is being relocated, within its section.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="cp"># define ELF32_R_SYM(INFO)	((INFO) &gt;&gt; 8)</span>
+<span class="cp"># define ELF32_R_TYPE(INFO)	((uint8_t)(INFO))</span>
+
+<span class="k">enum</span><span class="w"> </span><span class="nc">RtT_Types</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">R_386_NONE</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="c1">// No relocation</span>
+<span class="w">	</span><span class="n">R_386_32</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="c1">// Symbol + Offset</span>
+<span class="w">	</span><span class="n">R_386_PC32</span><span class="w">		</span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">  </span><span class="c1">// Symbol + Offset - Section Offset</span>
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+<p>As previously mentioned, the <b>r_info</b> field in <b>Elf32_Rel</b>(<b>a</b>) refers to 2 separate values, thus the set of macro functions above can be used to attain the individual values; <b>ELF32_R_SYM</b>() provides access to the symbol index and <b>ELF32_R_TYPE</b>() provides access to the relocation type. The enumeration <b>RtT_Types</b> defines the relocation typs this tutorial will encompass.
+</p>
+<h4><span class="mw-headline" id="Relocation_Example">Relocation Example</span></h4>
+<p>Loading a relocatable ELF file entails processing all relocation entries present in the file (Remember to alloc allocate all <b>SHT_NOBITS</b> sections first!). This process starts with finding all the relocation tables in the file, which is done in the example code below.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="cp"># define ELF_RELOC_ERR -1</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">elf_load_stage2</span><span class="p">(</span><span class="n">Elf32_Ehdr</span><span class="w"> </span><span class="o">*</span><span class="n">hdr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Shdr</span><span class="w"> </span><span class="o">*</span><span class="n">shdr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elf_sheader</span><span class="p">(</span><span class="n">hdr</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">	</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">idx</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="c1">// Iterate over section headers</span>
+<span class="w">	</span><span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_shnum</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">Elf32_Shdr</span><span class="w"> </span><span class="o">*</span><span class="n">section</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">shdr</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"></span>
+<span class="w">		</span>
+<span class="w">		</span><span class="c1">// If this is a relocation section</span>
+<span class="w">		</span><span class="k">if</span><span class="p">(</span><span class="n">section</span><span class="o">-&gt;</span><span class="n">sh_type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SHT_REL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">			</span><span class="c1">// Process each entry in the table</span>
+<span class="w">			</span><span class="k">for</span><span class="p">(</span><span class="n">idx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">idx</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">section</span><span class="o">-&gt;</span><span class="n">sh_size</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">section</span><span class="o">-&gt;</span><span class="n">sh_entsize</span><span class="p">;</span><span class="w"> </span><span class="n">idx</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">				</span><span class="n">Elf32_Rel</span><span class="w"> </span><span class="o">*</span><span class="n">reltab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="p">((</span><span class="n">Elf32_Rel</span><span class="w"> </span><span class="o">*</span><span class="p">)((</span><span class="kt">int</span><span class="p">)</span><span class="n">hdr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">section</span><span class="o">-&gt;</span><span class="n">sh_offset</span><span class="p">))[</span><span class="n">idx</span><span class="p">];</span><span class="w"></span>
+<span class="w">				</span><span class="kt">int</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elf_do_reloc</span><span class="p">(</span><span class="n">hdr</span><span class="p">,</span><span class="w"> </span><span class="n">reltab</span><span class="p">,</span><span class="w"> </span><span class="n">section</span><span class="p">);</span><span class="w"></span>
+<span class="w">				</span><span class="c1">// On error, display a message and return</span>
+<span class="w">				</span><span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">ELF_RELOC_ERR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">					</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;Failed to relocate symbol.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">					</span><span class="k">return</span><span class="w"> </span><span class="n">ELF_RELOC_ERR</span><span class="p">;</span><span class="w"></span>
+<span class="w">				</span><span class="p">}</span><span class="w"></span>
+<span class="w">			</span><span class="p">}</span><span class="w"></span>
+<span class="w">		</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>Note that the code above only processes <b>Elf32_Rel</b> entries, but it can be modified to process entries with explicit addends as well. The code also relies on a function called <b>elf_do_reloc</b> which will be shown in the next example. This example function stops, displays an error message, and returns an error code if it's unable to process a relocation.
+</p>
+<h4><span class="mw-headline" id="Relocating_a_Symbol">Relocating a Symbol</span></h4>
+<p>As the following function is fairly complex, it's been broken up into smaller manageable chunks and explained in detail. Note that the code shown below assumes that the file being relocated is a relocatable ELF file (ELF executables and shared objects may also contain relocation entries, but are processed somewhat differently). Also note that <b>sh_info</b> for section headers of type <b>SHT_REL</b> and <b>SHT_RELA</b> stores the section header to which the relocation applies.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="cp"># define DO_386_32(S, A)	((S) + (A))</span>
+<span class="cp"># define DO_386_PC32(S, A, P)	((S) + (A) - (P))</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">elf_do_reloc</span><span class="p">(</span><span class="n">Elf32_Ehdr</span><span class="w"> </span><span class="o">*</span><span class="n">hdr</span><span class="p">,</span><span class="w"> </span><span class="n">Elf32_Rel</span><span class="w"> </span><span class="o">*</span><span class="n">rel</span><span class="p">,</span><span class="w"> </span><span class="n">Elf32_Shdr</span><span class="w"> </span><span class="o">*</span><span class="n">reltab</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Shdr</span><span class="w"> </span><span class="o">*</span><span class="n">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elf_section</span><span class="p">(</span><span class="n">hdr</span><span class="p">,</span><span class="w"> </span><span class="n">reltab</span><span class="o">-&gt;</span><span class="n">sh_info</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">	</span><span class="kt">int</span><span class="w"> </span><span class="n">addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">hdr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">target</span><span class="o">-&gt;</span><span class="n">sh_offset</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">ref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="p">)(</span><span class="n">addr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">rel</span><span class="o">-&gt;</span><span class="n">r_offset</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+<p>The above code defines the macro functions that are used to complete relocation calculations. It also retrieves the section header for the section wherein the symbol exists and computes a reference to the symbol. The variable <b>addr</b> denotes the start of the symbol's section, and <b>ref</b> is created by adding the offset to the symbol from the relocation entry.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="w">	</span><span class="c1">// Symbol value</span>
+<span class="w">	</span><span class="kt">int</span><span class="w"> </span><span class="n">symval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="p">(</span><span class="n">ELF32_R_SYM</span><span class="p">(</span><span class="n">rel</span><span class="o">-&gt;</span><span class="n">r_info</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SHN_UNDEF</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">symval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">elf_get_symval</span><span class="p">(</span><span class="n">hdr</span><span class="p">,</span><span class="w"> </span><span class="n">reltab</span><span class="o">-&gt;</span><span class="n">sh_link</span><span class="p">,</span><span class="w"> </span><span class="n">ELF32_R_SYM</span><span class="p">(</span><span class="n">rel</span><span class="o">-&gt;</span><span class="n">r_info</span><span class="p">));</span><span class="w"></span>
+<span class="w">		</span><span class="k">if</span><span class="p">(</span><span class="n">symval</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">ELF_RELOC_ERR</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">ELF_RELOC_ERR</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>Next the value of the symbol being relocated is accessed. If the symbol table index stored in <b>r_info</b> is undefined, then the value defaults to 0. The code also references a function called <b>elf_get_symval</b>(), which was implemented previously. If the value returned by the function is equal to <b>ELF_RELOC_ERR</b>, relocation is stopped and said error code is returned.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="w">	</span><span class="c1">// Relocate based on type</span>
+<span class="w">	</span><span class="k">switch</span><span class="p">(</span><span class="n">ELF32_R_TYPE</span><span class="p">(</span><span class="n">rel</span><span class="o">-&gt;</span><span class="n">r_info</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="k">case</span><span class="w"> </span><span class="nl">R_386_NONE</span><span class="p">:</span><span class="w"></span>
+<span class="w">			</span><span class="c1">// No relocation</span>
+<span class="w">			</span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">		</span><span class="k">case</span><span class="w"> </span><span class="nl">R_386_32</span><span class="p">:</span><span class="w"></span>
+<span class="w">			</span><span class="c1">// Symbol + Offset</span>
+<span class="w">			</span><span class="o">*</span><span class="n">ref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DO_386_32</span><span class="p">(</span><span class="n">symval</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">ref</span><span class="p">);</span><span class="w"></span>
+<span class="w">			</span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">		</span><span class="k">case</span><span class="w"> </span><span class="nl">R_386_PC32</span><span class="p">:</span><span class="w"></span>
+<span class="w">			</span><span class="c1">// Symbol + Offset - Section Offset</span>
+<span class="w">			</span><span class="o">*</span><span class="n">ref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DO_386_PC32</span><span class="p">(</span><span class="n">symval</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">ref</span><span class="p">);</span><span class="w"></span>
+<span class="w">			</span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">		</span><span class="k">default</span><span class="o">:</span><span class="w"></span>
+<span class="w">			</span><span class="c1">// Relocation type not supported, display error and return</span>
+<span class="w">			</span><span class="n">ERROR</span><span class="p">(</span><span class="s">&quot;Unsupported Relocation Type (%d).</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ELF32_R_TYPE</span><span class="p">(</span><span class="n">rel</span><span class="o">-&gt;</span><span class="n">r_info</span><span class="p">));</span><span class="w"></span>
+<span class="w">			</span><span class="k">return</span><span class="w"> </span><span class="n">ELF_RELOC_ERR</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="n">symval</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>Finally, this segment of code details the actual relocation process, performing the necessary calculating the relocated symbol and returning it's value on success. If the relocation type is unsupported an error message is displayed, relocation is stopped and the function returns an error code. Assuming no errors have occurred, relocation is now complete.
+</p>
+<h2><span class="mw-headline" id="The_ELF_Program_Header">The ELF Program Header</span></h2>
+<p>The program header is a structure that defines information about how the ELF program behaves once it's been loaded, as well as runtime linking information. ELF program headers (much like section headers) are all grouped together to make up the program header table.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">		</span><span class="n">p_type</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Off</span><span class="w">		</span><span class="n">p_offset</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Addr</span><span class="w">		</span><span class="n">p_vaddr</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Addr</span><span class="w">		</span><span class="n">p_paddr</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">		</span><span class="n">p_filesz</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">		</span><span class="n">p_memsz</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">		</span><span class="n">p_flags</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">Elf32_Word</span><span class="w">		</span><span class="n">p_align</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">Elf32_Phdr</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+<p>The program header table contains a continuous set of program headers (thus they can be accessed as if they were an array). The table itself can be accessed using the <b>e_phoff</b> field defined in the ELF header, assuming that it is present. The header itself defines a number of useful fields like <b>p_type</b> which distinguishes between headers, <b>p_offset</b> which stores the offset to the segment the header refers to, and <b>p_vaddr</b> which defines the address at which position-dependent code should exist.
+</p><p>TODO&#160;: Expand and Detail.
+</p>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="Articles">Articles</span></h3>
+<ul><li><a href="ELF" title="ELF">ELF</a></li>
+<li><a href="Modular_Kernel" title="Modular Kernel">Modular Kernel</a></li>
+<li><a href="System_V_ABI" title="System V ABI">System V ABI</a></li></ul>
+<h3><span class="mw-headline" id="External_Links">External Links</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="http://docs.oracle.com/cd/E23824_01/html/819-0690/chapter6-46512.html#scrolltoc">ELF Format Specifications</a> Detailed and up-to-date ELF information (including SPARC in depth) by Oracle.</li>
+<li><a rel="nofollow" class="external text" href="http://www.sco.com/developers/gabi/latest/contents.html">System V ABI</a> about ELF</li>
+<li><a rel="nofollow" class="external text" href="http://www.linuxfoundation.org/en/Specifications">LSB specifications</a><br />See (generic or platform-specific) 'Core' specifications for additional ELF information.</li>
+<li><a rel="nofollow" class="external autonumber" href="https://github.com/Bareflank/hypervisor/tree/master/bfelf_loader">[1]</a> Example ELF loader</li>
+<li><a rel="nofollow" class="external autonumber" href="https://code.google.com/p/elf-loader/">[2]</a> Example ELF loader</li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211122842
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.170 seconds
+Real time usage: 3.296 seconds
+Preprocessor visited node count: 576/1000000
+Post‐expand include size: 2354/2097152 bytes
+Template argument size: 974/2097152 bytes
+Highest expansion depth: 19/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 74938/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    9.040      1 -total
+ 70.97%    6.416     23 Template:If
+ 53.52%    4.838     23 Template:Show1
+ 46.87%    4.237      1 Template:File_formats
+ 42.76%    3.866      1 Template:Rating
+ 41.06%    3.712      1 Template:SmallNavBox
+ 10.84%    0.980      3 Template:Eq
+  8.96%    0.810      1 Template:In_Progress
+  4.97%    0.449      3 Template:Eq1
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:3429-0!canonical and timestamp 20250211122838 and revision id 29211.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=ELF_Tutorial&amp;oldid=29211">https://wiki.osdev.org/index.php?title=ELF_Tutorial&amp;oldid=29211</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_duplicate_arguments_in_template_calls&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using duplicate arguments in template calls (page does not exist)">Pages using duplicate arguments in template calls</a></li><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:In_Progress" title="Category:In Progress">In Progress</a></li><li><a href="./Category:Level_2_Tutorials" title="Category:Level 2 Tutorials">Level 2 Tutorials</a></li><li><a href="./Category:Executable_Formats" title="Category:Executable Formats">Executable Formats</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=ELF+Tutorial" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="ELF_Tutorial#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="ELF_Tutorial" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:ELF_Tutorial&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="ELF_Tutorial"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=ELF_Tutorial&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=ELF_Tutorial&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/ELF_Tutorial" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="./Special:RecentChangesLinked/ELF_Tutorial" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=ELF_Tutorial&amp;oldid=29211" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=ELF_Tutorial&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 10 August 2024, at 20:03.</li>
+	<li id="footer-info-0">This page has been accessed 10,629 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=ELF_Tutorial&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.170","walltime":"3.296","ppvisitednodes":{"value":576,"limit":1000000},"postexpandincludesize":{"value":2354,"limit":2097152},"templateargumentsize":{"value":974,"limit":2097152},"expansiondepth":{"value":19,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":74938,"limit":5000000},"timingprofile":["100.00%    9.040      1 -total"," 70.97%    6.416     23 Template:If"," 53.52%    4.838     23 Template:Show1"," 46.87%    4.237      1 Template:File_formats"," 42.76%    3.866      1 Template:Rating"," 41.06%    3.712      1 Template:SmallNavBox"," 10.84%    0.980      3 Template:Eq","  8.96%    0.810      1 Template:In_Progress","  4.97%    0.449      3 Template:Eq1"]},"cachereport":{"timestamp":"20250211122842","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":101});});</script>
+</body>
+</html>

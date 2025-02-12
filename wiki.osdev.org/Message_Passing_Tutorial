@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Message Passing Tutorial - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"f6642a163843e296264e7371","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Message_Passing_Tutorial","wgTitle":"Message Passing Tutorial","wgCurRevisionId":24893,"wgRevisionId":24893,"wgArticleId":3139,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","IPC"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Message_Passing_Tutorial","wgRelevantArticleId":3139,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],
+"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Message_Passing_Tutorial rootpage-Message_Passing_Tutorial skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Message Passing Tutorial</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Message_Passing_Tutorial#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Message_Passing_Tutorial#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>It's always a problem to decide if you use asynchronous or synchronous message passing. In this article I'll show you how to have both. I'll use a pseudo-code to describe the algorithm, so you can implement it to your language environment. Note that I refer sender and receiver as processes, it can be easily adopted to threads.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Message_Passing_Tutorial#Definitions"><span class="tocnumber">1</span> <span class="toctext">Definitions</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="Message_Passing_Tutorial#Asynchronous"><span class="tocnumber">2</span> <span class="toctext">Asynchronous</span></a>
+<ul>
+<li class="toclevel-2 tocsection-3"><a href="Message_Passing_Tutorial#Sending"><span class="tocnumber">2.1</span> <span class="toctext">Sending</span></a></li>
+<li class="toclevel-2 tocsection-4"><a href="Message_Passing_Tutorial#Receiving"><span class="tocnumber">2.2</span> <span class="toctext">Receiving</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-5"><a href="Message_Passing_Tutorial#Synchronous"><span class="tocnumber">3</span> <span class="toctext">Synchronous</span></a>
+<ul>
+<li class="toclevel-2 tocsection-6"><a href="Message_Passing_Tutorial#Sending_2"><span class="tocnumber">3.1</span> <span class="toctext">Sending</span></a></li>
+<li class="toclevel-2 tocsection-7"><a href="Message_Passing_Tutorial#Receiving_2"><span class="tocnumber">3.2</span> <span class="toctext">Receiving</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-8"><a href="Message_Passing_Tutorial#What_is_this_good_for?"><span class="tocnumber">4</span> <span class="toctext">What is this good for?</span></a></li>
+<li class="toclevel-1 tocsection-9"><a href="Message_Passing_Tutorial#Pitfalls"><span class="tocnumber">5</span> <span class="toctext">Pitfalls</span></a></li>
+<li class="toclevel-1 tocsection-10"><a href="Message_Passing_Tutorial#See_Also"><span class="tocnumber">6</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-11"><a href="Message_Passing_Tutorial#Articles"><span class="tocnumber">6.1</span> <span class="toctext">Articles</span></a></li>
+<li class="toclevel-2 tocsection-12"><a href="Message_Passing_Tutorial#Threads"><span class="tocnumber">6.2</span> <span class="toctext">Threads</span></a></li>
+<li class="toclevel-2 tocsection-13"><a href="Message_Passing_Tutorial#External_Links"><span class="tocnumber">6.3</span> <span class="toctext">External Links</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Definitions">Definitions</span></h2>
+<p>You should have a structure to be sent to another process. I'll refer to this as the message, and I will assume you have these fields:
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">message</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">src</span><span class="w"> </span><span class="c1">//the source process that sends the message</span>
+<span class="w">  </span><span class="n">dst</span><span class="w"> </span><span class="c1">//the destination process that receives</span>
+<span class="w">  </span><span class="n">body</span><span class="w"> </span><span class="c1">//the body of the message (usually holds type and arguments, it&#39;s up to you)</span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>Sending and receiving must be atomic. This means you must prevent task switches until it's finished. I have two different timers in my OS, one for the wallclock, and another for preemption. So for me this means masking the latter, and reenabling it at the end. You could also use a <a href="https://wiki.osdev.org/index.php?title=Mutex&amp;action=edit&amp;redlink=1" class="new" title="Mutex (page does not exist)">mutex</a> or <a href="Semaphore" title="Semaphore">semaphore</a> to accomplish mutual exclusion.
+</p><p>Blocking and non blocking: the sender can be blocked upon sending a message, but this does not necessarily have to be so. The receiver must block if there's no message waiting. Blocking means the OS will remove the process from ready queue, and won't allocate CPU resources for it until the blockade is cancelled. When it happens, it simply puts the process back into the ready queue (most likely to the top). Processes on the blocked queue will not use any CPU time. This prevents a <a href="Busy_loop" title="Busy loop">busy loop</a>.
+</p><p>You should maintain a queue for every process to record blocked waiting processes. This queue must not be a circular buffer, you can implement it as a simple chained list. I assume you have written the following functions already (they will be required by the tutorial):
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="w"> </span><span class="n">block</span><span class="p">(</span><span class="n">processid</span><span class="p">)</span><span class="w">               </span><span class="c1">//function to block a process</span>
+<span class="w"> </span><span class="n">awake</span><span class="p">(</span><span class="n">processid</span><span class="p">)</span><span class="w">               </span><span class="c1">//function to unblock a process</span>
+<span class="w"> </span><span class="n">isblocked</span><span class="p">(</span><span class="n">processid</span><span class="p">)</span><span class="w">           </span><span class="c1">//returns true if process is blocked</span>
+<span class="w"> </span><span class="n">pushwaitqueue</span><span class="p">(</span><span class="n">recvpid</span><span class="p">,</span><span class="n">sendpid</span><span class="p">)</span><span class="w"> </span><span class="c1">//put sendpid on recvpid process&#39; sender waiting queue</span>
+<span class="w"> </span><span class="n">topwaitqueue</span><span class="p">()</span><span class="w">                 </span><span class="c1">//get the last pid in queue</span>
+<span class="w"> </span><span class="n">popwaitqueue</span><span class="p">()</span><span class="w">                 </span><span class="c1">//get the last pid in queue and remove it from queue</span>
+</pre></div>
+<p>Now a few words on synchronization: if it's asynchronous, it means the sender is not interested whether the receiver accepts the message or not. It will send the message and move on (won't block). This also means the message could be lost, hence messaging is unreliable. On the other hand, a synchronous sender will wait (block) until the message is delivered, this creates a rendezvous point (so the sender process and the receiver process will run synchronized after the message is accepted). Also because the sender knows when and if the message has arrived, it's a reliable messaging system.
+</p><p>Finally, <a href="https://wiki.osdev.org/index.php?title=Circular_buffer&amp;action=edit&amp;redlink=1" class="new" title="Circular buffer (page does not exist)">circular buffer</a>. It's a FIFO (First In, First Out) buffer. It's implemented by pointers (or indeces) head and tail. If you push something in a FIFO, it will be stored at the memory pointed to by head, and head will be adjusted. On pop, the item will be read from the memory pointed to by tail, and tail will be adjusted. If head or tail reaches the end of the buffer, they will wrap around.
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">circbuff</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">head</span><span class="p">;</span><span class="w">  </span><span class="c1">//index to queue start within buffer</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">tail</span><span class="p">;</span><span class="w">  </span><span class="c1">//index to queue end within buffer</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">count</span><span class="p">;</span><span class="w"> </span><span class="c1">//number of elements in buff</span>
+<span class="w">  </span><span class="n">message</span><span class="w"> </span><span class="n">buffer</span><span class="p">[</span><span class="n">MAXITEMS</span><span class="p">];</span><span class="w"> </span><span class="c1">//buffer to hold messages</span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>You could calculate the number of items in the buffer using the head and tail variables, but as being circular, there's a special case which cannot be handled without a count variable: head will be equal to tail if the buffer is empty, and also when it's full.
+</p>
+<h2><span class="mw-headline" id="Asynchronous">Asynchronous</span></h2>
+<h3><span class="mw-headline" id="Sending">Sending</span></h3>
+<p>Now let's start with sending a message, and not care about. This could lead to losing a message, which we can't afford, so we'll do a trick here. Despite of being asynchronous, we will block if receiver buffer is full, and we'll continue only after there's space for our message.
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">async_send</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">disable_task_switch</span><span class="p">();</span><span class="w"></span>
+<span class="w">  </span><span class="n">msg</span><span class="p">.</span><span class="n">src</span><span class="o">=</span><span class="n">current_process</span><span class="p">;</span><span class="w"> </span><span class="c1">//we must not rely on it&#39;s set</span>
+<span class="w">  </span><span class="n">tmpbuff</span><span class="o">=</span><span class="n">map_buffer</span><span class="p">(</span><span class="n">msg</span><span class="p">.</span><span class="n">dst</span><span class="p">);</span><span class="w"> </span><span class="c1">//temporarily map destination&#39;s buffer into sender process&#39; address space</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tmpbuff</span><span class="p">.</span><span class="n">count</span><span class="o">==</span><span class="n">MAXITEMS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">//if receiver buffer is full, block</span>
+<span class="w">    </span><span class="n">pushwaitqueue</span><span class="p">(</span><span class="n">msg</span><span class="p">.</span><span class="n">dst</span><span class="p">,</span><span class="n">current_process</span><span class="p">);</span><span class="w"> </span><span class="c1">//record this process in dst&#39;s sender queue</span>
+<span class="w">    </span><span class="n">block</span><span class="p">(</span><span class="n">current_process</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="n">push</span><span class="p">(</span><span class="n">tmpbuff</span><span class="p">,</span><span class="n">msg</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="p">(</span><span class="n">isblocked</span><span class="p">(</span><span class="n">msg</span><span class="p">.</span><span class="n">dst</span><span class="p">))</span><span class="w"> </span><span class="n">awake</span><span class="p">(</span><span class="n">msg</span><span class="p">.</span><span class="n">dst</span><span class="p">);</span><span class="w">  </span><span class="c1">//if destination process is blocked for receiving, awake it</span>
+<span class="w">  </span><span class="n">unmap_buffer</span><span class="p">();</span><span class="w"></span>
+<span class="w">  </span><span class="n">enable_task_switch</span><span class="p">();</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<h3><span class="mw-headline" id="Receiving">Receiving</span></h3>
+<p>Doesn't matter whether it's synchronized or not, receiver must block if it's message queue is empty, and there's nothing to process.
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="n">circbuff</span><span class="w"> </span><span class="n">buff</span><span class="p">;</span><span class="w"></span>
+<span class="n">message</span><span class="w"> </span><span class="nf">async_recv</span><span class="p">()</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">message</span><span class="w"> </span><span class="n">tmp</span><span class="o">=</span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="n">disable_task_switch</span><span class="p">();</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">buff</span><span class="p">.</span><span class="n">count</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">block</span><span class="p">(</span><span class="n">current_process</span><span class="p">);</span><span class="w"> </span><span class="c1">//if there&#39;s nothing to get, block</span>
+<span class="w">  </span><span class="n">tmp</span><span class="o">=</span><span class="n">pop</span><span class="p">(</span><span class="n">buff</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="k">while</span><span class="p">(</span><span class="n">topwaitqueue</span><span class="p">()</span><span class="o">!=</span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="n">awake</span><span class="p">(</span><span class="n">popwaitqueue</span><span class="p">());</span><span class="w"> </span><span class="c1">//awake blocked processes waiting to send</span>
+<span class="w">  </span><span class="n">enable_task_switch</span><span class="p">();</span><span class="w"></span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>It's possible that under very rare circumstances you want a non-blocking receive that returns NULL if there's no message waiting. I highly discourage, because it leads to a polling busy loop, but just in case, here you are:
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="n">message</span><span class="w"> </span><span class="nf">async_recvpoll</span><span class="p">()</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">message</span><span class="w"> </span><span class="n">tmp</span><span class="o">=</span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="n">disable_task_switch</span><span class="p">();</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">buff</span><span class="p">.</span><span class="n">count</span><span class="o">!=</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">tmp</span><span class="o">=</span><span class="n">pop</span><span class="p">(</span><span class="n">buff</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">while</span><span class="p">(</span><span class="n">topwaitqueue</span><span class="p">()</span><span class="o">!=</span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="n">awake</span><span class="p">(</span><span class="n">popwaitqueue</span><span class="p">());</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="n">enable_task_switch</span><span class="p">();</span><span class="w"></span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>Note that we count on recv being blocking to implement synchronous transfer. If you use the non-blocking code above, you'll have to take care of that on your own.
+</p>
+<h2><span class="mw-headline" id="Synchronous">Synchronous</span></h2>
+<h3><span class="mw-headline" id="Sending_2">Sending</span></h3>
+<p>Okay, now that we have primitives for asynchronous sending and receiving, it's rather easy to implement synchronous transfer on top of them.
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="n">message</span><span class="w"> </span><span class="nf">sync_send</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">async_send</span><span class="p">(</span><span class="n">msg</span><span class="p">);</span><span class="w"> </span><span class="c1">//we send the message</span>
+<span class="w">  </span><span class="k">return</span><span class="p">(</span><span class="n">async_recv</span><span class="p">());</span><span class="w"> </span><span class="c1">//and we block waiting for the response</span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<h3><span class="mw-headline" id="Receiving_2">Receiving</span></h3>
+<p>Likewise,
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="n">message</span><span class="w"> </span><span class="nf">consume</span><span class="p">(</span><span class="n">message</span><span class="p">);</span><span class="w"> </span><span class="c1">//function to do something with the message</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">sync_recv</span><span class="p">()</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">message</span><span class="w"> </span><span class="n">tmp</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="n">tmp</span><span class="o">=</span><span class="n">async_recv</span><span class="p">();</span><span class="w">  </span><span class="c1">//wait for a message to arrive</span>
+<span class="w">  </span><span class="n">tmp</span><span class="o">=</span><span class="n">consume</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span><span class="w">  </span><span class="c1">//process the message and return a response message</span>
+<span class="w">  </span><span class="n">async_send</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span><span class="w">   </span><span class="c1">//send it back to the caller</span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<h2><span id="What_is_this_good_for.3F"></span><span class="mw-headline" id="What_is_this_good_for?">What is this good for?</span></h2>
+<p>Synchronous messaging is often used to implement <a href="RPC" class="mw-redirect" title="RPC">Remote Procedure Calls</a>. You send the function code and it's arguments first, then consume() calls the appropriate function and creates a message with the results.
+</p><p>Most OS use some primitive messaging to implement more sophisticated IPC like <a href="Unix_Pipes" title="Unix Pipes">pipes</a> or <a href="Socket" title="Socket">sockets</a>. Reading and writing from <a href="https://wiki.osdev.org/index.php?title=File&amp;action=edit&amp;redlink=1" class="new" title="File (page does not exist)">files</a> is also worked out by sending messages between the vfs process and the disk driver.
+</p>
+<h2><span class="mw-headline" id="Pitfalls">Pitfalls</span></h2>
+<p>This may seem to be easy, but don't forget it's only a tutorial. In the real world, you'll have to work a lot before your messaging code can became useful. Some suggestions:
+</p>
+<ul><li>check the receiver actually wants to receive from the sender.</li>
+<li>always check for loops: process A waiting for B to send, C waiting for A. Now it would be a disaster if B also waits for C.</li>
+<li>you should implement an alarm for sending. If delivering fails within a timeout, you should check the reason(s), and maybe resend.</li>
+<li>you should have an unique id in every message to detect retransmission.</li>
+<li>normally userspace applications never have to receive messages without sending an acknowledge. So it's a good idea to tie asynchronous messaging to a capability flag or something similar.</li>
+<li>you should have a matrix of process ids recording who is allowed to send messages to who. An application should never send messages to a driver process directly (only through a library or system call).</li></ul>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="Articles">Articles</span></h3>
+<ul><li><a href="Remote_Procedure_Call" title="Remote Procedure Call">Remote Procedure Call (RPC)</a></li>
+<li><a href="Message_Passing" title="Message Passing">Message Passing</a></li></ul>
+<h3><span class="mw-headline" id="Threads">Threads</span></h3>
+<ul><li><a href="http://forum.osdev.org/viewtopic.php?t=10116" class="extiw" title="topic:10116">passing messages through registers</a></li>
+<li><a href="http://forum.osdev.org/viewtopic.php?t=10922" class="extiw" title="topic:10922">RPC message size, handling oversized messages</a></li></ul>
+<h3><span class="mw-headline" id="External_Links">External Links</span></h3>
+<ul><li><a href="https://wikipedia.org/wiki/Message_Passing" class="extiw" title="wikipedia:Message Passing"> Message Passing</a> on Wikipedia</li>
+<li><a rel="nofollow" class="external text" href="http://stackoverflow.com/questions/827691/how-do-you-implement-a-circular-buffer-in-c">How do I implement curcular buffer in C</a>?</li>
+<li>This is how <a rel="nofollow" class="external text" href="http://git.minix3.org/?p=minix.git;a=blob;f=kernel/proc.c;h=4595f08c2182c1ea9783b9b9cec3f499df0b5b2e;hb=HEAD#l799">Minix</a> does message passing (see functions mini_send, mini_receive well documented).</li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211130053
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.049 seconds
+Real time usage: 1.080 seconds
+Preprocessor visited node count: 91/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 13254/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:3139-0!canonical and timestamp 20250211130052 and revision id 24893.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Message_Passing_Tutorial&amp;oldid=24893">https://wiki.osdev.org/index.php?title=Message_Passing_Tutorial&amp;oldid=24893</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:IPC" title="Category:IPC">IPC</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Message+Passing+Tutorial" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Message_Passing_Tutorial#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Message_Passing_Tutorial" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:Message_Passing_Tutorial&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Message_Passing_Tutorial"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Message_Passing_Tutorial&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Message_Passing_Tutorial&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Message_Passing_Tutorial" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Message_Passing_Tutorial" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Message_Passing_Tutorial&amp;oldid=24893" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Message_Passing_Tutorial&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 22 June 2020, at 13:56.</li>
+	<li id="footer-info-0">This page has been accessed 2,722 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Message_Passing_Tutorial&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.049","walltime":"1.080","ppvisitednodes":{"value":91,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":13254,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250211130053","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":1188});});</script>
+</body>
+</html>

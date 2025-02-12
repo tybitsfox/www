@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>VGA Hardware - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"68661aa352dc33212db29f5d","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"VGA_Hardware","wgTitle":"VGA Hardware","wgCurRevisionId":29339,"wgRevisionId":29339,"wgArticleId":1697,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["VGA","Video","Hardware"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"VGA_Hardware","wgRelevantArticleId":1697,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby"
+:false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","mmv.head","mmv.bootstrap.autostart","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-VGA_Hardware rootpage-VGA_Hardware skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">VGA Hardware</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="VGA_Hardware#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="VGA_Hardware#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>Even though VGA is old, many modern graphics cards are compatible with it, including NVidia and AMD (ATI) cards. This can make writing a VGA driver rather attractive. The amount of compatibility varies however, so never assume a card is compatible without proper hardware detection. 
+Apart from real machines, several emulators and virtual machines provide VGA emulation:  <a href="Bochs" title="Bochs">Bochs</a>, <a href="QEMU" title="QEMU">QEMU</a> and <a href="Microsoft_Virtual_PC" title="Microsoft Virtual PC">Microsoft Virtual PC</a> to name a few. After 2011 video card manufacturers begun to drop VGA compatibility in favour of <a href="GOP" title="GOP">GOP</a> under <a href="UEFI" title="UEFI">UEFI</a> (VirtualBox UEFI and TianoCore both supports that).
+</p>
+<center>
+<table style="border: 1px solid #bfcfcf; padding: .0em .25em .0em; background-color: #fff0f0; text-align: center;">
+<tbody><tr>
+<td>
+<p><font color="black"><b>WARNING: Improperly changing CRTC or hardware settings can be harmful to the video card and attached monitor.</b> Configuring graphics hardware may be a rewarding process, and many have achieved their goals with success and have even tampered with them well beyond their original specifications. Fact remains that there are <i>several</i> known instances of monitors - CRT and LCD alike - burning out after being fed poor data. Similarly, the video card might lack similar safeguards against accidental misconfiguration. 
+</font></p><p><font color="black"><b>DISCLAIMER: The information provided might not be accurate, and using it is to be done entirely at your own risk</b>. There have not been any reported mishaps in the entire history of OSDev.org, but in the odd chance you break something, we are <a href="./OSDev_Wiki:Copyrights" title="OSDev Wiki:Copyrights">not responsible</a>.</font>
+</p>
+</td>
+<td>
+</td></tr></tbody></table>
+</center>
+<p><br />
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="VGA_Hardware#Overview"><span class="tocnumber">1</span> <span class="toctext">Overview</span></a>
+<ul>
+<li class="toclevel-2 tocsection-2"><a href="VGA_Hardware#What&#39;s_not_covered"><span class="tocnumber">1.1</span> <span class="toctext">What's not covered</span></a></li>
+<li class="toclevel-2 tocsection-3"><a href="VGA_Hardware#Getting_started"><span class="tocnumber">1.2</span> <span class="toctext">Getting started</span></a></li>
+<li class="toclevel-2 tocsection-4"><a href="VGA_Hardware#Hardware_components"><span class="tocnumber">1.3</span> <span class="toctext">Hardware components</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-5"><a href="VGA_Hardware#VGA_Registers"><span class="tocnumber">2</span> <span class="toctext">VGA Registers</span></a>
+<ul>
+<li class="toclevel-2 tocsection-6"><a href="VGA_Hardware#Port_0x3C0"><span class="tocnumber">2.1</span> <span class="toctext">Port 0x3C0</span></a></li>
+<li class="toclevel-2 tocsection-7"><a href="VGA_Hardware#Port_0x3C2"><span class="tocnumber">2.2</span> <span class="toctext">Port 0x3C2</span></a></li>
+<li class="toclevel-2 tocsection-8"><a href="VGA_Hardware#Port_0x3C4,_0x3CE,_0x3D4"><span class="tocnumber">2.3</span> <span class="toctext">Port 0x3C4, 0x3CE, 0x3D4</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="VGA_Hardware#Port_0x3C6"><span class="tocnumber">2.4</span> <span class="toctext">Port 0x3C6</span></a></li>
+<li class="toclevel-2 tocsection-10"><a href="VGA_Hardware#Port_0x3C8"><span class="tocnumber">2.5</span> <span class="toctext">Port 0x3C8</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-11"><a href="VGA_Hardware#Video_Memory_Layout"><span class="tocnumber">3</span> <span class="toctext">Video Memory Layout</span></a>
+<ul>
+<li class="toclevel-2 tocsection-12"><a href="VGA_Hardware#Memory_Layout_in_16-color_graphics_modes"><span class="tocnumber">3.1</span> <span class="toctext">Memory Layout in 16-color graphics modes</span></a></li>
+<li class="toclevel-2 tocsection-13"><a href="VGA_Hardware#Memory_Layout_in_256-color_graphics_modes"><span class="tocnumber">3.2</span> <span class="toctext">Memory Layout in 256-color graphics modes</span></a></li>
+<li class="toclevel-2 tocsection-14"><a href="VGA_Hardware#Memory_Layout_in_text_modes"><span class="tocnumber">3.3</span> <span class="toctext">Memory Layout in text modes</span></a></li>
+<li class="toclevel-2 tocsection-15"><a href="VGA_Hardware#Memory_Layout_in_4-color_modes"><span class="tocnumber">3.4</span> <span class="toctext">Memory Layout in 4-color modes</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-16"><a href="VGA_Hardware#The_Graphics_Controller"><span class="tocnumber">4</span> <span class="toctext">The Graphics Controller</span></a>
+<ul>
+<li class="toclevel-2 tocsection-17"><a href="VGA_Hardware#Addressing_Logic"><span class="tocnumber">4.1</span> <span class="toctext">Addressing Logic</span></a>
+<ul>
+<li class="toclevel-3 tocsection-18"><a href="VGA_Hardware#Chain_4_Bit"><span class="tocnumber">4.1.1</span> <span class="toctext">Chain 4 Bit</span></a></li>
+<li class="toclevel-3 tocsection-19"><a href="VGA_Hardware#Odd/Even_Disable_Bit"><span class="tocnumber">4.1.2</span> <span class="toctext">Odd/Even Disable Bit</span></a></li>
+</ul>
+</li>
+<li class="toclevel-2 tocsection-20"><a href="VGA_Hardware#Read/Write_logic"><span class="tocnumber">4.2</span> <span class="toctext">Read/Write logic</span></a>
+<ul>
+<li class="toclevel-3 tocsection-21"><a href="VGA_Hardware#The_Latches"><span class="tocnumber">4.2.1</span> <span class="toctext">The Latches</span></a></li>
+<li class="toclevel-3 tocsection-22"><a href="VGA_Hardware#Write_Mode_0"><span class="tocnumber">4.2.2</span> <span class="toctext">Write Mode 0</span></a></li>
+<li class="toclevel-3 tocsection-23"><a href="VGA_Hardware#Write_mode_3"><span class="tocnumber">4.2.3</span> <span class="toctext">Write mode 3</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-24"><a href="VGA_Hardware#The_Sequencer"><span class="tocnumber">5</span> <span class="toctext">The Sequencer</span></a>
+<ul>
+<li class="toclevel-2 tocsection-25"><a href="VGA_Hardware#Alphanumeric_Mode"><span class="tocnumber">5.1</span> <span class="toctext">Alphanumeric Mode</span></a></li>
+<li class="toclevel-2 tocsection-26"><a href="VGA_Hardware#Graphics_Mode"><span class="tocnumber">5.2</span> <span class="toctext">Graphics Mode</span></a>
+<ul>
+<li class="toclevel-3 tocsection-27"><a href="VGA_Hardware#Shift_modes"><span class="tocnumber">5.2.1</span> <span class="toctext">Shift modes</span></a></li>
+</ul>
+</li>
+<li class="toclevel-2 tocsection-28"><a href="VGA_Hardware#Address_Calculation"><span class="tocnumber">5.3</span> <span class="toctext">Address Calculation</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-29"><a href="VGA_Hardware#Color_Logic"><span class="tocnumber">6</span> <span class="toctext">Color Logic</span></a></li>
+<li class="toclevel-1 tocsection-30"><a href="VGA_Hardware#The_CRT_Controller"><span class="tocnumber">7</span> <span class="toctext">The CRT Controller</span></a>
+<ul>
+<li class="toclevel-2 tocsection-31"><a href="VGA_Hardware#Resolution_and_Timing"><span class="tocnumber">7.1</span> <span class="toctext">Resolution and Timing</span></a>
+<ul>
+<li class="toclevel-3 tocsection-32"><a href="VGA_Hardware#Registers"><span class="tocnumber">7.1.1</span> <span class="toctext">Registers</span></a></li>
+<li class="toclevel-3 tocsection-33"><a href="VGA_Hardware#Timing_Model"><span class="tocnumber">7.1.2</span> <span class="toctext">Timing Model</span></a></li>
+<li class="toclevel-3 tocsection-34"><a href="VGA_Hardware#Sample_timing_scheme"><span class="tocnumber">7.1.3</span> <span class="toctext">Sample timing scheme</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-35"><a href="VGA_Hardware#Sample_Register_Settings"><span class="tocnumber">8</span> <span class="toctext">Sample Register Settings</span></a>
+<ul>
+<li class="toclevel-2 tocsection-36"><a href="VGA_Hardware#List_of_register_settings"><span class="tocnumber">8.1</span> <span class="toctext">List of register settings</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-37"><a href="VGA_Hardware#See_Also"><span class="tocnumber">9</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-38"><a href="VGA_Hardware#External_Links"><span class="tocnumber">9.1</span> <span class="toctext">External Links</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Overview">Overview</span></h2>
+<p>While the VGA chip is quite a simple piece of hardware compared to modern video equipment, it is possibly one of the more complicated devices to program for, and especially in the old days knowing your way around this particular device was sufficient for establishing quite a reputation. While currently a legacy device, it is a good place to begin practicing your video driver skills. While a full-blown VGA driver might make an USB controller look trivial, there are fortunately many shortcuts available for taking.
+</p>
+<h3><span id="What.27s_not_covered"></span><span class="mw-headline" id="What's_not_covered">What's not covered</span></h3>
+<p>While this page tries to be a complete overview on what the VGA can do, it does not fully cover the whole set of graphics. After all, a video card only turns bytes in its memory into a signal on the connector on its backside. Determining what bytes to put in memory is only barely touched in the wiki in general — there are examples of plotting pixels and setting individual characters but your OS will determine what pixels are formed by an image and which characters are part of your title screen. On the remote end, monitors have their own way of dealing with signals. A lot of those settings dictated by monitors are needed by the video card, and each resolution comes with its own set of settings. You can find out your own set of settings by <a href="Video_Signals_And_Timing" title="Video Signals And Timing">using a set of equations</a>, but you can skip that step and reuse one of the examples provided at the <a href="VGA_Hardware#Sample_Register_Settings" title="VGA Hardware">example settings</a> instead. The <a href="VGA_Hardware#The_CRT_Controller" title="VGA Hardware">CRTC chapter</a> explains them in detail.
+</p>
+<h3><span class="mw-headline" id="Getting_started">Getting started</span></h3>
+<p>There's a fair share of <a href="VGA_Resources" title="VGA Resources">modesetting code available</a> around the web. The basic steps involve calculating the needed register values, writing them to the VGA, then continue with drawing. You'll need: 
+</p>
+<ul><li>Port I/O: The VGA needs 8-bit read/writes, and 16-bit writes.</li>
+<li>MMIO: The VGA uses uncached byte accesses to 0xA0000-0xBFFFF. In several cases, larger writes are also allowed.</li>
+<li>Functions to <a href="VGA_Hardware#VGA_Registers" title="VGA Hardware">read and write registers</a> for each VGA component - since there are many more registers than there are ports you will need a wrapper for this.</li>
+<li>A structure that contains the VGA display settings. For a nice list of things you want to set, you can use the example register settings part. Keep in mind that you might also want a structure for things that change during drawing, such as colours and offsets.</li>
+<li>A function that writes that structure to the device</li>
+<li>A function that fills out that structure. You can also use a hardcoded structure initially.</li></ul>
+<h3><span class="mw-headline" id="Hardware_components">Hardware components</span></h3>
+<p>The VGA can be divided in several parts. Historically, the predecessor of the VGA - the EGA - had several chips to perform each part in the system. These chips could be configured to your liking using the I/O Bus. On the VGA, these have been merged into one chip (with the exception of the DAC).
+</p><p>The following diagram shows which units are responsible for which parts:
+</p><p><a href="./File:VGA_overview.gif" class="image" title="Overview of VGA Hardware"><img alt="Overview of VGA Hardware" src="images/thumb/7/76/VGA_overview.gif/325px-VGA_overview.gif" decoding="async" width="325" height="449" srcset="images/thumb/7/76/VGA_overview.gif/488px-VGA_overview.gif 1.5x, images/7/76/VGA_overview.gif 2x" data-file-width="544" data-file-height="751" /></a>
+</p><p>This diagram is, however, a simplification for the ease of programming, and should not be considered correct.
+</p>
+<h2><span class="mw-headline" id="VGA_Registers">VGA Registers</span></h2>
+<p>The VGA has a lot (over 300!) internal registers, while occupying only a short range in the I/O address space. To cope, many registers are indexed. This means that you fill one field with the number of the register to write, and then read or write another field to get/set the actual register's value. 
+</p><p>All registers are accessed as 8 bit. The parts of a register that are not used should officially be preserved, although a lot of programs simply set them to zero. However, not all fields present in the VGA are documented here, so you will either look up a different reference, or preserve the undocumented fields. 
+</p><p>In the documentation below, a port number and possibly an index is provided. The port is usually the base port for indexed registers, or the actual port for single registers. 
+</p><p>Note that <a href="PCI" title="PCI">PCI</a> boards do *not* report the VGA addresses in their configuration space, and that the addresses can not be remapped. It is therefore not possible to properly operate two cards in VGA mode at the same time.
+</p>
+<h3><span class="mw-headline" id="Port_0x3C0">Port 0x3C0</span></h3>
+<p>This port is a confusing one: you write both the index and data bytes to the same port. The VGA keeps track of whether the next write is supposed to be the index or the data byte. However, the initial state is unknown. By reading from port 0x3DA it'll go to the index state. To read the contents, feed the index into port 0x3C0, then read the value from 0x3C1 (then read 0x3DA as it is not defined whether the VGA expects a data byte or index byte next).
+</p>
+<h3><span class="mw-headline" id="Port_0x3C2">Port 0x3C2</span></h3>
+<p>This is the miscellaneous output register. It uses port 0x3C2 for writing, and 0x3CC for reading. Bit 0 of this register controls the location of several other registers: if cleared, port 0x3D4 is mapped to 0x3B4, and port 0x3DA is mapped to 0x3BA. For readability, only the first port is listed and bit 0 is assumed to be set.
+</p>
+<h3><span id="Port_0x3C4.2C_0x3CE.2C_0x3D4"></span><span class="mw-headline" id="Port_0x3C4,_0x3CE,_0x3D4">Port 0x3C4, 0x3CE, 0x3D4</span></h3>
+<p>These are the most used indexed registers. The index byte is written to the port given, then the data byte can be read/written from port+1. Some programs use a single 16-bit access instead of two byte accesses for writing, which does effectively the same. (take care of byte ordering when doing so)
+</p><p>Port 0x3D4 has some extra requirements - it requires bit 0 of the <b>Miscellaneous Output Register</b> to be set before it responds to this address (if cleared, these ports appears at 0x3B4). Also, registers 0-7 of 0x3D4 are write protected by the protect bit (bit 7 of index 0x11)
+</p>
+<h3><span class="mw-headline" id="Port_0x3C6">Port 0x3C6</span></h3>
+<p>Port 0x3C6 only contains the DAC Mask Register, which can easily be accessed by a simple read/write operation on this port. Under normal conditions it should contain 0xff.
+</p>
+<h3><span class="mw-headline" id="Port_0x3C8">Port 0x3C8</span></h3>
+<p>Port 0x3C8, 0x3C9 and 0x3C7 control the DAC. Each register in the DAC consists of 18 bits, 6 bits for each color component. To write a color, write the color index to port 0x3C8, then write 3 bytes to 0x3C9 in the order red, green, blue. If you want to write multiple consecutive DAC entries, you only need to write the first entry's index to 0x3C8 then write all values to 0x3C9 in the order red, green, blue, red, green, blue, and so on. The accessed DAC entry will automatically increment after every three bytes written. To read the DAC entries, write the index to be read to 0x3C7, then read the bytes from port 0x3C9 in a similar fashion (as with writing, the index will increment after every three bytes read)
+</p>
+<h2><span class="mw-headline" id="Video_Memory_Layout">Video Memory Layout</span></h2>
+<p>The video memory consists of four 'planes' (individual units) of memory, each with a size of 64KB, giving the VGA 256k of video memory. Connected to it is the Sequencer, which interprets this memory to generate colors which are fed to the subsequent stages. The way colors are organized in this memory mainly depends on the color depth. 
+</p><p>Specific details about how memory is accessed from the host is can be found by reading about the Graphics Controller, detailed information about video memory is rendered can be found by reading about the Sequencer.
+</p>
+<h3><span class="mw-headline" id="Memory_Layout_in_16-color_graphics_modes">Memory Layout in 16-color graphics modes</span></h3>
+<p>16 colors means there are 4 bits used per color. The VGA has four planes, and for each pixel, and each plane holds one bit of each pixel drawn. Since the information for each pixel is scattered over four memory locations, this is the most difficult memory model.
+</p><p>Bit 7 of each address contains information about the first pixel, Bit 6 has information about the next pixel, and so on.
+</p><p>Plane 0 contains the first bits of all pixels, Plane 1 the second bits and so on.
+</p><p>Example:
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>
+</th>
+<th colspan="8">one byte
+</th></tr>
+<tr>
+<th>Bits
+</th>
+<th>7
+</th>
+<th>6
+</th>
+<th>5
+</th>
+<th>4
+</th>
+<th>3
+</th>
+<th>2
+</th>
+<th>1
+</th>
+<th>0
+</th></tr>
+<tr>
+<th>Plane 0
+</th>
+<td>0
+</td>
+<td>0
+</td>
+<td>0
+</td>
+<td>0
+</td>
+<td>1
+</td>
+<td>1
+</td>
+<td>1
+</td>
+<td>1
+</td></tr>
+<tr>
+<th>Plane 1
+</th>
+<td>0
+</td>
+<td>0
+</td>
+<td>1
+</td>
+<td>1
+</td>
+<td>1
+</td>
+<td>1
+</td>
+<td>0
+</td>
+<td>0
+</td></tr>
+<tr>
+<th>Plane 2
+</th>
+<td>0
+</td>
+<td>1
+</td>
+<td>1
+</td>
+<td>0
+</td>
+<td>0
+</td>
+<td>1
+</td>
+<td>1
+</td>
+<td>0
+</td></tr>
+<tr>
+<th>Plane 3
+</th>
+<td>0
+</td>
+<td>1
+</td>
+<td>0
+</td>
+<td>1
+</td>
+<td>0
+</td>
+<td>1
+</td>
+<td>0
+</td>
+<td>1
+</td></tr>
+<tr>
+<th>Colors displayed
+</th>
+<td>0000 (0)
+</td>
+<td>1100 (12)
+</td>
+<td>0110 (6)
+</td>
+<td>1010 (10)
+</td>
+<td>0011 (3)
+</td>
+<td>1111 (15)
+</td>
+<td>0101 (5)
+</td>
+<td>1001 (9)
+</td></tr></tbody></table>
+<p>The Plane Write Enable register is used to choose the plane to be written, then the memory can be written by accessing the corresponding address in memory.
+</p>
+<h3><span class="mw-headline" id="Memory_Layout_in_256-color_graphics_modes">Memory Layout in 256-color graphics modes</span></h3>
+<p>In this mode, each byte of video memory describes exactly one pixel. Pixels are generated by increasing address in linear mode, with all colors taken from plane 0. In planar mode (Also known as Mode X) each address describes 4 consecutive pixels, one from each plane. Plane 0 describing the first pixel, plane 1 the next, and so on. Technically speaking this is what always happens, but the standard 320x200x256 mode "chains" the planes such that 2 lowest order bits select the plane and the memory thus appears linear.
+</p><p>In linear mode, each byte in host memory corresponds to one pixel on the display, making this mode very easy to use. Mode X requires the use of Plane Write Enable register to select the plane to be written.
+</p>
+<h3><span class="mw-headline" id="Memory_Layout_in_text_modes">Memory Layout in text modes</span></h3>
+<p>In text mode, the screen is divided into character cells rather than pixels.
+Only three of the four planes are actually in use. Plane 0 contains the character codes for each cell, Plane 1 contains the respective attributes. 
+</p><p>Plane 2 contains the font data. For each of the 256 available characters this plane has 32 bytes reserved. Each byte represents one horizontal cross section through each character. The first byte of each group defines the top line, each next byte describes the rows below it. For every set bit, the foreground color is used, For every cleared bit, the background color is used.
+</p><p>Although 32 bytes are reserved for each character, only 16, 14, or 8 of them are commonly used, depending on the character height.
+</p><p>Planes 0 and 1 are accessible from the host by writing to the video memory range. Plane 0 is accessed on even addresses, plane 1 is accessed on odd addresses, with each consecutive 16-bit value describing the next character. Accessing plane 2 to change fonts requires <a href="VGA_Fonts" title="VGA Fonts">changes in addressing logic</a>.
+</p>
+<h3><span class="mw-headline" id="Memory_Layout_in_4-color_modes">Memory Layout in 4-color modes</span></h3>
+<p>The CGA was limited to 4 concurrent colors, with two bits each. The EGA adds two extra bits by adding a pair of extra planes, increasing from the old two to the current four planes per pixel. If you want a 4-color mode that means you just should not touch planes 2 + 3. 
+</p><p><b>Todo: determine the b/w/d, shift mode and odd/even mode for CGA compatibility (guesstimated at word mode, interleaved shift, odd/even enabled, i.e. equivalent to text mode except for the alphanumeric bit)</b>
+</p>
+<h2><span class="mw-headline" id="The_Graphics_Controller">The Graphics Controller</span></h2>
+<p>The Graphics Controller (Abbreviated to GC) is responsible for directing memory reads and writes to and from video memory.
+</p><p>The memory consists of four planes of 64k on a standard VGA. Each read and write operation selects one address within all of these planes, then operates on all four planes. This means that for each byte of data written, four bytes of video memory might potentially be changed.
+</p><p>Apart from a few standard modes, the implementation of various control bits vary between implementations. However, the exact details can be probed by performing writes in the mode to check, then reading it out in planar mode.
+</p><p>These modes seem to be consistent among all VGA compatibles and emulators I've tested:
+</p>
+<ul><li>Mode 3 (Text mode) (right now I can only set it by keeping a state dump of VGA registers of the old mode)</li>
+<li>Mode 11h (Planar 16 color mode)</li>
+<li>Mode 13h (Linear 256 color mode)</li>
+<li>Mode X (Planar 256 color mode)</li></ul>
+<p>I have yet to write code that enters the following standard modes on all hardware
+</p>
+<ul><li>Mode 04h (4 color mode) - Not tried, should be achieved by setting interleaved shift mode and ignoring planes 2 &amp; 3.</li></ul>
+<p>The Graphics Controller consists of of some addressing logic, and some specific read/write logic.
+</p><p>The Addressing logic controls the address in video memory to be accessed, and to some extent, the individual pages within it.
+</p><p>The Read/Write logic controls which planes of the memory are actually read or written, and how these values relate to the value being  sent by the CPU.
+</p><p><a href="./File:VGA_gc_addressdecode.gif" class="image" title="Datapaths in the Graphics Controller"><img alt="Datapaths in the Graphics Controller" src="images/b/bb/VGA_gc_addressdecode.gif" decoding="async" width="399" height="296" data-file-width="399" data-file-height="296" /></a>
+</p>
+<h3><span class="mw-headline" id="Addressing_Logic">Addressing Logic</span></h3>
+<p>Registers involved:
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Register Name
+</th>
+<th>Port
+</th>
+<th>Index
+</th>
+<th>7
+</th>
+<th>6
+</th>
+<th>5
+</th>
+<th>4
+</th>
+<th>3
+</th>
+<th>2
+</th>
+<th>1
+</th>
+<th>0
+</th></tr>
+<tr>
+<td>Sequencer Memory Mode Register
+</td>
+<td>0x3C4
+</td>
+<td>0x04
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>Chain 4
+</td>
+<td>Odd/Even Disable
+</td>
+<td>
+</td>
+<td>
+</td></tr></tbody></table>
+<h4><span class="mw-headline" id="Chain_4_Bit">Chain 4 Bit</span></h4>
+<p>The Chain-4 bit changes accesses to video mode from a planar mode when clear to a linear mode when set. While under common circumstances this bit is emulated properly, the way this bit actually works is however very different among implementations (especially emulators) and can have strange effects if you are unaware of it. What works in all cases, is if chain-4 matches the other settings that are common for established modes (i.e. if you enable chain-4, also make sure the other registers match the expected values for mode 13). Here is a list of differences between various implementations of Chain-4. Real hardware has so far proven to be consistent with the officially documented behavior.
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<td>
+</td>
+<th>Bochs
+</th>
+<th>Qemu
+</th>
+<th>Virtual PC
+</th>
+<th>ATI Card (X300)
+</th>
+<th>NVidia (GeForce 6 6150)
+</th></tr>
+<tr>
+<th>Chain 4 has effect on writes
+</th>
+<td style="background: #ddffdd">Yes
+</td>
+<td style="background: #ddffdd">Yes
+</td>
+<td style="background: #ddffdd">Yes
+</td>
+<td style="background: #ddffdd">Yes
+</td>
+<td style="background: #ddffdd">Yes
+</td></tr>
+<tr>
+<th>Chain 4 has effect on output
+</th>
+<td style="background: #ddffdd">Yes
+</td>
+<td style="background: #ffdddd">No
+</td>
+<td style="background: #ffdddd">No
+</td>
+<td style="background: #ffdddd">No
+</td>
+<td style="background: #ffdddd">No
+</td></tr>
+<tr>
+<th>Plane Write Enable takes effect on writes
+</th>
+<td style="background: #ffdddd">No
+</td>
+<td style="background: #ddffdd">Yes
+</td>
+<td style="background: #ffdddd">No
+</td>
+<td style="background: #ddffdd">Yes
+</td>
+<td style="background: #ddffdd">Yes
+</td></tr></tbody></table>
+<p>In bochs + VPC, as well as the hardware tested, Chain4 writes occur to this address:
+</p>
+<pre>plane  = addr &amp; 0x0003; // lower bits
+offset = addr &amp; 0xfffb; // rest of the bits. multiples of 4 wont get written
+</pre>
+<p>In qemu writes go here:
+</p>
+<pre>plane  = addr &amp; 0x0003; // lower bits
+offset = addr &gt;&gt; 2;     // only the first 16k of each page gets written.
+</pre>
+<p>Note the fact that in Bochs, Chain-4 alters the physical display of the screen (equivalent to what doubleword mode normally does). This makes Bochs possibly troublesome since you only need to toggle this bit to enter Mode-X, while real hardware also requires that you change doubleword mode into byte mode.
+</p>
+<h4><span id="Odd.2FEven_Disable_Bit"></span><span class="mw-headline" id="Odd/Even_Disable_Bit">Odd/Even Disable Bit</span></h4>
+<p>Seems to be a Don't Care bit in bochs+qemu
+</p><p>VPC generates some form of echo:
+</p>
+<pre>plane1 = addr &amp; 0x0001; // lowest bit
+plane2 = plane1 + 2;    // pick the other odd/even plane
+offset = addr &amp; 0xfffe; // generate the offset
+write (plane1, offset); // write to the plane
+write (plane2, offset); // write to the other plane
+</pre>
+<p>This matches the NVidia card, however my ATI card (and somewhat older, my V2x00 board) behaves slightly different (its pretty close though):
+</p>
+<pre>offset = addr &amp; 0xfff<b>f</b>; // generate the offset
+</pre>
+<p><b> There are probably some more things involved here, todo </b>
+</p>
+<h3><span id="Read.2FWrite_logic"></span><span class="mw-headline" id="Read/Write_logic">Read/Write logic</span></h3>
+<p>The Read/Write Logic performs several operations on the written/read data, and a set of internal registers called the latches. Reading from video memory loads these latches with the value emitted by video memory. Write operations use the latches as an additional data source, apart from the data written from the host processor.
+</p><p>The read/write logic has several different operation modes. These can be chosen by setting the Graphics Mode register. The VGA has four write modes and 2 read modes, which can be set independently. By default, the VGA operates in read mode 0 and write mode 0 in such a fashion that all written data goes straight to memory, and read data from each plane is ORed together.
+</p><p>Registers involved:
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Register Name
+</th>
+<th>Port
+</th>
+<th>Index
+</th>
+<th>7
+</th>
+<th>6
+</th>
+<th>5
+</th>
+<th>4
+</th>
+<th>3
+</th>
+<th>2
+</th>
+<th>1
+</th>
+<th>0
+</th></tr>
+<tr>
+<td>Graphics Mode Register
+</td>
+<td>0x3CE
+</td>
+<td>0x05
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>Read Mode
+</td>
+<td>
+</td>
+<td colspan="2">Write Mode
+</td></tr>
+<tr>
+<td>Map Mask Register
+</td>
+<td>0x3C4
+</td>
+<td>0x02
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td colspan="4">Memory Plane Write Enable
+</td></tr>
+<tr>
+<td>Enable Set/Reset Register
+</td>
+<td>0x3CE
+</td>
+<td>0x01
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td colspan="4">Enable Set/Reset
+</td></tr>
+<tr>
+<td>Set/Reset Register
+</td>
+<td>0x3CE
+</td>
+<td>0x00
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td colspan="4">Set/Reset Value
+</td></tr>
+<tr>
+<td>Data Rotate Register
+</td>
+<td>0x3CE
+</td>
+<td>0x03
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td colspan="2">Logical Operation
+</td>
+<td colspan="3">Rotate Count
+</td></tr>
+<tr>
+<td>Bit Mask Register
+</td>
+<td>0x3CE
+</td>
+<td>0x08
+</td>
+<td colspan="8">Bit Mask
+</td></tr></tbody></table>
+<p><b>Todo: Study effects of multibyte reads/writes on logic and latch operation</b>
+</p>
+<h4><span class="mw-headline" id="The_Latches">The Latches</span></h4>
+<p>Probably the most interesting part of the VGA's internal wiring is the presence of the data latches. In the old times, the VGA could only accept 8 bits at a time. The latches hold 4x8 bits, and are used as a temporary register for VGA reads and writes. By putting that register to good use, a DOS-era programmer could well exceed the data transfer rate that the 8-bit bus was capable of, and instead use the 32-bit pipeline onboard the video card.
+</p><p>The latches are written to whenever a load from video memory occurs. An address is supplied to video memory, which emits the 4 bytes, one for each plane, into the latches. From there, the video card determines what to send to the CPU. The latches are used again when writing to video memory. Together with the various read and write modes, the latches allowed video-to-video transfers, pattern and raster operations, as well as supplying original data for doing partial writes.
+</p>
+<h4><span class="mw-headline" id="Write_Mode_0">Write Mode 0</span></h4>
+<p>Write mode 0 is the standard write mode. 
+</p><p><a href="./File:VGA_gc_write0.gif" class="image" title="Write Mode 0 Logic"><img alt="Write Mode 0 Logic" src="images/1/1e/VGA_gc_write0.gif" decoding="async" width="419" height="607" data-file-width="419" data-file-height="607" /></a>
+</p><p>When a byte is written, it follows the following steps
+</p>
+<ul><li>The input byte is rotated right by the amount specified in Rotate Count, with all bits shifted off being fed into bit 7</li>
+<li>The resulting byte is distributed over 4 separate paths, one for each plane of memory</li>
+<li>If a bit in the Enable Set/Reset register is clear, the corresponding byte is left unmodified. Otherwise the byte is replaced by all 0s if the corresponding bit in Set/Reset Value is clear, or all 1s if the bit is one.</li>
+<li>The resulting value and the latch value are passed to the ALU</li>
+<li>Depending of the value of Logical Operation, the following operation is performed:</li></ul>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Value of Logical Operation
+</th>
+<th>Result
+</th></tr>
+<tr>
+<td>0 (0x00)
+</td>
+<td>The byte from the set/reset operation is forwarded
+</td></tr>
+<tr>
+<td>1 (0x08)
+</td>
+<td>Both inputs are ANDed together
+</td></tr>
+<tr>
+<td>2 (0x10)
+</td>
+<td>Both inputs are ORed together
+</td></tr>
+<tr>
+<td>3 (0x18)
+</td>
+<td>Both inputs are XORed together
+</td></tr></tbody></table>
+<ul><li>The Bit Mask Register is checked, for each set bit the corresponding bit from the ALU is forwarded. If the bit is clear the bit is taken directly from the Latch.</li>
+<li>The Memory Plane Write Enable field is ANDed with the input from the address logic. For each set bit in the result, the corresponding plane is loaded with the result.</li></ul>
+<h4><span class="mw-headline" id="Write_mode_3">Write mode 3</span></h4>
+<p>Write mode 3 can, among others, be used for transparent writes with a constant color
+</p><p><a href="./File:VGA_gc_write3.gif" class="image" title="Write mode 3 logic"><img alt="Write mode 3 logic" src="images/e/ec/VGA_gc_write3.gif" decoding="async" width="463" height="574" data-file-width="463" data-file-height="574" /></a>
+</p><p><b>Todo: thorough testing. This is currently an unverified interpretation of existing docs</b>
+</p><p>When a byte is written:
+</p>
+<ul><li>The input byte is rotated right by the amount specified in Rotate Count, with all bits shifted off being fed into bit 7</li>
+<li>The resulting value is ANDed with the Bit Mask Register, resulting in the bit mask to be applied.</li>
+<li>Each plane takes one bit from the Set/Reset Value register, and turns it into either 0x00 (if set) or 0xff (if clear)</li>
+<li>The computed bit mask is checked, for each set bit the corresponding bit from the set/reset logic is forwarded. If the bit is clear the bit is taken directly from the Latch. The result is sent towards memory.</li>
+<li>Finally, The Memory Plane Write Enable field and the input line from the address logic are ANDed together. The bits that remain set are the planes that are actually written.</li></ul>
+<p><b> Todo: more write modes, read modes </b>
+</p>
+<h2><span class="mw-headline" id="The_Sequencer">The Sequencer</span></h2>
+<p>The Sequencer is responsible to convert video memory to color indexes. Like the graphics controller, it has some special addressing logic, which is designed to iterate over the memory in a sensible manner to produce images out of video memory data.
+</p><p>The Sequencer either operates in text (alphanumeric) mode or graphics mode
+</p>
+<h3><span class="mw-headline" id="Alphanumeric_Mode">Alphanumeric Mode</span></h3>
+<p>In alphanumeric mode the four planes are assigned distinct tasks. Plane 0 contains character data, while plane 1 contains Attribute data. In a standard text mode, these planes are interleaved into host memory. Plane 2 holds the font data. When displaying text data, the sequencer loads the character/attribute pair for the current set of eight pixels, after which it uses the value for byte 0 to look up the corresponding character in plane 2 and adds the character line to get the font data needed. It then pops out the bits from MSB to LSB, generating the chosen foreground color when a 1 is encountered, and the background color when a 0 is encountered.
+</p><p>In typical text modes, the stored font is not directly accessible and needs some <a href="VGA_Fonts" title="VGA Fonts">changes in addressing logic</a> to be read or written.
+</p><p><b>TODO: schematics</b>
+</p><p><b>TODO: testing</b>
+</p>
+<h3><span class="mw-headline" id="Graphics_Mode">Graphics Mode</span></h3>
+<p>In graphics mode, operations can be divided into two steps: address computation and shift logic. The sequencer computes an address, then reads out the four planes from that address, and generates 8 pixels from these values.
+The shift logic has three operating modes: single, interleaved and 256-color shift. Although the VGA 'supports' various color depths, these are basically varations on 16-color modes.
+</p>
+<h4><span class="mw-headline" id="Shift_modes">Shift modes</span></h4>
+<p>While going through memory, the sequencer reads in a 4 bytes at a time from each of the four planes, then outputs 8 pixel colors. The VGA has three distinct modes of grouping this data into pixel values. The setting depends on two bits in a VGA register: the 256-color shift and interleaved shift bits. when both are off, Single shift mode is selected, otherwise the corresponding mode is used (256 color shift mode takes precedence over interleaved shift mode)
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Register Name
+</th>
+<th>Port
+</th>
+<th>Index
+</th>
+<th>7
+</th>
+<th>6
+</th>
+<th>5
+</th>
+<th>4
+</th>
+<th>3
+</th>
+<th>2
+</th>
+<th>1
+</th>
+<th>0
+</th></tr>
+<tr>
+<td>Graphics Mode Register
+</td>
+<td>0x3CE
+</td>
+<td>0x05
+</td>
+<td>
+</td>
+<td>256-Color Shift
+</td>
+<td>Interleaved Shift
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td></tr></tbody></table>
+<ul><li>Single shift mode</li></ul>
+<dl><dd>This mode is used in 16 color modes. For each pixel, one bit is popped off each plane and put together to form the value of a pixel. An example is given in <a href="VGA_Hardware#Memory_Layout_in_16-color_graphics_modes" title="VGA Hardware">Memory Layout in 16-color graphics modes</a></dd></dl>
+<ul><li>Interleaved Shift Mode</li></ul>
+<dl><dd>This mode makes 4-color modes relatively easy: 2 bits are popped off the most significant side of plane 0. The same is done with plane 2, which become the most significant bits (in 4-color modes, these are zero) After 4 pixels being popped from planes 0 and 2, the same is done with plane 1 and 3, until all 8 pixels have been generated.</dd></dl>
+<ul><li>256-Color Shift Mode</li></ul>
+<dl><dd>This mode causes 4 bits to be popped of each time. Plane 0 gives the first two pixels, Plane 1 the next two and so on. However, it is not defined in which order this happens. Because this mode is normally used solely in 256-color modes where the color logic will merge two 4-bits pixels together to form one 8-bit pixel, the communication inbetween is not certain. However, the bits can only be shifted out one of two possible sides, and supporting two possibilities can be overseen. Another problem to this method is, you can not detect which method is used without user intervention or keeping a list. Either way, this method either shifts left (from the msb) or right (from the lsb). If you know the ordering of your video card, you can create a linear 16-bit color mode.</dd></dl>
+<h3><span class="mw-headline" id="Address_Calculation">Address Calculation</span></h3>
+<p>For each group of pixels, the sequencer calculates the address in video memory where to load the data from. This address is calculated in three steps:
+</p><p>First the starting address of video memory is calculated: <b>TODO</b>
+</p><p>After that a scanline is rendered. The first address is read and the contents is split into pixels. Then the address is incremented by either 1, 2 or 4 for the next set of pixels until the scanline completes (the consequence of this is that each scanline is a multiple of eight pixels wide). The increment depends on wether the VGA is operating in "byte mode", "word mode", or "doubleword mode". These can be set using two bits: (doubleword modes takes precedence over byte/word mode)
+<b>TODO: Registers</b>
+</p><p>Once a scanline is complete, the original value at the start of the scanline is loaded, and the scanline counter is incremented. The VGA then does one of the following:
+</p>
+<ul><li>Add the virtual width to the offset (and going to the next sequence of pixel data in memory). You can change the virtual width to change the amount of free data between scanlines, which can be useful for scrolling screens.</li>
+<li>Leave the value unchanged (and draw the same scanline again, identically). This is done when doublescanning <b>TODO</b></li>
+<li>Reset the address to 0 (and start rendering from a different location in video memory) This can be used to create splitscreens <b>TODO</b></li></ul>
+<h2><span class="mw-headline" id="Color_Logic">Color Logic</span></h2>
+<p>This block revolves around the Attribute Controller, Palette RAM and DAC, which are together responsible for generating a color signal out of an index generated by the Sequencer.
+</p><p><b>TODO</b>
+</p>
+<h2><span class="mw-headline" id="The_CRT_Controller">The CRT Controller</span></h2>
+<p>The Cathode Ray Tube Controller, or CRTC, is the unit to create a video signal from the data produced by the DAC. By programming this unit you can control the resolution of your monitor, as well as some hardware overlay and panning effects.
+</p><p>The following diagram gives a quick overview of how the CRTC is generally configured (with register names)
+</p>
+<h3><span class="mw-headline" id="Resolution_and_Timing">Resolution and Timing</span></h3>
+<p><a href="./File:VGA_crtc.gif" class="image" title="CRTC output diagram"><img alt="CRTC output diagram" src="images/b/ba/VGA_crtc.gif" decoding="async" width="725" height="595" data-file-width="725" data-file-height="595" /></a>
+</p><p>Horizontal timings are based on character clocks (multiples of 8 or 9 pixels), Vertical timings are per-scanline. Since these easily exceed the 255 limit of one byte, the Overflow Register is used to store the high-order bits.
+</p><p>Horizontally and vertically, the area can be separated into four parts: 
+</p>
+<ul><li>Active Display: The data rendered from memory, from the human perspective this area equals the resolution.</li>
+<li>Overscan: the area around the Active Display. Although commonly black, this can be made visible by changing its colour. By default this is 8 pixels in size on each end.</li>
+<li>Blanking Area: When the CRTC disables the colour output. This is the black area around the screen. By changing this you can move, center, and scale the screen.</li>
+<li>Retrace Period: This area is not generally visible. This is just a signal sent to the monitor to go to the next scanline or the next frame. However, monitors may steal some of this time for the blanking area following it or vice versa. Consequently, the blanking sizes on either side are not equal to accommodate.</li></ul>
+<h4><span class="mw-headline" id="Registers">Registers</span></h4>
+<p>Registers involved in horizontal timing:
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Register Name
+</th>
+<th>Port
+</th>
+<th>Index
+</th>
+<th>7
+</th>
+<th>6
+</th>
+<th>5
+</th>
+<th>4
+</th>
+<th>3
+</th>
+<th>2
+</th>
+<th>1
+</th>
+<th>0
+</th></tr>
+<tr>
+<td>Horizontal Total Register
+</td>
+<td>0x3D4
+</td>
+<td>0x00
+</td>
+<td colspan="8">Horizontal Total
+</td></tr>
+<tr>
+<td>End Horizontal Display Register
+</td>
+<td>0x3D4
+</td>
+<td>0x01
+</td>
+<td colspan="8">Horizontal Display End
+</td></tr>
+<tr>
+<td>Start Horizontal Blanking Register
+</td>
+<td>0x3D4
+</td>
+<td>0x02
+</td>
+<td colspan="8">Horizontal Blanking Start
+</td></tr>
+<tr>
+<td>End Horizontal Blanking Register
+</td>
+<td>0x3D4
+</td>
+<td>0x03
+</td>
+<td>
+</td>
+<td colspan="2">Horizontal Display Skew
+</td>
+<td colspan="5">Horizontal Blanking End (bits 0..4)
+</td></tr>
+<tr>
+<td>Start Horizontal Retrace Register
+</td>
+<td>0x3D4
+</td>
+<td>0x04
+</td>
+<td colspan="8">Horizontal Retrace Start
+</td></tr>
+<tr>
+<td>End Horizontal Retrace Register
+</td>
+<td>0x3D4
+</td>
+<td>0x05
+</td>
+<td>H. Blanking End (bit 5)
+</td>
+<td colspan="2">
+</td>
+<td colspan="5">Horizontal Retrace End
+</td></tr></tbody></table>
+<p>Registers involved in vertical timing:
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Register Name
+</th>
+<th>Port
+</th>
+<th>Index
+</th>
+<th>7
+</th>
+<th>6
+</th>
+<th>5
+</th>
+<th>4
+</th>
+<th>3
+</th>
+<th>2
+</th>
+<th>1
+</th>
+<th>0
+</th></tr>
+<tr>
+<td>Vertical Total Register
+</td>
+<td>0x3D4
+</td>
+<td>0x06
+</td>
+<td colspan="8">Vertical Total (bits 0..7)
+</td></tr>
+<tr>
+<td>Overflow Register
+</td>
+<td>0x3D4
+</td>
+<td>0x07
+</td>
+<td>V.Retr.St. (9)
+</td>
+<td>V.Disp.End (9)
+</td>
+<td>V.Total (9)
+</td>
+<td>
+</td>
+<td>V.Blank.St. (8)
+</td>
+<td>V.Retr.St. (8)
+</td>
+<td>V.Disp.End (8)
+</td>
+<td>V.Total (8)
+</td></tr>
+<tr>
+<td>Maximum Scan Line Register
+</td>
+<td>0x3D4
+</td>
+<td>0x09
+</td>
+<td colspan="2">
+</td>
+<td>V.Blank.St. (9)
+</td>
+<td colspan="5">
+</td></tr>
+<tr>
+<td>Vertical Retrace Start Register
+</td>
+<td>0x3D4
+</td>
+<td>0x10
+</td>
+<td colspan="8">Vertical Retrace Start (bits 0..7)
+</td></tr>
+<tr>
+<td>Vertical Retrace End Register
+</td>
+<td>0x3D4
+</td>
+<td>0x11
+</td>
+<td colspan="4">
+</td>
+<td colspan="4">Vertical Retrace End
+</td></tr>
+<tr>
+<td>Vertical Display End Register
+</td>
+<td>0x3D4
+</td>
+<td>0x12
+</td>
+<td colspan="8">Vertical Display End (bits 0..7)
+</td></tr>
+<tr>
+<td>Vertical Blanking Start Register
+</td>
+<td>0x3D4
+</td>
+<td>0x15
+</td>
+<td colspan="8">Vertical Blanking Start (bits 0..7)
+</td></tr>
+<tr>
+<td>Vertical Blanking End Register
+</td>
+<td>0x3D4
+</td>
+<td>0x16
+</td>
+<td colspan="8">Vertical Blanking End (bits 0..6)
+</td></tr></tbody></table>
+<p>Other registers dealing with timing:
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Register Name
+</th>
+<th>Port
+</th>
+<th>Index
+</th>
+<th>7
+</th>
+<th>6
+</th>
+<th>5
+</th>
+<th>4
+</th>
+<th>3
+</th>
+<th>2
+</th>
+<th>1
+</th>
+<th>0
+</th></tr>
+<tr>
+<td>Miscellaneous Output Register
+</td>
+<td>0x3C2
+</td>
+<td>-
+</td>
+<td colspan="4">
+</td>
+<td colspan="2">Clock Select
+</td>
+<td colspan="2">
+</td></tr>
+<tr>
+<td>Clocking Mode Register
+</td>
+<td>0x3C4
+</td>
+<td>0x01
+</td>
+<td colspan="7">
+</td>
+<td colspan="2">9/8 Dot Mode
+</td></tr></tbody></table>
+<h4><span class="mw-headline" id="Timing_Model">Timing Model</span></h4>
+<p>The horizontal timing registers are based on a unit called 'character' (As they match one character in text mode). Each character equals 8 (<b>9/8 Dot Mode</b> is set) or 9 (<b>9/8 Dot Mode</b> is clear) pixels. Each scanline contains <b>Horizontal Total</b> + 5 characters, zero based. <b>Horizontal Display End</b> tells us the last character that is calculated from memory (i.e. the horizontal resolution in characters minus one). <b>Horizontal Blanking Start</b> and <b>Horizontal Retrace Start</b> give us the last character before either period is started. <b>Horizontal Blanking End</b> and <b>Horizontal Retrace End</b> need more explanation, as they only contain part of a number. When blanking or horizontal retrace is enabled the significant bits are checked against the character counter, and if these bits match the respective period will be ended. The quick solution is to calculate the appropriate values, compute the last character clock at which each period should be active, then AND it with 0x3F (Blank) or 0x1F (Retrace) to get the register's value. Note that the periods must be between 1 and 63(Blank)/31(Retrace) character clocks. To be safe, there must be at least one character of overscan on each side of the screen to avoid additional artefacts.
+</p><p>The vertical timing is similar, apart from the fact that these registers operate on scan lines (pixels) instead of characters. The <b>Vertical Retrace End</b> and <b>Vertical Blank End</b> registers work also similar, although they are different sizes. The Retrace End is 4 bits wide (AND with 0xF, period is 1-15 scanlines), The Blank End size is at least 7 bits (some say its 8, some say its 7),  so the value is computed by ANDing with 0xFF, with the period ranging from 1-127 scanlines. As with horizontal timing, at least one scan line of overscan must be present to avoid possible artefacts.
+</p><p>The clock can be selected using <b>Clock Select</b>. Only two of four possible clocks are present on all VGAs. A clock of 25MHz is selected when this field is zero, 28MHz is selected when this field equals 1. Some boards have other clocks under values 2 and 3, but you should not write these values unless you know the clock that is there. Note that selecting the 28MHz clock and 9 pixels per pixel results in the same timings as selecting the 25MHz clock and 8 pixels per character, only with different resolutions.
+</p><p>The refresh rates can be calculated as follows:
+</p>
+<ul><li>Horizontal Refresh Rate = Clock Frequency (in Hz) / total pixels horizontally</li>
+<li>Vertical Refresh Rate = Horizontal Refresh Rate / total scan lines</li></ul>
+<p>On a VGA monitor, the horizontal refresh rate should equal 31.25 kHz. Vertically, only 400 and 480 pixel resolutions are used.
+</p><p>If your monitor supports it, you can set virtually any crazy resolution you want. (provided the horizontal resolution is a multiple of 8 or 9 - 8 seems to be common) Most modern monitors allow anything between 400x300 and 800x600 being set this way.
+</p>
+<h4><span class="mw-headline" id="Sample_timing_scheme">Sample timing scheme</span></h4>
+<p>640x480 (16 colours) uses the following sizes: 
+</p>
+<ul><li>Timing: 25MHz dot clock, 8 pixels per character</li>
+<li>Totals: 800 pixels horizontally, (100 characters), 524 scan lines</li>
+<li>Active Display: 640x480 (80 characters, 480 scan lines)</li>
+<li>Overscan: 8 pixels (8 scan lines vertically / 1 character clock horizontally) on each side</li>
+<li>Horizontal Retrace: 12 characters (96 pixels)</li>
+<li>Vertical Retrace: 2 scan lines</li>
+<li>Blanking (Left): 2 characters (16 pixels)</li>
+<li>Blanking (Right): 4 characters (32 pixels)</li>
+<li>Blanking (Top): 24 scan lines</li>
+<li>Blanking (Bottom): 2 scan lines</li></ul>
+<p>Which should be VGA compatible
+</p>
+<h2><span class="mw-headline" id="Sample_Register_Settings">Sample Register Settings</span></h2>
+<p>These are the register values that can be loaded into the VGA to set a standard mode. Note that you should unlock the CRTC and disable output before loading these registers, and afterwards restoring these to be nice for old monitors that are around.
+</p><p>The pseudocode for changing modes is roughly as follows:
+</p>
+<pre>DisableDisplay   // disable output
+UnlockCRTC       // unlock registers
+
+LoadRegisters    // load registers
+ClearScreen      // clear the screen contents
+LoadFonts        // and for text mode, load fonts 
+                 // note that this may need to alter GC settings
+                 // so be sure to restore those after that
+
+LockCRTC         // optional: lock the registers again
+EnableDisplay    // make sure there is output
+</pre>
+<h3><span class="mw-headline" id="List_of_register_settings">List of register settings</span></h3>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Register name
+</th>
+<th>port
+</th>
+<th>index
+</th>
+<th>mode 3h (80x25 text mode)
+</th>
+<th>mode 12h (640x480 planar 16 color mode)
+</th>
+<th>mode 13h (320x200 linear 256-color mode)
+</th>
+<th>mode X (320x240 planar 256 color mode)
+</th></tr>
+<tr>
+<td>Mode Control
+</td>
+<td>0x3C0
+</td>
+<td>0x10
+</td>
+<td>0x0C
+</td>
+<td>0x01
+</td>
+<td>0x41
+</td>
+<td>0x41
+</td></tr>
+<tr>
+<td>Overscan Register
+</td>
+<td>0x3C0
+</td>
+<td>0x11
+</td>
+<td>0x00
+</td>
+<td>0x00
+</td>
+<td>0x00
+</td>
+<td>0x00
+</td></tr>
+<tr>
+<td>Color Plane Enable
+</td>
+<td>0x3C0
+</td>
+<td>0x12
+</td>
+<td>0x0F
+</td>
+<td>0x0F
+</td>
+<td>0x0F
+</td>
+<td>0x0F
+</td></tr>
+<tr>
+<td>Horizontal Panning
+</td>
+<td>0x3C0
+</td>
+<td>0x13
+</td>
+<td>0x08
+</td>
+<td>0x00
+</td>
+<td>0x00
+</td>
+<td>0x00
+</td></tr>
+<tr>
+<td>Color Select
+</td>
+<td>0x3C0
+</td>
+<td>0x14
+</td>
+<td>0x00
+</td>
+<td>0x00
+</td>
+<td>0x00
+</td>
+<td>0x00
+</td></tr>
+<tr>
+<td>Miscellaneous Output Register
+</td>
+<td>0x3C2
+</td>
+<td>N/A
+</td>
+<td>0x67
+</td>
+<td>0xE3
+</td>
+<td>0x63
+</td>
+<td>0xE3
+</td></tr>
+<tr>
+<td>Clock Mode Register
+</td>
+<td>0x3C4
+</td>
+<td>0x01
+</td>
+<td>0x00
+</td>
+<td>0x01
+</td>
+<td>0x01
+</td>
+<td>0x01
+</td></tr>
+<tr>
+<td>Character select
+</td>
+<td>0x3C4
+</td>
+<td>0x03
+</td>
+<td>0x00
+</td>
+<td>0x00
+</td>
+<td>0x00
+</td>
+<td>0x00
+</td></tr>
+<tr>
+<td>Memory Mode Register
+</td>
+<td>0x3C4
+</td>
+<td>0x04
+</td>
+<td>0x07
+</td>
+<td>0x02
+</td>
+<td>0x0E
+</td>
+<td>0x06
+</td></tr>
+<tr>
+<td>Mode Register
+</td>
+<td>0x3CE
+</td>
+<td>0x05
+</td>
+<td>0x10
+</td>
+<td>0x00
+</td>
+<td>0x40
+</td>
+<td>0x40
+</td></tr>
+<tr>
+<td>Miscellaneous Register
+</td>
+<td>0x3CE
+</td>
+<td>0x06
+</td>
+<td>0x0E
+</td>
+<td>0x05
+</td>
+<td>0x05
+</td>
+<td>0x05
+</td></tr>
+<tr>
+<td>Horizontal Total
+</td>
+<td>0x3D4
+</td>
+<td>0x00
+</td>
+<td>0x5F
+</td>
+<td>0x5F
+</td>
+<td>0x5F
+</td>
+<td>0x5F
+</td></tr>
+<tr>
+<td>Horizontal Display Enable End
+</td>
+<td>0x3D4
+</td>
+<td>0x01
+</td>
+<td>0x4F
+</td>
+<td>0x4F
+</td>
+<td>0x4F
+</td>
+<td>0x4F
+</td></tr>
+<tr>
+<td>Horizontal Blank Start
+</td>
+<td>0x3D4
+</td>
+<td>0x02
+</td>
+<td>0x50
+</td>
+<td>0x50
+</td>
+<td>0x50
+</td>
+<td>0x50
+</td></tr>
+<tr>
+<td>Horizontal Blank End
+</td>
+<td>0x3D4
+</td>
+<td>0x03
+</td>
+<td>0x82
+</td>
+<td>0x82
+</td>
+<td>0x82
+</td>
+<td>0x82
+</td></tr>
+<tr>
+<td>Horizontal Retrace Start
+</td>
+<td>0x3D4
+</td>
+<td>0x04
+</td>
+<td>0x55
+</td>
+<td>0x54
+</td>
+<td>0x54
+</td>
+<td>0x54
+</td></tr>
+<tr>
+<td>Horizontal Retrace End
+</td>
+<td>0x3D4
+</td>
+<td>0x05
+</td>
+<td>0x81
+</td>
+<td>0x80
+</td>
+<td>0x80
+</td>
+<td>0x80
+</td></tr>
+<tr>
+<td>Vertical Total
+</td>
+<td>0x3D4
+</td>
+<td>0x06
+</td>
+<td>0xBF
+</td>
+<td>0x0B
+</td>
+<td>0xBF
+</td>
+<td>0x0D
+</td></tr>
+<tr>
+<td>Overflow Register
+</td>
+<td>0x3D4
+</td>
+<td>0x07
+</td>
+<td>0x1F
+</td>
+<td>0x3E
+</td>
+<td>0x1F
+</td>
+<td>0x3E
+</td></tr>
+<tr>
+<td>Preset row scan
+</td>
+<td>0x3D4
+</td>
+<td>0x08
+</td>
+<td>0x00
+</td>
+<td>0x00
+</td>
+<td>0x00
+</td>
+<td>0x00
+</td></tr>
+<tr>
+<td>Maximum Scan Line
+</td>
+<td>0x3D4
+</td>
+<td>0x09
+</td>
+<td>0x4F
+</td>
+<td>0x40
+</td>
+<td>0x41
+</td>
+<td>0x41
+</td></tr>
+<tr>
+<td>Vertical Retrace Start
+</td>
+<td>0x3D4
+</td>
+<td>0x10
+</td>
+<td>0x9C
+</td>
+<td>0xEA
+</td>
+<td>0x9C
+</td>
+<td>0xEA
+</td></tr>
+<tr>
+<td>Vertical Retrace End
+</td>
+<td>0x3D4
+</td>
+<td>0x11
+</td>
+<td>0x8E
+</td>
+<td>0x8C
+</td>
+<td>0x8E
+</td>
+<td>0xAC
+</td></tr>
+<tr>
+<td>Vertical Display Enable End
+</td>
+<td>0x3D4
+</td>
+<td>0x12
+</td>
+<td>0x8F
+</td>
+<td>0xDF
+</td>
+<td>0x8F
+</td>
+<td>0xDF
+</td></tr>
+<tr>
+<td>Logical Width
+</td>
+<td>0x3D4
+</td>
+<td>0x13
+</td>
+<td>0x28
+</td>
+<td>0x28
+</td>
+<td>0x28
+</td>
+<td>0x28
+</td></tr>
+<tr>
+<td>Underline Location
+</td>
+<td>0x3D4
+</td>
+<td>0x14
+</td>
+<td>0x1F
+</td>
+<td>0x00
+</td>
+<td>0x40
+</td>
+<td>0x00
+</td></tr>
+<tr>
+<td>Vertical Blank Start
+</td>
+<td>0x3D4
+</td>
+<td>0x15
+</td>
+<td>0x96
+</td>
+<td>0xE7
+</td>
+<td>0x96
+</td>
+<td>0xE7
+</td></tr>
+<tr>
+<td>Vertical Blank End
+</td>
+<td>0x3D4
+</td>
+<td>0x16
+</td>
+<td>0xB9
+</td>
+<td>0x04
+</td>
+<td>0xB9
+</td>
+<td>0x06
+</td></tr>
+<tr>
+<td>Mode Control
+</td>
+<td>0x3D4
+</td>
+<td>0x17
+</td>
+<td>0xA3
+</td>
+<td>0xE3
+</td>
+<td>0xA3
+</td>
+<td>0xE3
+</td></tr></tbody></table>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="External_Links">External Links</span></h3>
+<ul><li><a rel="nofollow" class="external free" href="http://tinyvga.com/vga-timing">http://tinyvga.com/vga-timing</a> — VGA Signal Timing</li>
+<li><a rel="nofollow" class="external free" href="http://www.osdever.net/FreeVGA/vga/vga.htm">http://www.osdever.net/FreeVGA/vga/vga.htm</a> — includes some things not explained here</li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211122022
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.052 seconds
+Real time usage: 0.053 seconds
+Preprocessor visited node count: 219/1000000
+Post‐expand include size: 3083/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 3/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 0/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    5.084      1 -total
+ 49.86%    2.535      1 Template:Video_warning
+  9.44%    0.480     10 Template:Wikitable
+  7.74%    0.394      9 Template:Yes
+  7.08%    0.360      6 Template:No
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:1697-0!canonical and timestamp 20250211122022 and revision id 29339.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=VGA_Hardware&amp;oldid=29339">https://wiki.osdev.org/index.php?title=VGA_Hardware&amp;oldid=29339</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="./Category:VGA" title="Category:VGA">VGA</a></li><li><a href="./Category:Video" title="Category:Video">Video</a></li><li><a href="./Category:Hardware" title="Category:Hardware">Hardware</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=VGA+Hardware" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="VGA_Hardware#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="VGA_Hardware" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="mw-list-item"><a href="./Talk:VGA_Hardware" rel="discussion" title="Discussion about the content page [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="VGA_Hardware"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=VGA_Hardware&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=VGA_Hardware&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/VGA_Hardware" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/VGA_Hardware" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=VGA_Hardware&amp;oldid=29339" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=VGA_Hardware&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 10 January 2025, at 02:35.</li>
+	<li id="footer-info-0">This page has been accessed 25,179 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=VGA_Hardware&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.052","walltime":"0.053","ppvisitednodes":{"value":219,"limit":1000000},"postexpandincludesize":{"value":3083,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":3,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":0,"limit":5000000},"timingprofile":["100.00%    5.084      1 -total"," 49.86%    2.535      1 Template:Video_warning","  9.44%    0.480     10 Template:Wikitable","  7.74%    0.394      9 Template:Yes","  7.08%    0.360      6 Template:No"]},"cachereport":{"timestamp":"20250211122022","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":94});});</script>
+</body>
+</html>

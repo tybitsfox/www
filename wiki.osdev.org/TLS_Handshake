@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>TLS Handshake - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"64d6e13783fff042b3125d91","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"TLS_Handshake","wgTitle":"TLS Handshake","wgCurRevisionId":28023,"wgRevisionId":28023,"wgArticleId":3912,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","In Progress","Security"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"TLS_Handshake","wgRelevantArticleId":3912,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],
+"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","mmv.head","mmv.bootstrap.autostart","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-TLS_Handshake rootpage-TLS_Handshake skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">TLS Handshake</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="TLS_Handshake#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="TLS_Handshake#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><center>
+<table style="border: 1px solid #cfcfbf; margin-top: 25px; margin-bottom: 25px; background-color: #f0f0ff; text-align: center;">
+<tbody><tr>
+<td>
+<p><a href="./File:Under_Construction.png" class="image" title="This page is under construction!"><img alt="This page is under construction!" src="images/1/14/Under_Construction.png" decoding="async" width="50" height="50" data-file-width="50" data-file-height="50" /></a>
+This page or section is a work in progress and may thus be incomplete. Its content may be changed in the near future.
+</p>
+</td>
+<td>
+</td></tr></tbody></table>
+</center>
+<p>Any TLS communication starts with a TLS handshake, which establishes what protocol will be used. We will focus on this page about what happens when the TLS_DHE_RSA_WITH_AES_128_CBC_SHA cipher suite is used (see <a href="SSL/TLS" title="SSL/TLS">SSL/TLS</a> for more information about what this means)
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="TLS_Handshake#Handshake_Overview"><span class="tocnumber">1</span> <span class="toctext">Handshake Overview</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="TLS_Handshake#Client_Hello_Message"><span class="tocnumber">2</span> <span class="toctext">Client Hello Message</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="TLS_Handshake#Server_Hello_Message"><span class="tocnumber">3</span> <span class="toctext">Server Hello Message</span></a></li>
+<li class="toclevel-1 tocsection-4"><a href="TLS_Handshake#Certificate_Message"><span class="tocnumber">4</span> <span class="toctext">Certificate Message</span></a></li>
+<li class="toclevel-1 tocsection-5"><a href="TLS_Handshake#Key_Exchange"><span class="tocnumber">5</span> <span class="toctext">Key Exchange</span></a></li>
+<li class="toclevel-1 tocsection-6"><a href="TLS_Handshake#Server_Key_Exchange_Message"><span class="tocnumber">6</span> <span class="toctext">Server Key Exchange Message</span></a></li>
+<li class="toclevel-1 tocsection-7"><a href="TLS_Handshake#Server_Hello_Done_Message"><span class="tocnumber">7</span> <span class="toctext">Server Hello Done Message</span></a></li>
+<li class="toclevel-1 tocsection-8"><a href="TLS_Handshake#Client_Key_Exchange_Message"><span class="tocnumber">8</span> <span class="toctext">Client Key Exchange Message</span></a></li>
+<li class="toclevel-1 tocsection-9"><a href="TLS_Handshake#Change_Cipher_Spec_Message"><span class="tocnumber">9</span> <span class="toctext">Change Cipher Spec Message</span></a></li>
+<li class="toclevel-1 tocsection-10"><a href="TLS_Handshake#Another_Key_Exchange:_Elliptical_Curve_Diffie_Hellman_Ephemeral"><span class="tocnumber">10</span> <span class="toctext">Another Key Exchange: Elliptical Curve Diffie Hellman Ephemeral</span></a></li>
+<li class="toclevel-1 tocsection-11"><a href="TLS_Handshake#Another_Key_Exchange:_RSA"><span class="tocnumber">11</span> <span class="toctext">Another Key Exchange: RSA</span></a></li>
+<li class="toclevel-1 tocsection-12"><a href="TLS_Handshake#SSL_Certificate_(optional)"><span class="tocnumber">12</span> <span class="toctext">SSL Certificate (optional)</span></a></li>
+<li class="toclevel-1 tocsection-13"><a href="TLS_Handshake#Encrypted_Handshake_Message"><span class="tocnumber">13</span> <span class="toctext">Encrypted Handshake Message</span></a></li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Handshake_Overview">Handshake Overview</span></h2>
+<p>Most packets during the communication are of type Handshake (0x16) and are followed by a Handshake packet header:
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">__attribute__</span><span class="p">((</span><span class="n">packed</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">content_type</span><span class="p">;</span><span class="w">  </span><span class="c1">// 0x16</span>
+<span class="w">	</span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">version</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">length</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">TLSRecord</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+<p>This header may be followed by another TLS header, such as a TLS Handshake header. Like for a TCP connection, a TLS connection starts with a handshake between the client and the server:
+</p>
+<ul><li>The client sends a Client Hello message, including a list of 32-byte list of random data and the list of its supported cipher suites. In our example we only send one supported cipher suite (code 0x0033)</li>
+<li>The server responds with a Server Hello message, telling the client what cipher suite is going to be used as well as its own 32-byte list of random data</li>
+<li>The server sends its certificates. These are used by the client to verify that it is actually talking to the site it thinks it is talking to, as opposed to a malicious site</li>
+<li>The server sends a Server Key Exchange message, initiating the key exchange and signing it with its public key</li>
+<li>The server sends a Server Hello Done message, indicating it is waiting for the client</li>
+<li>The client sends a Client Key Exchange message, containing its part of the key exchange transaction</li>
+<li>The client sends a Change Cipher Spec message</li>
+<li>The client sends a Encrypted Handshake Message</li>
+<li>The server sends a Change Cipher Spec</li>
+<li>The server sends a Encrypted Handshake Message</li>
+<li>The client and the server can communicate by exchanging encrypted Application Data messages</li></ul>
+<p>The Change Cipher Spec message tells the other party its is OK with the terms of the handshake.
+</p><p>The Encrypted Handshake messages are the first ones to be sent encrypted. They contain a hash of the initial handshake messages and are here to ensure these were not tampered with.
+</p><p>Any subsequent communication is of type Application Data and encrypted.
+</p>
+<h2><span class="mw-headline" id="Client_Hello_Message">Client Hello Message</span></h2>
+<p>The Client Hello message initiates the TLS handshake. It is composed of a specific header, followed by some (optional) extensions, followed by some optional padding. If some servers such as wikipedia.org are quite forgiving in the types of Client Hello messages they accept, others such as Google require the Client Hello message to be exactly 512 bytes (excluding the TLS Record header) and declare a server_name extension
+</p><p>Here is an example of a Client Hello message:
+</p>
+<div class="mw-highlight mw-highlight-lang-text mw-content-ltr" dir="ltr"><pre><span></span>0000   01 00 01 fc 03 03 57 16 ea ce ec 93 89 5c 4a 18
+0010   d3 1c 5f 37 9b b3 05 b4 32 08 29 39 b8 3e e0 9f
+0020   9a 96 ba be 0a 40 00 00 02 00 33 01 00 01 d1 ff
+0030   01 00 01 00 00 00 00 16 00 14 00 00 11 77 77 77
+0040   2e 77 69 6b 69 70 65 64 69 61 2e 6f 72 67 00 0d
+0050   00 12 00 10 06 01 06 03 05 01 05 03 04 01 04 03
+0060   02 01 02 03 00 0b 00 02 01 00 00 0a 00 06 00 04
+0070   00 17 00 18 00 15 01 88 00 00 00 00 00 00 00 00
+0080   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+...
+01e0   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+01f0   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+</pre></div>
+<ul><li>0x01: Client Hello handshake type</li>
+<li>0x0001FC: size=508 (512-4)</li>
+<li>0x0303: TLS 1.2</li>
+<li>0x5716...0A40: 32-bytes random client data</li>
+<li>0x00: session ID length=0 (if it was not null, it would be followed by the session ID)</li>
+<li>0x0002: Cipher Suites Length=2 (1 cipher suite supported)
+<ul><li>0x0033: TLS_DHE_RSA_WITH_AES_128_CBC_SHA cipher suite code</li></ul></li>
+<li>0x01: number of compression methods=1
+<ul><li>0x00: compression method=null</li></ul></li>
+<li>0x01D1: extensions length=465</li>
+<li>0xFF01: extension type=renegotiation_info
+<ul><li>0x0001: length=1</li>
+<li>0x00: renegotiation info extension length=0</li></ul></li>
+<li>0x0000: extension type=server_name (the domain name we are trying to contact)
+<ul><li>0x0016: length=22</li>
+<li>0x0014: server name list length=20</li>
+<li>0x00: server name type=host_name</li>
+<li>0x0011: server name length=17</li>
+<li>0x7777772E...7267: "www.wikipedia.org"</li></ul></li>
+<li>0x000D: extension type=signature_algorithms (the signature algorithms supported)
+<ul><li>0x0012: length=18</li>
+<li>0x0010: signature hash algorithms length=16
+<ul><li>0x0601: SHA512 + RSA</li>
+<li>0x0603: SHA512 + ECDSA</li>
+<li>0x0501: SHA384 + RSA</li>
+<li>0x0503: SHA384 + ECDSA</li>
+<li>0x0401: SHA256 + RSA</li>
+<li>0x0403: SHA256 + ECDSA</li>
+<li>0x0201: SHA1 + RSA</li>
+<li>0x0203: SHA1 + ECDSA</li></ul></li></ul></li>
+<li>0x000B: extension type=ec_point_formats (only used if you use elliptic curve cryptography)
+<ul><li>0x0002: length=2</li>
+<li>0x02: EC point formats length=1</li>
+<li>0x00: EC point format=uncompressed</li></ul></li>
+<li>0x000A: extension type=elliptic_curves (Elliptic Curve types supported - only used if you use elliptic curve cryptography)
+<ul><li>0x0006: length=6</li>
+<li>0x0004: elliptic curve length=4 (2 curves)</li>
+<li>0x0017: secp256r1 elliptic curve</li>
+<li>0x0018: secp384r1 elliptic curve</li></ul></li>
+<li>0x0015: extension type=padding (we fill the rest of the 512 bytes with zeros)
+<ul><li>0x0188: length=392</li>
+<li>0x0000...0000: 392 bytes of padding data</li></ul></li></ul>
+<h2><span class="mw-headline" id="Server_Hello_Message">Server Hello Message</span></h2>
+<p>The Server Hello message indicates which cipher suite is going to be used and provides some server random data that will be used later on.
+</p><p>Here is a sample Server Hello message:
+</p>
+<div class="mw-highlight mw-highlight-lang-text mw-content-ltr" dir="ltr"><pre><span></span>0000   02 00 00 4d 03 03 c8 ca 5c 5f 83 79 eb 8f 8a 16
+0010   86 c2 07 d7 42 c7 ee b9 dc 71 b7 f1 71 9f eb 51
+0020   66 24 b4 1e 4f 6c 20 e4 02 80 10 1d ea 7f aa ee
+0030   5d 4f ac 53 49 29 25 ec 29 a8 b7 23 fa ef 24 d4
+0040   47 2e 90 7b 99 36 2b 00 33 00 00 05 ff 01 00 01
+0050   00
+</pre></div>
+<ul><li>0x02: Handshake type=Server Hello</li>
+<li>0x00004D: length=77</li>
+<li>0x0303: TLS version 1.2</li>
+<li>0xC8CA...4F6C: 32-bytes server random data</li>
+<li>0x20: session ID length=32</li>
+<li>0xE402...362B: session ID (can be used in a future TLS connection to avoid going through the handshake again)</li>
+<li>0x0033: cipher suite used=TLS_DHE_RSA_WITH_AES_128_CBC_SHA</li>
+<li>0x00: compression method used=null</li>
+<li>0x0005: extensions length=5</li>
+<li>0xFF01: extension type=renegotiation_info
+<ul><li>0x0001: length=1</li>
+<li>0x00: renegotiation info extension length=0</li></ul></li></ul>
+<h2><span class="mw-headline" id="Certificate_Message">Certificate Message</span></h2>
+<p>The server then sends a Certificate message containing its SSL Certificate chain. The first certificate is the server's SSL certificate. The next certificate is the certificate from a Certificate Authority (CA) which signed the first certificate. The next certificate signs the previous certificate, and so on. The last certificate in the chain should belong to a root CA and is self-signed (each TLS client should have a list of all the root CAs)
+</p><p>Here is how the Certificate Message is encoded:
+</p>
+<ul><li>0x0B: handshake type=Certificate</li>
+<li>0x000C58: length=3160</li>
+<li>0x000C55: certificates length=3157
+<ul><li>0x0007E2: certificate #1 Length=2018
+<ul><li>0x3082...C0F3: first certificate (ASN.1 encoded)</li></ul></li>
+<li>0x00046D: certificate #2 length=1133
+<ul><li>0x3080...4998: second certificate (ASN.1 encoded)</li></ul></li></ul></li></ul>
+<h2><span class="mw-headline" id="Key_Exchange">Key Exchange</span></h2>
+<p>TLS encryption is performed using symmetric encryption. The client and server thus need to agree on a secret key. This is done in the key exchange protocol.
+</p><p>In our example, TLS is using the DHE/RSA algorithms: the Diffie-Hellman Ephemeral protocol is used to come up with the secret key, and the server is using the RSA protocol to sign the numbers it sends to the client (the signature is linked to its SSL certificate) to ensure that a third party cannot inject a malicious number. The upside of DHE is that it is using a temporary key that will be discarded afterwards. Key exchange protocols such as DH or RSA are using numbers from the SSL certificate. As a result, a leak of the server's private key (for example through <a rel="nofollow" class="external text" href="https://en.wikipedia.org/wiki/Heartbleed">Heartbleed</a>) means that a previously recorded SSL/TLS encryption can be decrypted. Ephemeral key exchange protocols such as DHE or ECDHE offer so-called forward secrecy and are safe even if the server's private key is later compromised.
+</p><p>Diffie-Hellman Ephemeral works as follows:
+</p>
+<ul><li>The server comes up with a secret number y, with a number g and a modulo p (p typically being a 1024 bit integer) and sends (p, g, pubKey=g<sup>y</sup> mod p) to the client in its "Server Key Exchange" message. It also sends a signature of the Diffie-Hellman parameters (see SSL Certificate section)</li>
+<li>The client comes up with a secret number x and sends pubKey=g<sup>x</sup> mod p to the server in its "Client Key Exchange" message</li>
+<li>The client and server derive a common key premaster_secret = (g<sup>x</sup>)<sup>y</sup> mod p = (g<sup>y</sup>)<sup>x</sup> mod p = g<sup>xy</sup> mod p. If p is large enough, it is extremely hard for anyone knowing only g<sup>x</sup> and g<sup>y</sup> (which were transmitted in clear) to find that key.</li></ul>
+<p>Because computing g<sup>xy</sup> mod p using 1024-bytes integers can be tedious in most programming languages, if security is not a concern, one way to avoid this is to use x=1. This way, premaster_secret is just g<sup>y</sup> mod p, a value directly sent by the server. The security in such a case is of course compromised.
+</p><p>premaster_key is however only a first step. Both client and server uses the PRF function to come up with a 48-byte master secret. The PRF function is used once again to generate a 104-bytes series of data which will represent all the secret keys used in the conversation (the length may differ depending on the cipher suite used):
+</p>
+<div class="mw-highlight mw-highlight-lang-python mw-content-ltr" dir="ltr"><pre><span></span><span class="c1"># g_y, g and p are provided in the Server Key Exchange message</span>
+<span class="c1"># The client determines x</span>
+<span class="n">premaster_secret</span> <span class="o">=</span> <span class="nb">pow</span><span class="p">(</span><span class="n">g_y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+
+<span class="c1"># client_random and sever_random are the 32-bytes random data from the Client Hello and Server Hello messages</span>
+<span class="n">master_secret</span> <span class="o">=</span> <span class="n">PRF</span><span class="p">(</span><span class="n">premaster_secret</span><span class="p">,</span> <span class="s2">&quot;master secret&quot;</span><span class="p">,</span> <span class="n">client_random</span> <span class="o">+</span> <span class="n">server_random</span><span class="p">,</span> <span class="mi">48</span><span class="p">)</span>
+<span class="n">keys</span> <span class="o">=</span> <span class="n">PRF</span><span class="p">(</span><span class="n">master_secret</span><span class="p">,</span> <span class="s2">&quot;key expansion&quot;</span><span class="p">,</span> <span class="n">server_random</span> <span class="o">+</span> <span class="n">client_random</span><span class="p">,</span> <span class="mi">104</span><span class="p">)</span>
+
+<span class="c1"># The MAC keys are 20 bytes because we are using HMAC+SHA1</span>
+<span class="n">client_write_MAC_key</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">20</span><span class="p">]</span>
+<span class="n">server_write_MAC_key</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[</span><span class="mi">20</span><span class="p">:</span><span class="mi">40</span><span class="p">]</span>
+<span class="c1"># The client and server keys are 16 bytes because we are using AES 128-bit aka a 128 bit = 16 bytes key</span>
+<span class="n">client_write_key</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[</span><span class="mi">40</span><span class="p">:</span><span class="mi">56</span><span class="p">]</span>
+<span class="n">server_write_key</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[</span><span class="mi">56</span><span class="p">:</span><span class="mi">72</span><span class="p">]</span>
+<span class="c1"># The IVs are always 16 bytes because AES encrypts blocks of 16 bytes</span>
+<span class="n">client_write_IV</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[</span><span class="mi">72</span><span class="p">:</span><span class="mi">88</span><span class="p">]</span>
+<span class="n">server_write_IV</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[</span><span class="mi">88</span><span class="p">:</span><span class="mi">104</span><span class="p">]</span>
+</pre></div>
+<p>Note how different secret keys are used for the client and for the server, as well as for encryption and to compute the MAC.
+</p>
+<h2><span class="mw-headline" id="Server_Key_Exchange_Message">Server Key Exchange Message</span></h2>
+<p>The server then sends its part of the key exchange. In the following case it will send the Diffie-Hellman parameters p, g and pubKey=g<sup>y</sup>
+</p>
+<ul><li>0x0C: handshake type=server key exchange</li>
+<li>0x00030B: length=779</li>
+<li>0x0100: p length=256
+<ul><li>.....&#160;: 256-bytes p (1024-bit integer)</li></ul></li>
+<li>0x0001: g length=1
+<ul><li>0x02: g = 2</li></ul></li>
+<li>0x0100: pubKey length
+<ul><li>...&#160;: 256-bytes pubKey</li></ul></li>
+<li>0x0601: signature hash algorithm used to sign the Diffie-Hellman parameters=SHA512+RSA</li>
+<li>0x0100: signature length=256
+<ul><li>...&#160;: 256-bytes signature</li></ul></li></ul>
+<h2><span class="mw-headline" id="Server_Hello_Done_Message">Server Hello Done Message</span></h2>
+<p>This message indicates that the server is done and is awaiting for client input.
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">__attribute__</span><span class="p">((</span><span class="n">packed</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">handshake_type</span><span class="p">;</span><span class="w">  </span><span class="c1">// 0x0E</span>
+<span class="w">	</span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">length</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span><span class="w">  </span><span class="c1">// 0x000000</span>
+<span class="p">}</span><span class="w"> </span><span class="n">TLSServerHelloDone</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+<h2><span class="mw-headline" id="Client_Key_Exchange_Message">Client Key Exchange Message</span></h2>
+<p>The client then sends its key exchange parameters: pubKey=g<sup>x</sup>
+</p>
+<ul><li>0x10: handshake type=client key exchange</li>
+<li>0x000102: length=258</li>
+<li>0x0100: pubKey length=256</li>
+<li>...: 256-bytes pubKey</li></ul>
+<h2><span class="mw-headline" id="Change_Cipher_Spec_Message">Change Cipher Spec Message</span></h2>
+<p>The client sends the Change Cipher Spec message to indicate it has completed its part of the handshake. The next message the server will expect is the Encrypted Handshake Message.
+</p><p>The whole message (including the TLS Record header) is 6 bytes long:
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">__attribute__</span><span class="p">((</span><span class="n">packed</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">content_type</span><span class="p">;</span><span class="w">  </span><span class="c1">// 0x14</span>
+<span class="w">        </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">version</span><span class="p">;</span><span class="w"> </span><span class="c1">// 0x0303 for TLS 1.2</span>
+<span class="w">	</span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">length</span><span class="p">;</span><span class="w">  </span><span class="c1">// 0x01</span>
+<span class="w">        </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">content</span><span class="p">;</span><span class="w">  </span><span class="c1">// 0x01</span>
+<span class="p">}</span><span class="w"> </span><span class="n">TLSChangeCipherSpec</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+<h2><span class="mw-headline" id="Another_Key_Exchange:_Elliptical_Curve_Diffie_Hellman_Ephemeral">Another Key Exchange: Elliptical Curve Diffie Hellman Ephemeral</span></h2>
+<p>If Diffie-Hellman is a very powerful algorithm, it requires very large numbers to be considered secure (1024-bit at minimum). A variant is Elliptical Curve Diffie-Hellman, which is much harder to break even with 256-bit numbers. Numerous TLS cipher suites now rely on the ECDHE_RSA key exchange instead of DHE_RSA, like in the TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA cipher suite.
+</p><p>Elliptic Curve Diffie-Hellman works as follows: consider a point G = (x, y) on a curve y<sup>2</sup> = x<sup>3</sup> + a.x + b mod p. Both parties come up with secret numbers secret1 and secret2, and will send each other G.secret1 and G.secret2 (G.secret1 means multiplying the point G to secret1 using Elliptic Curve point multiplication). The shared secret key is G.secret1.secret2.
+</p><p>TLS can use the ECDHE key exchange to come up with an ephemeral shared secret key the following way:
+</p>
+<ul><li>The server indicates in the Server Key Exchange message what type of curve is going to be used (secp256r1 is a very common one). This tells what parameters a, b, p and G to use (see <a rel="nofollow" class="external autonumber" href="http://www.secg.org/sec2-v2.pdf">[1]</a> to see the domain parameters for each curve)</li>
+<li>The server comes up with a random 256-bit number (or whatever the curve says) server_secret and sends pubKey = G*server_secret in the Server Key Exchange message. pubKey is sent as a 65-bytes block composed of the concatenation 0x04 | Gx | Gy (both numbers being 32-bytes long)</li>
+<li>The client comes up with a random 256-bit number client_secret and sends pubKey = G*client_secret in the Client Key Exchange message. pubKey is sent in the same format as the server's</li>
+<li>Both parties will derive premaster_secret by computing server_pubKey * client_secret = client_pubKey * server_secret = G * client_secret * server_secret. The x coordinate of this result is the premaster_secret</li>
+<li>Once premaster_secret is determined, the rest of the computation works the same regardless of the key exchange protocol used</li></ul>
+<p>Regarding how to compute elliptic curve point multiplication, Wikipedia offers <a rel="nofollow" class="external text" href="https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication">more details</a>. Note that, because we are only dealing with integers, you should use <a rel="nofollow" class="external text" href="https://en.wikipedia.org/wiki/Modular_multiplicative_inverse">modular multiplicative inverse</a> instead of divisions.
+</p><p>If you want to test Elliptic Curves in Python, <a rel="nofollow" class="external text" href="https://pypi.python.org/pypi/tinyec">TinyEC</a> is a very useful package (along with the <a rel="nofollow" class="external text" href="https://github.com/alexmgr/tinyec">source code</a> in pure Python):
+</p>
+<div class="mw-highlight mw-highlight-lang-python mw-content-ltr" dir="ltr"><pre><span></span><span class="kn">import</span> <span class="nn">tinyec.ec</span> <span class="k">as</span> <span class="nn">ec</span>
+<span class="kn">import</span> <span class="nn">tinyec.registry</span> <span class="k">as</span> <span class="nn">reg</span>
+
+<span class="c1"># Get the domain parameters for the named curve specified in the Server Key Exchange message</span>
+<span class="n">curve</span> <span class="o">=</span> <span class="n">reg</span><span class="o">.</span><span class="n">get_curve</span><span class="p">(</span><span class="s2">&quot;secp256r1&quot;</span><span class="p">)</span>
+
+<span class="c1"># Comes up with a random 256-bit (32 bytes) client_secret</span>
+<span class="c1"># curve.g is a point on the elliptic curve, defined by the domain parameters</span>
+<span class="c1"># We multiply it with client_secret to obtain the public key</span>
+<span class="n">client_pubKey</span> <span class="o">=</span> <span class="n">curve</span><span class="o">.</span><span class="n">g</span> <span class="o">*</span> <span class="n">client_secret</span>
+<span class="c1"># Retrieved from the Server Key Exchange message</span>
+<span class="n">server_pubKey</span> <span class="o">=</span> <span class="o">...</span>
+
+<span class="n">premaster_secret</span> <span class="o">=</span> <span class="p">(</span><span class="n">server_pubKey</span> <span class="o">*</span> <span class="n">client_secret</span><span class="p">)</span><span class="o">.</span><span class="n">x</span>
+</pre></div>
+<h2><span class="mw-headline" id="Another_Key_Exchange:_RSA">Another Key Exchange: RSA</span></h2>
+<p>The RSA key exchange is by today's standard an old key exchange protocol and does not provide forward secrecy. It is however simpler to implement than ECDHE and still supported by multiple sites (for example, Google supports the RSA key exchange but not the simple Diffie-Hellman key exchange).
+</p><p>With the RSA key exchange, the server does not send any "Server Key Exchange" message. Instead, the client decides the premaster_secret, which is a 48-bytes string composed of a two-bytes TLS version (0x0303 for TLS 1.2) followed by 46 random bytes. It then encrypts that premaster_secret using the <a rel="nofollow" class="external text" href="https://tools.ietf.org/html/rfc2313">PKCS #1 protocol</a> (aka RSA encryption version 1.5) as well as the key from the Web site's certificate as the public key. Because the public key is always the same, a leak of the Web site's private key would allow to decrypt previously recorded TLS conversations. This is why the RSA key exchange protocol offers no forward secrecy.
+</p>
+<div class="mw-highlight mw-highlight-lang-python mw-content-ltr" dir="ltr"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">Crypto.Cipher</span> <span class="kn">import</span> <span class="n">PKCS1_v1_5</span>
+<span class="kn">from</span> <span class="nn">Crypto.PublicKey</span> <span class="kn">import</span> <span class="n">RSA</span>
+
+<span class="c1"># Come up with a random premaster_secret</span>
+<span class="c1"># It is recommended to use a random generator from a crypto library if possible</span>
+<span class="n">premaster_secret</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\x03\x03</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">46</span><span class="p">)</span>
+
+<span class="c1"># Retrieve the pubKey from the first certificate. This pubKey value (65-bytes for a 1024-bit public key) is stored in the ASN.1 format</span>
+<span class="n">key</span> <span class="o">=</span> <span class="n">RSA</span><span class="o">.</span><span class="n">importKey</span><span class="p">(</span><span class="n">pubKey</span><span class="p">)</span>
+
+<span class="c1"># Encrypt the premaster_secret</span>
+<span class="n">cipher</span> <span class="o">=</span> <span class="n">PKCS1_v1_5</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+<span class="n">encrypted_premaster_secret</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">encrypt</span><span class="p">(</span><span class="n">premaster_secret</span><span class="p">)</span>
+</pre></div>
+<p>Without the Crypto.Cipher.PKCS1_v1_5 package:
+</p>
+<div class="mw-highlight mw-highlight-lang-python mw-content-ltr" dir="ltr"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="c1"># Come up with a random premaster_secret</span>
+<span class="n">premaster_secret</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\x03\x03</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">46</span><span class="p">)</span>
+
+<span class="c1"># Retrieve the pubKey from the first certificate (parse_ASN1 is a fictional function)</span>
+<span class="n">RSA_n</span><span class="p">,</span> <span class="n">RSA_e</span> <span class="o">=</span> <span class="n">parse_ASN1</span><span class="p">(</span><span class="n">pubKey</span><span class="p">)</span>
+
+<span class="c1"># Encrypt the premaster_secret</span>
+<span class="n">premaster_secret</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\x00\x02</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\x42</span><span class="s1">&#39;</span> <span class="o">*</span> <span class="p">(</span><span class="mi">256</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">premaster_secret</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">premaster_secret</span>
+<span class="n">encrypted_premaster_secret</span> <span class="o">=</span> <span class="nb">pow</span><span class="p">(</span><span class="n">to_int</span><span class="p">(</span><span class="n">premaster_secret</span><span class="p">),</span> <span class="n">RSA_e</span><span class="p">,</span> <span class="n">RSA_n</span><span class="p">)</span>
+</pre></div>
+<h2><span id="SSL_Certificate_.28optional.29"></span><span class="mw-headline" id="SSL_Certificate_(optional)">SSL Certificate (optional)</span></h2>
+<p>In order to prevent a Man-In-The-Middle attack (MITM), the server will sign the Diffie-Hellman parameters it sent to the client. Because the client may have never contacted the server before (and thus cannot securely obtain its public key), the client and server rely on a trusted third party known as a Certificate Authority (CA).
+</p><p>In order to verify the signature using the RSA algorithm, the client need to do the following:
+</p>
+<ul><li>Retrieve the Certificate message sent by the server, which contains one or more certificates (look at a such a packet in Wireshark)</li>
+<li>Verify that the first certificate's RDN sequence (signedCertificate / subject:rdnSequence / rdnSequence) contains the Web site the client is trying to contact</li>
+<li>Get the RSA e and n values from the first certificate's public key (signedCertificate / subjectPublicKeyInfo / subjectPublicKey). Those parameters are encoded using the <a rel="nofollow" class="external text" href="https://en.wikipedia.org/wiki/Abstract_Syntax_Notation_One">ASN.1</a> format (as a verification, e is very often 65537, or 0x10001)</li>
+<li>Compute the hash of the whole DH parameters (as sent by the server) preceded with the client and server random data. The certificate indicates what type of hash to use (signedCertificate / subjectPublicKeyInfo / algorithm):</li>
+<li>Compute signature<sup>e</sup> mod n, convert it to a string and take the last 20 bytes (or more, depending on the hash function being used)</li>
+<li>Both computations should be the same</li>
+<li>Because this certificate is probably generated by an intermediate CA, the client needs to verify that certificate</li>
+<li>Compute the hash of the whole signedCertificate section and repeat the operation using the next certificate</li>
+<li>Follow the certificate chain up to the end. The last certificate should belong to a root CA (any TLS implementation should contain a list of the root CAs and their public key) and is self-signed</li></ul>
+<h2><span class="mw-headline" id="Encrypted_Handshake_Message">Encrypted Handshake Message</span></h2>
+<p>The TLS handshake is concluded with the two parties sending a hash of the complete handshake exchange, in order to ensure that a middleman did not try to conduct a downgrade attack.
+</p><p>If your TLS client technically does not have to verify the Encrypted Handshake Message sent by the server, it needs to send a valid Encrypted Handshake Message of its own, otherwise the server will abort the TLS session.
+</p><p>Here is what the client needs to do to create&#160;:
+</p>
+<ul><li>Compute a SHA256 hash of a concatenation of all the handshake communications (or SHA384 if the PRF is based on SHA384). This means the Client Hello, Server Hello, Certificate, Server Key Exchange, Server Hello Done and Client Key Exchange messages. Note that you should concatenate only the handshake part of each TLS message (i.e. strip the first 5 bytes belonging to the TLS Record header)</li>
+<li>Compute PRF(master_secret, "client finished", hash, 12) which will generate a 12-bytes hash</li>
+<li>Append the following header which indicates the hash is 12 bytes: 0x14 0x00 0x00 0x0C</li>
+<li>Encrypt the 0x14 0x00 0x00 0x0C | [12-bytes hash] (see the Encrypting / Decrypting data section). This will generate a 64-bytes ciphertext using AES-CBC and 40 bytes with AES-GCM</li>
+<li>Send this ciphertext wrapped in a TLS Record</li></ul>
+<p>The server will use a similar algorithm, with two notable differences:
+</p>
+<ul><li>It needs to compute a hash of the same handshake communications as the client as well as the decrypted "Encrypted Handshake Message" message sent by the client (i.e. the 16-bytes hash starting with 0x1400000C)</li>
+<li>It will call PRF(master_secret, "server finished", hash, 12)</li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211142233
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.063 seconds
+Real time usage: 1.356 seconds
+Preprocessor visited node count: 88/1000000
+Post‐expand include size: 358/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 13381/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.891      1 Template:In_Progress
+100.00%    0.891      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:3912-0!canonical and timestamp 20250211142232 and revision id 28023.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=TLS_Handshake&amp;oldid=28023">https://wiki.osdev.org/index.php?title=TLS_Handshake&amp;oldid=28023</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:In_Progress" title="Category:In Progress">In Progress</a></li><li><a href="./Category:Security" title="Category:Security">Security</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=TLS+Handshake" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="TLS_Handshake#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="TLS_Handshake" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:TLS_Handshake&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="TLS_Handshake"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=TLS_Handshake&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=TLS_Handshake&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/TLS_Handshake" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/TLS_Handshake" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=TLS_Handshake&amp;oldid=28023" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=TLS_Handshake&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 9 July 2023, at 18:08.</li>
+	<li id="footer-info-0">This page has been accessed 8,110 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=TLS_Handshake&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.063","walltime":"1.356","ppvisitednodes":{"value":88,"limit":1000000},"postexpandincludesize":{"value":358,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":13381,"limit":5000000},"timingprofile":["100.00%    0.891      1 Template:In_Progress","100.00%    0.891      1 -total"]},"cachereport":{"timestamp":"20250211142233","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":96});});</script>
+</body>
+</html>

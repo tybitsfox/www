@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>NVMe - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"837e9caceb34cab7ce7139b1","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"NVMe","wgTitle":"NVMe","wgCurRevisionId":29229,"wgRevisionId":29229,"wgArticleId":4432,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Storage","Standards"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"NVMe","wgRelevantArticleId":4432,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,
+"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-NVMe rootpage-NVMe skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">NVMe</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="NVMe#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="NVMe#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="NVMe#Overview"><span class="tocnumber">1</span> <span class="toctext">Overview</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="NVMe#Base_address_registers"><span class="tocnumber">2</span> <span class="toctext">Base address registers</span></a>
+<ul>
+<li class="toclevel-2 tocsection-3"><a href="NVMe#Base_Address_IO"><span class="tocnumber">2.1</span> <span class="toctext">Base Address IO</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-4"><a href="NVMe#Data_structures"><span class="tocnumber">3</span> <span class="toctext">Data structures</span></a>
+<ul>
+<li class="toclevel-2 tocsection-5"><a href="NVMe#NVMe_Queue"><span class="tocnumber">3.1</span> <span class="toctext">NVMe Queue</span></a></li>
+<li class="toclevel-2 tocsection-6"><a href="NVMe#Submission_queue_entry"><span class="tocnumber">3.2</span> <span class="toctext">Submission queue entry</span></a></li>
+<li class="toclevel-2 tocsection-7"><a href="NVMe#PRP"><span class="tocnumber">3.3</span> <span class="toctext">PRP</span></a></li>
+<li class="toclevel-2 tocsection-8"><a href="NVMe#Completion_queue_entry"><span class="tocnumber">3.4</span> <span class="toctext">Completion queue entry</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-9"><a href="NVMe#Commands"><span class="tocnumber">4</span> <span class="toctext">Commands</span></a>
+<ul>
+<li class="toclevel-2 tocsection-10"><a href="NVMe#Queue_Types"><span class="tocnumber">4.1</span> <span class="toctext">Queue Types</span></a>
+<ul>
+<li class="toclevel-3 tocsection-11"><a href="NVMe#Example"><span class="tocnumber">4.1.1</span> <span class="toctext">Example</span></a></li>
+</ul>
+</li>
+<li class="toclevel-2 tocsection-12"><a href="NVMe#Sending_commands"><span class="tocnumber">4.2</span> <span class="toctext">Sending commands</span></a></li>
+<li class="toclevel-2 tocsection-13"><a href="NVMe#Admin_commands"><span class="tocnumber">4.3</span> <span class="toctext">Admin commands</span></a>
+<ul>
+<li class="toclevel-3 tocsection-14"><a href="NVMe#Create_IO_submission_queue"><span class="tocnumber">4.3.1</span> <span class="toctext">Create IO submission queue</span></a></li>
+<li class="toclevel-3 tocsection-15"><a href="NVMe#Create_IO_completion_queue"><span class="tocnumber">4.3.2</span> <span class="toctext">Create IO completion queue</span></a></li>
+<li class="toclevel-3 tocsection-16"><a href="NVMe#Identify"><span class="tocnumber">4.3.3</span> <span class="toctext">Identify</span></a></li>
+</ul>
+</li>
+<li class="toclevel-2 tocsection-17"><a href="NVMe#IO_commands"><span class="tocnumber">4.4</span> <span class="toctext">IO commands</span></a>
+<ul>
+<li class="toclevel-3 tocsection-18"><a href="NVMe#Read"><span class="tocnumber">4.4.1</span> <span class="toctext">Read</span></a></li>
+<li class="toclevel-3 tocsection-19"><a href="NVMe#Write"><span class="tocnumber">4.4.2</span> <span class="toctext">Write</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-20"><a href="NVMe#Checklist"><span class="tocnumber">5</span> <span class="toctext">Checklist</span></a>
+<ul>
+<li class="toclevel-2 tocsection-21"><a href="NVMe#Initialisation"><span class="tocnumber">5.1</span> <span class="toctext">Initialisation</span></a></li>
+<li class="toclevel-2 tocsection-22"><a href="NVMe#Shutdown"><span class="tocnumber">5.2</span> <span class="toctext">Shutdown</span></a></li>
+<li class="toclevel-2 tocsection-23"><a href="NVMe#Submitting_a_command"><span class="tocnumber">5.3</span> <span class="toctext">Submitting a command</span></a></li>
+<li class="toclevel-2 tocsection-24"><a href="NVMe#IRQ_handler"><span class="tocnumber">5.4</span> <span class="toctext">IRQ handler</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-25"><a href="NVMe#See_Also"><span class="tocnumber">6</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-26"><a href="NVMe#External_Links"><span class="tocnumber">6.1</span> <span class="toctext">External Links</span></a></li>
+<li class="toclevel-2 tocsection-27"><a href="NVMe#Forum_Threads"><span class="tocnumber">6.2</span> <span class="toctext">Forum Threads</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Overview">Overview</span></h2>
+<ul><li>NVMe controllers can be found as <a href="PCI" title="PCI">PCI</a> devices with class code 1 and subclass code 8.</li>
+<li>Its registers are accessible through BAR 0 (it should be 64-bit memory IO).</li>
+<li>The controller processes commands submitted to it from "submission queues". The driver prepares commands in the queue's circular buffer in memory, and then updates the tail pointer register for the queue.</li>
+<li>The controller may process commands in any order it likes.</li>
+<li>When the controller has finished processing a command, it appends an entry to a "completion queue". The completion queue to use is specified when a submission queue is created. The controller sends an interrupt when a completion queue has available commands. The driver processes all new entries in the queue's circular buffer, and then updates the head pointer register for the queue.</li>
+<li>At reset, only one submission queue and one completion queue exists. These are the admin queues. The driver sets their base addresses in the ASQ and ACQ registers.</li>
+<li>The admin queues can process admin commands, such as creating IO queues (used to submit IO commands, like read/write sectors), and query information about the controller and drives (called "namespaces") connected to it.</li>
+<li>The admin queues have identifiers of 0.</li></ul>
+<h2><span class="mw-headline" id="Base_address_registers">Base address registers</span></h2>
+<table class="wikitable">
+
+<tbody><tr>
+<th style="white-space:nowrap;">Offset
+</th>
+<th style="white-space:nowrap;">Name
+</th>
+<th style="white-space:nowrap;">Description
+</th></tr>
+<tr>
+<td align="center">0x00-0x07
+</td>
+<td align="center">CAP
+</td>
+<td>Controller capabilities.
+</td></tr>
+<tr>
+<td align="center">0x08-0x0B
+</td>
+<td align="center">VS
+</td>
+<td>Version.
+</td></tr>
+<tr>
+<td align="center">0x0C-0x0F
+</td>
+<td align="center">INTMS
+</td>
+<td>Interrupt mask set.
+</td></tr>
+<tr>
+<td align="center">0x10-0x13
+</td>
+<td align="center">INTMC
+</td>
+<td>Interrupt mask clear.
+</td></tr>
+<tr>
+<td align="center">0x14-0x17
+</td>
+<td align="center">CC
+</td>
+<td>Controller configuration.
+</td></tr>
+<tr>
+<td align="center">0x1C-0x1F
+</td>
+<td align="center">CSTS
+</td>
+<td>Controller status.
+</td></tr>
+<tr>
+<td align="center">0x24-0x27
+</td>
+<td align="center">AQA
+</td>
+<td>Admin queue attributes.
+</td></tr>
+<tr>
+<td align="center">0x28-0x2F
+</td>
+<td align="center">ASQ
+</td>
+<td>Admin submission queue.
+</td></tr>
+<tr>
+<td align="center">0x30-0x37
+</td>
+<td align="center">ACQ
+</td>
+<td>Admin completion queue.
+</td></tr>
+<tr>
+<td align="center">0x1000+(2X)*Y
+</td>
+<td align="center">SQxTDBL
+</td>
+<td>Submission queue X tail doorbell.
+</td></tr>
+<tr>
+<td align="center">0x1000+(2X+1)*Y
+</td>
+<td align="center">CQxHDBL
+</td>
+<td>Completion queue X head doorbell.
+</td></tr></tbody></table>
+<p>Y is the doorbell stride, specified in the controller capabilities register.
+</p>
+<h3><span class="mw-headline" id="Base_Address_IO">Base Address IO</span></h3>
+<p>As an NVMe base address is 8 bytes in size, you actually need to read from both BAR0 <b>and</b> BAR1 and then shift BAR1 and mask out some bits of BAR0, then you need to combine them to get the full base address:
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="n">nvme_base_addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint64_t</span><span class="p">)(((</span><span class="kt">uint64_t</span><span class="p">)</span><span class="n">bar1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">32</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">bar0</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xFFFFFFF0</span><span class="p">));</span><span class="w"></span>
+</pre></div>
+<p>You can also get the capability stride needed for sending commands like so:
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="n">nvme_cap_strd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">nvme_base_addr</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="mi">12</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xF</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+<p>You can read from and write to a register with the following code. Make sure you map the NVMe base address to virtual memory before you attempt to operate on its registers.
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="kt">uint32_t</span><span class="w"> </span><span class="nf">nvme_read_reg</span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">offset</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="k">volatile</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="o">*</span><span class="n">nvme_reg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">volatile</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="o">*</span><span class="p">)(</span><span class="n">nvme_base_addr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">offset</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="n">map_page</span><span class="p">((</span><span class="kt">uint64_t</span><span class="p">)</span><span class="n">nvme_reg</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="o">*</span><span class="n">nvme_reg</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">nvme_write_reg</span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">offset</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="k">volatile</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="o">*</span><span class="n">nvme_reg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">volatile</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="o">*</span><span class="p">)(</span><span class="n">nvme_base_addr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">offset</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="n">map_page</span><span class="p">((</span><span class="kt">uint64_t</span><span class="p">)</span><span class="n">nvme_reg</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="o">*</span><span class="n">nvme_reg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<h2><span class="mw-headline" id="Data_structures">Data structures</span></h2>
+<h3><span class="mw-headline" id="NVMe_Queue">NVMe Queue</span></h3>
+<p>An NVMe queue is 128 bytes can represent both Admin and IO queues. This isn't standard but is a good way to keep track of your queues (And it's used in the examples below).
+</p>
+<table class="wikitable">
+
+<tbody><tr>
+<td><b>Bits</b>
+</td>
+<td><b>Contents</b>
+</td></tr>
+<tr>
+<td align="center">0-63
+</td>
+<td>Queue Address
+</td></tr>
+<tr>
+<td>64-127
+</td>
+<td>Queue Size
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="Submission_queue_entry">Submission queue entry</span></h3>
+<p>A submission queue entry - a command - is 64 bytes, arranged in 16 DWORDs.
+</p>
+<table class="wikitable">
+
+<tbody><tr>
+<th style="white-space:nowrap;">DWORD
+</th>
+<th style="white-space:nowrap;">Contents
+</th></tr>
+<tr>
+<td align="center">0
+</td>
+<td>Command DWORD 0 (see below)
+</td></tr>
+<tr>
+<td align="center">1
+</td>
+<td>NSID (namespace identifier). If n/a, set to 0.
+</td></tr>
+<tr>
+<td align="center">2-3
+</td>
+<td>Reserved.
+</td></tr>
+<tr>
+<td align="center">4-5
+</td>
+<td>Metadata pointer.
+</td></tr>
+<tr>
+<td align="center">6-9
+</td>
+<td>Data pointer. 2 PRPs (see next section).
+</td></tr>
+<tr>
+<td align="center">10-15
+</td>
+<td>Command specific.
+</td></tr></tbody></table>
+<p>Format of the Command DWORD 0:
+</p>
+<table class="wikitable">
+
+<tbody><tr>
+<th style="white-space:nowrap;">Bits
+</th>
+<th style="white-space:nowrap;">Contents
+</th></tr>
+<tr>
+<td align="center">0-7
+</td>
+<td>Opcode.
+</td></tr>
+<tr>
+<td align="center">8-9
+</td>
+<td>Fused operation. 0 indicates normal operation.
+</td></tr>
+<tr>
+<td align="center">10-13
+</td>
+<td>Reserved.
+</td></tr>
+<tr>
+<td align="center">14-15
+</td>
+<td>PRP or SGL selection. 0 indicates PRPs.
+</td></tr>
+<tr>
+<td align="center">16-31
+</td>
+<td>Command identifier. This is put in the completion queue entry.
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="PRP">PRP</span></h3>
+<p>A PRP (physical region page) is a 64-bit physical memory address. It must be DWORD aligned. A list of PRPs is used in a data transfer to specific, where data is transferred from/to in memory. A PRP list is subject to the follow rules:
+</p>
+<ul><li>The size of the region specified by a given PRP is the minimum of: the amount of data that can be transferred without crossing a page boundary; and the amount of data remaining to be transferred.</li>
+<li>Only the first entry in a PRP list can be page misaligned.</li>
+<li>If a PRP list is not long enough to cover the entire transfer, then the last entry chains to a page containing more PRP entries.</li></ul>
+<h3><span class="mw-headline" id="Completion_queue_entry">Completion queue entry</span></h3>
+<p>A completion queue entry is 16 bytes.
+</p>
+<table class="wikitable">
+
+<tbody><tr>
+<th style="white-space:nowrap;">Bits
+</th>
+<th style="white-space:nowrap;">Contents
+</th></tr>
+<tr>
+<td align="center">0-31
+</td>
+<td>Command specific.
+</td></tr>
+<tr>
+<td align="center">32-63
+</td>
+<td>Reserved.
+</td></tr>
+<tr>
+<td align="center">64-79
+</td>
+<td>Submission queue head pointer.
+</td></tr>
+<tr>
+<td align="center">80-95
+</td>
+<td>Submission queue identifier.
+</td></tr>
+<tr>
+<td align="center">96-111
+</td>
+<td>Command identifier.
+</td></tr>
+<tr>
+<td align="center">112
+</td>
+<td>Phase bit. Toggled when entry written.
+</td></tr>
+<tr>
+<td align="center">113-127
+</td>
+<td>Status field. 0 on success.
+</td></tr></tbody></table>
+<p>Where new entries end in the completion queue can be determined by inspecting the phase bit.
+</p>
+<h2><span class="mw-headline" id="Commands">Commands</span></h2>
+<h3><span class="mw-headline" id="Queue_Types">Queue Types</span></h3>
+<p>As you saw near the beginning of this page, you have access to two types of command queues - Admin queues and IO queues. For common purposes, you will need one Admin completion queue and one Admin submission queue, and you will need at least one IO completion queue and one IO submission queue - though, some developers may wish to include multiple IO queues. Admin queues are used to create IO queues and retrieve information about the controller or namespace as shown below, and IO queues are used to perform IO actions on your NVMe controller (Such as reading or writing sectors). To create your admin queues, you need to allocate memory for their addresses. I like to allocate one page for both. You then need to write the addresses of both queues to the appropriate registers. 
+</p>
+<h4><span class="mw-headline" id="Example">Example</span></h4>
+<ul><li><i>nvme_queue</i> represents an NVMe queue described near the beginning of this page.</li>
+<li>In this example, we are using a queue size of 64. (It's zero-based, so we'd set the size field to 63)</li></ul>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="kt">bool</span><span class="w"> </span><span class="nf">create_admin_submission_queue</span><span class="p">(</span><span class="n">nvme_queue</span><span class="w"> </span><span class="o">*</span><span class="n">sq</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">sq</span><span class="o">-&gt;</span><span class="n">address</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint64_t</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">PAGE_SIZE</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sq</span><span class="o">-&gt;</span><span class="n">address</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">sq</span><span class="o">-&gt;</span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">63</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="c1">// 0x28 is the Admin Submission queue register</span>
+<span class="w">	</span><span class="n">nvme_write_reg</span><span class="p">(</span><span class="mh">0x28</span><span class="p">,</span><span class="w"> </span><span class="n">sq</span><span class="o">-&gt;</span><span class="n">address</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">bool</span><span class="w"> </span><span class="nf">create_admin_completion_queue</span><span class="p">(</span><span class="n">nvme_queue</span><span class="w"> </span><span class="o">*</span><span class="n">cq</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">cq</span><span class="o">-&gt;</span><span class="n">address</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint64_t</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">PAGE_SIZE</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cq</span><span class="o">-&gt;</span><span class="n">address</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">cq</span><span class="o">-&gt;</span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">63</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="c1">// 0x30 is the Admin Completion queue register</span>
+<span class="w">	</span><span class="n">nvme_write_reg</span><span class="p">(</span><span class="mh">0x30</span><span class="p">,</span><span class="w"> </span><span class="n">cq</span><span class="o">-&gt;</span><span class="n">address</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<h3><span class="mw-headline" id="Sending_commands">Sending commands</span></h3>
+<p>This example shows how you can read and write sectors from an NVMe disk. This assumes you have already used your admin completion queues to create <b>two</b> IO completion queues. 
+</p>
+<ul><li><i>QUEUE_SIZE</i> is the size of your queues. This value should not be zero-based.</li>
+<li><i>nvme_command_entry</i> is a <b>submission</b> queue entry - this example doesn't handle completion queue entries.</li>
+<li><i>completion_queue_head</i> is the IO completion queue head.</li>
+<li><i>submission_queue_tail</i> is the IO submission queue tail.</li>
+<li><i>nvme_cap_strd</i> is the NVMe capability stride.</li></ul>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="kt">bool</span><span class="w"> </span><span class="nf">nvme_send_command</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">opcode</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">nsid</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">lba</span><span class="p">,</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">num_blocks</span><span class="p">,</span><span class="w"> </span><span class="n">nvme_completion</span><span class="w"> </span><span class="o">*</span><span class="n">completion</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">sq_entry_addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">submission_queue</span><span class="p">.</span><span class="n">address</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">submission_queue_tail</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">nvme_command_entry</span><span class="p">));</span><span class="w"></span>
+<span class="w">	</span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">cq_entry_addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">completion_queue</span><span class="p">.</span><span class="n">address</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">completion_queue_head</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">nvme_completion</span><span class="p">));</span><span class="w"></span>
+<span class="w">	</span><span class="n">nvme_command_entry</span><span class="w"> </span><span class="n">command_entry</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">command_entry</span><span class="p">.</span><span class="n">opcode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">opcode</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">command_entry</span><span class="p">.</span><span class="n">nsid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nsid</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">command_entry</span><span class="p">.</span><span class="n">prp1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uintptr_t</span><span class="p">)</span><span class="n">data</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">command_entry</span><span class="p">.</span><span class="n">prp2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">command_entry</span><span class="p">.</span><span class="n">command_specific</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">lba</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">command_entry</span><span class="p">.</span><span class="n">command_specific</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)((</span><span class="kt">uint64_t</span><span class="p">)</span><span class="n">lba</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="mi">32</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="n">command_entry</span><span class="p">.</span><span class="n">command_specific</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint16_t</span><span class="p">)(</span><span class="n">num_blocks</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="n">memcpy</span><span class="p">((</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">sq_entry_addr</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">command_entry</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">nvme_command_entry</span><span class="p">));</span><span class="w"></span>
+<span class="w">	</span><span class="n">submission_queue_tail</span><span class="o">++</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">nvme_write_reg</span><span class="p">(</span><span class="mh">0x1000</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mi">4</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">nvme_cap_strd</span><span class="p">),</span><span class="w"> </span><span class="n">submission_queue_tail</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">submission_queue_tail</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">QUEUE_SIZE</span><span class="p">)</span><span class="w"></span>
+<span class="w">		</span><span class="n">submission_queue_tail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="c1">// You should wait for completion here</span>
+<span class="w">	</span><span class="n">map_page</span><span class="p">(</span><span class="n">cq_entry_addr</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="n">completion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">nvme_completion</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">cq_entry_addr</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">completion_queue_head</span><span class="o">++</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">nvme_write_reg</span><span class="p">(</span><span class="mh">0x1000</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mi">4</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">nvme_cap_strd</span><span class="p">),</span><span class="w"> </span><span class="n">completion_queue_head</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">completion_queue_head</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">QUEUE_SIZE</span><span class="p">)</span><span class="w"></span>
+<span class="w">		</span><span class="n">completion_queue_head</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="n">completion</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">bool</span><span class="w"> </span><span class="nf">nvme_read</span><span class="p">(</span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">lba</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">sector_count</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buffer</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">nvme_completion</span><span class="w"> </span><span class="o">*</span><span class="n">completion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">nvme_send_command</span><span class="p">(</span><span class="mh">0x02</span><span class="p">,</span><span class="w"> </span><span class="n">nsid</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">lba</span><span class="p">,</span><span class="w"> </span><span class="n">sector_count</span><span class="p">,</span><span class="w"> </span><span class="n">completion</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">NVME_SUCCESS</span><span class="p">)</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">completion</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">NVME_SUCCESS</span><span class="p">)</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">bool</span><span class="w"> </span><span class="nf">nvme_write</span><span class="p">(</span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">lba</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">sector_count</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buffer</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">nvme_completion</span><span class="w"> </span><span class="o">*</span><span class="n">completion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">nvme_send_command</span><span class="p">(</span><span class="mh">0x01</span><span class="p">,</span><span class="w"> </span><span class="n">nsid</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">lba</span><span class="p">,</span><span class="w"> </span><span class="n">sector_count</span><span class="p">,</span><span class="w"> </span><span class="n">completion</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">NVME_SUCCESS</span><span class="p">)</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">completion</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">NVME_SUCCESS</span><span class="p">)</span><span class="w"></span>
+<span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<h3><span class="mw-headline" id="Admin_commands">Admin commands</span></h3>
+<h4><span class="mw-headline" id="Create_IO_submission_queue">Create IO submission queue</span></h4>
+<ul><li>Opcode is 0x01.</li>
+<li>The base address of the queue should be put in the DWORDs 6 and 7 of the commands.</li>
+<li>Command DWORD 10 contains the queue identifier in the low word, and the queue size in the high word. The queue size should be given as one less than the actual value.</li>
+<li>Command DWORD 11 contains flags in the low word, and the completion queue identifier in the high word (where completion entries for this submission queue will be posted). Flag (1 &lt;&lt; 0) indicates the queue is physically contiguous (recommended; non-contiguous are not supported by all controllers).</li></ul>
+<h4><span class="mw-headline" id="Create_IO_completion_queue">Create IO completion queue</span></h4>
+<ul><li>Opcode is 0x05.</li>
+<li>The base address of the queue should be put in the DWORDs 6 and 7 of the commands.</li>
+<li>Command DWORD 10 contains the queue identifier in the low word, and the queue size in the high word. The queue size should be given as one less than the actual value.</li>
+<li>Command DWORD 11 contains flags in the low word, and the interrupt vector in the high word. Please note that if you are using MSI/MSI-X the interrupt vector should be the MSI vector + 1 (MSI vector 0 is reserved for the admin completion queues) - the NVMe also specification recommends you use MSI-X unless it isn't available, otherwise you can use regular MSI. Flag (1 &lt;&lt; 0) indicates the queue is physically contiguous (recommended; non-contiguous are not supported by all controllers), and flag (1 &lt;&lt; 1) enables interrupts.</li></ul>
+<h4><span class="mw-headline" id="Identify">Identify</span></h4>
+<ul><li>Opcode is 0x06.</li>
+<li>The base address of the output (a single page) should be put in the DWORDs 6 and 7 of the command.</li>
+<li>The low byte of command DWORD 10 indicates what is to be identified: 0 - a namespace, 1 - the controller, 2 - the namespace list.</li>
+<li>If identifying a namespace, set DWORD 1 to the namespace ID.</li></ul>
+<h3><span class="mw-headline" id="IO_commands">IO commands</span></h3>
+<h4><span class="mw-headline" id="Read">Read</span></h4>
+<ul><li>Opcode is 0x02.</li>
+<li>DWORD 1 contains the NSID.</li>
+<li>DWORDs 6-9 contain the PRP list for the data transfer.</li>
+<li>DWORDs 10-11 contain the starting LBA.</li>
+<li>The low word of DWORD 12 contains the number of blocks to transfer. This should be given as one less than the actual value.</li></ul>
+<h4><span class="mw-headline" id="Write">Write</span></h4>
+<ul><li>Opcode is 0x01.</li>
+<li>DWORD 1 contains the NSID.</li>
+<li>DWORDs 6-9 contain the PRP list for the data transfer.</li>
+<li>DWORDs 10-11 contain the starting LBA.</li>
+<li>The low word of DWORD 12 contains the number of blocks to transfer. This should be given as one less than the actual value.</li></ul>
+<h2><span class="mw-headline" id="Checklist">Checklist</span></h2>
+<h3><span class="mw-headline" id="Initialisation">Initialisation</span></h3>
+<ul><li>Find PCI function with class code 0x01 and subclass code 0x08.</li>
+<li>Enable interrupts, bus-mastering DMA, and memory space access in the PCI configuration space for the function.</li>
+<li>Map BAR0.</li>
+<li>Check the controller version is supported.</li>
+<li>Check the capabilities register for support of the NVMe command set.</li>
+<li>Check the capabilities register for support of the host's page size.</li>
+<li>Reset the controller.</li>
+<li>Set the controller configuration, and admin queue base addresses.</li>
+<li>Start the controller.</li>
+<li>Enable interrupts and register a handler.</li>
+<li>Send the identify command to the controller. Check it is an IO controller. Record the maximum transfer size.</li>
+<li>Reset the software progress marker, if implemented.</li>
+<li>Create the first IO completion queue, and the first IO submission queue.</li>
+<li>Identify active namespace IDs, and then identify individual namespaces. Record their block size, capacity and whether they are read-only.</li></ul>
+<h3><span class="mw-headline" id="Shutdown">Shutdown</span></h3>
+<ul><li>Delete IO queues.</li>
+<li>Inform the controller of shutdown.</li>
+<li>Wait until CSTS.SHST updates.</li></ul>
+<h3><span class="mw-headline" id="Submitting_a_command">Submitting a command</span></h3>
+<ul><li>Build PRP lists.</li>
+<li>Wait for space in the submission queue. The controller indicates its internal head pointer in completion queue entries.</li>
+<li>Setup the command.</li>
+<li>Update the queue tail doorbell register.</li></ul>
+<h3><span class="mw-headline" id="IRQ_handler">IRQ handler</span></h3>
+<ul><li>For each completion queue, read all entries where the phase bit has been toggled.</li>
+<li>Check the status of the commands.</li>
+<li>Use the submission queue ID and command ID to work out which submitted command corresponds to this completion entry.</li>
+<li>Update the completion queue head doorbell register.</li></ul>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="External_Links">External Links</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="https://nvmexpress.org/specifications/">NVMe Specifications</a></li></ul>
+<h3><span class="mw-headline" id="Forum_Threads">Forum Threads</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="https://forum.osdev.org/viewtopic.php?f=8&amp;t=36366">here</a></li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211122533
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.055 seconds
+Real time usage: 0.700 seconds
+Preprocessor visited node count: 106/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 22927/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:4432-0!canonical and timestamp 20250211122533 and revision id 29229.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=NVMe&amp;oldid=29229">https://wiki.osdev.org/index.php?title=NVMe&amp;oldid=29229</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="./Category:Storage" title="Category:Storage">Storage</a></li><li><a href="./Category:Standards" title="Category:Standards">Standards</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=NVMe" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="NVMe#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="NVMe" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:NVMe&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="NVMe"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=NVMe&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=NVMe&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/NVMe" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/NVMe" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=NVMe&amp;oldid=29229" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=NVMe&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 20 August 2024, at 17:06.</li>
+	<li id="footer-info-0">This page has been accessed 11,205 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=NVMe&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.055","walltime":"0.700","ppvisitednodes":{"value":106,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":22927,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250211122533","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":814});});</script>
+</body>
+</html>

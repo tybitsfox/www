@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Creating a 64-bit kernel - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"50277e770979c5f42df55dc5","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Creating_a_64-bit_kernel","wgTitle":"Creating a 64-bit kernel","wgCurRevisionId":27945,"wgRevisionId":27945,"wgArticleId":2257,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using duplicate arguments in template calls","Pages using deprecated source tags","Level 2 Tutorials","In Progress","Disputed Pages","Tutorials","X86-64","Kernel"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Creating_a_64-bit_kernel",
+"wgRelevantArticleId":2257,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","mmv.head","mmv.bootstrap.autostart","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook",
+"ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Creating_a_64-bit_kernel rootpage-Creating_a_64-bit_kernel skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Creating a 64-bit kernel</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Creating_a_64-bit_kernel#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Creating_a_64-bit_kernel#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><table style="font-size:95%; line-height:1.5em; padding:0.25em; float:right; margin: 0 0 8px 15px; clear:right; border:1px solid #aaaaaa; background:#eee; text-align:center;;"><tbody><tr><th>Difficulty level</th></tr><tr><td><a href="./File:Difficulty_2.png" class="image"><img alt="Difficulty 2.png" src="images/a/a1/Difficulty_2.png" decoding="async" width="46" height="14" data-file-width="46" data-file-height="14" /></a><br />Medium</td></tr></tbody></table><table style="font-size:95%; line-height:1.5em; padding:0.25em; float:right; margin: 0 0 8px 15px; clear: right; border:1px solid #aaaaaa; background:#eee; text-align:center; width:200px; ;"><tbody><tr><th style="background:#ffce7b; padding:0.3em; font-size:1.1em;"><a href="Kernels" class="mw-redirect" title="Kernels">Kernel Designs</a></th></tr><tr><th>Models</th></tr><tr><td><div>
+<p><a href="Monolithic_Kernel" title="Monolithic Kernel">Monolithic Kernel</a><br />
+<a href="Microkernel" title="Microkernel">Microkernel</a><br />
+<a href="Hybrid_Kernel" title="Hybrid Kernel">Hybrid Kernel</a><br />
+<a href="Exokernel" title="Exokernel">Exokernel</a><br />
+<a href="Nanokernel" class="mw-redirect" title="Nanokernel">Nano/Picokernel</a><br />
+<a href="Exokernel#Cache_Kernel" title="Exokernel">Cache Kernel</a><br />
+<a href="Exokernel#Virtualizing_Kernel" title="Exokernel">Virtualizing Kernel</a><br />
+<a href="Megalithic_Kernel" title="Megalithic Kernel">Megalithic Kernel</a><br />
+</p>
+</div></td></tr><tr><th>Other Concepts</th></tr><tr><td><div>
+<p><a href="Modular_Kernel" title="Modular Kernel">Modular Kernel</a><br />
+<a href="Higher_Half_Kernel" title="Higher Half Kernel">Higher Half Kernel</a><br />
+<a class="mw-selflink selflink">64-bit Kernel</a><br />
+</p>
+</div></td></tr></tbody></table>
+<center>
+<table style="border: 1px solid #cfcfbf; margin-top: 25px; margin-bottom: 25px; background-color: #f0f0ff; text-align: center;">
+<tbody><tr>
+<td>
+<p><a href="./File:Under_Construction.png" class="image" title="This page is under construction!"><img alt="This page is under construction!" src="images/1/14/Under_Construction.png" decoding="async" width="50" height="50" data-file-width="50" data-file-height="50" /></a>
+This page or section is a work in progress and may thus be incomplete. Its content may be changed in the near future.
+</p>
+</td>
+<td>
+</td></tr></tbody></table>
+</center>
+<center>
+<table style="border: 1px solid #cfcfbf; padding: .0em .25em .0em; background-color: #f0f0ff; text-align: center;">
+<tbody><tr>
+<td>
+<p><font color="black">The factual accuracy of this article or section is <a href="./Category:Disputed_Pages" title="Category:Disputed Pages">disputed</a>.</font><br /><small><font color="red">Please see the relevant discussion on the <a href="./Talk:Creating_a_64-bit_kernel" title="Talk:Creating a 64-bit kernel">talk page</a>.</font></small>
+</p>
+</td>
+<td>
+</td></tr></tbody></table>
+</center>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Creating_a_64-bit_kernel#Prerequisites"><span class="tocnumber">1</span> <span class="toctext">Prerequisites</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="Creating_a_64-bit_kernel#The_Main_Kernel"><span class="tocnumber">2</span> <span class="toctext">The Main Kernel</span></a>
+<ul>
+<li class="toclevel-2 tocsection-3"><a href="Creating_a_64-bit_kernel#kernel.c"><span class="tocnumber">2.1</span> <span class="toctext">kernel.c</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-4"><a href="Creating_a_64-bit_kernel#Compiling"><span class="tocnumber">3</span> <span class="toctext">Compiling</span></a></li>
+<li class="toclevel-1 tocsection-5"><a href="Creating_a_64-bit_kernel#Linking"><span class="tocnumber">4</span> <span class="toctext">Linking</span></a>
+<ul>
+<li class="toclevel-2 tocsection-6"><a href="Creating_a_64-bit_kernel#link.ld"><span class="tocnumber">4.1</span> <span class="toctext">link.ld</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-7"><a href="Creating_a_64-bit_kernel#Loading"><span class="tocnumber">5</span> <span class="toctext">Loading</span></a>
+<ul>
+<li class="toclevel-2 tocsection-8"><a href="Creating_a_64-bit_kernel#With_your_own_boot_loader"><span class="tocnumber">5.1</span> <span class="toctext">With your own boot loader</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="Creating_a_64-bit_kernel#With_a_64_bit_aware_loader"><span class="tocnumber">5.2</span> <span class="toctext">With a 64 bit aware loader</span></a></li>
+<li class="toclevel-2 tocsection-10"><a href="Creating_a_64-bit_kernel#With_legacy_GRUB"><span class="tocnumber">5.3</span> <span class="toctext">With legacy GRUB</span></a></li>
+<li class="toclevel-2 tocsection-11"><a href="Creating_a_64-bit_kernel#With_a_32-bit_bootstrap_in_your_kernel"><span class="tocnumber">5.4</span> <span class="toctext">With a 32-bit bootstrap in your kernel</span></a>
+<ul>
+<li class="toclevel-3 tocsection-12"><a href="Creating_a_64-bit_kernel#bootstrap.S"><span class="tocnumber">5.4.1</span> <span class="toctext">bootstrap.S</span></a></li>
+<li class="toclevel-3 tocsection-13"><a href="Creating_a_64-bit_kernel#link.ld_2"><span class="tocnumber">5.4.2</span> <span class="toctext">link.ld</span></a></li>
+<li class="toclevel-3 tocsection-14"><a href="Creating_a_64-bit_kernel#With_Visual_C++"><span class="tocnumber">5.4.3</span> <span class="toctext">With Visual C++</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-15"><a href="Creating_a_64-bit_kernel#Possible_Problems"><span class="tocnumber">6</span> <span class="toctext">Possible Problems</span></a>
+<ul>
+<li class="toclevel-2 tocsection-16"><a href="Creating_a_64-bit_kernel#My_kernel_is_way_too_big!"><span class="tocnumber">6.1</span> <span class="toctext">My kernel is way too big!</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-17"><a href="Creating_a_64-bit_kernel#Kernel_Virtual_Memory"><span class="tocnumber">7</span> <span class="toctext">Kernel Virtual Memory</span></a></li>
+<li class="toclevel-1 tocsection-18"><a href="Creating_a_64-bit_kernel#See_Also"><span class="tocnumber">8</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-19"><a href="Creating_a_64-bit_kernel#Articles"><span class="tocnumber">8.1</span> <span class="toctext">Articles</span></a></li>
+<li class="toclevel-2 tocsection-20"><a href="Creating_a_64-bit_kernel#Forum_Threads"><span class="tocnumber">8.2</span> <span class="toctext">Forum Threads</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Prerequisites">Prerequisites</span></h2>
+<p>Make sure that you have the following done before proceeding:
+</p>
+<ul><li>Have <a href="GCC_Cross-Compiler" title="GCC Cross-Compiler">built a cross-compiler</a> for the x86_64-elf target.</li>
+<li>Read up on long mode and how to <a href="X86-64" title="X86-64">initialize/use it</a> (if you intend on not using a 64-bit aware bootloader or rolling your own).</li>
+<li>Decide now on how to load your kernel - your own bootloader, <a href="GRUB" title="GRUB">GRUB</a> (with separate loader executable), GRUB2 (elf64 + 32-bit bootstrap code), or a 64-bit capable bootloader such as <a href="Limine" title="Limine">Limine</a> or <a href="BOOTBOOT" title="BOOTBOOT">BOOTBOOT</a>.</li></ul>
+<h2><span class="mw-headline" id="The_Main_Kernel">The Main Kernel</span></h2>
+<p>The kernel should run in a uniform environment. Let's make this simple for now...
+</p>
+<h3><span class="mw-headline" id="kernel.c">kernel.c</span></h3>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">kernel_main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="cm">/* What goes here is up to you */</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<h2><span class="mw-headline" id="Compiling">Compiling</span></h2>
+<p>Compile each source file like any piece of C code, just remember to use the cross-compiler and the proper options.
+Linking will be done later...
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>x86_64-elf-gcc -ffreestanding -mcmodel<span class="o">=</span>large -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -c foo.c -o foo.o
+</pre></div>
+<p>The -mcmodel=large argument enables us to run the kernel at any 64-bit virtual memory address we want. In fact, using the 'large' code model is discouraged due to its inefficiency, but it can be fine as a start. Check the <a href="System_V_ABI" title="System V ABI">SysV AMD64 ABI</a> document for extra details.
+</p><p>You will need to instruct GCC not to use the the AMD64 ABI 128-byte 'red zone', which resides below the stack pointer, or your kernel will be <i>interrupt unsafe</i>. Check this <a rel="nofollow" class="external text" href="http://forum.osdev.org/viewtopic.php?t=21720">thread</a> on the forums for extra context.
+</p><p>We disable <a href="SSE" title="SSE">SSE</a> floating point ops. They need special %cr0 and %cr4 setup that we're not ready for. Otherwise, several #UD and #NM exceptions will be triggered.
+</p>
+<h2><span class="mw-headline" id="Linking">Linking</span></h2>
+<p>The kernel will be linked as an x86_64 executable, to run at a virtual higher-half address. We use a linker script:
+</p>
+<h3><span class="mw-headline" id="link.ld">link.ld</span></h3>
+<pre>ENTRY(_start)
+SECTIONS
+{
+    . = KERNEL_VMA;
+
+    .text&#160;: AT(ADDR(.text) - KERNEL_VMA)
+    {
+        _code = .;
+        *(.text)
+        *(.rodata*)
+        . = ALIGN(4096);
+    }
+
+   .data&#160;: AT(ADDR(.data) - KERNEL_VMA)
+   {
+        _data = .;
+        *(.data)
+        . = ALIGN(4096);
+   }
+
+   .eh_frame&#160;: AT(ADDR(.eh_frame) - KERNEL_VMA)
+   {
+       _ehframe = .;
+       *(.eh_frame)
+        . = ALIGN(4096);
+   }
+
+   .bss&#160;: AT(ADDR(.bss) - KERNEL_VMA)
+   {
+       _bss = .;
+       *(.bss)
+
+       /*
+        * You usually need to include generated COMMON symbols
+        * under kernel BSS section or use gcc's -fno-common
+        */
+
+        *(COMMON)
+       . = ALIGN(4096);
+   }
+
+   _end = .;
+
+   /DISCARD/&#160;:
+   {
+        *(.comment)
+   }
+}
+</pre>
+<p>Feel free to edit this linker script to suit your needs. Set ENTRY(...) to your entry function, and KERNEL_VMA to your base virtual address.
+</p><p>You can link the kernel like this:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>x86_64-elf-gcc -ffreestanding &lt;other options&gt; -T &lt;linker script&gt; &lt;all object files&gt; -o &lt;kernel executable&gt; -nostdlib -lgcc
+</pre></div>
+<p><b>Note</b>: Obviously there is no bootstrap assembly yet, which is the hard part of starting out, and you can't link without it.
+</p>
+<h2><span class="mw-headline" id="Loading">Loading</span></h2>
+<p>Before you can actually use your kernel, you need to deal with the hard job of loading it. Here are your four options:
+</p>
+<h3><span class="mw-headline" id="With_your_own_boot_loader">With your own boot loader</span></h3>
+<p>This method is the simplest (since you write all the code), though it requires the most work.
+</p><p>I won't give any code, but the basic outline is:
+</p>
+<ul><li>Set up a stable environment</li>
+<li>Do Protected Mode readying stuff (GDT, IDT, A20 gate, etc.)</li>
+<li>Enter Protected Mode (or skip this step and <a href="Entering_Long_Mode_Directly" title="Entering Long Mode Directly">enter long mode directly</a>)</li>
+<li>Parse kernel <a href="ELF" title="ELF">ELF</a> headers (if kernel is separate from executable)</li>
+<li>Set up Long Mode readying stuff (PAE, PML4, etc.) - Remember to set up the higher-half addressing!</li>
+<li>Enter Long Mode by far jump to the kernel entry point in (virtual) memory</li></ul>
+<h3><span class="mw-headline" id="With_a_64_bit_aware_loader">With a 64 bit aware loader</span></h3>
+<p>Open Source boot loaders written for long mode kernels already exist, you don't have to reinvent the wheel. Unlike GRUB (which does not support switching to long mode), bootloaders such as <a href="Limine" title="Limine">Limine</a> or <a href="BOOTBOOT" title="BOOTBOOT">BOOTBOOT</a> can load your 64-bit kernel directly by doing all the things listed in the previous section (and more). It saves you the struggle to write and properly link bootstrap code or to implement your own boot loader entirely from scratch. Therefore using a 64-bit aware bootloader is a nice and easy, reasonably bullet-proof, choice for beginners.
+</p>
+<h3><span class="mw-headline" id="With_legacy_GRUB">With legacy GRUB</span></h3>
+<p><b>Note</b>: The advise in this section is bit questionable in its current form.
+See <a href="Creating_a_64-bit_kernel_using_a_separate_loader" title="Creating a 64-bit kernel using a separate loader">Creating a 64-bit kernel using a separate loader</a>
+</p><p>This requires the use of <a href="GRUB" title="GRUB">GRUB</a> or another multiboot1-compliant loader. This may be the most error free of the four, but creating a multiboot-compatible kernel properly has its own set of pitfalls.
+</p><p>A quick rundown:
+</p>
+<ul><li>Set up a stable environment</li>
+<li>Read the multiboot information struct to see where GRUB loaded your kernel (look at the module section)</li>
+<li>Parse kernel <a href="ELF" title="ELF">ELF</a> headers</li>
+<li>Set up Long Mode readying stuff (PAE, PML4, etc.) - Remember to set up the higher-half addressing!</li>
+<li>Enter Long Mode by far jump to the kernel entry point</li></ul>
+<p>Note that this code has to be stored in a elf32 format and must contain the multiboot1-header.
+</p><p>Also remember to set the text section to start at 0x100000 (-Ttext 0x100000) when linking your loader.
+</p><p>Set up GRUB to boot your loader as a kernel in its own right, and your actual kernel as a module. Something like this in menu.lst:
+</p>
+<pre>title My Kernel
+kernel --type=multiboot &lt;loader executable&gt;
+module &lt;kernel executable&gt;
+</pre>
+<h3><span class="mw-headline" id="With_a_32-bit_bootstrap_in_your_kernel">With a 32-bit bootstrap in your kernel</span></h3>
+<p>This requires the use of any ELF64-compatible loader that loads into protected-mode (GRUB2, or patched GRUB Legacy). This may be the simplest in the long run, but is more difficult to set up.
+Note that GRUB2, which implements <a rel="nofollow" class="external text" href="http://download.savannah.gnu.org/releases-noredirect/grub/phcoder/multiboot.pdf">Multiboot 2</a>, does not support switching into long mode.
+</p><p>First, create an assembly file like the following, which will set up virtual addressing and long mode:
+</p>
+<h4><span class="mw-headline" id="bootstrap.S">bootstrap.S</span></h4>
+<pre>.section .text
+.code32
+
+multiboot_header:
+    (only needed if you're using multiboot)
+
+bootstrap:
+    (32-bit to 64-bit code goes here)
+    (jump to 64-bit code)
+</pre>
+<p>Then, add the following to your original linker file:
+</p>
+<h4><span class="mw-headline" id="link.ld_2">link.ld</span></h4>
+<pre>...
+ENTRY(bootstrap)
+...
+SECTIONS
+{
+    . = KERNEL_LMA;
+
+    .bootstrap&#160;:
+    {
+        &lt;path of bootstrap object&gt; (.text)
+    }
+
+    . += KERNEL_VMA;
+
+    .text&#160;: AT(ADDR(.text) - KERNEL_VMA)
+    {
+        _code = .;
+        *(EXCLUDE_FILE(*&lt;path of bootstrap object&gt;) .text)
+        *(.rodata*)
+        . = ALIGN(4096);
+    }
+...
+</pre>
+<p>The above edits allow the linker to link the bootstrap code with physical addressing, as virtual addressing is set up by the bootstrap.
+Note that in this case, KERNEL_VMA will be equivalent to 0x0, meaning that text would have a virtual address at KERNEL_LMA + KERNEL_VMA instead of just at KERNEL_VMA.
+Change '+=' to '=' and your bootstrap code if you do not want this behaviour.
+</p><p>Compile and link as usual, just remember to compile the bootstrap code as well!
+</p><p>Set up GRUB2 to boot your kernel (depends on your bootloader) with grub.cfg:
+</p>
+<pre>menuentry "My Kernel" {
+    multiboot &lt;kernel executable&gt;
+}
+</pre>
+<h4><span id="With_Visual_C.2B.2B"></span><span class="mw-headline" id="With_Visual_C++">With Visual C++</span></h4>
+<p>The technique for creating a 64 bit kernel with a 32 bit bootstrap is similar to GCC. You need to create an assembly bootstrap with nasm (masm may work, but the author uses nasm).
+Note that this stub <b>must</b> be assembled to a <i>64</i> bit object file (-f win64). Your stub then has a BITS 32 directive.
+Note that, although nasm will not complain about this, Microsoft link will. It complains about address relocations, due to the memory model settings (/LARGEADDRESSAWARE, which is required for /DRIVER).
+As such, you need a method of generating the correct 32 bit code, while fooling link into generating a 64 bit relocation. Here is a macro for you:
+</p>
+<div class="mw-highlight mw-highlight-lang-asm mw-content-ltr" dir="ltr"><pre><span></span><span class="c1">;Encode 32 bit moves without the ADDR32 issue</span>
+<span class="err">%</span><span class="nf">macro</span><span class="w"> </span><span class="no">mov_abs32</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="err">%</span><span class="nf">if</span><span class="w"> </span><span class="err">%</span><span class="mi">1</span><span class="err">==</span><span class="no">eax</span><span class="w"></span>
+<span class="nf">db</span><span class="w"> </span><span class="mi">0xB8</span><span class="w"></span>
+<span class="err">%</span><span class="nf">elif</span><span class="w"> </span><span class="err">%</span><span class="mi">1</span><span class="err">==</span><span class="no">ebx</span><span class="w"></span>
+<span class="nf">db</span><span class="w"> </span><span class="mi">0xBB</span><span class="w"></span>
+<span class="err">%</span><span class="nf">elif</span><span class="w"> </span><span class="err">%</span><span class="mi">1</span><span class="err">==</span><span class="no">ecx</span><span class="w"></span>
+<span class="nf">db</span><span class="w"> </span><span class="mi">0xB9</span><span class="w"></span>
+<span class="err">%</span><span class="nf">elif</span><span class="w"> </span><span class="err">%</span><span class="mi">1</span><span class="err">==</span><span class="no">edx</span><span class="w"></span>
+<span class="nf">db</span><span class="w"> </span><span class="mi">0xBA</span><span class="w"></span>
+<span class="err">%</span><span class="nf">elif</span><span class="w"> </span><span class="err">%</span><span class="mi">1</span><span class="err">==</span><span class="no">edi</span><span class="w"></span>
+<span class="nf">db</span><span class="w"> </span><span class="mi">0xBF</span><span class="w"></span>
+<span class="err">%</span><span class="nf">elif</span><span class="w"> </span><span class="err">%</span><span class="mi">1</span><span class="err">==</span><span class="no">esi</span><span class="w"></span>
+<span class="nf">db</span><span class="w"> </span><span class="mi">0xBE</span><span class="w"></span>
+<span class="err">%</span><span class="nf">elif</span><span class="w"> </span><span class="err">%</span><span class="mi">1</span><span class="err">==</span><span class="no">ebp</span><span class="w"></span>
+<span class="nf">db</span><span class="w"> </span><span class="mi">0xBD</span><span class="w"></span>
+<span class="err">%</span><span class="nf">elif</span><span class="w"> </span><span class="err">%</span><span class="mi">1</span><span class="err">==</span><span class="no">esp</span><span class="w"></span>
+<span class="nf">db</span><span class="w"> </span><span class="mi">0xBC</span><span class="w"></span>
+<span class="err">%</span><span class="nf">else</span><span class="w"></span>
+<span class="err">%</span><span class="nf">error</span><span class="w"> </span><span class="err">&quot;</span><span class="no">Unknown</span><span class="w"> </span><span class="no">register</span><span class="err">&quot;</span><span class="w"></span>
+<span class="err">%</span><span class="nf">endif</span><span class="w"></span>
+<span class="nf">dq</span><span class="w"> </span><span class="err">%</span><span class="mi">2</span><span class="err">+</span><span class="p">(</span><span class="mi">0x90909090</span><span class="w"> </span><span class="err">&lt;&lt;</span><span class="w"> </span><span class="mi">32</span><span class="p">)</span><span class="w"></span>
+<span class="err">%</span><span class="nf">endmacro</span><span class="w"></span>
+<span class="c1">;This translates as mov %1, %2 NOP NOP NOP NOP</span>
+<span class="c1">;Example usage:</span>
+<span class="c1">;mov_abs32 eax, (gdtr-KADDR_OFFSET)</span>
+<span class="c1">;lgdt [eax]</span>
+</pre></div>
+<h2><span class="mw-headline" id="Possible_Problems">Possible Problems</span></h2>
+<p>You may experience some problems. Fix them <b>immediately</b> or risk spending a lot of time debugging later...
+</p>
+<h3><span id="My_kernel_is_way_too_big.21"></span><span class="mw-headline" id="My_kernel_is_way_too_big!">My kernel is way too big!</span></h3>
+<p>Try each of the following, in order:
+</p>
+<ul><li>Try linking your kernel with the option "-z max-page-size=0x1000" to force the linker to use 4kb pages.</li>
+<li>Make sure you're compiling with the -nostdlib option (equivalent to passing the both -nodefaultlibs and -nostartfiles options).</li>
+<li>You can try changing the OUTPUT_FORMAT to elf64-little.</li>
+<li>Try cross-compiling the <b>latest</b> version of binutils and gcc.</li></ul>
+<h2><span class="mw-headline" id="Kernel_Virtual_Memory">Kernel Virtual Memory</span></h2>
+<p>(This section is based on notes by Travis Geiselbrecht (geist) at the osdev IRC channel)
+</p><p>Long mode provides essentially an infinite amount of address space. An interesting design decision is how to map and use the kernel address space. Linux approaches the problem by permanently mapping the -2GB virtual region 0xffffffff80000000 -&gt; 0xffffffffffffffff to physical address 0x0 upwards. Kernel data structures, which are usually allocated by kmalloc() and the slab allocator, reside above the 0xffffffff80000000 virtual base and are allocate from the physical 0 -&gt; 2GB zone. This necessitates the ability of 'zoning' the page allocator, asking the page allocator to returning a page frame from a specific region, and only from that region. If a physical address above 2GB needs to accessed, the kernel temporarily map it to its space in a temporary mapping space below the virtual addresses base. The Linux approach provides the advantage of not having to modify the page tables much which means less TLB shootdowns on an SMP system.
+</p><p>Another approach is to treat the kernel address space as any other address space and dynamically map its regions. This provides the advantage of simplifying the page allocator by avoiding the need of physical memory 'zones': all physical RAM is available for any part of the kernel. An example of this approach is mapping the kernel to 0xfffffff800000000 as usual. Below that virtual address you put a large mapping for the entire physical address space, and use the virtual 0xfffffff800000000 -&gt; 0xffffffffffffffff region above kernel memory area as a temporary mappings space.
+</p>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="Articles">Articles</span></h3>
+<ul><li><a href="X86-64" title="X86-64">X86-64</a></li></ul>
+<h3><span class="mw-headline" id="Forum_Threads">Forum Threads</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="http://forum.osdev.org/viewtopic.php?f=8&amp;t=16779">Creating a 64-bit Kernel Tutorial</a> about this article</li>
+<li><a rel="nofollow" class="external text" href="http://forum.osdev.org/viewtopic.php?p=170634">Linker-script writers beware: COMMON Symbols</a> on the obscure 'COMMON' symbols and their effect on BSS</li>
+<li><a rel="nofollow" class="external text" href="http://forum.osdev.org/viewtopic.php?t=21720">Long-mode Kernels and the AMD64 ABI 'Red Zone'</a> on the 'red zone' and its major effect on interrupt handling</li>
+<li><a rel="nofollow" class="external text" href="http://forum.osdev.org/viewtopic.php?f=1&amp;p=136701">Leaving long mode</a> to protected mode</li>
+<li><a rel="nofollow" class="external text" href="http://forum.osdev.org/viewtopic.php?f=1&amp;t=17213">Switching from long mode to compatibility mode</a></li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211123507
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.056 seconds
+Real time usage: 0.580 seconds
+Preprocessor visited node count: 495/1000000
+Post‐expand include size: 3391/2097152 bytes
+Template argument size: 2259/2097152 bytes
+Highest expansion depth: 19/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 5033/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%   10.093      1 -total
+ 64.28%    6.488     23 Template:If
+ 48.32%    4.877     23 Template:Show1
+ 42.75%    4.315      1 Template:Rating
+ 42.03%    4.242      1 Template:Kernel_designs
+ 37.12%    3.747      1 Template:SmallNavBox
+  9.43%    0.951      3 Template:Eq
+  8.34%    0.842      1 Template:Disputed
+  4.62%    0.466      3 Template:Eq1
+  3.90%    0.393      1 Template:In_Progress
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:2257-0!canonical and timestamp 20250211123506 and revision id 27945.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Creating_a_64-bit_kernel&amp;oldid=27945">https://wiki.osdev.org/index.php?title=Creating_a_64-bit_kernel&amp;oldid=27945</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_duplicate_arguments_in_template_calls&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using duplicate arguments in template calls (page does not exist)">Pages using duplicate arguments in template calls</a></li><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:Level_2_Tutorials" title="Category:Level 2 Tutorials">Level 2 Tutorials</a></li><li><a href="./Category:In_Progress" title="Category:In Progress">In Progress</a></li><li><a href="./Category:Disputed_Pages" title="Category:Disputed Pages">Disputed Pages</a></li><li><a href="./Category:Tutorials" title="Category:Tutorials">Tutorials</a></li><li><a href="./Category:X86-64" title="Category:X86-64">X86-64</a></li><li><a href="./Category:Kernel" title="Category:Kernel">Kernel</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Creating+a+64-bit+kernel" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Creating_a_64-bit_kernel#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Creating_a_64-bit_kernel" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="mw-list-item"><a href="./Talk:Creating_a_64-bit_kernel" rel="discussion" title="Discussion about the content page [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Creating_a_64-bit_kernel"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Creating_a_64-bit_kernel&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Creating_a_64-bit_kernel&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Creating_a_64-bit_kernel" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="./Special:RecentChangesLinked/Creating_a_64-bit_kernel" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Creating_a_64-bit_kernel&amp;oldid=27945" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Creating_a_64-bit_kernel&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 9 July 2023, at 15:59.</li>
+	<li id="footer-info-0">This page has been accessed 19,753 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Creating_a_64-bit_kernel&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.056","walltime":"0.580","ppvisitednodes":{"value":495,"limit":1000000},"postexpandincludesize":{"value":3391,"limit":2097152},"templateargumentsize":{"value":2259,"limit":2097152},"expansiondepth":{"value":19,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":5033,"limit":5000000},"timingprofile":["100.00%   10.093      1 -total"," 64.28%    6.488     23 Template:If"," 48.32%    4.877     23 Template:Show1"," 42.75%    4.315      1 Template:Rating"," 42.03%    4.242      1 Template:Kernel_designs"," 37.12%    3.747      1 Template:SmallNavBox","  9.43%    0.951      3 Template:Eq","  8.34%    0.842      1 Template:Disputed","  4.62%    0.466      3 Template:Eq1","  3.90%    0.393      1 Template:In_Progress"]},"cachereport":{"timestamp":"20250211123507","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":697});});</script>
+</body>
+</html>

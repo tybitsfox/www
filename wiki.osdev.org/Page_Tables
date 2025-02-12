@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Page Tables - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"7074dca847b105b73c22f988","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Page_Tables","wgTitle":"Page Tables","wgCurRevisionId":28224,"wgRevisionId":28224,"wgArticleId":3344,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Memory management","Paging","Virtual Memory"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Page_Tables","wgRelevantArticleId":3344,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{
+"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Page_Tables rootpage-Page_Tables skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Page Tables</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Page_Tables#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Page_Tables#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>The <b>page tables</b> (or <b>page map levels</b>) are used to map each virtual page to a corresponding physical page. Zero or more virtual pages can correspond to the same physical page. The size of a page depends on the processor mode (protected, compatibility or long mode), the extensions used (e.g. PAE) and the virtual address bits supported by the processor (current AMD64 processors support up to 48-bit virtual addresses).
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Page_Tables#Determining_your_page_size"><span class="tocnumber">1</span> <span class="toctext">Determining your page size</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="Page_Tables#Recursive_mapping"><span class="tocnumber">2</span> <span class="toctext">Recursive mapping</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="Page_Tables#Protected/compatibility_mode_(32-bit)_page_map"><span class="tocnumber">3</span> <span class="toctext">Protected/compatibility mode (32-bit) page map</span></a>
+<ul>
+<li class="toclevel-2 tocsection-4"><a href="Page_Tables#Non-PAE_mode"><span class="tocnumber">3.1</span> <span class="toctext">Non-PAE mode</span></a>
+<ul>
+<li class="toclevel-3 tocsection-5"><a href="Page_Tables#4_KiB_pages"><span class="tocnumber">3.1.1</span> <span class="toctext">4 KiB pages</span></a></li>
+<li class="toclevel-3 tocsection-6"><a href="Page_Tables#4_MiB_pages"><span class="tocnumber">3.1.2</span> <span class="toctext">4 MiB pages</span></a></li>
+</ul>
+</li>
+<li class="toclevel-2 tocsection-7"><a href="Page_Tables#PAE_mode"><span class="tocnumber">3.2</span> <span class="toctext">PAE mode</span></a>
+<ul>
+<li class="toclevel-3 tocsection-8"><a href="Page_Tables#4_KiB_pages_2"><span class="tocnumber">3.2.1</span> <span class="toctext">4 KiB pages</span></a></li>
+<li class="toclevel-3 tocsection-9"><a href="Page_Tables#2_MiB_pages"><span class="tocnumber">3.2.2</span> <span class="toctext">2 MiB pages</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-10"><a href="Page_Tables#Long_mode_(64-bit)_page_map"><span class="tocnumber">4</span> <span class="toctext">Long mode (64-bit) page map</span></a>
+<ul>
+<li class="toclevel-2 tocsection-11"><a href="Page_Tables#48-bit_virtual_address_space"><span class="tocnumber">4.1</span> <span class="toctext">48-bit virtual address space</span></a>
+<ul>
+<li class="toclevel-3 tocsection-12"><a href="Page_Tables#4_KiB_pages_3"><span class="tocnumber">4.1.1</span> <span class="toctext">4 KiB pages</span></a></li>
+<li class="toclevel-3 tocsection-13"><a href="Page_Tables#2_MiB_pages_2"><span class="tocnumber">4.1.2</span> <span class="toctext">2 MiB pages</span></a></li>
+<li class="toclevel-3 tocsection-14"><a href="Page_Tables#1_GiB_pages"><span class="tocnumber">4.1.3</span> <span class="toctext">1 GiB pages</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-15"><a href="Page_Tables#See_Also"><span class="tocnumber">5</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-16"><a href="Page_Tables#Articles"><span class="tocnumber">5.1</span> <span class="toctext">Articles</span></a></li>
+<li class="toclevel-2 tocsection-17"><a href="Page_Tables#Forum"><span class="tocnumber">5.2</span> <span class="toctext">Forum</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Determining_your_page_size">Determining your page size</span></h2>
+<p>To determine the ideal page size, you can't just look at the overhead of the paging structures alone.
+</p><p>Typically (for user space), each process has at least 3 areas with different characteristics: executable, read only no-execute and read/write no-execute. When paging is used to enforce this, you end up with padding from the actual end of each area up to the next page boundary. You can assume that on average this padding will be 50% of the page size. For example, with 4096 byte pages and 3 areas you'd expect 6 KiB of RAM wasted per process due to padding, and with 2 MiB pages you'd expect 3 MiB of RAM wasted per process.
+</p><p>Typically (for OSs like Windows and Linux) there's around 50 processes where most use very little RAM and some use lots (X, browser, etc). If you assume 50 processes that use an average of 10 MiB of RAM each; then (for 4 KiB pages in long mode) each process (on average) would use a PML4, PDPT, PD and 5 page tables; or 32 KiB for all paging structures. For 2 MiB pages each process (on average) would use a PML4, PDPT and a PD; or 12 KiB for all paging structures.
+</p><p>That gives us some rough figures for comparison. For 50 processes where each process is an average of 10 MiB and has 3 different areas:
+</p>
+<ul><li>4 KiB paging will cost about 6 KiB for padding and 32 KiB for paging structures, or about 38 KiB of overhead per process</li>
+<li>2 MiB paging will cost about 3 MiB for padding and 12 KiB for paging structures, or about 3084 KiB of overhead per process</li>
+<li>4 KiB paging will cost about 1.86 MiB of overhead for all 50 processes combined</li>
+<li>2 MiB paging will cost about 150.6 MiB of overhead for all 50 processes combined</li>
+<li>With 500 MiB of RAM actually used by all processes; 1.86 MiB of total overhead works out to about 0.37% more, which is almost nothing</li>
+<li>With 500 MiB of RAM actually used by all processes; 150.6 MiB of total overhead works out to about 23.15% more, which is massive</li></ul>
+<p>For performance (e.g. TLB misses) it's much harder to estimate the likely cost, as it depends on how much of the paging structures remain in the cache (and how much has to be fetched from RAM), how large the TLBs are (for both small pages and large pages), if the CPU caches higher level structures (modern CPUs do), the working set of each process and its access pattern, how often you switch between processes, etc...
+</p><p>However (for typical OSs with typical loads), I'd assume it's very unlikely that the performance gains you get from using 2 MiB pages is going to justify having roughly 23% more RAM wasted.
+</p><p>Basically, 4 KiB pages (with 4 levels of paging structures) is starting to get a little small, but the next step up (2 MiB pages with 3 levels of paging structures) is far too big to be practical for most things.
+</p><p>To reduce the number of levels of paging structures, a better idea would be to also increase the size of page directories, PDPTs, etc. For example, for 55-bit virtual addresses you could have 64 KiB pages, 64 KiB page tables, 64 KiB page directories and 64 KiB PDPTs. Unfortunately we have to wait for Intel (or AMD) to do something like that though.
+</p><p>~ <a rel="nofollow" class="external text" href="http://forum.osdev.org/viewtopic.php?p=198045#p198045">Brendan</a>
+</p><p>Luckily though you can freely mix 4k, 2MiB and 1GiB pages. You don't have to use an uniform page size for everything. So a process having 9MB of data can get 4 2MiB pages and make up the rest with 4k pages. That saves paging structures, improves TLB usage and does not increase the overhead at all.
+</p>
+<h2><span class="mw-headline" id="Recursive_mapping">Recursive mapping</span></h2>
+<p>To make it easier to change the current address space's page map, you can map an entry of the highest page map level into itself.
+</p><p>Recursive mapping wastes some virtual address space. This table shows the relative space used by the recursively mapped page table:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Mode
+</th>
+<th>Page size
+</th>
+<th>Max page map size
+</th>
+<th>Used virtual space
+</th>
+<th>Total virtual space
+</th>
+<th colspan="2">Ratio
+</th></tr>
+<tr>
+<td rowspan="2">Protected mode (non-PAE)
+</td>
+<td>4 KiB
+</td>
+<td style="text-align: right;">4 MiB
+</td>
+<td rowspan="2" style="text-align: right;">4 MiB
+</td>
+<td rowspan="2" style="text-align: right;">4 GiB
+</td>
+<td rowspan="2" style="text-align: right; border-right: none;">1/1024
+</td>
+<td rowspan="2" style="text-align: left; border-left: none;">(0.1%)
+</td></tr>
+<tr>
+<td>4 MiB
+</td>
+<td style="text-align: right;">4 KiB
+</td></tr>
+<tr>
+<td rowspan="2">Protected mode (PAE)
+</td>
+<td>4 KiB
+</td>
+<td style="text-align: right;">8 MiB
+</td>
+<td rowspan="2" style="text-align: right;">1 GiB
+</td>
+<td rowspan="2" style="text-align: right;">4 GiB
+</td>
+<td rowspan="2" style="text-align: right; border-right: none;">1/4
+</td>
+<td rowspan="2" style="text-align: left; border-left: none;">(25%)
+</td></tr>
+<tr>
+<td>2 MiB
+</td>
+<td style="text-align: right;">16 KiB
+</td></tr>
+<tr>
+<td rowspan="3">Long mode (48-bit)
+</td>
+<td>4 KiB
+</td>
+<td style="text-align: right;">512 GiB
+</td>
+<td rowspan="3" style="text-align: right;">512 GiB
+</td>
+<td rowspan="3" style="text-align: right;">256 TiB
+</td>
+<td rowspan="3" style="text-align: right; border-right: none;">1/512
+</td>
+<td rowspan="3" style="text-align: left; border-left: none;">(0.2%)
+</td></tr>
+<tr>
+<td>2 MiB
+</td>
+<td style="text-align: right;">1 GiB
+</td></tr>
+<tr>
+<td>1 GiB
+</td>
+<td style="text-align: right;">2 MiB
+</td></tr></tbody></table>
+<p>The <i>Recursive mapping</i> column in the tables below shows the base address and offset to use to get to a particular page map level when the page map is recursively mapped as the <i>last</i> entry.
+</p>
+<h2><span id="Protected.2Fcompatibility_mode_.2832-bit.29_page_map"></span><span class="mw-headline" id="Protected/compatibility_mode_(32-bit)_page_map">Protected/compatibility mode (32-bit) page map</span></h2>
+<p>In protected mode, the virtual address space is 32-bit (4 GiB) in size, regardless of whether PAE is enabled or not.
+</p>
+<h3><span class="mw-headline" id="Non-PAE_mode">Non-PAE mode</span></h3>
+<p>Without enabling PAE, the page map can reference physical pages with addresses up to 32-bit (4 GiB).
+</p>
+<h4><span class="mw-headline" id="4_KiB_pages">4 KiB pages</span></h4>
+<table class="wikitable">
+<tbody><tr>
+<th>Level
+</th>
+<th>Table
+</th>
+<th colspan="2">Size
+</th>
+<th colspan="2">Range
+</th>
+<th>Bits
+</th>
+<th>Entries
+</th>
+<th colspan="2">Pages
+</th>
+<th colspan="2">Recursive mapping
+</th></tr>
+<tr>
+<td>0
+</td>
+<td>(page)
+</td>
+<td style="text-align: right; border-right: none;">-
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td>12 bits
+</td>
+<td>-
+</td>
+<td style="text-align: right; border-right: none;">0x1
+</td>
+<td style="text-align: left; border-left: none;">(1)
+</td>
+<td style="text-align: right; border-right: none;">-
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td></tr>
+<tr>
+<td>1
+</td>
+<td>PT
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td style="text-align: right; border-right: none;">0x40 0000
+</td>
+<td style="text-align: left; border-left: none;">(4 MiB)
+</td>
+<td>10 bits
+</td>
+<td>1024
+</td>
+<td style="text-align: right; border-right: none;">0x400
+</td>
+<td style="text-align: left; border-left: none;">(1024)
+</td>
+<td style="text-align: right; border-right: none;">0xFFC0 0000
+</td>
+<td style="text-align: left; border-left: none;">+ 0x1000 * PDi
+</td></tr>
+<tr>
+<td>2
+</td>
+<td>PD
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td style="text-align: right; border-right: none;">0x10000 0000
+</td>
+<td style="text-align: left; border-left: none;">(4 GiB)
+</td>
+<td>10 bits
+</td>
+<td>1024
+</td>
+<td style="text-align: right; border-right: none;">0x10 0000
+</td>
+<td style="text-align: left; border-left: none;">(1048576)
+</td>
+<td style="text-align: right; border-right: none;">0xFFFF F000
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td></tr></tbody></table>
+<h4><span class="mw-headline" id="4_MiB_pages">4 MiB pages</span></h4>
+<table class="wikitable">
+<tbody><tr>
+<th>Level
+</th>
+<th>Table
+</th>
+<th colspan="2">Size
+</th>
+<th colspan="2">Range
+</th>
+<th>Bits
+</th>
+<th>Entries
+</th>
+<th colspan="2">Pages
+</th>
+<th colspan="2">Recursive mapping
+</th></tr>
+<tr>
+<td>0
+</td>
+<td>(page)
+</td>
+<td style="text-align: right; border-right: none;">-
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td>
+<td style="text-align: right; border-right: none;">0x40 0000
+</td>
+<td style="text-align: left; border-left: none;">(4 MiB)
+</td>
+<td>22 bits
+</td>
+<td>-
+</td>
+<td style="text-align: right; border-right: none;">0x1
+</td>
+<td style="text-align: left; border-left: none;">(1)
+</td>
+<td style="text-align: right; border-right: none;">-
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td></tr>
+<tr>
+<td>2
+</td>
+<td>PD
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td style="text-align: right; border-right: none;">0x10000 0000
+</td>
+<td style="text-align: left; border-left: none;">(4 GiB)
+</td>
+<td>10 bits
+</td>
+<td>1024
+</td>
+<td style="text-align: right; border-right: none;">0x400
+</td>
+<td style="text-align: left; border-left: none;">(1024)
+</td>
+<td style="text-align: right; border-right: none;">0xFFC0 0000
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="PAE_mode">PAE mode</span></h3>
+<p>With PAE, the page map can reference physical pages with addresses up to 36-bit (64 GiB).
+</p>
+<h4><span class="mw-headline" id="4_KiB_pages_2">4 KiB pages</span></h4>
+<table class="wikitable">
+<tbody><tr>
+<th>Level
+</th>
+<th>Table
+</th>
+<th colspan="2">Size
+</th>
+<th colspan="2">Range
+</th>
+<th>Bits
+</th>
+<th>Entries
+</th>
+<th colspan="2">Pages
+</th>
+<th colspan="2">Recursive mapping
+</th></tr>
+<tr>
+<td>0
+</td>
+<td>(page)
+</td>
+<td style="text-align: right; border-right: none;">-
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td>12 bits
+</td>
+<td>-
+</td>
+<td style="text-align: right; border-right: none;">0x1
+</td>
+<td style="text-align: left; border-left: none;">(1)
+</td>
+<td style="text-align: right; border-right: none;">-
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td></tr>
+<tr>
+<td>1
+</td>
+<td>PT
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td style="text-align: right; border-right: none;">0x20 0000
+</td>
+<td style="text-align: left; border-left: none;">(2 MiB)
+</td>
+<td>9 bits
+</td>
+<td>512
+</td>
+<td style="text-align: right; border-right: none;">0x200
+</td>
+<td style="text-align: left; border-left: none;">(512)
+</td>
+<td style="text-align: right; border-right: none;">0xC000 0000
+</td>
+<td style="text-align: left; border-left: none;">+ 0x20 0000 * PDi + 0x1000 * PTi
+</td></tr>
+<tr>
+<td>2
+</td>
+<td>PD
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td style="text-align: right; border-right: none;">0x4000 0000
+</td>
+<td style="text-align: left; border-left: none;">(1 GiB)
+</td>
+<td>9 bits
+</td>
+<td>512
+</td>
+<td style="text-align: right; border-right: none;">0x40000
+</td>
+<td style="text-align: left; border-left: none;">(262144)
+</td>
+<td style="text-align: right; border-right: none;">0xC060 0000
+</td>
+<td style="text-align: left; border-left: none;">+ 0x1000 * PDi
+</td></tr>
+<tr>
+<td>3
+</td>
+<td>PDP
+</td>
+<td style="text-align: right; border-right: none;">0x20
+</td>
+<td style="text-align: left; border-left: none;">(32 bytes)
+</td>
+<td style="text-align: right; border-right: none;">0x10000 0000
+</td>
+<td style="text-align: left; border-left: none;">(4 GiB)
+</td>
+<td>2 bits
+</td>
+<td>4
+</td>
+<td style="text-align: right; border-right: none;">0x10 0000
+</td>
+<td style="text-align: left; border-left: none;">(1048576)
+</td>
+<td style="text-align: right; border-right: none;">0xC060 3000
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td></tr></tbody></table>
+<h4><span class="mw-headline" id="2_MiB_pages">2 MiB pages</span></h4>
+<table class="wikitable">
+<tbody><tr>
+<th>Level
+</th>
+<th>Table
+</th>
+<th colspan="2">Size
+</th>
+<th colspan="2">Range
+</th>
+<th>Bits
+</th>
+<th>Entries
+</th>
+<th colspan="2">Pages
+</th>
+<th colspan="2">Recursive mapping
+</th></tr>
+<tr>
+<td>0
+</td>
+<td>(page)
+</td>
+<td style="text-align: right; border-right: none;">-
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td>
+<td style="text-align: right; border-right: none;">0x20 0000
+</td>
+<td style="text-align: left; border-left: none;">(2 MiB)
+</td>
+<td>21 bits
+</td>
+<td>-
+</td>
+<td style="text-align: right; border-right: none;">0x1
+</td>
+<td style="text-align: left; border-left: none;">(1)
+</td>
+<td style="text-align: right; border-right: none;">-
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td></tr>
+<tr>
+<td>2
+</td>
+<td>PD
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td style="text-align: right; border-right: none;">0x4000 0000
+</td>
+<td style="text-align: left; border-left: none;">(1 GiB)
+</td>
+<td>9 bits
+</td>
+<td>512
+</td>
+<td style="text-align: right; border-right: none;">0x200
+</td>
+<td style="text-align: left; border-left: none;">(512)
+</td>
+<td style="text-align: right; border-right: none;">0xC000 0000
+</td>
+<td style="text-align: left; border-left: none;">+ 0x20 0000 * PDi
+</td></tr>
+<tr>
+<td>3
+</td>
+<td>PDP
+</td>
+<td style="text-align: right; border-right: none;">0x20
+</td>
+<td style="text-align: left; border-left: none;">(32 bytes)
+</td>
+<td style="text-align: right; border-right: none;">0x10000 0000
+</td>
+<td style="text-align: left; border-left: none;">(4 GiB)
+</td>
+<td>2 bits
+</td>
+<td>4
+</td>
+<td style="text-align: right; border-right: none;">0x800
+</td>
+<td style="text-align: left; border-left: none;">(2048)
+</td>
+<td style="text-align: right; border-right: none;">0xC060 0000
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td></tr></tbody></table>
+<p><br />
+</p>
+<h2><span id="Long_mode_.2864-bit.29_page_map"></span><span class="mw-headline" id="Long_mode_(64-bit)_page_map">Long mode (64-bit) page map</span></h2>
+<p>In long mode, the virtual address space <i>could in theory</i> be 64-bit (16 EiB) in size, but individual processors allow only a portion of that space to be addressed. The currently most common processor implementations allow a 48-bit (256 TiB) address space. For such virtual addresses bits 48-63 must be a copy of bit 47 (similar to sign extension), and this splits the virtual address space in a higher half and a lower half.
+</p>
+<h3><span class="mw-headline" id="48-bit_virtual_address_space">48-bit virtual address space</span></h3>
+<h4><span class="mw-headline" id="4_KiB_pages_3">4 KiB pages</span></h4>
+<table class="wikitable">
+<tbody><tr>
+<th>Level
+</th>
+<th>Table
+</th>
+<th colspan="2">Size
+</th>
+<th colspan="2">Range
+</th>
+<th>Bits
+</th>
+<th>Entries
+</th>
+<th colspan="2">Pages
+</th>
+<th colspan="2">Recursive mapping
+</th></tr>
+<tr>
+<td>0
+</td>
+<td>(page)
+</td>
+<td style="text-align: right; border-right: none;">-
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td>12 bits
+</td>
+<td>-
+</td>
+<td style="text-align: right; border-right: none;">0x1
+</td>
+<td style="text-align: left; border-left: none;">(1)
+</td>
+<td style="text-align: right; border-right: none;">-
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td></tr>
+<tr>
+<td>1
+</td>
+<td>PT
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td style="text-align: right; border-right: none;">0x20 0000
+</td>
+<td style="text-align: left; border-left: none;">(2 MiB)
+</td>
+<td>9 bits
+</td>
+<td>512
+</td>
+<td style="text-align: right; border-right: none;">0x200
+</td>
+<td style="text-align: left; border-left: none;">(512)
+</td>
+<td style="text-align: right; border-right: none;">0xFFFF FF80 0000 0000
+</td>
+<td style="text-align: left; border-left: none;">+ 0x4000 0000 * PDPi + 0x20 0000 * PDi + 0x1000 * PTi
+</td></tr>
+<tr>
+<td>2
+</td>
+<td>PD
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td style="text-align: right; border-right: none;">0x4000 0000
+</td>
+<td style="text-align: left; border-left: none;">(1 GiB)
+</td>
+<td>9 bits
+</td>
+<td>512
+</td>
+<td style="text-align: right; border-right: none;">0x40000
+</td>
+<td style="text-align: left; border-left: none;">(262144)
+</td>
+<td style="text-align: right; border-right: none;">0xFFFF FFFF C000 0000
+</td>
+<td style="text-align: left; border-left: none;">+ 0x20 0000 * PDPi + 0x1000 * PDi
+</td></tr>
+<tr>
+<td>3
+</td>
+<td>PDP
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td style="text-align: right; border-right: none;">0x80 0000 0000
+</td>
+<td style="text-align: left; border-left: none;">(512 GiB)
+</td>
+<td>9 bits
+</td>
+<td>512
+</td>
+<td style="text-align: right; border-right: none;">0x800 0000
+</td>
+<td style="text-align: left; border-left: none;">(134217728)
+</td>
+<td style="text-align: right; border-right: none;">0xFFFF FFFF FFE0 0000
+</td>
+<td style="text-align: left; border-left: none;">+ 0x1000 * PDPi
+</td></tr>
+<tr>
+<td>4
+</td>
+<td>PML4
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td style="text-align: right; border-right: none;">0x10000 0000 0000
+</td>
+<td style="text-align: left; border-left: none;">(256 TiB)
+</td>
+<td>9 bits
+</td>
+<td>512
+</td>
+<td style="text-align: right; border-right: none;">0x10 0000 0000
+</td>
+<td style="text-align: left; border-left: none;">(68719476736)
+</td>
+<td style="text-align: right; border-right: none;">0xFFFF FFFF FFFF F000
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td></tr></tbody></table>
+<p><br />
+</p>
+<h4><span class="mw-headline" id="2_MiB_pages_2">2 MiB pages</span></h4>
+<table class="wikitable">
+<tbody><tr>
+<th>Level
+</th>
+<th>Table
+</th>
+<th colspan="2">Size
+</th>
+<th colspan="2">Range
+</th>
+<th>Bits
+</th>
+<th>Entries
+</th>
+<th colspan="2">Pages
+</th>
+<th colspan="2">Recursive mapping
+</th></tr>
+<tr>
+<td>0
+</td>
+<td>(page)
+</td>
+<td style="text-align: right; border-right: none;">-
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td>
+<td style="text-align: right; border-right: none;">0x20 0000
+</td>
+<td style="text-align: left; border-left: none;">(2 MiB)
+</td>
+<td>21 bits
+</td>
+<td>-
+</td>
+<td style="text-align: right; border-right: none;">0x1
+</td>
+<td style="text-align: left; border-left: none;">(1)
+</td>
+<td style="text-align: right; border-right: none;">-
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td></tr>
+<tr>
+<td>2
+</td>
+<td>PD
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td style="text-align: right; border-right: none;">0x4000 0000
+</td>
+<td style="text-align: left; border-left: none;">(1 GiB)
+</td>
+<td>9 bits
+</td>
+<td>512
+</td>
+<td style="text-align: right; border-right: none;">0x200
+</td>
+<td style="text-align: left; border-left: none;">(512)
+</td>
+<td style="text-align: right; border-right: none;">0xFFFF FF80 0000 0000
+</td>
+<td style="text-align: left; border-left: none;">+ 0x4000 0000 * PDPi + 0x20 0000 * PDi
+</td></tr>
+<tr>
+<td>3
+</td>
+<td>PDP
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td style="text-align: right; border-right: none;">0x80 0000 0000
+</td>
+<td style="text-align: left; border-left: none;">(512 GiB)
+</td>
+<td>9 bits
+</td>
+<td>512
+</td>
+<td style="text-align: right; border-right: none;">0x40000
+</td>
+<td style="text-align: left; border-left: none;">(262144)
+</td>
+<td style="text-align: right; border-right: none;">0xFFFF FFFF C000 0000
+</td>
+<td style="text-align: left; border-left: none;">+ 0x20 0000 * PDPi
+</td></tr>
+<tr>
+<td>4
+</td>
+<td>PML4
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td style="text-align: right; border-right: none;">0x10000 0000 0000
+</td>
+<td style="text-align: left; border-left: none;">(256 TiB)
+</td>
+<td>9 bits
+</td>
+<td>512
+</td>
+<td style="text-align: right; border-right: none;">0x8000000
+</td>
+<td style="text-align: left; border-left: none;">(134217728)
+</td>
+<td style="text-align: right; border-right: none;">0xFFFF FFFF FFE0 0000
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td></tr></tbody></table>
+<p><br />
+</p>
+<h4><span class="mw-headline" id="1_GiB_pages">1 GiB pages</span></h4>
+<table class="wikitable">
+<tbody><tr>
+<th>Level
+</th>
+<th>Table
+</th>
+<th colspan="2">Size
+</th>
+<th colspan="2">Range
+</th>
+<th>Bits
+</th>
+<th>Entries
+</th>
+<th colspan="2">Pages
+</th>
+<th colspan="2">Recursive mapping
+</th></tr>
+<tr>
+<td>0
+</td>
+<td>(page)
+</td>
+<td style="text-align: right; border-right: none;">-
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td>
+<td style="text-align: right; border-right: none;">0x4000 0000
+</td>
+<td style="text-align: left; border-left: none;">(1 GiB)
+</td>
+<td>30 bits
+</td>
+<td>-
+</td>
+<td style="text-align: right; border-right: none;">0x1
+</td>
+<td style="text-align: left; border-left: none;">(1)
+</td>
+<td style="text-align: right; border-right: none;">-
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td></tr>
+<tr>
+<td>3
+</td>
+<td>PDP
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td style="text-align: right; border-right: none;">0x80 0000 0000
+</td>
+<td style="text-align: left; border-left: none;">(512 GiB)
+</td>
+<td>9 bits
+</td>
+<td>512
+</td>
+<td style="text-align: right; border-right: none;">0x200
+</td>
+<td style="text-align: left; border-left: none;">(512)
+</td>
+<td style="text-align: right; border-right: none;">0xFFFF FF80 0000 0000
+</td>
+<td style="text-align: left; border-left: none;">+ 0x4000 0000 * PDPi
+</td></tr>
+<tr>
+<td>4
+</td>
+<td>PML4
+</td>
+<td style="text-align: right; border-right: none;">0x1000
+</td>
+<td style="text-align: left; border-left: none;">(4 KiB)
+</td>
+<td style="text-align: right; border-right: none;">0x10000 0000 0000
+</td>
+<td style="text-align: left; border-left: none;">(256 TiB)
+</td>
+<td>9 bits
+</td>
+<td>512
+</td>
+<td style="text-align: right; border-right: none;">0x40 000
+</td>
+<td style="text-align: left; border-left: none;">(262144)
+</td>
+<td style="text-align: right; border-right: none;">0xFFFF FFFF C000 0000
+</td>
+<td style="text-align: left; border-left: none;">&#160;
+</td></tr></tbody></table>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="Articles">Articles</span></h3>
+<ul><li><a href="Paging" title="Paging">Paging</a></li>
+<li><a href="Page_Frame_Allocation" title="Page Frame Allocation">Page Frame Allocation</a></li></ul>
+<h3><span class="mw-headline" id="Forum">Forum</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="http://forum.osdev.org/viewtopic.php?f=1&amp;t=24292">Time for 2 MB pages?</a></li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211125534
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.024 seconds
+Real time usage: 0.024 seconds
+Preprocessor visited node count: 53/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 0/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:3344-0!canonical and timestamp 20250211125534 and revision id 28224.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Page_Tables&amp;oldid=28224">https://wiki.osdev.org/index.php?title=Page_Tables&amp;oldid=28224</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="./Category:Memory_management" title="Category:Memory management">Memory management</a></li><li><a href="./Category:Paging" title="Category:Paging">Paging</a></li><li><a href="./Category:Virtual_Memory" title="Category:Virtual Memory">Virtual Memory</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Page+Tables" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Page_Tables#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Page_Tables" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:Page_Tables&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Page_Tables"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Page_Tables&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Page_Tables&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Page_Tables" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Page_Tables" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Page_Tables&amp;oldid=28224" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Page_Tables&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 10 July 2023, at 20:27.</li>
+	<li id="footer-info-0">This page has been accessed 7,584 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Page_Tables&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.024","walltime":"0.024","ppvisitednodes":{"value":53,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":0,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250211125534","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":118});});</script>
+</body>
+</html>

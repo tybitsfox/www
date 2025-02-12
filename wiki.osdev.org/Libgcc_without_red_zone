@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Libgcc without red zone - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"d6aba6899b96f8fd36f54601","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Libgcc_without_red_zone","wgTitle":"Libgcc without red zone","wgCurRevisionId":28491,"wgRevisionId":28491,"wgArticleId":3615,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","C","C++","Compilers","FAQ"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Libgcc_without_red_zone","wgRelevantArticleId":3615,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],
+"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Libgcc_without_red_zone rootpage-Libgcc_without_red_zone skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Libgcc without red zone</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Libgcc_without_red_zone#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Libgcc_without_red_zone#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><dl><dd><i>Main article:</i> <a href="Libgcc" title="Libgcc">Libgcc</a></dd></dl>
+<p>This article discuses how to build <a href="Libgcc" title="Libgcc">libgcc</a> without the need to support a <tt>red-zone</tt> in your kernel.
+If you're not targeting <a href="X86-64" title="X86-64">x86-64</a> you don't need this as i*86 has no such requirements.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Libgcc_without_red_zone#What_is_the_&#39;red-zone&#39;?"><span class="tocnumber">1</span> <span class="toctext">What is the 'red-zone'?</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="Libgcc_without_red_zone#Why_modify_libgcc?"><span class="tocnumber">2</span> <span class="toctext">Why modify libgcc?</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="Libgcc_without_red_zone#Preparations"><span class="tocnumber">3</span> <span class="toctext">Preparations</span></a></li>
+<li class="toclevel-1 tocsection-4"><a href="Libgcc_without_red_zone#Building_libgcc"><span class="tocnumber">4</span> <span class="toctext">Building libgcc</span></a></li>
+<li class="toclevel-1 tocsection-5"><a href="Libgcc_without_red_zone#Linking_against_the_correct_multilib_version"><span class="tocnumber">5</span> <span class="toctext">Linking against the correct multilib version</span></a></li>
+<li class="toclevel-1 tocsection-6"><a href="Libgcc_without_red_zone#See_Also"><span class="tocnumber">6</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-7"><a href="Libgcc_without_red_zone#Articles"><span class="tocnumber">6.1</span> <span class="toctext">Articles</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span id="What_is_the_.27red-zone.27.3F"></span><span class="mw-headline" id="What_is_the_'red-zone'?">What is the 'red-zone'?</span></h2>
+<p>The <tt>red-zone</tt> is a feature described in the <a href="System_V_ABI#x86-64" title="System V ABI">x86-64 ABI</a>.
+</p><p>It is a 128 byte long region located directly below the stack pointer. This region is free-for-use for the compiler without the requirement to notify the application / the os or any running interrupt handler.
+</p><p>For user applications there is no issue as interrupts and other kernel related code won't interfere with the user stack.
+In your kernel however things can get ugly, especially so if you have nested interrupts and no <tt>red-zone</tt> support. 
+Imagine running inside your interrupt handler, gcc puts some data inside the red zone, a nested interrupt occurs and clobbers the <tt>red-zone</tt> or vice versa.
+</p><p>To get around this the <tt>red-zone</tt> can be disabled by passing <tt>-mno-red-zone</tt> to <a href="GCC" title="GCC">GCC</a>.
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>x86_64-elf-gcc <span class="nv">$CFLAGS</span> -mno-red-zone ...
+</pre></div>
+<h2><span id="Why_modify_libgcc.3F"></span><span class="mw-headline" id="Why_modify_libgcc?">Why modify libgcc?</span></h2>
+<p>If you link against <a href="Libgcc" title="Libgcc">libgcc</a> (as you should) there is one problem: <a href="Libgcc" title="Libgcc">libgcc</a> is build with <tt>red-zone</tt> <u>enabled</u>.
+</p><p>So while your kernel works just fine the methods in <a href="Libgcc" title="Libgcc">libgcc</a> may mess things up by accident.
+The solution is simple - rebuild <a href="Libgcc" title="Libgcc">libgcc</a> with <tt>-mno-red-zone</tt>. Fortunately <a href="GCC" title="GCC">GCC</a> supports this in a straight forward way by providing <a href="https://wiki.osdev.org/index.php?title=Multilib&amp;action=edit&amp;redlink=1" class="new" title="Multilib (page does not exist)">multilib</a> support inside it's source tree.
+</p>
+<h2><span class="mw-headline" id="Preparations">Preparations</span></h2>
+<dl><dd><i>Main article:</i> <a href="GCC_Cross-Compiler" title="GCC Cross-Compiler">GCC Cross-Compiler</a></dd></dl>
+<p>Extract and prepare the <a href="GCC" title="GCC">GCC</a> sources as described when building your <a href="GCC_Cross-Compiler" title="GCC Cross-Compiler">GCC Cross-Compiler</a> but <u>don't run configure just yet</u>.
+</p><p>Create the following file and save it as <tt>t-x86_64-elf</tt> inside <i><tt>gcc/config/i386/</tt></i> under your <a href="GCC" title="GCC">GCC</a> sources.
+</p>
+<div class="mw-highlight mw-highlight-lang-make mw-content-ltr" dir="ltr"><pre><span></span><span class="c"># Add libgcc multilib variant without red-zone requirement</span>
+
+<span class="nv">MULTILIB_OPTIONS</span> <span class="o">+=</span> mno-red-zone
+<span class="nv">MULTILIB_DIRNAMES</span> <span class="o">+=</span> no-red-zone
+</pre></div>
+<p>By default this new configuration will not be used by <a href="GCC" title="GCC">GCC</a> unless it's explicitly told to.
+Open <tt>gcc/config.gcc</tt> in your favorite editor and search for case block like this:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span> x86_64-*-elf*<span class="o">)</span>
+ 	<span class="nv">tm_file</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">tm_file</span><span class="si">}</span><span class="s2"> i386/unix.h i386/att.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h&quot;</span>
+ 	<span class="p">;;</span>
+</pre></div>
+<p>This is the target configuration used when creating a <a href="GCC_Cross-Compiler" title="GCC Cross-Compiler">GCC Cross-Compiler</a> for x86_64-elf.
+Modify it to include the new <a href="https://wiki.osdev.org/index.php?title=Multilib&amp;action=edit&amp;redlink=1" class="new" title="Multilib (page does not exist)">multilib</a> configuration:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span> x86_64-*-elf*<span class="o">)</span>
+	<span class="nv">tmake_file</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">tmake_file</span><span class="si">}</span><span class="s2"> i386/t-x86_64-elf&quot;</span> <span class="c1"># include the new multilib configuration</span>
+	<span class="nv">tm_file</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">tm_file</span><span class="si">}</span><span class="s2"> i386/unix.h i386/att.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h&quot;</span>
+	<span class="p">;;</span>
+</pre></div>
+<h2><span class="mw-headline" id="Building_libgcc">Building libgcc</span></h2>
+<p>Run configure and then invoke the <tt>all-target-libgcc</tt> and <tt>install-target-libgcc</tt> as usual and <a href="GCC" title="GCC">GCC</a> will build <a href="Libgcc" title="Libgcc">libgcc</a> in two versions - one with <tt>red-zone</tt> enabled and one without.
+You can check the successful build by checking the installed <tt>libgcc.a</tt> archives:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>find <span class="nv">$TOOLCHAIN_PREFIX</span>/lib -name <span class="s1">&#39;libgcc.a&#39;</span>
+</pre></div>
+<p>If all went well you should see an additional <a href="Libgcc" title="Libgcc">libgcc</a> installed in the <tt>no-red-zone</tt> multilib directory:
+</p>
+<div class="mw-highlight mw-highlight-lang-text mw-content-ltr" dir="ltr"><pre><span></span>./gcc/x86_64-pc-elf/4.9.1/libgcc.a
+./gcc/x86_64-pc-elf/4.9.1/no-red-zone/libgcc.a
+</pre></div>
+<h2><span class="mw-headline" id="Linking_against_the_correct_multilib_version">Linking against the correct multilib version</span></h2>
+<p>Assuming you're using <a href="GCC" title="GCC">GCC</a> to link your kernel you're probably fine. All that's needed is to make sure <tt>-mno-red-zone</tt> is in your <tt>LDFLAGS</tt> when doing the final linker call.
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>x86_64-elf-gcc <span class="nv">$LDFLAGS</span> -mno-red-zone -o kernel <span class="nv">$SOURCES</span>
+</pre></div>
+<p>If you're unsure which <a href="Libgcc" title="Libgcc">libgcc</a> version is going to be used you can check by passing <tt>-mno-red-zone</tt> and <tt>-print-libgcc-file-name</tt> to <a href="GCC" title="GCC">GCC</a>:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>x86_64-elf-gcc -mno-red-zone -print-libgcc-file-name
+lib/gcc/x86_64-pc-elf/4.9.1/no-red-zone/libgcc.a
+</pre></div>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="Articles">Articles</span></h3>
+<ul><li><a href="GCC" title="GCC">GCC</a></li>
+<li><a href="GCC_Cross-Compiler" title="GCC Cross-Compiler">GCC Cross-Compiler</a></li>
+<li><a href="Libgcc" title="Libgcc">Libgcc</a></li>
+<li><a href="Bare_Bones" title="Bare Bones">Bare Bones</a></li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211123257
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.044 seconds
+Real time usage: 1.077 seconds
+Preprocessor visited node count: 94/1000000
+Post‐expand include size: 72/2097152 bytes
+Template argument size: 25/2097152 bytes
+Highest expansion depth: 3/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 2885/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%  133.818      1 -total
+  0.48%    0.641      2 Template:Main
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:3615-0!canonical and timestamp 20250211123256 and revision id 28491.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Libgcc_without_red_zone&amp;oldid=28491">https://wiki.osdev.org/index.php?title=Libgcc_without_red_zone&amp;oldid=28491</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:C" title="Category:C">C</a></li><li><a href="./Category:C++" title="Category:C++">C++</a></li><li><a href="./Category:Compilers" title="Category:Compilers">Compilers</a></li><li><a href="./Category:FAQ" title="Category:FAQ">FAQ</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Libgcc+without+red+zone" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Libgcc_without_red_zone#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Libgcc_without_red_zone" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="mw-list-item"><a href="./Talk:Libgcc_without_red_zone" rel="discussion" title="Discussion about the content page [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Libgcc_without_red_zone"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Libgcc_without_red_zone&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Libgcc_without_red_zone&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Libgcc_without_red_zone" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="./Special:RecentChangesLinked/Libgcc_without_red_zone" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Libgcc_without_red_zone&amp;oldid=28491" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Libgcc_without_red_zone&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 5 December 2023, at 12:37.</li>
+	<li id="footer-info-0">This page has been accessed 3,756 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Libgcc_without_red_zone&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.044","walltime":"1.077","ppvisitednodes":{"value":94,"limit":1000000},"postexpandincludesize":{"value":72,"limit":2097152},"templateargumentsize":{"value":25,"limit":2097152},"expansiondepth":{"value":3,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":2885,"limit":5000000},"timingprofile":["100.00%  133.818      1 -total","  0.48%    0.641      2 Template:Main"]},"cachereport":{"timestamp":"20250211123257","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":1181});});</script>
+</body>
+</html>

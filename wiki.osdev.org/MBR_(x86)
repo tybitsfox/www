@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>MBR (x86) - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"048c64fc14efa57103fcef8c","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"MBR_(x86)","wgTitle":"MBR (x86)","wgCurRevisionId":28022,"wgRevisionId":28022,"wgArticleId":1379,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["X86","Booting","Bootloaders"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"MBR_(x86)","wgRelevantArticleId":1379,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":
+false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-MBR_x86 rootpage-MBR_x86 skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">MBR (x86)</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="MBR_(x86)#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="MBR_(x86)#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>A <b>Master Boot Record</b> (<b>MBR</b>) is the bootsector of a hard disk. That is, it is what the BIOS loads and runs, when it boots a hard disk. The MBR is the very first sector of the hard disk; it contains an MBR Bootstrap program (described below),
+and a <a href="Partition_Table" title="Partition Table">Partition Table</a>. Devices that emulate a hard disk during system initialization must also contain an MBR, because they
+must also have Partition Tables -- even if they are not bootable.
+</p><p>The BIOS will only boot an MBR from a device if that device is in the "boot sequence" stored in <a href="CMOS" title="CMOS">CMOS</a>, and if the MBR on the device
+is formatted correctly. On the other hand, if a device is not in the boot sequence (but has a "drive number"), it is still possible
+for a <a href="Real_Mode" title="Real Mode">Real Mode</a> program (such as another MBR or bootloader) to load and boot that device's MBR directly.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="MBR_(x86)#MBR_Bootstrap"><span class="tocnumber">1</span> <span class="toctext">MBR Bootstrap</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="MBR_(x86)#MBR_Format"><span class="tocnumber">2</span> <span class="toctext">MBR Format</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="MBR_(x86)#Partition_table_entry_format"><span class="tocnumber">3</span> <span class="toctext">Partition table entry format</span></a></li>
+<li class="toclevel-1 tocsection-4"><a href="MBR_(x86)#Traditional_MBR"><span class="tocnumber">4</span> <span class="toctext">Traditional MBR</span></a></li>
+<li class="toclevel-1 tocsection-5"><a href="MBR_(x86)#Dual_Booting"><span class="tocnumber">5</span> <span class="toctext">Dual Booting</span></a></li>
+<li class="toclevel-1 tocsection-6"><a href="MBR_(x86)#Generic_MBRs"><span class="tocnumber">6</span> <span class="toctext">Generic MBRs</span></a></li>
+<li class="toclevel-1 tocsection-7"><a href="MBR_(x86)#Building_a_Custom_MBR_Bootstrap_program"><span class="tocnumber">7</span> <span class="toctext">Building a Custom MBR Bootstrap program</span></a>
+<ul>
+<li class="toclevel-2 tocsection-8"><a href="MBR_(x86)#Initial_Environment"><span class="tocnumber">7.1</span> <span class="toctext">Initial Environment</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="MBR_(x86)#Immediate_Priorities"><span class="tocnumber">7.2</span> <span class="toctext">Immediate Priorities</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-10"><a href="MBR_(x86)#Storing_an_MBR_to_the_disk"><span class="tocnumber">8</span> <span class="toctext">Storing an MBR to the disk</span></a></li>
+<li class="toclevel-1 tocsection-11"><a href="MBR_(x86)#x86_Examples"><span class="tocnumber">9</span> <span class="toctext">x86 Examples</span></a></li>
+<li class="toclevel-1 tocsection-12"><a href="MBR_(x86)#Comments"><span class="tocnumber">10</span> <span class="toctext">Comments</span></a></li>
+<li class="toclevel-1 tocsection-13"><a href="MBR_(x86)#See_Also"><span class="tocnumber">11</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-14"><a href="MBR_(x86)#Articles"><span class="tocnumber">11.1</span> <span class="toctext">Articles</span></a></li>
+<li class="toclevel-2 tocsection-15"><a href="MBR_(x86)#External_Links"><span class="tocnumber">11.2</span> <span class="toctext">External Links</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="MBR_Bootstrap">MBR Bootstrap</span></h2>
+<p>An MBR is loaded by the <a href="BIOS" title="BIOS">BIOS</a> at physical address 0x7c00, with DL set to the "drive number" that the MBR was loaded from.
+The BIOS then jumps to the very beginning of the loaded MBR (0x7c00), because that part of the MBR contains the "bootstrap" executable code.
+</p><p>Typical MBR bootstrap code will do the following:
+</p>
+<ul><li>relocate itself away from the 0x7c00 physical address (using a memory copy, and usually a far jump)</li>
+<li>determine which partition (or hard disk) to boot from (either by looking for the active partition, or by presenting the user with a selection of installed operating systems to choose from)
+<ul><li>if the user selected an "inactive" partition, then set the selected partition entry to "active", and clear the "active" bits of other partition entries</li>
+<li>use <a href="ATA_in_x86_RealMode_(BIOS)" class="mw-redirect" title="ATA in x86 RealMode (BIOS)">BIOS INT 13h</a> commands to rewrite the MBR if the partition table entries were modified</li></ul></li>
+<li>use <a href="ATA_in_x86_RealMode_(BIOS)" class="mw-redirect" title="ATA in x86 RealMode (BIOS)">BIOS INT 13h</a> commands to load the <a href="Volume_Boot_Record" title="Volume Boot Record">Volume Boot Record</a> (VBR, the "bootsector" of the bootloader) from the beginning of the selected partition to physical address 0x7c00</li>
+<li>set DS:SI pointing to the selected partition table entry</li>
+<li>jump to 0x7c00 (with CS set to 0, and DL set to the "drive number")</li></ul>
+<p>Note: it is intended for the value of DL, and the DS:SI pointer to be passed all the way into the kernel, for the kernel's use.
+This also means that the relocated MBR should not be overwritten during the boot process -- because the DS:SI pointer is aimed
+at a partition table entry inside that MBR, and needs to remain valid.
+</p>
+<h2><span class="mw-headline" id="MBR_Format">MBR Format</span></h2>
+<p>Notes:
+</p>
+<ul><li>See the <a href="Partition_Table" title="Partition Table">Partition Table</a> article for the format of each partition table entry field.</li>
+<li>It is important to remember that the partition table entries are <b>not</b> aligned on 32-bit boundaries.</li>
+<li>Naming the partition table entries as "First" through "Fourth" is for convenience only. The partition table entries are <b>not</b> required to be in any kind of order.</li>
+<li><b>Any</b> one of the partitions may be "active".</li>
+<li>There is supposed to be one active partition table entry, at most.</li>
+<li>Windows seems to verify and require that the partition it boots from be marked "active".</li>
+<li>Most other operating systems don't seem to care about the "active" bit in the partition table entry.</li></ul>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Offset
+</th>
+<th>Size (bytes)
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td>0x000
+</td>
+<td>440<sup>1</sup>
+</td>
+<td>MBR <b>Bootstrap</b> (flat binary executable code)
+</td></tr>
+<tr>
+<td>0x1B8
+</td>
+<td>4
+</td>
+<td>Optional "Unique Disk ID / Signature"<sup>2</sup>
+</td></tr>
+<tr>
+<td>0x1BC
+</td>
+<td>2
+</td>
+<td>Optional, reserved 0x0000<sup>3</sup>
+</td></tr>
+<tr>
+<td>0x1BE
+</td>
+<td>16
+</td>
+<td>First partition table entry
+</td></tr>
+<tr>
+<td>0x1CE
+</td>
+<td>16
+</td>
+<td>Second partition table entry
+</td></tr>
+<tr>
+<td>0x1DE
+</td>
+<td>16
+</td>
+<td>Third partition table entry
+</td></tr>
+<tr>
+<td>0x1EE
+</td>
+<td>16
+</td>
+<td>Fourth partition table entry
+</td></tr>
+<tr>
+<td>0x1FE
+</td>
+<td>2
+</td>
+<td>(0x55, 0xAA) "Valid bootsector" signature bytes
+</td></tr></tbody></table>
+<p><sup>1</sup> This can be extended to 446 bytes if you omit the next 2 optional fields: Disk ID and reserved.
+</p><p><sup>2</sup> The 4 byte "Unique Disk ID" is used by recent Linux and Windows systems to identify the drive.
+"Unique" in this case means that the IDs of all the drives attached to a particular system
+are distinct.
+</p><p><sup>3</sup> The 2 byte reserved is usually 0x0000. 0x5A5A means read-only according to <a rel="nofollow" class="external free" href="https://neosmart.net/wiki/mbr-boot-process/">https://neosmart.net/wiki/mbr-boot-process/</a>.
+</p>
+<h2><span class="mw-headline" id="Partition_table_entry_format">Partition table entry format</span></h2>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Offset<sup>1</sup>
+</th>
+<th>Size (bytes)
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td>0x00
+</td>
+<td>1
+</td>
+<td>Drive attributes (bit 7 set = active or bootable)
+</td></tr>
+<tr>
+<td>0x01
+</td>
+<td>3
+</td>
+<td>CHS Address of partition start
+</td></tr>
+<tr>
+<td>0x04
+</td>
+<td>1
+</td>
+<td>Partition type
+</td></tr>
+<tr>
+<td>0x05
+</td>
+<td>3
+</td>
+<td>CHS address of last partition sector
+</td></tr>
+<tr>
+<td>0x08
+</td>
+<td>4
+</td>
+<td>LBA of partition start
+</td></tr>
+<tr>
+<td>0x0C
+</td>
+<td>4
+</td>
+<td>Number of sectors in partition
+</td></tr></tbody></table>
+<p><sup>1</sup> Relative to the start of the partition entry.
+</p>
+<h2><span class="mw-headline" id="Traditional_MBR">Traditional MBR</span></h2>
+<p>The DOS FDISK program was the first to ever use an MBR, so that MBR became the de-facto standard.
+It also automatically became the standard for the minimum level of functionality of an MBR. It was never
+changed after it was first introduced.
+</p><p>The whole point of the FDISK program is to manipulate the MBRs of the hard disks attached to a system.
+When FDISK partitions a blank disk, it writes an MBR to sector 0 of the drive. When FDISK adds a new partition
+to a disk, it adds an entry into the Partition Table in the MBR. When FDISK makes a partition "active",
+it sets the "flag" byte in the Partition Table entry to 0x80.
+</p><p>The MBR that FDISK uses is coded to:
+</p>
+<ul><li>relocate itself to <tt>0x0000:0x0600</tt></li>
+<li>examine the byte at offset 0x1be, 0x1ce, 0x1de, and 0x1ee to determine the active partition</li>
+<li>load only the first sector of the active partition (which is expected to contain a DOS bootsector) to <tt>0x0000:0x7c00</tt> (hence the previous relocation)</li>
+<li>set SI</li>
+<li>jump to 0x7c00 -- transferring control to the DOS bootsector.</li></ul>
+<p><br />
+</p>
+<h2><span class="mw-headline" id="Dual_Booting">Dual Booting</span></h2>
+<p>A typical system may have several hard disks on it, and each hard disk can have 4 standard partitions (without
+going into the extra complication of Extended Partitions). Each of those partitions could theoretically hold
+its own distinct bootable OS, and filesystem.
+</p><p>However, the standard x86 boot sequence will only ever boot the MBR from the "C:" disk
+(the first disk found during the disk detection phase). And the standard MBR will only allow a single active
+partition on that disk, and will only ever boot that one partition. This is really completely inadequate.
+</p><p>It is not possible to modify the BIOS/CMOS boot sequence -- but you <i>can</i> change the MBR. So, one solution is to replace the standard MBR
+with a "custom, Dual Booting" MBR. (For a good example, see John Fine's SMBMBR in the <a href="MBR_(x86)#External_Links">External Links</a>, below.)
+</p><p>A simple dual booting MBR will allow the user to select any partition on the current drive, to boot. A more
+complicated dual booting MBR will also allow the user to select other hard disks, or even to specifically
+choose other partitions on other hard disks, to boot.
+</p><p>For one MBR to load and run a different MBR off a different drive is called "chain loading". If all the MBRs
+are dual booting, then the user can cycle through all the disks, and choose to boot the "correct" partition from
+the "correct" drive.
+</p><p>A dual booting MBR is a huge improvement over the standard MBR. The only problem is that an MBR bootstrap is limited
+to a little over 400 bytes of code. Such a tiny program is insufficient to create a "nice" user-friendly dual
+booting system that has commercial appeal. It <b>is</b> enough space to hack up an interface that is good enough
+for the person who wrote it.
+</p><p>One way around this size limitation is to note that a bootloader can contain a <b>lot</b> more code than an MBR. So a custom
+MBR can try to load a "preferred" bootloader (if it can find one on some partition, somewhere) -- and that preferred
+bootloader can have a very pretty, user-friendly interface that allows the user to select any partition
+off any drive, to boot.
+</p><p>It is also nice, if there is only one partition on only one drive (ie. there is no choice for a user to make), if the
+MBR will boot that one partition automatically -- without bothering the user with prompts.
+</p>
+<h2><span class="mw-headline" id="Generic_MBRs">Generic MBRs</span></h2>
+<p>As said above, the MBR that is written to the disk by the DOS FDISK program is "the most generic" one. But every disk partitioning
+app must write some sort of MBR to the disk, and every generic bootloader may well need a custom MBR.
+</p><p>Fortunately, there was a standard for them to conform to (the FDISK MBR), and they all did conform to it. Some of them may be
+Dual Booting, or have other features -- but they will all end up loading your bootloader at the standard address (0x7c00),
+with the DL register set to the boot "drive number", and DS:SI pointing at the correct partition table entry of the correct
+MBR.
+</p>
+<h2><span class="mw-headline" id="Building_a_Custom_MBR_Bootstrap_program">Building a Custom MBR Bootstrap program</span></h2>
+<p>When the BIOS transfers control to the MBR bootstrap code, the system is in Real mode. The MBR will probably also run entirely
+in Real mode, so it is important to understand <a href="Real_Mode#Real_Mode_Memory_Addressing" title="Real Mode">Real mode addressing</a>.
+</p><p>Self-relocation is one of the <a href="C#Things_C_can&#39;t_do" title="C">things C can't do</a>, and most modern C compilers can't create code that is
+compatible with Real mode, anyway. So an MBR must be written in <a href="Assembly" title="Assembly">Assembly</a>.
+</p><p>It is necessary to build an MBR that is exactly 512 bytes long. How this is done depends on your assembler and linker.
+The last 2 bytes must be the special boot pattern (0x55 followed by 0xAA), and as said above, the bootstrap portion of the
+MBR must be at most 446 bytes long. You must also put at least one partition table entry in the Partition Table
+portion of the MBR -- otherwise some BIOSes will refuse to boot from the disk. This includes most UEFI firmware in BIOS-compatibility
+mode.
+</p>
+<h3><span class="mw-headline" id="Initial_Environment">Initial Environment</span></h3>
+<p>When the BIOS loads and runs an MBR, it is loaded into memory at physical address 0x7c00. This is <i>usually</i> <tt>0x0000:0x7c00</tt>
+(CS = 0, offset address 0x7c00). However, some BIOSes load
+to <tt>0x7c0:0x0000</tt> (CS = 0x07c0, offset address 0) -- which resolves to the same physical address, but can cause problems.
+A good practice is to enforce CS:IP with a far jump near the beginning of your bootstrap code.
+The MBR will probably need to immediately relocate itself anyway, and that is a good time to enforce CS:IP.
+</p><p>The BIOS passes very little useful information directly to the MBR. In fact, the only important number is the value in DL -- the "drive
+number". It needs to be passed to all later calls to BIOS function INT 13h, so that byte in DL probably needs to be saved carefully.
+</p><p>The values in all the other registers, and in most of memory, are undefined.
+</p>
+<h3><span class="mw-headline" id="Immediate_Priorities">Immediate Priorities</span></h3>
+<p>It is important to immediately set up a <a href="Stack" title="Stack">stack</a>, and also to set the rest of the CPU's segment registers
+(DS, ES, FS, GS) properly. Setting up a stack involves pointing the SS:SP pair of registers at some memory that is not being used for anything
+else (and the address must be even). The other segment registers should usually be set to 0.
+</p><p>See the <a href="Memory_Map_(x86)" title="Memory Map (x86)">Memory Map (x86)</a> article to understand what memory is available during boot (low memory from 0x500 to 0x7ffff, generally).
+</p><p>In general, you do not want to fragment your available memory, or the memory of each 64K "page", if possible. The MBR needs a stack,
+and a place to relocate itself to. The MBR will be loading a bootloader at 0x7c00, so it is reasonably convenient for the MBR to
+relocate itself either to somewhere around the 0x500 to 0x600 address range, or to 0x7a00 (ie. just below 0x7c00). The stack can then
+point to 0x7c00 (if the MBR is not at 0x7a00), or the stack can be just below the relocated MBR.
+</p>
+<h2><span class="mw-headline" id="Storing_an_MBR_to_the_disk">Storing an MBR to the disk</span></h2>
+<p>To write an MBR to the first sector of a disk, you must use special disk I/O tools, because the MBR (by definition) is not inside any disk partition.
+The MBR only exists on the "raw device". There are quite a few "disk editing" tools available; some are listed in
+<a href="./Category:Disk_Image_Utilities" title="Category:Disk Image Utilities">Disk Image Utilities</a>.
+</p>
+<h2><span class="mw-headline" id="x86_Examples">x86 Examples</span></h2>
+<p>Assuming one knows how to read sectors from disk and has setup a function allowing them to do so, and assuming the inputs to said function are:
+</p>
+<ul><li>EBX - 32-bit LBA Address</li>
+<li>CX - Sector Count</li>
+<li>ES:DI - Buffer</li>
+<li>BYTE [bootDrive] - Drive Number<br /></li></ul>
+<p>An extremely simple MBR complying to the standard could look like:
+</p>
+<div class="mw-highlight mw-highlight-lang-asm mw-content-ltr" dir="ltr"><pre><span></span><span class="err">[</span><span class="nf">bits</span><span class="w"> </span><span class="mi">16</span><span class="p">]</span><span class="w"></span>
+<span class="err">[</span><span class="nf">org</span><span class="w"> </span><span class="mi">0x0600</span><span class="p">]</span><span class="w"></span>
+
+<span class="nl">start:</span><span class="w"></span>
+<span class="w">  </span><span class="nf">cli</span><span class="w">                         </span><span class="c1">; We do not want to be interrupted</span>
+<span class="w">  </span><span class="nf">xor</span><span class="w"> </span><span class="no">ax</span><span class="p">,</span><span class="w"> </span><span class="no">ax</span><span class="w">                  </span><span class="c1">; 0 AX</span>
+<span class="w">  </span><span class="nf">mov</span><span class="w"> </span><span class="no">ds</span><span class="p">,</span><span class="w"> </span><span class="no">ax</span><span class="w">                  </span><span class="c1">; Set Data Segment to 0</span>
+<span class="w">  </span><span class="nf">mov</span><span class="w"> </span><span class="no">es</span><span class="p">,</span><span class="w"> </span><span class="no">ax</span><span class="w">                  </span><span class="c1">; Set Extra Segment to 0</span>
+<span class="w">  </span><span class="nf">mov</span><span class="w"> </span><span class="no">ss</span><span class="p">,</span><span class="w"> </span><span class="no">ax</span><span class="w">                  </span><span class="c1">; Set Stack Segment to 0</span>
+<span class="w">  </span><span class="nf">mov</span><span class="w"> </span><span class="no">sp</span><span class="p">,</span><span class="w"> </span><span class="no">ax</span><span class="w">                  </span><span class="c1">; Set Stack Pointer to 0</span>
+<span class="w">  </span><span class="nl">.CopyLower:</span><span class="w"></span>
+<span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">cx</span><span class="p">,</span><span class="w"> </span><span class="mi">0x0100</span><span class="w">            </span><span class="c1">; 256 WORDs in MBR</span>
+<span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">si</span><span class="p">,</span><span class="w"> </span><span class="mi">0x7C00</span><span class="w">            </span><span class="c1">; Current MBR Address</span>
+<span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">di</span><span class="p">,</span><span class="w"> </span><span class="mi">0x0600</span><span class="w">            </span><span class="c1">; New MBR Address</span>
+<span class="w">    </span><span class="na">rep</span><span class="w"> </span><span class="nf">movsw</span><span class="w">                 </span><span class="c1">; Copy MBR</span>
+<span class="w">  </span><span class="nf">jmp</span><span class="w"> </span><span class="mi">0</span><span class="p">:</span><span class="no">LowStart</span><span class="w">              </span><span class="c1">; Jump to new Address</span>
+
+<span class="nl">LowStart:</span><span class="w"></span>
+<span class="w">  </span><span class="nf">sti</span><span class="w">                         </span><span class="c1">; Start interrupts</span>
+<span class="w">  </span><span class="nf">mov</span><span class="w"> </span><span class="no">BYTE</span><span class="w"> </span><span class="p">[</span><span class="no">bootDrive</span><span class="p">],</span><span class="w"> </span><span class="no">dl</span><span class="w">    </span><span class="c1">; Save BootDrive</span>
+<span class="w">  </span><span class="nl">.CheckPartitions:</span><span class="w">           </span><span class="c1">; Check Partition Table For Bootable Partition</span>
+<span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">bx</span><span class="p">,</span><span class="w"> </span><span class="no">PT1</span><span class="w">               </span><span class="c1">; Base = Partition Table Entry 1</span>
+<span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">cx</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">                 </span><span class="c1">; There are 4 Partition Table Entries</span>
+<span class="w">    </span><span class="nl">.CKPTloop:</span><span class="w"></span>
+<span class="w">      </span><span class="nf">mov</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="no">BYTE</span><span class="w"> </span><span class="p">[</span><span class="no">bx</span><span class="p">]</span><span class="w">       </span><span class="c1">; Get Boot indicator bit flag</span>
+<span class="w">      </span><span class="nf">test</span><span class="w"> </span><span class="no">al</span><span class="p">,</span><span class="w"> </span><span class="mi">0x80</span><span class="w">           </span><span class="c1">; Check For Active Bit</span>
+<span class="w">      </span><span class="nf">jnz</span><span class="w"> </span><span class="no">.CKPTFound</span><span class="w">          </span><span class="c1">; We Found an Active Partition</span>
+<span class="w">      </span><span class="nf">add</span><span class="w"> </span><span class="no">bx</span><span class="p">,</span><span class="w"> </span><span class="mi">0x10</span><span class="w">            </span><span class="c1">; Partition Table Entry is 16 Bytes</span>
+<span class="w">      </span><span class="nf">dec</span><span class="w"> </span><span class="no">cx</span><span class="w">                  </span><span class="c1">; Decrement Counter</span>
+<span class="w">      </span><span class="nf">jnz</span><span class="w"> </span><span class="no">.CKPTloop</span><span class="w">           </span><span class="c1">; Loop</span>
+<span class="w">    </span><span class="nf">jmp</span><span class="w"> </span><span class="no">ERROR</span><span class="w">                 </span><span class="c1">; ERROR!</span>
+<span class="w">    </span><span class="nl">.CKPTFound:</span><span class="w"></span>
+<span class="w">      </span><span class="nf">mov</span><span class="w"> </span><span class="no">WORD</span><span class="w"> </span><span class="p">[</span><span class="no">PToff</span><span class="p">],</span><span class="w"> </span><span class="no">bx</span><span class="w">    </span><span class="c1">; Save Offset</span>
+<span class="w">      </span><span class="nf">add</span><span class="w"> </span><span class="no">bx</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="w">               </span><span class="c1">; Increment Base to LBA Address</span>
+<span class="w">  </span><span class="nl">.ReadVBR:</span><span class="w"></span>
+<span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">EBX</span><span class="p">,</span><span class="w"> </span><span class="no">DWORD</span><span class="w"> </span><span class="p">[</span><span class="no">bx</span><span class="p">]</span><span class="w">       </span><span class="c1">; Start LBA of Active Partition</span>
+<span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">di</span><span class="p">,</span><span class="w"> </span><span class="mi">0x7C00</span><span class="w">            </span><span class="c1">; We Are Loading VBR to 0x07C0:0x0000</span>
+<span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">cx</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">                 </span><span class="c1">; Only one sector</span>
+<span class="w">    </span><span class="nf">call</span><span class="w"> </span><span class="no">ReadSectors</span><span class="w">          </span><span class="c1">; Read Sector</span>
+
+<span class="w">  </span><span class="nl">.jumpToVBR:</span><span class="w"></span>
+<span class="w">    </span><span class="nf">cmp</span><span class="w"> </span><span class="no">WORD</span><span class="w"> </span><span class="p">[</span><span class="mi">0x7DFE</span><span class="p">],</span><span class="w"> </span><span class="mi">0xAA55</span><span class="w"> </span><span class="c1">; Check Boot Signature</span>
+<span class="w">    </span><span class="nf">jne</span><span class="w"> </span><span class="no">ERROR</span><span class="w">                 </span><span class="c1">; Error if not Boot Signature</span>
+<span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">si</span><span class="p">,</span><span class="w"> </span><span class="no">WORD</span><span class="w"> </span><span class="p">[</span><span class="no">PToff</span><span class="p">]</span><span class="w">      </span><span class="c1">; Set DS:SI to Partition Table Entry</span>
+<span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">dl</span><span class="p">,</span><span class="w"> </span><span class="no">BYTE</span><span class="w"> </span><span class="p">[</span><span class="no">bootDrive</span><span class="p">]</span><span class="w">  </span><span class="c1">; Set DL to Drive Number</span>
+<span class="w">    </span><span class="nf">jmp</span><span class="w"> </span><span class="mi">0x7C00</span><span class="w">                </span><span class="c1">; Jump To VBR</span>
+
+<span class="nf">times</span><span class="w"> </span><span class="p">(</span><span class="mi">218</span><span class="w"> </span><span class="p">-</span><span class="w"> </span><span class="p">(</span><span class="no">$-$$</span><span class="p">))</span><span class="w"> </span><span class="no">nop</span><span class="w">      </span><span class="c1">; Pad for disk time stamp</span>
+
+<span class="nf">DiskTimeStamp</span><span class="w"> </span><span class="no">times</span><span class="w"> </span><span class="mi">8</span><span class="w"> </span><span class="no">db</span><span class="w"> </span><span class="mi">0</span><span class="w">    </span><span class="c1">; Disk Time Stamp</span>
+
+<span class="nf">bootDrive</span><span class="w"> </span><span class="no">db</span><span class="w"> </span><span class="mi">0</span><span class="w">                </span><span class="c1">; Our Drive Number Variable</span>
+<span class="nf">PToff</span><span class="w"> </span><span class="no">dw</span><span class="w"> </span><span class="mi">0</span><span class="w">                    </span><span class="c1">; Our Partition Table Entry Offset</span>
+
+<span class="nf">times</span><span class="w"> </span><span class="p">(</span><span class="mi">0x1b4</span><span class="w"> </span><span class="p">-</span><span class="w"> </span><span class="p">(</span><span class="no">$-$$</span><span class="p">))</span><span class="w"> </span><span class="no">nop</span><span class="w">    </span><span class="c1">; Pad For MBR Partition Table</span>
+
+<span class="nf">UID</span><span class="w"> </span><span class="no">times</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="no">db</span><span class="w"> </span><span class="mi">0</span><span class="w">             </span><span class="c1">; Unique Disk ID</span>
+<span class="nf">PT1</span><span class="w"> </span><span class="no">times</span><span class="w"> </span><span class="mi">16</span><span class="w"> </span><span class="no">db</span><span class="w"> </span><span class="mi">0</span><span class="w">             </span><span class="c1">; First Partition Entry</span>
+<span class="nf">PT2</span><span class="w"> </span><span class="no">times</span><span class="w"> </span><span class="mi">16</span><span class="w"> </span><span class="no">db</span><span class="w"> </span><span class="mi">0</span><span class="w">             </span><span class="c1">; Second Partition Entry</span>
+<span class="nf">PT3</span><span class="w"> </span><span class="no">times</span><span class="w"> </span><span class="mi">16</span><span class="w"> </span><span class="no">db</span><span class="w"> </span><span class="mi">0</span><span class="w">             </span><span class="c1">; Third Partition Entry</span>
+<span class="nf">PT4</span><span class="w"> </span><span class="no">times</span><span class="w"> </span><span class="mi">16</span><span class="w"> </span><span class="no">db</span><span class="w"> </span><span class="mi">0</span><span class="w">             </span><span class="c1">; Fourth Partition Entry</span>
+
+<span class="nf">dw</span><span class="w"> </span><span class="mi">0xAA55</span><span class="w">                     </span><span class="c1">; Boot Signature</span>
+</pre></div>
+<p>Of course this is an extremely simplified MBR, and is only able to load the [first] active partition.
+</p>
+<h2><span class="mw-headline" id="Comments">Comments</span></h2>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="Articles">Articles</span></h3>
+<ul><li><a href="System_Initialization_(x86)" title="System Initialization (x86)">System Initialization (x86)</a></li></ul>
+<h3><span class="mw-headline" id="External_Links">External Links</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="http://www.osdever.net/downloads/bootsectors/smbmbr03.zip">Fine's MBR code on osdever</a></li>
+<li><a rel="nofollow" class="external text" href="http://www.nondot.org/sabre/os/articles/TheBootProcess/">OSRC</a> -- for more boot sector info</li>
+<li><a rel="nofollow" class="external text" href="http://www.ranish.com/part/">Ranish Partition Manager</a> -- Disk partitioning software</li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211124751
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.031 seconds
+Real time usage: 0.169 seconds
+Preprocessor visited node count: 77/1000000
+Post‐expand include size: 324/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 3/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 12916/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.649      1 -total
+ 86.15%    0.559      2 Template:Wikitable
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:1379-0!canonical and timestamp 20250211124751 and revision id 28022.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=MBR_(x86)&amp;oldid=28022">https://wiki.osdev.org/index.php?title=MBR_(x86)&amp;oldid=28022</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="./Category:X86" title="Category:X86">X86</a></li><li><a href="./Category:Booting" title="Category:Booting">Booting</a></li><li><a href="./Category:Bootloaders" title="Category:Bootloaders">Bootloaders</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=MBR+%28x86%29" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="MBR_(x86)#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="MBR_(x86)" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="mw-list-item"><a href="./Talk:MBR_(x86)" rel="discussion" title="Discussion about the content page [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="MBR_(x86)"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=MBR_(x86)&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=MBR_(x86)&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/MBR_(x86)" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/MBR_(x86)" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=MBR_(x86)&amp;oldid=28022" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=MBR_(x86)&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-lang" class="vector-menu mw-portlet mw-portlet-lang vector-menu-portal portal" aria-labelledby="p-lang-label" role="navigation"  >
+	<h3
+		id="p-lang-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">In other languages</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li class="interlanguage-link interwiki-de mw-list-item"><a href="http://www.lowlevel.eu/wiki/Master_Boot_Record" title="Master Boot Record – Deutsch" lang="de" hreflang="de" class="interlanguage-link-target"><span>Deutsch</span></a></li></ul>
+		
+	</div>
+</nav>
+
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 9 July 2023, at 18:08.</li>
+	<li id="footer-info-0">This page has been accessed 18,515 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=MBR_(x86)&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.031","walltime":"0.169","ppvisitednodes":{"value":77,"limit":1000000},"postexpandincludesize":{"value":324,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":3,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":12916,"limit":5000000},"timingprofile":["100.00%    0.649      1 -total"," 86.15%    0.559      2 Template:Wikitable"]},"cachereport":{"timestamp":"20250211124751","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":266});});</script>
+</body>
+</html>

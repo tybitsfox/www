@@ -34,7 +34,8 @@ echo "<a href=./kernel_task.php target=_blank>引导及多任务源代码</a>&nb
 echo "&nbsp;&nbsp;&nbsp;六、驱动编程资料:<br><br>";
 echo "<a href=./oss.org.cn/kernel-book/ldd3/index.html target=_blank>Linux设备驱动第三版</a>&nbsp;&nbsp;&nbsp;&nbsp;
 <a href=/www.brokenthorn.com/Resources/OSDevIndex.html target=_blank>操作系统开发系列</a>&nbsp;&nbsp;&nbsp;&nbsp;
-<a href=./floppy.htm target=_blank>FDC82072a</a>
+<a href=./floppy.htm target=_blank>FDC82072a</a>&nbsp;&nbsp;&nbsp;&nbsp;
+<a href=../wiki.osdev.org/Expanded_Main_Page>HardWare develop</a>
 <br><br>";
 echo "&nbsp;&nbsp;&nbsp;七、我的内核:<br><br>";
 echo "<a href=./kernel_mem.php target=_blank>内存映像</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./kernel_port.php target=_blank>硬件端口</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./asm_explain.php taget=_blank>汇编指令</a><br><br>";

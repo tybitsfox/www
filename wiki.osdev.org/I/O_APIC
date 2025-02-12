@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>IOAPIC - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"a34dbf98b2024830813a70ed","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"IOAPIC","wgTitle":"IOAPIC","wgCurRevisionId":29153,"wgRevisionId":29153,"wgArticleId":2434,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages with ignored display titles","Pages using deprecated source tags","Interrupts","Multiprocessing"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"IOAPIC","wgRelevantArticleId":2434,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":
+[],"wgRedirectedFrom":"I/O_APIC","wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgInternalRedirectTargetUrl":"/IOAPIC","wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["mediawiki.action.view.redirect","site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="../favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="../opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="../api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+<link rel="canonical" href="../IOAPIC"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-IOAPIC rootpage-IOAPIC skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">IOAPIC</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"><span class="mw-redirectedfrom">(Redirected from <a href="https://wiki.osdev.org/index.php?title=I/O_APIC&amp;redirect=no" class="mw-redirect" title="I/O APIC">I/O APIC</a>)</span></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="O_APIC#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="O_APIC#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p><br />
+The Intel I/O Advanced Programmable Interrupt Controller is used to distribute external interrupts in a more advanced manner than that of the standard <a href="../8259_PIC" title="8259 PIC">8259 PIC</a>. With the I/O APIC, interrupts can be distributed to physical or logical (clusters of) processors and can be prioritized. Each I/O APIC typically handles 24 external interrupts.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="O_APIC#Detecting_I/O_APIC"><span class="tocnumber">1</span> <span class="toctext">Detecting I/O APIC</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="O_APIC#Programming_the_I/O_APIC"><span class="tocnumber">2</span> <span class="toctext">Programming the I/O APIC</span></a>
+<ul>
+<li class="toclevel-2 tocsection-3"><a href="O_APIC#IOAPICID"><span class="tocnumber">2.1</span> <span class="toctext">IOAPICID</span></a></li>
+<li class="toclevel-2 tocsection-4"><a href="O_APIC#IOAPICVER"><span class="tocnumber">2.2</span> <span class="toctext">IOAPICVER</span></a></li>
+<li class="toclevel-2 tocsection-5"><a href="O_APIC#IOAPICARB"><span class="tocnumber">2.3</span> <span class="toctext">IOAPICARB</span></a></li>
+<li class="toclevel-2 tocsection-6"><a href="O_APIC#IOREDTBL"><span class="tocnumber">2.4</span> <span class="toctext">IOREDTBL</span></a></li>
+<li class="toclevel-2 tocsection-7"><a href="O_APIC#IOREGSEL_and_IOWIN"><span class="tocnumber">2.5</span> <span class="toctext">IOREGSEL and IOWIN</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-8"><a href="O_APIC#IO_APIC_Inputs"><span class="tocnumber">3</span> <span class="toctext">IO APIC Inputs</span></a></li>
+<li class="toclevel-1 tocsection-9"><a href="O_APIC#External_Links"><span class="tocnumber">4</span> <span class="toctext">External Links</span></a>
+<ul>
+<li class="toclevel-2 tocsection-10"><a href="O_APIC#MP_Tables"><span class="tocnumber">4.1</span> <span class="toctext">MP Tables</span></a></li>
+<li class="toclevel-2 tocsection-11"><a href="O_APIC#I/O_APIC"><span class="tocnumber">4.2</span> <span class="toctext">I/O APIC</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span id="Detecting_I.2FO_APIC"></span><span class="mw-headline" id="Detecting_I/O_APIC">Detecting I/O APIC</span></h2>
+<p>In order to detect the existence of an I/O APIC (or multiple ones), the Intel Multi-Processor or <a href="../RSDP" title="RSDP">ACPI</a> tables (specifically, the <a href="../MADT" title="MADT">MADT</a>) must be parsed. In the MP tables, configuration tables with the entry identification of 0x02 are for I/O APICs. Parsing will tell how many (if any) I/O APICs exist, what are their APIC ID, base MMIO address and first IRQ (or GSI - Global System Interrupt). For more information on parsing the MP tables, see the External MP Tables Links section below. So you can have, say, 2 I/O APICs, the first handling IRQs 0 - 23 and the second 24 - 47.
+</p>
+<h2><span id="Programming_the_I.2FO_APIC"></span><span class="mw-headline" id="Programming_the_I/O_APIC">Programming the I/O APIC</span></h2>
+<p>Each I/O APIC has a set of 2 or 3 (depending on version) 32-bit registers and up to many 64-bit registers (one per IRQ). The 64-bit registers have to be accessed as two 32-bit reads/writes. All registers are memory indexed. It means that you actually have only two 32-bit registers in memory, called IOREGSEL and IOREGWIN. You put the register index in IOREGSEL, and then you can read/write in IOREGWIN. The first three registers contain general information about this I/O APIC, while the remaining registers contain the specific configuration for each IRQ.
+</p>
+<h3><span class="mw-headline" id="IOAPICID">IOAPICID</span></h3>
+<p>This register has index 0 (you write 0 to IOREGSEL and then read from IOREGWIN). It's a Read-Only register with almost all bits reserved. The only interesting field is in bits 24 - 27: the APIC ID for this device (each peripheral which is interfaced with the APIC Bus needs an APIC ID, not only CPUs). You shall find this ID in ACPI/MP Tables as well.
+</p>
+<h3><span class="mw-headline" id="IOAPICVER">IOAPICVER</span></h3>
+<p>This register (index 1) contains the I/O APIC Version in bits 0 - 7, and the <b>Max Redirection Entry</b> which is "how many IRQs can this I/O APIC handle - 1". It is encoded in bits 16 - 23.
+</p>
+<h3><span class="mw-headline" id="IOAPICARB">IOAPICARB</span></h3>
+<p>This register (index 2) contains in bits 24 - 27 the APIC Arbitration ID. <b>TODO</b>
+</p>
+<h3><span class="mw-headline" id="IOREDTBL">IOREDTBL</span></h3>
+<p>Following there are two 32-bit register for each IRQ. The first IRQ has indexes 0x10 and 0x11, the second 0x12 and 0x13, the third 0x14 and 0x15, and so on. So the <i>Redirection Entry</i> register for IRQ <i>n</i> is 0x10 + n * 2 (+ 1). In the first of the two registers you access to the LOW uint32_t / bits 31:0, and the second for the high uint32_t / 63:32. Each redirection entry is made of the following fields:
+</p>
+<table class="wikitable">
+
+<tbody><tr>
+<th>Field
+</th>
+<th>Bits
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td style="width: 100px;">Vector
+</td>
+<td style="width: 50px;">0 - 7
+</td>
+<td>The Interrupt vector that will be raised on the specified CPU(s).
+</td></tr>
+<tr>
+<td>Delivery Mode
+</td>
+<td>8 - 10
+</td>
+<td>How the interrupt will be sent to the CPU(s). It can be 000 (Fixed), 001 (Lowest Priority), 010 (SMI), 100 (NMI), 101 (INIT) and 111 (ExtINT). Most of the cases you want Fixed mode, or Lowest Priority if you don't want to suspend a high priority task on some important Processor/Core/Thread.
+</td></tr>
+<tr>
+<td>Destination Mode
+</td>
+<td>11
+</td>
+<td>Specify how the Destination field shall be interpreted. 0: Physical Destination, 1: Logical Destination
+</td></tr>
+<tr>
+<td>Delivery Status
+</td>
+<td>12
+</td>
+<td>If 0, the IRQ is just relaxed and waiting for something to happen (or it has fired and already processed by Local APIC(s)). If 1, it means that the IRQ has been sent to the Local APICs but it's still waiting to be delivered.
+</td></tr>
+<tr>
+<td>Pin Polarity
+</td>
+<td>13
+</td>
+<td>0: Active high, 1: Active low. For ISA IRQs assume Active High unless otherwise specified in Interrupt Source Override descriptors of the MADT or in the MP Tables.
+</td></tr>
+<tr>
+<td>Remote IRR
+</td>
+<td>14
+</td>
+<td><b>TODO</b>
+</td></tr>
+<tr>
+<td>Trigger Mode
+</td>
+<td>15
+</td>
+<td>0: Edge, 1: Level. For ISA IRQs assume Edge unless otherwise specified in Interrupt Source Override descriptors of the MADT or in the MP Tables.
+</td></tr>
+<tr>
+<td>Mask
+</td>
+<td>16
+</td>
+<td>Just like in the old PIC, you can temporary disable this IRQ by setting this bit, and reenable it by clearing the bit.
+</td></tr>
+<tr>
+<td>Destination
+</td>
+<td>56 - 63
+</td>
+<td>This field is interpreted according to the Destination Format bit. If Physical destination is choosen, then this field is limited to bits 56 - 59 (only 16 CPUs addressable). You put here the APIC ID of the CPU that you want to receive the interrupt. <b>TODO</b>: Logical destination format...
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="IOREGSEL_and_IOWIN">IOREGSEL and IOWIN</span></h3>
+<p>The register IOREGSEL is an MMIO register select register that is used to access all the other I/O APIC registers. The IOWIN register is the 'data' register. Once the IOREGSEL register has been set, the IOWIN register can be used to write or read the register in the IOREGSEL. The actual position in memory of the two registers is specified in the ACPI MADT Table and/or in the MP table. The IOREGSEL is at the address specified, and IOREGWIN is at the same address + 0x10.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="cp">#define IOAPICID          0x00</span>
+<span class="cp">#define IOAPICVER         0x01</span>
+<span class="cp">#define IOAPICARB         0x02</span>
+<span class="cp">#define IOAPICREDTBL(n)   (0x10 + 2 * n) </span><span class="c1">// lower-32bits (add +1 for upper 32-bits)</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">write_ioapic_register</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">uintptr_t</span><span class="w"> </span><span class="n">apic_base</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">offset</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">val</span><span class="p">)</span><span class="w"> </span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="cm">/* tell IOREGSEL where we want to write to */</span><span class="w"></span>
+<span class="w">    </span><span class="o">*</span><span class="p">(</span><span class="k">volatile</span><span class="w"> </span><span class="kt">uint32_t</span><span class="o">*</span><span class="p">)(</span><span class="n">apic_base</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">offset</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="cm">/* write the value to IOWIN */</span><span class="w"></span>
+<span class="w">    </span><span class="o">*</span><span class="p">(</span><span class="k">volatile</span><span class="w"> </span><span class="kt">uint32_t</span><span class="o">*</span><span class="p">)(</span><span class="n">apic_base</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mh">0x10</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">val</span><span class="p">;</span><span class="w"> </span>
+<span class="p">}</span><span class="w"></span>
+<span class="w"> </span>
+<span class="kt">uint32_t</span><span class="w"> </span><span class="nf">read_ioapic_register</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">uintptr_t</span><span class="w"> </span><span class="n">apic_base</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">offset</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="cm">/* tell IOREGSEL where we want to read from */</span><span class="w"></span>
+<span class="w">    </span><span class="o">*</span><span class="p">(</span><span class="k">volatile</span><span class="w"> </span><span class="kt">uint32_t</span><span class="o">*</span><span class="p">)(</span><span class="n">apic_base</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">offset</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="cm">/* return the data from IOWIN */</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="k">volatile</span><span class="w"> </span><span class="kt">uint32_t</span><span class="o">*</span><span class="p">)(</span><span class="n">apic_base</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mh">0x10</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="cm">/* @class IOAPIC</span>
+<span class="cm"> *</span>
+<span class="cm"> * A sample driver code which control an IOAPIC. It handles one IOAPIC and exposes</span>
+<span class="cm"> * some functions. It is totally representational, .i.e you should add locking support</span>
+<span class="cm"> * link all IOAPIC classes in a data structure and much more. Here we are just showing</span>
+<span class="cm"> * what &amp; how your&#39;e gonna handle this in C++.</span>
+<span class="cm"> *</span>
+<span class="cm"> * You could also note that IOAPIC registers &quot;may&quot; cross a page boundary. So maybe you</span>
+<span class="cm"> * may need to map the physical-base to a double-page (means allocate twice the amount</span>
+<span class="cm"> * of memory from vmm).</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="k">class</span><span class="w"> </span><span class="nc">IOAPIC</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="k">public</span><span class="o">:</span><span class="w"></span>
+<span class="w">        </span><span class="k">enum</span><span class="w"> </span><span class="nc">DeliveryMode</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="n">EDGE</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="n">LEVEL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="p">};</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">enum</span><span class="w"> </span><span class="nc">DestinationMode</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="n">PHYSICAL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="n">LOGICAL</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">        </span><span class="p">};</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">union</span><span class="w"> </span><span class="nc">RedirectionEntry</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="k">struct</span><span class="w"></span>
+<span class="w">                </span><span class="p">{</span><span class="w"></span>
+<span class="w">                        </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">vector</span><span class="w">       </span><span class="o">:</span><span class="w"> </span><span class="mi">8</span><span class="p">;</span><span class="w"></span>
+<span class="w">                        </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">delvMode</span><span class="w">     </span><span class="o">:</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"></span>
+<span class="w">                        </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">destMode</span><span class="w">     </span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">                        </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">delvStatus</span><span class="w">   </span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">                        </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">pinPolarity</span><span class="w">  </span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">                        </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">remoteIRR</span><span class="w">    </span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">                        </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">triggerMode</span><span class="w">  </span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">                        </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">mask</span><span class="w">         </span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">                        </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">reserved</span><span class="w">     </span><span class="o">:</span><span class="w"> </span><span class="mi">39</span><span class="p">;</span><span class="w"></span>
+<span class="w">                        </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">destination</span><span class="w">  </span><span class="o">:</span><span class="w"> </span><span class="mi">8</span><span class="p">;</span><span class="w"></span>
+<span class="w">                 </span><span class="p">};</span><span class="w"></span>
+<span class="w">                 </span><span class="k">struct</span><span class="w"></span>
+<span class="w">                 </span><span class="p">{</span><span class="w"></span>
+<span class="w">                        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">lowerDword</span><span class="p">;</span><span class="w"></span>
+<span class="w">                        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">upperDword</span><span class="p">;</span><span class="w"></span>
+<span class="w">                 </span><span class="p">};</span><span class="w"></span>
+<span class="w">        </span><span class="p">};</span><span class="w"></span>
+
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="nf">id</span><span class="p">(){</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">apicId</span><span class="p">);</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="nf">ver</span><span class="p">(){</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">apicVer</span><span class="p">);</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="nf">redirectionEntries</span><span class="p">(){</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">redirEntryCnt</span><span class="p">);</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="nf">globalInterruptBase</span><span class="p">(){</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">globalIntrBase</span><span class="p">);</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">IOAPIC</span><span class="o">::</span><span class="n">IOAPIC</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">physRegs</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">apicId</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">gsib</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">virtAddr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KernelMemory</span><span class="o">::</span><span class="n">allocatePage</span><span class="p">(</span><span class="n">PAGE_SIZE</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">                </span><span class="cm">/* map virtAddr to physical-regs. Note that your paging code may not support </span>
+<span class="cm">                   automatically aligning physRegs to page-boundaries. Be sure to check! */</span><span class="w"></span>
+<span class="w">                </span><span class="n">EnsureMapping</span><span class="p">(</span><span class="n">virtAddr</span><span class="p">,</span><span class="w"> </span><span class="n">physRegs</span><span class="p">,</span><span class="w"> </span><span class="n">PagePresent</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">PageReadWrite</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">PageCacheDisable</span><span class="p">);</span><span class="w"></span>
+<span class="w">                </span>
+<span class="w">               </span><span class="n">virtAddr</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">physRegs</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">PAGE_SIZE</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">               </span><span class="n">apicId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">read</span><span class="p">(</span><span class="n">IOAPICID</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="mi">24</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xF0</span><span class="p">;</span><span class="w"></span>
+<span class="w">               </span><span class="n">apicVer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">IOAPICVER</span><span class="p">);</span><span class="c1">// cast to uint8_t (unsigned char) hides upper bits</span>
+
+<span class="w">               </span><span class="c1">//&lt; max. redir entry is given IOAPICVER[16:24]</span>
+<span class="w">               </span><span class="n">redirEntryCnt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">read</span><span class="p">(</span><span class="n">IOAPICVER</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="c1">// cast to uint8_t occuring ok!</span>
+<span class="w">               </span><span class="n">globalIntrBase</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gsib</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="cm">/*</span>
+<span class="cm">         * Bit of assignment here - implement this on your own. Use the lowerDword &amp; upperDword</span>
+<span class="cm">         * fields of RedirectionEntry using</span>
+<span class="cm">         *                                 ent.lowerDword = read(entNo);</span>
+<span class="cm">         *                                 ent.upperDword = read(entNo);</span>
+<span class="cm">         *                                 return (ent);</span>
+<span class="cm">         *</span>
+<span class="cm">         * Be sure to check that entNo &lt; redirectionEntries()</span>
+<span class="cm">         *</span>
+<span class="cm">         * @param entNo - entry no. for which redir-entry is required</span>
+<span class="cm">         * @return entry associated with entry no.</span>
+<span class="cm">         */</span><span class="w"></span>
+<span class="w">        </span><span class="n">RedirectionEntry</span><span class="w"> </span><span class="n">getRedirEntry</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">entNo</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="cm">/*</span>
+<span class="cm">         * Bit of assignment here - implement this on your own. Use the lowerDword &amp; upperDword</span>
+<span class="cm">         * fields of RedirectionEntry using</span>
+<span class="cm">         *                               write(entNo, ent-&gt;lowerDword);</span>
+<span class="cm">         *                               write(entNo, ent-&gt;upperDword);</span>
+<span class="cm">         *</span>
+<span class="cm">         * Be sure to check that entNo &lt; redirectionEntries()</span>
+<span class="cm">         *</span>
+<span class="cm">         * @param entNo - entry no. for which redir-entry is required</span>
+<span class="cm">         * @param entry - ptr to entry to write</span>
+<span class="cm">         */</span><span class="w"></span>
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="nf">writeRedirEntry</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">entNo</span><span class="p">,</span><span class="w"> </span><span class="n">RedirectionEntry</span><span class="w"> </span><span class="o">*</span><span class="n">entry</span><span class="p">);</span><span class="w"></span>
+
+<span class="k">private</span><span class="o">:</span><span class="w"></span>
+<span class="w">        </span><span class="cm">/*</span>
+<span class="cm">         * This field contains the physical-base address for the IOAPIC</span>
+<span class="cm">         * can be found using an IOAPIC-entry in the ACPI 2.0 MADT.</span>
+<span class="cm">         */</span><span class="w"></span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">physRegs</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">        </span><span class="cm">/*</span>
+<span class="cm">         * Holds the base address of the registers in virtual memory. This</span>
+<span class="cm">         * address is non-cacheable (see paging).</span>
+<span class="cm">         */</span><span class="w"></span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">virtAddr</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">        </span><span class="cm">/*</span>
+<span class="cm">         * Software has complete control over the apic-id. Also, hardware</span>
+<span class="cm">         * won&#39;t automatically change its apic-id so we could cache it here.</span>
+<span class="cm">         */</span><span class="w"></span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">apicId</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">        </span><span class="cm">/*</span>
+<span class="cm">         * Hardware-version of the apic, mainly for display purpose. ToDo: specify</span>
+<span class="cm">         * more purposes.</span>
+<span class="cm">         */</span><span class="w"></span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">apicVer</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">        </span><span class="cm">/*</span>
+<span class="cm">         * Although entries for current IOAPIC is 24, it may change. To retain</span>
+<span class="cm">         * compatibility make sure you use this.</span>
+<span class="cm">         */</span><span class="w"></span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">redirEntryCnt</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">        </span><span class="cm">/*</span>
+<span class="cm">         * The first IRQ which this IOAPIC handles. This is only found in the</span>
+<span class="cm">         * IOAPIC entry of the ACPI 2.0 MADT. It isn&#39;t found in the IOAPIC</span>
+<span class="cm">         * registers.</span>
+<span class="cm">         */</span><span class="w"></span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">globalIntrBase</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">        </span><span class="cm">/*</span>
+<span class="cm">         * Reads the data present in the register at offset regOff.</span>
+<span class="cm">         *</span>
+<span class="cm">         * @param regOff - the register&#39;s offset which is being read</span>
+<span class="cm">         * @return the data present in the register associated with that offset</span>
+<span class="cm">         */</span><span class="w"></span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">regOff</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="o">*</span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="k">volatile</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="n">virtAddr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">regOff</span><span class="p">;</span><span class="w"></span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="k">volatile</span><span class="o">*</span><span class="p">)(</span><span class="n">virtAddr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mh">0x10</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="cm">/*</span>
+<span class="cm">         * Writes the data into the register associated. </span>
+<span class="cm">         *</span>
+<span class="cm">         * @param regOff - the register&#39;s offset which is being written</span>
+<span class="cm">         * @param data - dword to write to the register</span>
+<span class="cm">         */</span><span class="w"></span>
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">regOff</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">data</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="o">*</span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="k">volatile</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="n">virtAddr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">regOff</span><span class="p">;</span><span class="w"></span>
+<span class="w">                </span><span class="o">*</span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="k">volatile</span><span class="o">*</span><span class="p">)(</span><span class="n">virtAddr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mh">0x10</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+<p>'apic_base' is the memory base address for a selected IOAPIC, these can be found by enumerating them from the MP or ACPI Tables.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="IO_APIC_Inputs">IO APIC Inputs</span></h2>
+<p>How other hardware (devices, etc) use IO APIC inputs is completely arbitrary - the motherboard/chipset designer can hard-wire anything they like to any IO APIC input. For the motherboard designer's convenience, most but not all legacy IRQs are often (but not always) connected "1:1" to IO APIC inputs (e.g. IO APIC input #1 may be the same as PIC chip input #1) as this makes firmware a little easier (e.g. no need for "interrupt redirection entries" in ACPI's MADT/APIC table), but this is not a requirement of any standard and not something that useful operating system software can rely on.
+</p><p>To correctly determine what how IO APIC inputs are used (and how they must be configured - as active high or active low, and as edge triggered or level triggered) operating system software must either:
+</p><p>1) Use APIC's MADT/APIC table to determine how legacy IRQs are mapped to IO APIC inputs; then use ACPI's AML (with a suitable interpreter) to determine how PCI devices are connected to IO APIC inputs
+</p><p>2) Use Intel's "MultiProcessor Specification" tables to determine how both legacy IRQs and PCI IRQs are mapped to IO APIC inputs. Note that Intel's "MultiProcessor Specification" is deprecated (an operating system should use ACPI where possible, and fall back to MultiProcessor Specification tables if ACPI doesn't exist or can't be used)
+</p><p>3) Provide (many) motherboard specific drivers, where each driver is able to use motherboard specific information to determine how IO inputs are used
+</p><p>4) Use an excessively "clever" auto-detection scheme (with a high risk of misconfiguration and race conditions). These schemes typically begin with whatever information can be obtained easily (e.g. determining legacy IRQs from ACPI's MADT/APIC table), assuming everything else can be configured as "level triggered active low" (to suit PCI), and then asking device drivers to repeatedly forcing their device to generate an IRQ (while ruling out IO APIC inputs that weren't triggered within a certain period of time after the IRQ was caused) until the specific IO APIC that the device uses can be determined.
+</p>
+<h2><span class="mw-headline" id="External_Links">External Links</span></h2>
+<h3><span class="mw-headline" id="MP_Tables">MP Tables</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="https://web.archive.org/web/20121002210153/http://download.intel.com/design/archives/processors/pro/docs/24201606.pdf">Intel MultiProcessor Specification</a></li></ul>
+<h3><span id="I.2FO_APIC"></span><span class="mw-headline" id="I/O_APIC">I/O APIC</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="http://web.archive.org/web/20161130153145/http://download.intel.com/design/chipsets/datashts/29056601.pdf">Intel 82093AA I/O APIC</a></li>
+<li><a rel="nofollow" class="external text" href="http://web.archive.org/web/20140713224739/http://download.intel.com/design/processor/manuals/253668.pdf">Intel SDM 3A (see chapter 9.9)</a></li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211134416
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.032 seconds
+Real time usage: 0.167 seconds
+Preprocessor visited node count: 43/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 26264/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:2434-0!canonical and timestamp 20250211134415 and revision id 29153.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=IOAPIC&amp;oldid=29153">https://wiki.osdev.org/index.php?title=IOAPIC&amp;oldid=29153</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="../Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_with_ignored_display_titles&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages with ignored display titles (page does not exist)">Pages with ignored display titles</a></li><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="../Category:Interrupts" title="Category:Interrupts">Interrupts</a></li><li><a href="../Category:Multiprocessing" title="Category:Multiprocessing">Multiprocessing</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=IOAPIC" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="O_APIC#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="../IOAPIC" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:IOAPIC&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="../IOAPIC"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=IOAPIC&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=IOAPIC&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="../index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="../index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="../Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="../Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="../OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="../OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="../OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="../Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="../Special:WhatLinksHere/IOAPIC" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="../Special:RecentChangesLinked/IOAPIC" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="../Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=IOAPIC&amp;oldid=29153" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=IOAPIC&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-lang" class="vector-menu mw-portlet mw-portlet-lang vector-menu-portal portal" aria-labelledby="p-lang-label" role="navigation"  >
+	<h3
+		id="p-lang-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">In other languages</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li class="interlanguage-link interwiki-de mw-list-item"><a href="http://www.lowlevel.eu/wiki/I/O_Advanced_Programmable_Interrupt_Controller" title="I/O Advanced Programmable Interrupt Controller – Deutsch" lang="de" hreflang="de" class="interlanguage-link-target"><span>Deutsch</span></a></li></ul>
+		
+	</div>
+</nav>
+
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 24 June 2024, at 18:46.</li>
+	<li id="footer-info-0">This page has been accessed 15,240 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="../OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="../OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="../OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=IOAPIC&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="../resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="../resources/assets/poweredby_mediawiki_132x47.png 1.5x, ../resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.032","walltime":"0.167","ppvisitednodes":{"value":43,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":26264,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250211134416","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":276});});</script>
+</body>
+</html>

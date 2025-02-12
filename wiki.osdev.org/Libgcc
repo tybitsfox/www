@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Libgcc - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"c07fea60aa5a91e11f8d92d3","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Libgcc","wgTitle":"Libgcc","wgCurRevisionId":28489,"wgRevisionId":28489,"wgArticleId":3457,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","C","C++","Compilers","FAQ"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Libgcc","wgRelevantArticleId":3457,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{
+"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Libgcc rootpage-Libgcc skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Libgcc</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Libgcc#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Libgcc#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>The <a href="GCC" title="GCC">GNU Compiler Collection</a> uses a special library called <tt>libgcc</tt> during code generation, which contains shared code that would be inefficient to duplicate every time as well as auxiliary helper routines and runtime support. Its exact contents depends on the particular target, configuration and even command line options. GCC unconditionally assumes it can safely emit calls to <tt>libgcc</tt> symbols as it sees fit, thus all code compiled by GCC must be linked with <tt>libgcc</tt>. The library is automatically included by default when you link with GCC and you need to do nothing further to use it. However, kernels usually don't link with the standard user-space libc for obvious reasons and are linked with the <tt>-nodefaultlibs</tt> (implied by <tt>-nostdlib</tt>) which disables the automatic linking with libc and <tt>libgcc</tt>. This is a problem as gcc still thinks it can use <tt>libgcc</tt> and you need to link with it.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Libgcc#How_to_build_libgcc"><span class="tocnumber">1</span> <span class="toctext">How to build libgcc</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="Libgcc#How_to_link_with_libgcc"><span class="tocnumber">2</span> <span class="toctext">How to link with libgcc</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="Libgcc#Frequently_Asked_Questions"><span class="tocnumber">3</span> <span class="toctext">Frequently Asked Questions</span></a>
+<ul>
+<li class="toclevel-2 tocsection-4"><a href="Libgcc#When_do_I_need_to_link_with_libgcc?"><span class="tocnumber">3.1</span> <span class="toctext">When do I need to link with libgcc?</span></a></li>
+<li class="toclevel-2 tocsection-5"><a href="Libgcc#I_link_with_libgcc_and_nothing_changes?"><span class="tocnumber">3.2</span> <span class="toctext">I link with libgcc and nothing changes?</span></a></li>
+<li class="toclevel-2 tocsection-6"><a href="Libgcc#I_don&#39;t_link_with_libgcc_and_it_works?"><span class="tocnumber">3.3</span> <span class="toctext">I don't link with libgcc and it works?</span></a></li>
+<li class="toclevel-2 tocsection-7"><a href="Libgcc#Can_I_use_the_Linux_libgcc?"><span class="tocnumber">3.4</span> <span class="toctext">Can I use the Linux libgcc?</span></a></li>
+<li class="toclevel-2 tocsection-8"><a href="Libgcc#Can_I_copy_the_libgcc_functions_I_need_into_my_OS?"><span class="tocnumber">3.5</span> <span class="toctext">Can I copy the libgcc functions I need into my OS?</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="Libgcc#Can_I_just_re-implement_libgcc?"><span class="tocnumber">3.6</span> <span class="toctext">Can I just re-implement libgcc?</span></a></li>
+<li class="toclevel-2 tocsection-10"><a href="Libgcc#Does_libgcc_have_dependencies?"><span class="tocnumber">3.7</span> <span class="toctext">Does libgcc have dependencies?</span></a></li>
+<li class="toclevel-2 tocsection-11"><a href="Libgcc#What_is_the_libgcc_license?"><span class="tocnumber">3.8</span> <span class="toctext">What is the libgcc license?</span></a></li>
+<li class="toclevel-2 tocsection-12"><a href="Libgcc#It&#39;s_too_big!"><span class="tocnumber">3.9</span> <span class="toctext">It's too big!</span></a></li>
+<li class="toclevel-2 tocsection-13"><a href="Libgcc#What_if_I_am_careful?"><span class="tocnumber">3.10</span> <span class="toctext">What if I am careful?</span></a></li>
+<li class="toclevel-2 tocsection-14"><a href="Libgcc#I_don&#39;t_want_it_because_I_want_control!"><span class="tocnumber">3.11</span> <span class="toctext">I don't want it because I want control!</span></a></li>
+<li class="toclevel-2 tocsection-15"><a href="Libgcc#I_really_don&#39;t_want_libgcc!"><span class="tocnumber">3.12</span> <span class="toctext">I really don't want libgcc!</span></a></li>
+<li class="toclevel-2 tocsection-16"><a href="Libgcc#I&#39;m_using_clang"><span class="tocnumber">3.13</span> <span class="toctext">I'm using clang</span></a></li>
+<li class="toclevel-2 tocsection-17"><a href="Libgcc#I_saw_someone_not_link_with_libgcc!"><span class="tocnumber">3.14</span> <span class="toctext">I saw someone not link with libgcc!</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-18"><a href="Libgcc#See_Also"><span class="tocnumber">4</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-19"><a href="Libgcc#Articles"><span class="tocnumber">4.1</span> <span class="toctext">Articles</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="How_to_build_libgcc">How to build libgcc</span></h2>
+<dl><dd><i>Main article:</i> <a href="GCC_Cross-Compiler" title="GCC Cross-Compiler">GCC Cross-Compiler</a></dd></dl>
+<p>You need to invoke the <tt>all-target-libgcc</tt> and <tt>install-target-libgcc</tt> make targets while building your <a href="GCC_Cross-Compiler" title="GCC Cross-Compiler">GCC Cross-Compiler</a> to build and install <tt>libgcc</tt> along with your cross-compiler. A static library called <tt>libgcc</tt>.a is installed into your compiler prefix along with the other compiler-specific files. Note that some architectures, such as ARM, have multiple kinds of ABIs and instruction sets: these targets will thus need multiple versions of <tt>libgcc</tt> depending on which particular compile options you use and they all go into compiler-specific subdirectories.
+</p>
+<h2><span class="mw-headline" id="How_to_link_with_libgcc">How to link with libgcc</span></h2>
+<dl><dd><i>Main article:</i> <a href="Bare_Bones" title="Bare Bones">Bare Bones</a></dd></dl>
+<p>You can link with <tt>libgcc</tt> by passing <tt>-lgcc</tt> when linking your kernel with your compiler. You don't need to do this unless you pass the <tt>-nodefaultlibs</tt> option (implied by <tt>-nostdlib</tt>). For instance:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>i686-elf-gcc -T linker.ld -o myos.kernel -ffreestanding boot.o kernel.o -nostdlib -lgcc
+</pre></div>
+<p>Note how <tt>libgcc</tt> is installed in a compiler-specific directory known to your compiler, but not to your linker. Thus you must use the compiler as a linker, rather than invoking <tt>ld</tt> directly, or you'll need to tell the linker where to find <tt>libgcc</tt>. Note also how you must be certain to give the machine compile options you compile with when you link (the <tt>-mfoo</tt> and <tt>-fbar</tt> options, among others) or you may get the wrong <tt>libgcc</tt>. If you want to know the full path of <tt>libgcc</tt> (if you insist on linking with <tt>ld</tt> rather than your compiler), you can do so:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>i686-elf-gcc <span class="nv">$CFLAGS</span> -print-libgcc-file-name
+</pre></div>
+<p>You naturally also need to pass the machine compile options when using the <tt>-print-libgcc-file-name</tt> option. Make your build scripts or Makefile locate <tt>libgcc</tt> rather than hard-coding the path somewhere or other people will have a harder time building your operating system.
+</p>
+<h2><span class="mw-headline" id="Frequently_Asked_Questions">Frequently Asked Questions</span></h2>
+<h3><span id="When_do_I_need_to_link_with_libgcc.3F"></span><span class="mw-headline" id="When_do_I_need_to_link_with_libgcc?">When do I need to link with <tt>libgcc</tt>?</span></h3>
+<p>All code compiled with GCC must be linked with <tt>libgcc</tt>.
+</p>
+<h3><span id="I_link_with_libgcc_and_nothing_changes.3F"></span><span class="mw-headline" id="I_link_with_libgcc_and_nothing_changes?">I link with <tt>libgcc</tt> and nothing changes?</span></h3>
+<p>The compiler is not required to emit calls to <tt>libgcc</tt> and on some platforms <tt>libgcc</tt> is a small library and you may be able to write complex programs that never need <tt>libgcc</tt>. The compiler will only link in the specific parts of <tt>libgcc</tt> that are needed, since it is a static library. However, the compiler is free to change its mind and suddenly emit calls to <tt>libgcc</tt> if it is a Tuesday and the stock prices have gone up (or you upgraded your compiler to a newer version).
+</p>
+<h3><span id="I_don.27t_link_with_libgcc_and_it_works.3F"></span><span class="mw-headline" id="I_don't_link_with_libgcc_and_it_works?">I don't link with <tt>libgcc</tt> and it works?</span></h3>
+<p>See the above question. The compiler doesn't care if you actually link with <tt>libgcc</tt>, it will emit calls just the same. You will never get <tt>libgcc</tt>-related linking errors if you link with <tt>libgcc</tt>, which is simple and makes your kernel compilation process reliable.
+</p><p>Think of it this way: you went into the compiler source code and randomly commented out a few randomly chosen functions. The compiler still happens to work for your kernel, but will it always work for all the possible kernel source codes you can write. The <tt>libgcc</tt> library is part of the compiler and it would be foolish to unsafely disable parts of the compiler.
+</p>
+<h3><span id="Can_I_use_the_Linux_libgcc.3F"></span><span class="mw-headline" id="Can_I_use_the_Linux_libgcc?">Can I use the Linux <tt>libgcc</tt>?</span></h3>
+<p>You must use the correct <tt>libgcc</tt> that came with your cross-compiler. Any other <tt>libgcc</tt> you found likely has a different target, was built with different machine compile options, has dependencies on the standard library, is part of a different compiler revision (your distribution may have patched its <tt>gcc</tt>, even). It is possible that using a different <tt>libgcc</tt> will work, but it might not be reliable.
+</p>
+<h3><span id="Can_I_copy_the_libgcc_functions_I_need_into_my_OS.3F"></span><span class="mw-headline" id="Can_I_copy_the_libgcc_functions_I_need_into_my_OS?">Can I copy the <tt>libgcc</tt> functions I need into my OS?</span></h3>
+<p>You really shouldn't. These functions are compiler revision specific and the set of needed functions can potentially change when you upgrade your compiler. You'll be playing catch-up with the compiler developers and you might have even more trouble if your other contributors use different compiler versions. There is also the issue of whether you have copied enough of <tt>libgcc</tt>, if you don't have all of it, things will not work reliably.
+</p>
+<h3><span id="Can_I_just_re-implement_libgcc.3F"></span><span class="mw-headline" id="Can_I_just_re-implement_libgcc?">Can I just re-implement <tt>libgcc</tt>?</span></h3>
+<p>You really shouldn't. See the above question. It's a lot of effort and very tricky to get right, you will likely get an inefficient 64-bit division function that doesn't work properly for all values. It's much simpler to just link with <tt>libgcc</tt> and get it over with.
+</p>
+<h3><span id="Does_libgcc_have_dependencies.3F"></span><span class="mw-headline" id="Does_libgcc_have_dependencies?">Does <tt>libgcc</tt> have dependencies?</span></h3>
+<p>It usually doesn't, the <tt>-elf</tt> target used for tutorials here certainly doesn't. If you have a hosted user-space, it may enable additional parts of itself and have special symbols that rely on particular user-space functions it found in your system headers. These are common functions that you'd want to implement in your kernel standard library regardless. Some dependencies are only relevant if you use the relevant <tt>libgcc</tt> parts that trigger them.
+</p>
+<h3><span id="What_is_the_libgcc_license.3F"></span><span class="mw-headline" id="What_is_the_libgcc_license?">What is the <tt>libgcc</tt> license?</span></h3>
+<p>The libgcc library is licensed under the GNU GPL plus the GCC Runtime Library Exception (see <tt>COPYING.RUNTIME</tt> in your GCC source tree). This roughly means that you are allowed to link in <tt>libgcc</tt> into your software even if it would normally violate the GNU GPL, as long as you used a non-proprietary version of GCC. This is nothing unusual, such licensed code is linked into everything GCC creates, especially user-space programs and you can legally compile and distribute proprietary programs with GCC because of the runtime library exception.
+</p>
+<h3><span id="It.27s_too_big.21"></span><span class="mw-headline" id="It's_too_big!">It's too big!</span></h3>
+<p>It isn't. The static archive contains a lot of object files that each contain debugging symbols. You'll find the archive gets considerably smaller if you attempt to strip it. Furthermore, it's not even linked yet and a lot of that information is simply overhead from the file format and linking information. Finally, it's a static archive which means that only the relevant parts actually get linked into your binary.
+</p>
+<h3><span id="What_if_I_am_careful.3F"></span><span class="mw-headline" id="What_if_I_am_careful?">What if I am careful?</span></h3>
+<p>On some platforms the compiler doesn't generate calls to <tt>libgcc</tt> for most common code except in particular circumstances. You can avoid particular features and be mostly safe. But I'll bet you that you haven't actually read into the GCC source code and found the exact rules for when calls to <tt>libgcc</tt> are emitted. The rules may change when you update your compiler. Indeed, tomorrow may be a Tuesday. The library provides useful features and it's simple to link with it and enjoy the features. If the rules change and you cannot build your kernel with the new compiler, but you fix your kernel, then you still cannot build older versions of your operating system (which could have been useful for debugging or historical purposes).
+</p>
+<h3><span id="I_don.27t_want_it_because_I_want_control.21"></span><span class="mw-headline" id="I_don't_want_it_because_I_want_control!">I don't want it because I want control!</span></h3>
+<p>You didn't write the compiler you are using. Ponder that for a few moments and let the Not-Invented-Here kick in.
+</p>
+<h3><span id="I_really_don.27t_want_libgcc.21"></span><span class="mw-headline" id="I_really_don't_want_libgcc!">I really don't want <tt>libgcc</tt>!</span></h3>
+<p>The above rule is:
+</p>
+<dl><dd>All code compiled with GCC must be linked with <tt>libgcc</tt>.</dd></dl>
+<p>But that's okay, you can just change what GCC is and get rid of the rule. Modify the GCC source code such that it never emits calls to <tt>libgcc</tt> (perhaps only if <tt>-ffreestanding</tt>) but generates code directly instead. You don't have to link with it then.
+</p>
+<h3><span id="I.27m_using_clang"></span><span class="mw-headline" id="I'm_using_clang">I'm using clang</span></h3>
+<p>This is an article about GCC, you need to do different things if you are using another compiler.
+</p>
+<h3><span id="I_saw_someone_not_link_with_libgcc.21"></span><span class="mw-headline" id="I_saw_someone_not_link_with_libgcc!">I saw someone not link with <tt>libgcc</tt>!</span></h3>
+<p>Report them to the local compiler crime police.
+</p>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="Articles">Articles</span></h3>
+<ul><li><a href="GCC" title="GCC">GCC</a></li>
+<li><a href="GCC_Cross-Compiler" title="GCC Cross-Compiler">GCC Cross-Compiler</a></li>
+<li><a href="Bare_Bones" title="Bare Bones">Bare Bones</a></li>
+<li><a href="Building_libgcc_for_mcmodel=kernel" title="Building libgcc for mcmodel=kernel">Building libgcc for mcmodel=kernel</a></li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211123253
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.022 seconds
+Real time usage: 0.284 seconds
+Preprocessor visited node count: 81/1000000
+Post‐expand include size: 74/2097152 bytes
+Template argument size: 28/2097152 bytes
+Highest expansion depth: 3/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 461/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.697      1 -total
+ 87.24%    0.608      2 Template:Main
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:3457-0!canonical and timestamp 20250211123253 and revision id 28489.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Libgcc&amp;oldid=28489">https://wiki.osdev.org/index.php?title=Libgcc&amp;oldid=28489</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:C" title="Category:C">C</a></li><li><a href="./Category:C++" title="Category:C++">C++</a></li><li><a href="./Category:Compilers" title="Category:Compilers">Compilers</a></li><li><a href="./Category:FAQ" title="Category:FAQ">FAQ</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Libgcc" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Libgcc#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Libgcc" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:Libgcc&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Libgcc"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Libgcc&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Libgcc&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Libgcc" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Libgcc" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Libgcc&amp;oldid=28489" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Libgcc&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 5 December 2023, at 12:31.</li>
+	<li id="footer-info-0">This page has been accessed 6,614 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Libgcc&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.022","walltime":"0.284","ppvisitednodes":{"value":81,"limit":1000000},"postexpandincludesize":{"value":74,"limit":2097152},"templateargumentsize":{"value":28,"limit":2097152},"expansiondepth":{"value":3,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":461,"limit":5000000},"timingprofile":["100.00%    0.697      1 -total"," 87.24%    0.608      2 Template:Main"]},"cachereport":{"timestamp":"20250211123253","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":393});});</script>
+</body>
+</html>

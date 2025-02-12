@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Generic Interrupt Controller - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"576c48f7c3a3ef46ec25537e","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Generic_Interrupt_Controller","wgTitle":"Generic Interrupt Controller","wgCurRevisionId":28096,"wgRevisionId":28096,"wgArticleId":4006,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["ARM","Interrupts"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Generic_Interrupt_Controller","wgRelevantArticleId":4006,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],
+"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Generic_Interrupt_Controller rootpage-Generic_Interrupt_Controller skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Generic Interrupt Controller</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Generic_Interrupt_Controller#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Generic_Interrupt_Controller#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Generic_Interrupt_Controller#Introduction"><span class="tocnumber">1</span> <span class="toctext">Introduction</span></a>
+<ul>
+<li class="toclevel-2 tocsection-2"><a href="Generic_Interrupt_Controller#Key_points"><span class="tocnumber">1.1</span> <span class="toctext">Key points</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-3"><a href="Generic_Interrupt_Controller#Differences_between_a_version_1_GIC_and_a_version_2_GIC"><span class="tocnumber">2</span> <span class="toctext">Differences between a version 1 GIC and a version 2 GIC</span></a></li>
+<li class="toclevel-1 tocsection-4"><a href="Generic_Interrupt_Controller#IRQ_grouping"><span class="tocnumber">3</span> <span class="toctext">IRQ grouping</span></a></li>
+<li class="toclevel-1 tocsection-5"><a href="Generic_Interrupt_Controller#IRQ_states"><span class="tocnumber">4</span> <span class="toctext">IRQ states</span></a>
+<ul>
+<li class="toclevel-2 tocsection-6"><a href="Generic_Interrupt_Controller#Level-triggered_IRQs"><span class="tocnumber">4.1</span> <span class="toctext">Level-triggered IRQs</span></a></li>
+<li class="toclevel-2 tocsection-7"><a href="Generic_Interrupt_Controller#Edge-triggered_IRQs"><span class="tocnumber">4.2</span> <span class="toctext">Edge-triggered IRQs</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-8"><a href="Generic_Interrupt_Controller#IRQ_types_and_properties"><span class="tocnumber">5</span> <span class="toctext">IRQ types and properties</span></a>
+<ul>
+<li class="toclevel-2 tocsection-9"><a href="Generic_Interrupt_Controller#Peripheral_IRQs"><span class="tocnumber">5.1</span> <span class="toctext">Peripheral IRQs</span></a></li>
+<li class="toclevel-2 tocsection-10"><a href="Generic_Interrupt_Controller#Software_Generated_IRQs"><span class="tocnumber">5.2</span> <span class="toctext">Software Generated IRQs</span></a></li>
+<li class="toclevel-2 tocsection-11"><a href="Generic_Interrupt_Controller#Virtual_IRQs"><span class="tocnumber">5.3</span> <span class="toctext">Virtual IRQs</span></a></li>
+<li class="toclevel-2 tocsection-12"><a href="Generic_Interrupt_Controller#GIC_Maintenance_IRQs"><span class="tocnumber">5.4</span> <span class="toctext">GIC Maintenance IRQs</span></a></li>
+<li class="toclevel-2 tocsection-13"><a href="Generic_Interrupt_Controller#IRQ_Bypass"><span class="tocnumber">5.5</span> <span class="toctext">IRQ Bypass</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-14"><a href="Generic_Interrupt_Controller#General"><span class="tocnumber">6</span> <span class="toctext">General</span></a>
+<ul>
+<li class="toclevel-2 tocsection-15"><a href="Generic_Interrupt_Controller#SGIs"><span class="tocnumber">6.1</span> <span class="toctext">SGIs</span></a></li>
+<li class="toclevel-2 tocsection-16"><a href="Generic_Interrupt_Controller#Spurious_IRQs"><span class="tocnumber">6.2</span> <span class="toctext">Spurious IRQs</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-17"><a href="Generic_Interrupt_Controller#Acknowledging_EOI"><span class="tocnumber">7</span> <span class="toctext">Acknowledging EOI</span></a></li>
+<li class="toclevel-1 tocsection-18"><a href="Generic_Interrupt_Controller#Virtualization_Extensions"><span class="tocnumber">8</span> <span class="toctext">Virtualization Extensions</span></a>
+<ul>
+<li class="toclevel-2 tocsection-19"><a href="Generic_Interrupt_Controller#CPU_Interface_register_access"><span class="tocnumber">8.1</span> <span class="toctext">CPU Interface register access</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-20"><a href="Generic_Interrupt_Controller#See_Also"><span class="tocnumber">9</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-21"><a href="Generic_Interrupt_Controller#External_Links"><span class="tocnumber">9.1</span> <span class="toctext">External Links</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Introduction">Introduction</span></h2>
+<p>The Generic Interrupt Controller is a standardized component of modern ARM boards, and it provides a solid interrupt handling scheme for embedded systems. Various different versions of the GIC specification exist. The purpose of this article is to provide a quick reference for the ARM Generic Interrupt Controller's behaviour.
+</p><p>This article is current with <b>version 2</b> of the specification and has not been updated to match <b>version 3</b>.
+</p>
+<h3><span class="mw-headline" id="Key_points">Key points</span></h3>
+<ul><li>IRQs are divided into secure and non-secure IRQs, pertaining to the secure and non-secure worlds.</li>
+<li>By default all IRQs belong to the secure world, in the same manner that by default, <tt>SCR.NS</tt> is set to 0. Essentially if the running kernel is not secure-world aware, it will not observe any effects from the fact that it is running in secure world.</li>
+<li>GIC supports three types of IRQs: external, "internal" (more later) and inter-processor.</li>
+<li>Both version 1 and 2 GICs support an optional Security Extension feature set.</li>
+<li>Only version 2 GICs support an optional Virtualization Extension feature set.</li></ul>
+<h2><span class="mw-headline" id="Differences_between_a_version_1_GIC_and_a_version_2_GIC">Differences between a version 1 GIC and a version 2 GIC</span></h2>
+<p>For a GIC version 1 implementation:
+</p>
+<ul><li>For a version 1 GIC, "Interrupt grouping" refers only to the grouping of IRQs as being either secure (group0) or non-secure (group1). By default, on #reset of the GIC, if a GIC supports IRQ grouping, all IRQs are assigned to group0, and the FIQ exception request is disabled (section 3.4.4).</li>
+<li>There is no support for GIC virtualization. If the GIC on your board is version 1, then you must trap and emulate all accesses to the GIC from the guest. With GIC version 2, the GIC handles a portion of the emulation in hardware.</li>
+<li>There is no builtin support for disabling IRQ signal bypass in the GIC. If legacy IRQs are connected to the CPU in a bypass  or redundant arrangement, they must be disabled using some implementation defined fashion.</li></ul>
+<p>Both version 1 and version 2 support an optional Security Extensions feature. Only version 2 GICs support an optional Virtualization Extensions feature.
+</p><p>For a GIC version 2 implementation:
+</p>
+<ul><li>Version 2 GIC implementations have a fuller set of features and capabilities added to the "Interrupt grouping" feature. Of note, group0 IRQs can be routed to the CPU as both IRQs and FIQs, whereas group1 IRQs can only be delivered as IRQs.</li>
+<li>Version 2 GICs support an optional Virtualization Extensions feature. This feature supports hardware emulation of the GIC for guest VMs. Along with these extensions comes support for hardware save and restore of GIC state (for supporting multiple guest VMs).</li>
+<li>Version 2 GICs support splitting the handling of IRQs into two stages: "Priority Drop" and "Interrupt Deactivation". The purpose of this split is to allow a Hypervisor to receive a greater number of actual physical IRQs, and dispatch them to guest VMs, and drop the priority of those IRQs the hypervisor has dispatched, without completely deactivating them. See the EOI section below.</li>
+<li>Support for disabling IRQ bypass signals at the GIC CPU Interface.</li></ul>
+<h2><span class="mw-headline" id="IRQ_grouping">IRQ grouping</span></h2>
+<p>According to section 5.1, the ARM model is designed to assume that secure IRQs are delivered as FIQ-signals to the processor, and non-secure IRQs are delivered as IRQ-signals to the processor:
+&lt;pr&gt;
+In the ARM model for virtualizing Non-secure operation of a processor that implements the ARM Virtualization
+Extensions, Secure software on the processor must configure the system as described in Using IRQs and FIQs to
+provide Non-secure and Secure interrupts on page 3-68, so that FIQs are used for Secure interrupts, and IRQs for
+Non-secure interrupts.
+&lt;/pr&gt;
+</p>
+<h2><span class="mw-headline" id="IRQ_states">IRQ states</span></h2>
+<p>The specification defines IRQs as being in one of the following states:
+</p>
+<ul><li>Inactive: not asserted.</li>
+<li>Pending: This IRQ signal has been asserted by its hardware device, but not delivered to a CPU as yet.</li>
+<li>Active: This IRQ signal has been asserted and delivered to a processor, but the processor has not yet finished servicing it.</li>
+<li>Active and pending: This IRQ signal has been asserted and delivered to a processor, but the processor has not yet finished servicing it, and the signal has been re-asserted by a device.</li></ul>
+<h3><span class="mw-headline" id="Level-triggered_IRQs">Level-triggered IRQs</span></h3>
+<p>For SGIs, PPIs and SPIs, when a CPU acknowledges an IRQ (Reads from GICC_IAR/GICC_AIAR), the Distributor changes the status of the IRQ from active to pending if it is a level-triggered IRQ and the device has deasserted the level on the line. The Distributor changes the status of the IRQ from active to "active and pending" if it is a level-triggered IRQ and the device has not deasserted the level on the line.
+</p>
+<h3><span class="mw-headline" id="Edge-triggered_IRQs">Edge-triggered IRQs</span></h3>
+<p>For SGIs, PPIs and SPIs, when a CPU acknowledges an IRQ (Reads from GICC_IAR/GICC_AIAR), the Distributor changes the status of the IRQ from active to pending if it is an edge-triggered IRQ and the Distributor has not detected another edge on the line. The Distributor changes the status of the IRQ from active to "active and pending" if it is a level-triggered IRQ and the Distributor has detected another edge on the line.
+</p>
+<h2><span class="mw-headline" id="IRQ_types_and_properties">IRQ types and properties</span></h2>
+<p>Four categories of IRQs exist:
+</p>
+<h3><span class="mw-headline" id="Peripheral_IRQs">Peripheral IRQs</span></h3>
+<p>These IRQs are asserted by external or internal devices. External devices are those which exist on the chipset and are not part of the processor itself. Internal devices are devices such as the ARM Generic Timers which are part of the ARM processor specification itself.
+</p><p>External IRQs are called <b>Shared Peripheral Interrupts</b> by the specification, and internally generated IRQs are called <b>Private Peripheral Interrupts</b> by the specification.
+</p><p>Both types of peripheral IRQ can be either <b>level or edge sensitive</b>.
+</p>
+<h3><span class="mw-headline" id="Software_Generated_IRQs">Software Generated IRQs</span></h3>
+<p>These are ARM's notion of Inter-processor Interrupts (IPIs). They are always <b>edge sensitive</b>.
+</p><p>When an SGI occurs, the "CPUID" field of the GIC Interrupt Acknowledge Register, or the GIC Aliased Interrupt Acknowledge Register contains the CPUID of the processor that <i>requested</i> the IRQ.
+</p>
+<h3><span class="mw-headline" id="Virtual_IRQs">Virtual IRQs</span></h3>
+<p>These are IRQs that have been injected by a hypervisor into a guest VM's Virtual-GIC.
+</p>
+<h3><span class="mw-headline" id="GIC_Maintenance_IRQs">GIC Maintenance IRQs</span></h3>
+<p>These are used to signal changes to the hypervisor, when the guest VM changes the state of its VGIC. Maintenance IRQs are always <b>level-sensitive</b>.
+</p>
+<h3><span class="mw-headline" id="IRQ_Bypass">IRQ Bypass</span></h3>
+<p>GIC implementations enable the chipset to connect connect IRQs directly to the CPU when the GICC is disabled. In this setup, nIRQ and nFIQ can be directly tied to some other IRQ controller or signal. In order to disable the GIC, the chipset must drive GICCDISABLE to high. This is somewhat analogous to ExtINT on x86 CPUs.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="General">General</span></h2>
+<h3><span class="mw-headline" id="SGIs">SGIs</span></h3>
+<p>For SGIs, an IRQ is identified by the combination of the source CPUID, target CPUID and the IRQ number (0-15 are the IDs that can be used for an SGI). The GIC ignores accesses to its registers from any CPU in the system that is not connected to a CPU interface. In a uniprocessor system, the source of an SGI will always be 0. ARM recommends that system software splits the SGI IRQ IDs into two ranges: 0-7 for secure SGIs and 8-15 for non-secure SGIs.
+</p><p>An SGI can be generated such that it targets multiple processors, but presents itself with the same IRQ ID to each processor it targets. The SGI IRQ configuration registers are banked at the Distributor.
+</p>
+<h3><span class="mw-headline" id="Spurious_IRQs">Spurious IRQs</span></h3>
+<p>A spurious IRQ is one where the GIC determines that an IRQ it has delivered to a processor does not need to be (and should not be) EOId. If this occurs, the GIC will return the value 1023 as the IRQ ID, when the GICC_IAR register is read.
+</p><p>When using the 1-N model for an IRQ, the version 2 GIC must ensure (Section 3.2.3) that only the first CPU to read GICC_IAR gets the IRQ's correct ID, and the rest of the CPUs, if any others got the IRQ, must get the spurious IRQ value. The version 1 GIC does not have this constraint specified, and it may return the correct ID to more than one processor.
+</p><p>A spurious IRQ ID may also be returned when IRQ grouping is being used, and the highest priority pending IRQ is a group0 IRQ, but secure-world software reads GICC_AIAR instead of GICC_IAR. Additionally, in general, any read of the GICC_IAR from a world that does not match the security of the highest priority active IRQ "does not acknowledge any interrupt", and will return:
+</p>
+<ul><li>1022 for a Secure read when the highest priority interrupt is Non-secure</li>
+<li>1023 for a Non-secure read when the highest priority interrupt is Secure.</li></ul>
+<p>So if by chance non-secure software gets an IRQ which should be delivered to secure-world, the non-secure software will see it as a spurious IRQ (1023). If secure world gets an IRQ that pertains to non-secure world, it will read a special value (1022) to indicate to it that the IRQ is not for it; If the secure software still wishes to handle the IRQ, it can then acknowledge it by instead reading GICC_AIAR.
+</p><p>ARM "strongly recommends" (section 3.4.3) using a software IRQ handling model where <tt>GICC_CTLR.AckCtl == 0</tt>. In such a setup, every secure world IRQ must be higher priority than every non-secure IRQ.
+</p>
+<h2><span class="mw-headline" id="Acknowledging_EOI">Acknowledging EOI</span></h2>
+<p>An IRQ is taken from inactive to pending when it is asserted by its device. The IRQ is then taken from pending to active when the CPU reads the Interrupt Acknowledge Register. Finally, the IRQ is fully retired and the EOI signal is sent, when the CPU writes to the End of Interrupt register.
+</p><p>These steps apply also for Virtual GICs, which behave, from the guest VM's perspective, as if they are no different from a physical GIC. However, for a VGIC, each of these steps may also update the List registers. Additionally, for a virtual IRQ that was delivered to a guest VM through an update of the List registers of the virtual Distributor, the EOI that the guest VM does at the VGIC automatically propagates through to the physical Distributor (Section 5.2):
+</p><p>&lt;quote&gt;
+When the virtual machine handles a virtual interrupt, it writes to the virtual CPU interface to indicate when it has
+finished this processing. The virtual CPU interface signals this completion to the physical Distributor and the
+physical Distributor then deactivates the interrupt.
+&lt;/quote&gt;
+</p><p>The split IRQ handling feature splits IRQ handling into two stages:
+</p>
+<ul><li>Priority drop: when a hypervisor receives a physical IRQ, it immediately dispatches a virtual IRQ to the VGIC of the guest VM. Then it sends an EOI by writing to the GICC_EOIR or GICC_AEOIR. The running priority of the physical GIC is lowered by the EOI, so that if the IRQ's priority was high, the IRQ won't continue to block lower priority IRQs from being received by the hypervisor.</li>
+<li>The guest VM then handles the virtual IRQ and sends its own EOI by writing to GICV_EOIR or GICV_AEOIR. If <tt>GICV_CTRLR.EOIMode == 0</tt>, this will automatically cause a write to GICV_DIR as well, which will then cascade a write to GICC_DIR. If <tt>GICV_CTRLR.EOIMode&#160;!= 0</tt>, the guest VM will have to also issue a write to GICV_DIR to deactivate the virtual IRQ, and this will then also automatically cascade a write to GICC_DIR.</li></ul>
+<p>IRQ splitting is enabled by setting GICH_LRn.HW to 1. If GICH_LRn.HW is not set to 1, the hypervisor must manually deactivate the physical IRQ when it has been handled by the guest VM. This can be done with the assistance of an EOI Maintenance IRQ.
+</p>
+<h2><span class="mw-headline" id="Virtualization_Extensions">Virtualization Extensions</span></h2>
+<p>The Hypervisor must maintain a set "List" registers in the GICH.
+</p>
+<h3><span class="mw-headline" id="CPU_Interface_register_access">CPU Interface register access</span></h3>
+<p>In a GIC that supports the Virtualization Extensions, access to the VGIC CPU Interface for each CPU is <b>mandated</b> by the specification via both the following mechanisms:
+</p>
+<ul><li>Common base address: Each processor can access its VGIC at the same fixed physical address, and the GIC hardware logic will determine which VGIC register set should be accessed based on the CPUID of the requesting processor.</li>
+<li>Processor-specific base address: Each VGIC is also mapped at its own physical address, and this allows one CPU to access the VGIC of any other CPU.</li></ul>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="External_Links">External Links</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ihi0048b/index.html%7CARM">GIC Specification</a></li>
+<li><a rel="nofollow" class="external text" href="http://www.wiki.xilinx.com/GIC%7CXilinx">GIC Wiki page</a></li>
+<li><a rel="nofollow" class="external text" href="http://ssup2.iptime.org/wiki/ARM_Generic_Interrupt_Controller_(GIC)%7C">Another Wiki page</a></li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211132822
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.018 seconds
+Real time usage: 0.018 seconds
+Preprocessor visited node count: 62/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 0/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:4006-0!canonical and timestamp 20250211132822 and revision id 28096.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Generic_Interrupt_Controller&amp;oldid=28096">https://wiki.osdev.org/index.php?title=Generic_Interrupt_Controller&amp;oldid=28096</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="./Category:ARM" title="Category:ARM">ARM</a></li><li><a href="./Category:Interrupts" title="Category:Interrupts">Interrupts</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Generic+Interrupt+Controller" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Generic_Interrupt_Controller#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Generic_Interrupt_Controller" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="mw-list-item"><a href="./Talk:Generic_Interrupt_Controller" rel="discussion" title="Discussion about the content page [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Generic_Interrupt_Controller"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Generic_Interrupt_Controller&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Generic_Interrupt_Controller&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Generic_Interrupt_Controller" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Generic_Interrupt_Controller" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Generic_Interrupt_Controller&amp;oldid=28096" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Generic_Interrupt_Controller&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 9 July 2023, at 21:32.</li>
+	<li id="footer-info-0">This page has been accessed 3,314 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Generic_Interrupt_Controller&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.018","walltime":"0.018","ppvisitednodes":{"value":62,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":0,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250211132822","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":126});});</script>
+</body>
+</html>

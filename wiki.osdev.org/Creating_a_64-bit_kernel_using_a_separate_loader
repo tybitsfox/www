@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Creating a 64-bit kernel using a separate loader - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"f296c9449b452f52e41d9268","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Creating_a_64-bit_kernel_using_a_separate_loader","wgTitle":"Creating a 64-bit kernel using a separate loader","wgCurRevisionId":27929,"wgRevisionId":27929,"wgArticleId":3998,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using duplicate arguments in template calls","Pages using deprecated source tags","Level 3 Tutorials","In Progress","Tutorials","X86-64","Bootloaders"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":
+"Creating_a_64-bit_kernel_using_a_separate_loader","wgRelevantArticleId":3998,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","mmv.head","mmv.bootstrap.autostart","ext.DarkMode",
+"ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Creating_a_64-bit_kernel_using_a_separate_loader rootpage-Creating_a_64-bit_kernel_using_a_separate_loader skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Creating a 64-bit kernel using a separate loader</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Creating_a_64-bit_kernel_using_a_separate_loader#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Creating_a_64-bit_kernel_using_a_separate_loader#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><table style="font-size:95%; line-height:1.5em; padding:0.25em; float:right; margin: 0 0 8px 15px; clear:right; border:1px solid #aaaaaa; background:#eee; text-align:center;;"><tbody><tr><th>Difficulty level</th></tr><tr><td><a href="./File:Difficulty_3.png" class="image"><img alt="Difficulty 3.png" src="images/c/c1/Difficulty_3.png" decoding="async" width="46" height="14" data-file-width="46" data-file-height="14" /></a><br />Advanced</td></tr></tbody></table><table style="font-size:95%; line-height:1.5em; padding:0.25em; float:right; margin: 0 0 8px 15px; clear: right; border:1px solid #aaaaaa; background:#eee; text-align:center; width:200px; ;"><tbody><tr><th style="background:#ffce7b; padding:0.3em; font-size:1.1em;"><a href="Kernels" class="mw-redirect" title="Kernels">Kernel Designs</a></th></tr><tr><th>Models</th></tr><tr><td><div>
+<p><a href="Monolithic_Kernel" title="Monolithic Kernel">Monolithic Kernel</a><br />
+<a href="Microkernel" title="Microkernel">Microkernel</a><br />
+<a href="Hybrid_Kernel" title="Hybrid Kernel">Hybrid Kernel</a><br />
+<a href="Exokernel" title="Exokernel">Exokernel</a><br />
+<a href="Nanokernel" class="mw-redirect" title="Nanokernel">Nano/Picokernel</a><br />
+<a href="Exokernel#Cache_Kernel" title="Exokernel">Cache Kernel</a><br />
+<a href="Exokernel#Virtualizing_Kernel" title="Exokernel">Virtualizing Kernel</a><br />
+<a href="Megalithic_Kernel" title="Megalithic Kernel">Megalithic Kernel</a><br />
+</p>
+</div></td></tr><tr><th>Other Concepts</th></tr><tr><td><div>
+<p><a href="Modular_Kernel" title="Modular Kernel">Modular Kernel</a><br />
+<a href="Higher_Half_Kernel" title="Higher Half Kernel">Higher Half Kernel</a><br />
+<a href="Creating_a_64-bit_kernel" title="Creating a 64-bit kernel">64-bit Kernel</a><br />
+</p>
+</div></td></tr></tbody></table>
+<center>
+<table style="border: 1px solid #cfcfbf; margin-top: 25px; margin-bottom: 25px; background-color: #f0f0ff; text-align: center;">
+<tbody><tr>
+<td>
+<p><a href="./File:Under_Construction.png" class="image" title="This page is under construction!"><img alt="This page is under construction!" src="images/1/14/Under_Construction.png" decoding="async" width="50" height="50" data-file-width="50" data-file-height="50" /></a>
+This page or section is a work in progress and may thus be incomplete. Its content may be changed in the near future.
+</p>
+</td>
+<td>
+</td></tr></tbody></table>
+</center>
+<p>This page is an extension to <a href="Creating_a_64-bit_kernel" title="Creating a 64-bit kernel">Creating a 64-bit kernel</a>, specifically the section <a href="Creating_a_64-bit_kernel#With_a_separate_loader" title="Creating a 64-bit kernel">Loading with a separate loader</a>. If you have not read that, go read it now.<br />
+<b>This may or may not work with your kernel and you may or may not need to tweak it to work with your kernel.</b>
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Creating_a_64-bit_kernel_using_a_separate_loader#64-bit_kernel"><span class="tocnumber">1</span> <span class="toctext">64-bit kernel</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="Creating_a_64-bit_kernel_using_a_separate_loader#32-bit_loader"><span class="tocnumber">2</span> <span class="toctext">32-bit loader</span></a>
+<ul>
+<li class="toclevel-2 tocsection-3"><a href="Creating_a_64-bit_kernel_using_a_separate_loader#Assembly_bootstrap"><span class="tocnumber">2.1</span> <span class="toctext">Assembly bootstrap</span></a></li>
+<li class="toclevel-2 tocsection-4"><a href="Creating_a_64-bit_kernel_using_a_separate_loader#Loader"><span class="tocnumber">2.2</span> <span class="toctext">Loader</span></a></li>
+<li class="toclevel-2 tocsection-5"><a href="Creating_a_64-bit_kernel_using_a_separate_loader#Setting_up_long_mode"><span class="tocnumber">2.3</span> <span class="toctext">Setting up long mode</span></a></li>
+<li class="toclevel-2 tocsection-6"><a href="Creating_a_64-bit_kernel_using_a_separate_loader#Compiling_and_linking_the_loader"><span class="tocnumber">2.4</span> <span class="toctext">Compiling and linking the loader</span></a></li>
+<li class="toclevel-2 tocsection-7"><a href="Creating_a_64-bit_kernel_using_a_separate_loader#GRUB"><span class="tocnumber">2.5</span> <span class="toctext">GRUB</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-8"><a href="Creating_a_64-bit_kernel_using_a_separate_loader#See_Also"><span class="tocnumber">3</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-9"><a href="Creating_a_64-bit_kernel_using_a_separate_loader#Articles"><span class="tocnumber">3.1</span> <span class="toctext">Articles</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="64-bit_kernel">64-bit kernel</span></h2>
+<p>The kernel itself should not contain any multiboot headers, and does not need an assembly bootstrap (you are free to use one if you find it necessary).<br />
+The OUPUT_FORMAT, as specified in your linker script, should be elf64-x86-64 for it to be loaded correctly by the Loader.<br />
+</p><p>After your loader has passed control to the kernel, you should set up a 64-bit IDT and paging.<br />
+</p><p>Compile C files with
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>x86_64-elf-gcc -m64 -c &lt;<span class="nb">source</span> file&gt; -o &lt;output&gt; -ffreestanding -z max-page-size<span class="o">=</span>0x1000 -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -std<span class="o">=</span>gnu99 -O2 -Wall -Wextra -I &lt;path to your header files&gt;
+</pre></div>
+<p>Link the kernel with
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>x86_64-elf-gcc -T &lt;linker script&gt; -o &lt;output&gt; &lt;all object files&gt; -ffreestanding -O2 -nostdlib -lgcc
+</pre></div>
+<p>Your ouput should be copied to loader_build/boot/kernel.bin (See <a href="Creating_a_64-bit_kernel_using_a_separate_loader#GRUB">32-bit loader GRUB</a>)
+</p>
+<h2><span class="mw-headline" id="32-bit_loader">32-bit loader</span></h2>
+<p>Your loader will be similar to the kernel made in the <a href="Bare_Bones" title="Bare Bones">Bare Bones</a> tutorial. 
+</p>
+<h3><span class="mw-headline" id="Assembly_bootstrap">Assembly bootstrap</span></h3>
+<p>It starts with a multiboot header and an assembly routine to set up a stack and call the C code. <br />
+Additionally it might check eax to see if it contains 0x2BADB002 (which means it was loaded by a multiboot bootloader)
+</p>
+<div class="mw-highlight mw-highlight-lang-asm mw-content-ltr" dir="ltr"><pre><span></span><span class="nl">_start:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">cli</span><span class="w">                              </span><span class="c1">; Clear interrupts, we don&#39;t want them as long as we are in the loader</span>
+<span class="w">	</span><span class="nf">mov</span><span class="w">	</span><span class="no">esp</span><span class="p">,</span><span class="w"> </span><span class="no">stack_top</span><span class="w">           </span><span class="c1">; Set up a valid stack</span>
+<span class="w">        </span><span class="nf">mov</span><span class="w">     </span><span class="no">ebp</span><span class="p">,</span><span class="w"> </span><span class="no">stack_top</span><span class="w"></span>
+<span class="w">	</span>
+<span class="w">	</span><span class="nf">push</span><span class="w">	</span><span class="no">ebx</span><span class="w">                      </span><span class="c1">; Push pointer to multiboot info structure</span>
+<span class="w">	</span><span class="nf">call</span><span class="w">	</span><span class="no">lmain</span><span class="w"></span>
+</pre></div>
+<h3><span class="mw-headline" id="Loader">Loader</span></h3>
+<p>The loader must now set up its own <b>32-bit</b> <a href="Global_Descriptor_Table" title="Global Descriptor Table">GDT</a> and parse the multiboot structure given to it by the bootstrap.<br />
+A header containing useful multiboot structures can be downloaded <a rel="nofollow" class="external text" href="https://www.gnu.org/software/grub/manual/multiboot/html_node/multiboot_002eh.html">here</a>
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;multiboot.h&quot;</span><span class="cp"></span>
+
+<span class="cm">/* This function gets called by the bootloader */</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">lmain</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">multiboot_struct</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// Set up GDT</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">multiboot_info_t</span><span class="o">*</span><span class="w"> </span><span class="n">mb_info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">multiboot_struct</span><span class="p">;</span><span class="w">            </span><span class="cm">/* Make pointer to multiboot_info_t struct */</span><span class="w"></span>
+<span class="w">	</span><span class="n">multiboot_uint32_t</span><span class="w"> </span><span class="n">mb_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mb_info</span><span class="o">-&gt;</span><span class="n">flags</span><span class="p">;</span><span class="w">                  </span><span class="cm">/* Get flags from mb_info */</span><span class="w"></span>
+
+<span class="w">        </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">kentry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w">                                           </span><span class="cm">/* Pointer to the kernel entry point */</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mb_flags</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">MULTIBOOT_INFO_MODS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">                          </span><span class="cm">/* Check if modules are available */</span><span class="w"></span>
+<span class="w">                </span><span class="n">multiboot_uint32_t</span><span class="w"> </span><span class="n">mods_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mb_info</span><span class="o">-&gt;</span><span class="n">mods_count</span><span class="p">;</span><span class="w">   </span><span class="cm">/* Get the amount of modules available */</span><span class="w"></span>
+<span class="w">		</span><span class="n">multiboot_uint32_t</span><span class="w"> </span><span class="n">mods_addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mb_info</span><span class="o">-&gt;</span><span class="n">mods_addr</span><span class="p">;</span><span class="w">     </span><span class="cm">/* And the starting address of the modules */</span><span class="w"></span>
+
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">mod</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">mods_count</span><span class="p">;</span><span class="w"> </span><span class="n">mod</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                        </span><span class="n">multiboot_module_t</span><span class="o">*</span><span class="w"> </span><span class="n">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">multiboot_module_t</span><span class="o">*</span><span class="p">)(</span><span class="n">mods_addr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">mod</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">multiboot_module_t</span><span class="p">)));</span><span class="w">     </span><span class="cm">/* Loop through all modules */</span><span class="w"></span>
+<span class="w">                </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>Every multiboot module has a command line associated with it, available from the multiboot_module_t is a pointer to it.<br />
+One might load all the modules available into memory at this point, or check them for a specific command line to load only a specific subset.
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">module_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">module</span><span class="o">-&gt;</span><span class="n">cmdline</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="cm">/* Here I check if module_string is equals to the one i assigned my kernel</span>
+<span class="cm">           you could skip this check if you had a way of determining the kernel module */</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">module_string</span><span class="p">,</span><span class="w"> </span><span class="n">kernel_bin_string</span><span class="p">)){</span><span class="w"></span>
+<span class="w">                </span><span class="n">kentry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">load_elf_module</span><span class="p">(</span><span class="n">module</span><span class="o">-&gt;</span><span class="n">mod_start</span><span class="p">,</span><span class="w"> </span><span class="n">module</span><span class="o">-&gt;</span><span class="n">mod_end</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>Now, we must parse the kernel ELF file that the bootloader loaded into memory for us.<br />
+This can be done pretty easily using a helper function and a header I wrote following the ELF64 specification (Available [|here]) and function declarations (Available [|here])
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="w">        </span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;elf64.h&quot;</span><span class="c1"> // Also requires elf64.c</span><span class="cp"></span>
+
+<span class="w">        </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">kernel_elf_space</span><span class="p">[</span><span class="k">sizeof</span><span class="p">(</span><span class="n">elf_file_data_t</span><span class="p">)];</span><span class="w"></span>
+<span class="w">        </span><span class="n">elf_file_data_t</span><span class="o">*</span><span class="w"> </span><span class="n">kernel_elf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">elf_file_data_t</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="n">kernel_elf_space</span><span class="p">;</span><span class="w">                                          </span><span class="cm">/* Pointer to elf file structure (remember there is no memory management yet) */</span><span class="w"></span>
+
+<span class="w">        </span><span class="cm">/* This function parses the ELF file and returns the entry point */</span><span class="w"></span>
+<span class="w">        </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="nf">load_elf_module</span><span class="p">(</span><span class="n">multiboot_uint32_t</span><span class="w"> </span><span class="n">mod_start</span><span class="p">,</span><span class="w"> </span><span class="n">multiboot_uint32_t</span><span class="w"> </span><span class="n">mod_end</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parse_elf_executable</span><span class="p">((</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">mod_start</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">elf_file_data_t</span><span class="p">),</span><span class="w"> </span><span class="n">kernel_elf</span><span class="p">);</span><span class="w">    </span><span class="cm">/* Parses ELF file and returns an error code */</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">){</span><span class="w">                                                                                       </span><span class="cm">/* No errors occurred while parsing the file */</span><span class="w"></span>
+<span class="w">                        </span><span class="k">for</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">kernel_elf</span><span class="o">-&gt;</span><span class="n">numSegments</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">){</span><span class="w"></span>
+<span class="w">			        </span><span class="n">elf_file_segment_t</span><span class="w"> </span><span class="n">seg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kernel_elf</span><span class="o">-&gt;</span><span class="n">segments</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w">                                   </span><span class="cm">/* Load all the program segments into memory */</span><span class="w"></span>
+<span class="w">			                                                                                            </span><span class="cm">/*  if you want to do relocation you should do so here, */</span><span class="w"></span>
+<span class="w">			        </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">src</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">mod_start</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">seg</span><span class="p">.</span><span class="n">foffset</span><span class="p">);</span><span class="w">                          </span><span class="cm">/*  though that would require some changes to parse_elf_executable */</span><span class="w"></span>
+<span class="w">			        </span><span class="n">memcpy</span><span class="p">((</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="n">seg</span><span class="p">.</span><span class="n">address</span><span class="p">,</span><span class="w"> </span><span class="n">src</span><span class="p">,</span><span class="w"> </span><span class="n">seg</span><span class="p">.</span><span class="n">flength</span><span class="p">);</span><span class="w"></span>
+<span class="w">		        </span><span class="p">}</span><span class="w"></span>
+<span class="w">                        </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="n">kernel_elf</span><span class="o">-&gt;</span><span class="n">entryAddr</span><span class="p">;</span><span class="w">                                                       </span><span class="cm">/* Finally we can return the entry address */</span><span class="w"></span>
+<span class="w">                </span><span class="p">}</span><span class="w"></span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>Finally, we can set up long mode and jump to the 64-bit kernel.<br />
+We do this by putting 2 assembly functions at the end of the lmain function
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="w">       </span><span class="k">extern</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">setup_longmode</span><span class="p">();</span><span class="w"></span>
+<span class="w">       </span><span class="k">extern</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">enter_kernel</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">entry</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">multiboot_info</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">       </span><span class="kt">void</span><span class="w"> </span><span class="nf">lmain</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">multiboot_struct</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">               </span><span class="c1">// Set up GDT</span>
+<span class="w">               </span><span class="c1">// Check modules</span>
+
+<span class="w">               </span><span class="n">setup_longmode</span><span class="p">();</span><span class="w">                                                                                    </span><span class="cm">/* Set up long mode and jump to the kernel code */</span><span class="w"></span>
+<span class="w">               </span><span class="n">enter_kernel</span><span class="p">(</span><span class="n">kentry</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="w"> </span><span class="n">mb_info</span><span class="p">);</span><span class="w"></span>
+<span class="w">       </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+<h3><span class="mw-headline" id="Setting_up_long_mode">Setting up long mode</span></h3>
+<p>Before we even look at switching to long mode, we must make sure that it is available on the current CPU.<br />
+</p>
+<ul><li>First, we check if the CPUID instruction is available by flipping bit 21 (CPUID) in the eflags register. If the bit was flipped CPUID is available.</li>
+<li>Second, we must check if the extended CPUID functions are avaiable. This is done by checking CPUID function 0x80000000, to see if it is higher than or equals to 0x80000001.</li>
+<li>And last a check if long mode is available, by executing CPUID function 0x80000001 and testing if bit 29 (Long mode) is set.</li></ul>
+<p>To set up long mode, many things must be done.
+</p>
+<ul><li>Disable any paging your bootloader might have set up (clearing bit 31 in CR0)</li>
+<li>Then, set up 64-bit paging (but do <b>not</b> enable it yet). This includes PML4T, PDPT, PDT and PT to identity map any memory you will need before your 64-bit kernel has set up it's own paging.</li>
+<li>Enable PAE (Physical Address Extension) by setting bit 5 of CR4</li>
+<li>Switch to IA32e (compatibility mode), by setting bit 8 (Long Mode Enable) in MSR 0xC0000080</li>
+<li>Enable paging again, by setting bit 31 in CR0</li></ul>
+<p><br />
+Now we are in Compatibility mode, to enter Long mode we have to set up a 64-bit GDT (This will be the GDT your kernel uses, so you have to set up everything here)<br />
+<b>The code below is not optimal in the slightest, and you should try to put together your own alternative.</b>
+</p>
+<div class="mw-highlight mw-highlight-lang-asm mw-content-ltr" dir="ltr"><pre><span></span><span class="nf">global</span><span class="w"> </span><span class="no">enter_kernel</span><span class="w"></span>
+<span class="nl">enter_kernel:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">push</span><span class="w">	</span><span class="no">ebp</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w">	</span><span class="no">ebp</span><span class="p">,</span><span class="w"> </span><span class="no">esp</span><span class="w">                </span><span class="c1">; Set up the stack so the variables passed from the C code can be read</span>
+
+<span class="w">	</span><span class="nf">mov</span><span class="w">	</span><span class="no">esi</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">ebp</span><span class="err">+</span><span class="mi">8</span><span class="p">]</span><span class="w">            </span><span class="c1">; This is the kernel entry point</span>
+<span class="w">	</span><span class="nf">mov</span><span class="w">	</span><span class="p">[</span><span class="no">k_ptr</span><span class="p">],</span><span class="w"> </span><span class="no">esi</span><span class="w"></span>
+
+<span class="w">	</span><span class="nf">lgdt</span><span class="w">	</span><span class="p">[</span><span class="no">GDT.pointer</span><span class="p">]</span><span class="w">           </span><span class="c1">; Load GDT</span>
+<span class="w">	</span>
+<span class="w">	</span><span class="nf">mov</span><span class="w">	</span><span class="no">ax</span><span class="p">,</span><span class="w"> </span><span class="no">GDT.data</span><span class="w">            </span><span class="c1">; Reload data segment selectors</span>
+<span class="w">	</span><span class="nf">mov</span><span class="w">	</span><span class="no">ss</span><span class="p">,</span><span class="w"> </span><span class="no">ax</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w">	</span><span class="no">ds</span><span class="p">,</span><span class="w"> </span><span class="no">ax</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w">	</span><span class="no">es</span><span class="p">,</span><span class="w"> </span><span class="no">ax</span><span class="w"></span>
+<span class="w">	</span><span class="nf">jmp</span><span class="w">	</span><span class="no">GDT.code</span><span class="p">:.</span><span class="no">jmp_k</span><span class="w">         </span><span class="c1">; Reload code selector by jumping to 64-bit code</span>
+<span class="nl">.jmp_k:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">mov</span><span class="w">	</span><span class="no">edi</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">ebp</span><span class="w"> </span><span class="err">+</span><span class="w"> </span><span class="mi">12</span><span class="p">]</span><span class="w">		</span><span class="c1">; 1st argument of kernel_main (pointer to multiboot structure)</span>
+<span class="w">	</span><span class="nf">mov</span><span class="w">	</span><span class="no">eax</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">k_ptr</span><span class="p">]</span><span class="w">                                                                                                      </span><span class="c1">; This is transformed to mov rax, [k_ptr] and uses the double word reserved below </span>
+<span class="w">	</span><span class="nf">dd</span><span class="w">	</span><span class="mi">0</span><span class="w">			</span><span class="c1">; Trick the processor, contains high address of k_ptr                                    &#160;; as higher half of the address to k_ptr</span>
+<span class="w">	</span><span class="nf">jmp</span><span class="w">	</span><span class="no">eax</span><span class="w">                     </span><span class="c1">; This part is plain bad, tricking the processor is not the best thing to do here</span>
+
+<span class="nf">section</span><span class="w"> </span><span class="no">.data</span><span class="w"></span>
+<span class="nl">k_ptr:</span><span class="w"></span>
+<span class="w">	</span><span class="nf">dd</span><span class="w">	</span><span class="mi">0</span><span class="w"></span>
+</pre></div>
+<h3><span class="mw-headline" id="Compiling_and_linking_the_loader">Compiling and linking the loader</span></h3>
+<p>The loader must be compiled and linked as a 32-bit ELF file with the Multiboot header within the first 8 kB (See <a href="Bare_Bones" title="Bare Bones">Bare Bones</a> Tutorial to see how to do this)<br />
+</p>
+<h3><span class="mw-headline" id="GRUB">GRUB</span></h3>
+<p>If you used GRUB this is an example of how to set up the directory structure:
+</p>
+<ul><li>loader_build/
+<ul><li>boot/
+<ul><li>grub/
+<ul><li>grub.cfg</li></ul></li>
+<li>kernel.bin         (This is the 64-bit kernel ELF file)</li>
+<li>loader.bin         (This is the 32-bit loader ELF file)</li></ul></li></ul></li></ul>
+<p>Your grub.cfg file will contain at least the following
+</p>
+<pre>menuentry "Kernel" {
+     multiboot /boot/loader.bin                  // Path to the loader executable
+     module /boot/kernel.bin "KERNEL_BIN"        // Path to the kernel executable, the string in "" is your command line
+
+     // More modules may be added here in the form 'module &lt;path&gt; "&lt;cmdline&gt;"'
+}
+</pre>
+<p>Note: if you are using Multiboot 2, replace the above multiboot/module lines with multiboot2/module2
+</p><p>To build it:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>grub-mkrescue -o os.iso loader_build/
+</pre></div>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="Articles">Articles</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="https://www.uclibc.org/docs/elf-64-gen.pdf">ELF-64 specification</a></li>
+<li><a rel="nofollow" class="external text" href="https://www.gnu.org/software/grub/manual/multiboot/multiboot.html">Multiboot specification v0.6.96</a></li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211131115
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.082 seconds
+Real time usage: 1.264 seconds
+Preprocessor visited node count: 492/1000000
+Post‐expand include size: 2942/2097152 bytes
+Template argument size: 2282/2097152 bytes
+Highest expansion depth: 23/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 22652/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%   10.021      1 -total
+ 79.59%    7.976     24 Template:If
+ 63.15%    6.328     24 Template:Show1
+ 50.24%    5.035      1 Template:Rating
+ 44.50%    4.459      1 Template:Kernel_designs
+ 39.00%    3.908      1 Template:SmallNavBox
+ 11.58%    1.160      4 Template:Eq
+  5.70%    0.571      4 Template:Eq1
+  4.28%    0.429      1 Template:In_Progress
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:3998-0!canonical and timestamp 20250211131114 and revision id 27929.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Creating_a_64-bit_kernel_using_a_separate_loader&amp;oldid=27929">https://wiki.osdev.org/index.php?title=Creating_a_64-bit_kernel_using_a_separate_loader&amp;oldid=27929</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_duplicate_arguments_in_template_calls&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using duplicate arguments in template calls (page does not exist)">Pages using duplicate arguments in template calls</a></li><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:Level_3_Tutorials" title="Category:Level 3 Tutorials">Level 3 Tutorials</a></li><li><a href="./Category:In_Progress" title="Category:In Progress">In Progress</a></li><li><a href="./Category:Tutorials" title="Category:Tutorials">Tutorials</a></li><li><a href="./Category:X86-64" title="Category:X86-64">X86-64</a></li><li><a href="./Category:Bootloaders" title="Category:Bootloaders">Bootloaders</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Creating+a+64-bit+kernel+using+a+separate+loader" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Creating_a_64-bit_kernel_using_a_separate_loader#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Creating_a_64-bit_kernel_using_a_separate_loader" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:Creating_a_64-bit_kernel_using_a_separate_loader&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Creating_a_64-bit_kernel_using_a_separate_loader"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Creating_a_64-bit_kernel_using_a_separate_loader&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Creating_a_64-bit_kernel_using_a_separate_loader&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Creating_a_64-bit_kernel_using_a_separate_loader" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Creating_a_64-bit_kernel_using_a_separate_loader" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Creating_a_64-bit_kernel_using_a_separate_loader&amp;oldid=27929" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Creating_a_64-bit_kernel_using_a_separate_loader&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 9 July 2023, at 14:59.</li>
+	<li id="footer-info-0">This page has been accessed 2,394 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Creating_a_64-bit_kernel_using_a_separate_loader&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.082","walltime":"1.264","ppvisitednodes":{"value":492,"limit":1000000},"postexpandincludesize":{"value":2942,"limit":2097152},"templateargumentsize":{"value":2282,"limit":2097152},"expansiondepth":{"value":23,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":22652,"limit":5000000},"timingprofile":["100.00%   10.021      1 -total"," 79.59%    7.976     24 Template:If"," 63.15%    6.328     24 Template:Show1"," 50.24%    5.035      1 Template:Rating"," 44.50%    4.459      1 Template:Kernel_designs"," 39.00%    3.908      1 Template:SmallNavBox"," 11.58%    1.160      4 Template:Eq","  5.70%    0.571      4 Template:Eq1","  4.28%    0.429      1 Template:In_Progress"]},"cachereport":{"timestamp":"20250211131115","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":1373});});</script>
+</body>
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Virtual 8086 Mode - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"1cc7dac8a1b8e44e8551b723","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Virtual_8086_Mode","wgTitle":"Virtual 8086 Mode","wgCurRevisionId":29003,"wgRevisionId":29003,"wgArticleId":1731,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","Pages using duplicate arguments in template calls","X86 CPU","Operating Modes"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Virtual_8086_Mode","wgRelevantArticleId":1731,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":
+false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","mmv.head","mmv.bootstrap.autostart","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Virtual_8086_Mode rootpage-Virtual_8086_Mode skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Virtual 8086 Mode</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Virtual_8086_Mode#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Virtual_8086_Mode#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>Virtual 8086 mode is a sub-mode of <a href="Protected_mode" class="mw-redirect" title="Protected mode">Protected mode</a>. In short, Virtual 8086 mode is whereby the CPU (in protected mode) is running a "Emulated" 16bit Real Mode machine.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Virtual_8086_Mode#Entering_V86"><span class="tocnumber">1</span> <span class="toctext">Entering V86</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="Virtual_8086_Mode#V86_Problem"><span class="tocnumber">2</span> <span class="toctext">V86 Problem</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="Virtual_8086_Mode#Detecting_v8086"><span class="tocnumber">3</span> <span class="toctext">Detecting v8086</span></a></li>
+<li class="toclevel-1 tocsection-4"><a href="Virtual_8086_Mode#Usage"><span class="tocnumber">4</span> <span class="toctext">Usage</span></a></li>
+<li class="toclevel-1 tocsection-5"><a href="Virtual_8086_Mode#Kernels_below_1MB"><span class="tocnumber">5</span> <span class="toctext">Kernels below 1MB</span></a></li>
+<li class="toclevel-1 tocsection-6"><a href="Virtual_8086_Mode#Using_VM86_for_disk_access"><span class="tocnumber">6</span> <span class="toctext">Using VM86 for disk access</span></a></li>
+<li class="toclevel-1 tocsection-7"><a href="Virtual_8086_Mode#See_Also"><span class="tocnumber">7</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-8"><a href="Virtual_8086_Mode#Articles"><span class="tocnumber">7.1</span> <span class="toctext">Articles</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="Virtual_8086_Mode#Threads"><span class="tocnumber">7.2</span> <span class="toctext">Threads</span></a></li>
+<li class="toclevel-2 tocsection-10"><a href="Virtual_8086_Mode#External_Links"><span class="tocnumber">7.3</span> <span class="toctext">External Links</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Entering_V86">Entering V86</span></h2>
+<p>The CPU is executing in virtual 86 mode when the VM bit (bit 17) is set in the <i>EFLAGS</i> register. If you want to enter virtual 86 mode you must set this bit to 1.
+A way of modifying the EFLAGS register is to use the <i>PUSHF</i> and <i>POPF</i> instructions, but these instructions are for user space and cannot modify supervisor flags. The only way to set the VM flag is to use the iret instruction. This instruction is normally used to return from an interrupt. When <i>IRET</i> is called with the VM=1 in the stack <i>EFLAGS</i> (the context being returned to is V86), the interrupt stack frame will contain segments <i>ES</i>, <i>DS</i>, <i>FS</i>, and <i>GS</i>, so that they can be set before entry.
+</p><p>A task gate can also be used to enter V86. This allows setting the segment registers. It is probably not necessary to do it this way unless the OS is using hardware multitasking.
+</p><p><a href="./File:Fig15-3.gif" class="image"><img alt="Fig15-3.gif" src="images/1/12/Fig15-3.gif" decoding="async" width="640" height="360" data-file-width="640" data-file-height="360" /></a>
+</p>
+<h2><span class="mw-headline" id="V86_Problem">V86 Problem</span></h2>
+<p>The most common problem with v86 mode is that you can't enter Protected mode from inside of a v86 task. In other words, if you are running Windows or have emm386 in memory, you can't do a "raw" switch into protected mode (it causes an exception). DOS extenders worked around that problem using either VCPI or DPMI interfaces to switch into pmode (actually, promoting their V86 task as a 'regular' user task). For an OS programmer such interfaces are simply useless as they're part of another OS.
+</p><p>There are a few other more "technical" problems people have when using v86 mode, mostly because v86 has some instructions "emulated" by what's known as a v86-monitor program, as the CPU is in protected mode, some instructions are high up on the security/protection level and running those directly would cause no-end of trouble for the OS.
+</p>
+<h2><span class="mw-headline" id="Detecting_v8086">Detecting v8086</span></h2>
+<p>EFLAGS.VM is NEVER pushed onto the stack if the V86 task uses PUSHFD. You should check if CR0.PE=1 and then assume it's V86 if that bit is set.
+</p>
+<div class="mw-highlight mw-highlight-lang-asm mw-content-ltr" dir="ltr"><pre><span></span><span class="nl">detect_v86:</span><span class="w"></span>
+<span class="w">   </span><span class="nf">smsw</span><span class="w">    </span><span class="no">ax</span><span class="w"></span>
+<span class="w">   </span><span class="nf">and</span><span class="w">     </span><span class="no">eax</span><span class="p">,</span><span class="mi">1</span><span class="w">           </span><span class="c1">;CR0.PE bit</span>
+<span class="w">   </span><span class="nf">ret</span><span class="w"></span>
+</pre></div>
+<p>VM mode detection is mainly useful when writing DOS extenders or other programs that could be started either in plain real mode or in virtual mode from a protected mode system. An 'ordinary' bootloader shouldn't worry about this since the BIOS will not set up VM86 to read the bootsector&#160;;)
+</p>
+<h2><span class="mw-headline" id="Usage">Usage</span></h2>
+<p>VM86 can be very useful if one needs access to BIOS functions while in Protected mode. It is in fact necessary in order to set up video mode, as many modern card/chipsets lack support for the VBE3 protected mode interface, so setting up a VM86 task that will perform the 'set video mode' call is the preferred method.
+</p>
+<h2><span class="mw-headline" id="Kernels_below_1MB">Kernels below 1MB</span></h2>
+<p>It has been suggested that you map your kernel to a 'high' logical address (e.g. 0xC0000000) to avoid VM86 tasks interfering with it. This is especially important with large kernels which leave no room for VM86 code below 1MB, or when larger programs are expected to run within the VM86 box.
+</p><p>If all that is needed is a BIOS interrupt wrapper, then the following should work:
+</p>
+<ol><li>ensure that your 16bits code is on a separate page from any 32 bits code</li>
+<li>enable paging</li>
+<li>make kernel pages unwritable (and unreadable&#160;?) for DPL3 and allow user-access only to those pages that contains your 16 bits code and pages that contains BIOS code or data.</li></ol>
+<h2><span class="mw-headline" id="Using_VM86_for_disk_access">Using VM86 for disk access</span></h2>
+<p>Though theoretically possible, it is probably not a good idea. Most BIOS disk access will include IRQ handlers, DMA transfers (uncontrollable from within your VM monitor), and may stick in VM86 task while the BIOS waits for an interrupt response while a 'good' driver would have let the CPU free for other processes.
+</p><p>Windows 9x suffered from system freezing during disk access. Often due to an INT13-through-VM86 problem.
+</p>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="Articles">Articles</span></h3>
+<ul><li><a href="Virtual_Monitor" class="mw-redirect" title="Virtual Monitor">Virtual Monitor</a></li></ul>
+<h3><span class="mw-headline" id="Threads">Threads</span></h3>
+<ul><li><a href="http://forum.osdev.org/viewtopic.php?t=8437" class="extiw" title="topic:8437">Creating vm86 task</a></li>
+<li><a href="http://forum.osdev.org/viewtopic.php?t=8477" class="extiw" title="topic:8477">VM86 and INT10h</a></li>
+<li><a href="http://forum.osdev.org/viewtopic.php?t=8949" class="extiw" title="topic:8949">kernel location &amp; VM86</a></li></ul>
+<h3><span class="mw-headline" id="External_Links">External Links</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="http://www.cs.ucla.edu/~kohler/class/04f-aos/ref/i386/c15.htm">Intel 80386 Reference Programmer's Manual Chapter 15 </a></li>
+<li><a rel="nofollow" class="external free" href="http://osdev.berlios.de/v86.html">http://osdev.berlios.de/v86.html</a> - by Tim Robinson (<a rel="nofollow" class="external text" href="https://web.archive.org/web/20140111115023/http://osdev.berlios.de/v86.html">Wayback Machine Link</a>)</li>
+<li><a rel="nofollow" class="external text" href="http://my.execpc.com/~geezer/osd/pmode/v86mm.zip">A virtual-8086 mode monitor</a> - by Chris Giese</li>
+<li><a rel="nofollow" class="external text" href="http://126.sytes.net/tmp/x86emu.zip">x86emu</a> - a BSD style licensed vitual-8086 mode <i>emulator</i> - very different from a <i>monitor</i>.</li>
+<li><a rel="nofollow" class="external autonumber" href="http://gitorious.org/x86emu/">[1]</a> - x86emu and several other projects. See mdt for code getting VBE modes.</li>
+<li><a rel="nofollow" class="external text" href="http://www.rohitab.com/discuss/topic/35103-switch-between-real-mode-and-protected-mode/">Protected Mode BIOS Call Functionailty v2.0</a> - by Napalm</li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211122236
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.031 seconds
+Real time usage: 0.166 seconds
+Preprocessor visited node count: 78/1000000
+Post‐expand include size: 184/2097152 bytes
+Template argument size: 12/2097152 bytes
+Highest expansion depth: 9/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 645/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%   10.334      1 Template:IntelManualLink
+100.00%   10.334      1 -total
+ 47.68%    4.927      1 Template:IntelManualURL
+ 22.61%    2.336      2 Template:If
+ 15.39%    1.591      2 Template:Show1
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:1731-0!canonical and timestamp 20250211122236 and revision id 29003.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Virtual_8086_Mode&amp;oldid=29003">https://wiki.osdev.org/index.php?title=Virtual_8086_Mode&amp;oldid=29003</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_duplicate_arguments_in_template_calls&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using duplicate arguments in template calls (page does not exist)">Pages using duplicate arguments in template calls</a></li><li><a href="./Category:X86_CPU" title="Category:X86 CPU">X86 CPU</a></li><li><a href="./Category:Operating_Modes" title="Category:Operating Modes">Operating Modes</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Virtual+8086+Mode" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Virtual_8086_Mode#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Virtual_8086_Mode" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:Virtual_8086_Mode&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Virtual_8086_Mode"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Virtual_8086_Mode&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Virtual_8086_Mode&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Virtual_8086_Mode" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Virtual_8086_Mode" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Virtual_8086_Mode&amp;oldid=29003" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Virtual_8086_Mode&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-lang" class="vector-menu mw-portlet mw-portlet-lang vector-menu-portal portal" aria-labelledby="p-lang-label" role="navigation"  >
+	<h3
+		id="p-lang-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">In other languages</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li class="interlanguage-link interwiki-de mw-list-item"><a href="http://www.lowlevel.eu/wiki/Virtual_8086_Mode" title="Virtual 8086 Mode – Deutsch" lang="de" hreflang="de" class="interlanguage-link-target"><span>Deutsch</span></a></li></ul>
+		
+	</div>
+</nav>
+
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 6 June 2024, at 17:29.</li>
+	<li id="footer-info-0">This page has been accessed 10,500 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Virtual_8086_Mode&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.031","walltime":"0.166","ppvisitednodes":{"value":78,"limit":1000000},"postexpandincludesize":{"value":184,"limit":2097152},"templateargumentsize":{"value":12,"limit":2097152},"expansiondepth":{"value":9,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":645,"limit":5000000},"timingprofile":["100.00%   10.334      1 Template:IntelManualLink","100.00%   10.334      1 -total"," 47.68%    4.927      1 Template:IntelManualURL"," 22.61%    2.336      2 Template:If"," 15.39%    1.591      2 Template:Show1"]},"cachereport":{"timestamp":"20250211122236","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":263});});</script>
+</body>
+</html>

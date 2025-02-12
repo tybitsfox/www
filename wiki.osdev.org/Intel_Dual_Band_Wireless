@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Intel Dual Band Wireless - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"962f07a7ecc97577def18636","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Intel_Dual_Band_Wireless","wgTitle":"Intel Dual Band Wireless","wgCurRevisionId":28037,"wgRevisionId":28037,"wgArticleId":4278,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Networking"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Intel_Dual_Band_Wireless","wgRelevantArticleId":4278,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":
+{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Intel_Dual_Band_Wireless rootpage-Intel_Dual_Band_Wireless skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Intel Dual Band Wireless</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Intel_Dual_Band_Wireless#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Intel_Dual_Band_Wireless#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>This page provides basic documentation of the freebsd iwm driver, which supports the following WiFi + Bluetooth chipsets:
+</p>
+<ul><li>Intel Dual Band Wireless 3160</li>
+<li>Intel Dual Band Wireless 3165</li>
+<li>Intel Dual Band Wireless 3168</li>
+<li>Intel Dual Band Wireless 7260</li>
+<li>Intel Dual Band Wireless 7265</li>
+<li>Intel Dual Band Wireless 8260</li>
+<li>Intel Dual Band Wireless 8265</li></ul>
+<p>These notes are meant to provide an overview of the driver, so developers may implement their own WiFi drivers for this chipset. The original source code will need to be used in conjunction with these notes in order to have all the details. The original source code can be found at: <a rel="nofollow" class="external free" href="https://github.com/freebsd/freebsd/tree/master/sys/dev/iwm">https://github.com/freebsd/freebsd/tree/master/sys/dev/iwm</a>
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Intel_Dual_Band_Wireless#Registers"><span class="tocnumber">1</span> <span class="toctext">Registers</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="Intel_Dual_Band_Wireless#Initialization_Steps"><span class="tocnumber">2</span> <span class="toctext">Initialization Steps</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="Intel_Dual_Band_Wireless#Scan_Steps"><span class="tocnumber">3</span> <span class="toctext">Scan Steps</span></a></li>
+<li class="toclevel-1 tocsection-4"><a href="Intel_Dual_Band_Wireless#Transmit_Steps"><span class="tocnumber">4</span> <span class="toctext">Transmit Steps</span></a></li>
+<li class="toclevel-1 tocsection-5"><a href="Intel_Dual_Band_Wireless#Firmware_Transfers"><span class="tocnumber">5</span> <span class="toctext">Firmware Transfers</span></a></li>
+<li class="toclevel-1 tocsection-6"><a href="Intel_Dual_Band_Wireless#TX/TFD_Scheduler"><span class="tocnumber">6</span> <span class="toctext">TX/TFD Scheduler</span></a></li>
+<li class="toclevel-1 tocsection-7"><a href="Intel_Dual_Band_Wireless#TX_Ring"><span class="tocnumber">7</span> <span class="toctext">TX Ring</span></a>
+<ul>
+<li class="toclevel-2 tocsection-8"><a href="Intel_Dual_Band_Wireless#Command_Headers"><span class="tocnumber">7.1</span> <span class="toctext">Command Headers</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-9"><a href="Intel_Dual_Band_Wireless#RX_Ring_(256-byte_aligned)"><span class="tocnumber">8</span> <span class="toctext">RX Ring (256-byte aligned)</span></a></li>
+<li class="toclevel-1 tocsection-10"><a href="Intel_Dual_Band_Wireless#RX_Status_Area_(16-byte_aligned)"><span class="tocnumber">9</span> <span class="toctext">RX Status Area (16-byte aligned)</span></a></li>
+<li class="toclevel-1 tocsection-11"><a href="Intel_Dual_Band_Wireless#RF_Hardware_switch_kill_functionality"><span class="tocnumber">10</span> <span class="toctext">RF Hardware switch kill functionality</span></a></li>
+<li class="toclevel-1 tocsection-12"><a href="Intel_Dual_Band_Wireless#Notification_Mechanism"><span class="tocnumber">11</span> <span class="toctext">Notification Mechanism</span></a></li>
+<li class="toclevel-1 tocsection-13"><a href="Intel_Dual_Band_Wireless#Firmware_Parsing"><span class="tocnumber">12</span> <span class="toctext">Firmware Parsing</span></a>
+<ul>
+<li class="toclevel-2 tocsection-14"><a href="Intel_Dual_Band_Wireless#uCode_Format"><span class="tocnumber">12.1</span> <span class="toctext">uCode Format</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Registers">Registers</span></h2>
+<p>Lots of work seems to be handled by the firmware
+</p>
+<pre>- 0x000&#160;: CSR_HW_IF_CONFIG_REG	:
+   - PREPARE = 0x08000000
+   - NIC_READY = 0x00400000
+</pre>
+<pre>- 0x008&#160;: CSR_INT:
+   - Interrupt Status, same bits as CSR_INT_MASK
+</pre>
+<pre>- 0x010&#160;: FH_INT_STS:
+   - FH interrupt status
+</pre>
+<pre>- 0x00c&#160;: CSR_INT_MASK:
+   - FW_ALIVE =    0x00000001
+   - WAKEUP =      0x00000002
+   - RX_CMD_RESP = 0x00000008
+   - OVERHEAT =    0x00000020
+   - HW_KILL =     0x00000040
+   - FW_ERR =      0x02000000
+   - TXQ_ADV =     0x04000000
+   - FH_RX =       0x80000000
+</pre>
+<pre>- 0x020&#160;: CSR_RESET:
+   - SW_RESET =    0x00000080
+</pre>
+<pre>- 0x024&#160;: CSR_GP_CNTRL:
+   - HW_RF_KILL_SW = 0x08000000 
+</pre>
+<pre>- 0x028&#160;: 32-bit Hardware Revision Register, used to identify specific version:
+   - 7000 Series Chips:
+       - 31-16: Reserved
+       - 15-4: Device type (see IWM_CSR_HW_REV_TYPE in if_iwmreg.h in freebsd)
+       - 3-2: Revision step (A,B,C,D)
+       - 1-0: Minor Revision number
+       
+   - 8000 Series Chips:
+       - 31-16: Reserved
+       - 15-4: Device type (see IWM_CSR_HW_REV_TYPE in if_iwmreg.h in freebsd)
+       - 3-0: Revision step (A,B,C,D,...)
+</pre>
+<pre>- 0x088&#160;: CSR_MBOX_SET_REG:
+       - OS_ALIVE = 0x20
+</pre>
+<pre>- 0x0A8&#160;: CSR_MAC_SHADOW_REG_CTRL
+</pre>
+<p><br /> 
+</p>
+<h2><span class="mw-headline" id="Initialization_Steps">Initialization Steps</span></h2>
+<p>1. Start by making the NIC prepare for use by setting the PREPARE and NIC_READY bits in CSR_HW_IF_CONFIG_REG, wait for NIC_READY to read as set.
+</p><p>2. Signal that the OS is ready by setting the OS_ALIVE bit in CSR_MBOX_SET_REG
+</p><p>3. Start allocating the various DMA buffers
+</p>
+<pre>       - A buffer for firmware transfers, 0x20000 byte region, 16-byte aligned
+</pre>
+<pre>       - A buffer for the tx scheduler, 1024-byte aligned
+       - A 'keep warm' page (4096 bytes) for internal use by the device, 4096-byte aligned
+       - An rx ring - 256-byte aligned
+       - tx rings - 256 byte aligned
+</pre>
+<p>4. Startup the hardware (iwm_start_hw)
+</p>
+<pre>   - Reset the device by setting the SW_RESET bit of CSR_RESET and waiting 10us
+   - Setup and enable the associated HW_KILL interrupt.
+</pre>
+<p>5. Start the firmware (iwm_run_init_mvm_ucode)
+</p>
+<pre>   - Stop if RF kill
+   - Set iwm_wait_phy_db_entry to be called on notification of both IWM_INIT_COMPLETE_NOTIF and IWM_CALIB_RES_NOTIF_PHY_DB
+       - Parses and stores some information regarding the PAPD (?) and TXP (?)
+   - Load ucode and wait for the fw to report being alive (WIP, iwm_mvm_load_ucode_wait_alive)
+       - Read the firmware (iwm_read_firmware)
+           - Load firmware into driver memory
+           - Parse firmware contents (WIP)
+       - Set iwm_alive_fn to be called on notification of MVM_ALIVE
+       - Start the firmware (WIP, iwm_start_fw)
+           - Check if NIC_READY bit is set, if not, redo step 1
+           - Clear interrupt flags, disable interrupts
+           - Ensure rfkill handshake is clear
+               - Set RFKILL bit in CSR_UCODE_DRV_GP1_CLR
+               - Set CMD_BLOCKED bit in CSR_UCODE_DRV_GP1_CLR
+           - Init the NIC (iwm_nic_init)
+               - Configure NIC (WIP, iwm_mvm_nic_config)
+                   - Get the radio information (currently from the firmware, as we haven't read the nvm yet) and configure the NIC's radios appropriately
+               - Setup RX queues (WIP, iwm_nic_rx_init)
+                   - Stop RX dma (iwm_pcie_rx_stop)
+                   - Reset pointers
+                   - Set physical address of RX ring
+                   - Set physical address of RX status
+                   - Enable RX DMA
+                   - Set the RB count
+               - Setup TX queues (WIP, iwm_nic_tx_init)
+                   - Deactivate TX scheduler (write 0 to peripheral register, SCD_TXFACT)
+                   - Set physical address of 'keep warm' page
+                   - Set physical addresses of TX rings
+                   - Set queues to auto-activate (set bit 18 of peripheral register, SCD_GP_CTRL)
+               - Enable MAC shadow registers by writing 0x800fffff to CSR_MAC_SHADOW_REG_CTRL
+</pre>
+<pre>           - Disable all interrupts besides FH_TX
+           - Ensure rfkill handshake is still clear
+           - Load the firmware (WIP, iwm_pcie_load_given_ucode, iwm_pcie_load_given_ucode_8000)
+               - For 7000 Series
+                   - Load the cpu sections (iwm_pcie_load_cpu_sections)
+                       - See 'Firmware Transfers' section for details.
+                   - If dual CPU
+                       - Write the CPU2 header address
+                       - Load the cpu sections for cpu2 (WIP, iwm_pcie_load_cpu_sections)
+                   - Re-enable interrupts
+                   - Release the CPUs from reset (Set CSR_RESET to 0)
+               - For 8000 Series
+                   - 
+       - Wait for MVM_ALIVE notification
+       - Setup the tx scheduler (WIP, iwm_trans_pcie_fw_alive)
+       - Configure firmware paging if necessary, based on the ucode information (WIP, iwm_save_fw_paging, iwm_send_paging_cmd)
+   - Initialize nvm/eeprom (WIP, iwm_nvm_init)
+       - Reads and parses EEPROM
+   - Initialize Bluetooth config (WIP, iwm_send_bt_init_conf)
+       - Sends Bluetooth initialization command
+   - Get valid TX antennas (WIP, iwm_mvm_get_valid_tx_ant)
+       - Part of the information obtained from the eeprom
+   - Send valid TX antennas (WIP, iwm_send_tx_ant_cfg)
+       - Sends a command with the previously obtained antenna configuration
+   - Send physical config command to initialize ucode, and start callibrations (WIP, iwm_send_phy_cfg_cmd)
+       - Sends PHY_CONFIGURATION command
+   - Wait for init notification
+       - Wait for callibration complete notification
+</pre>
+<p>6. Initialize the channel map (WIP, iwm_init_channel_map)
+</p>
+<pre>   - Parse nvm data to determine the supported channels and wifi bands supported by the device
+</pre>
+<p>7. Attach the radiotap and register to the wifi stack (WIP, iwm_radiotap_attach)
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Scan_Steps">Scan Steps</span></h2>
+<p>1. If firmware reports UMAC scan support:
+</p>
+<pre>   Setup a scan command with the desired scan channels and send to the device
+</pre>
+<p>2. Otherwise, if firmware reports LMAC scan support:
+</p>
+<pre>   Setup a scan command with the desired scan channels and send to the device
+</pre>
+<p><br />
+</p>
+<h2><span class="mw-headline" id="Transmit_Steps">Transmit Steps</span></h2>
+<p>Fill a tx command to send to the firmware, encrypting the frame if necessary
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Firmware_Transfers">Firmware Transfers</span></h2>
+<p>Firmware transfers are done via a separate DMA engine.
+Sections are sent to it in chunks of 0x20000 bytes.
+</p><p>Target offsets over 0x40000 and under 0x57fff are treated as extended memory.
+</p><p>Target offset of 0xFFFFCCCC specifies the CPU1 and CPU2 separator section.
+Target offset of 0xAAAABBBB specifies the paging separator section.
+</p><p>See iwm_pcie_load_firmware_chunk for more information on how to program the DMA engine.
+</p><p><br />
+</p>
+<h2><span id="TX.2FTFD_Scheduler"></span><span class="mw-headline" id="TX/TFD_Scheduler">TX/TFD Scheduler</span></h2>
+<p>Each TX scheduler entry takes the following format:
+</p>
+<pre>struct tx_scheduler_entry {
+   struct {
+       uint16_t tx_cmd_byte_count&#160;: 12;
+       uint16_t station_idx&#160;: 4;
+   } tfd_queue[256 + 64];
+}
+</pre>
+<p><br />
+There are as many tx_scheduler_entry structures as queues (MAX_QUEUES = 31).
+</p><p>Each TFD queue has a max size of 256 entries, freebsd driver adds 64 'BC_DUP' entries too, reason unknown right now.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="TX_Ring">TX Ring</span></h2>
+<p>There are 256 TX rings, each ring has the following structure:
+</p>
+<pre>struct tx_ring_entry {
+   uint32_t lo_addr;
+   uint16_t hi_addr&#160;: 4;
+   uint16_t tx_buf_len&#160;: 12;
+} PACKED
+</pre>
+<p><br />
+</p>
+<pre>lo_addr&#160;: lo component of the DMA buffer address
+hi_addr&#160;: hi component of the DMA buffer address 
+tx_buf_len&#160;: length of the DMA buffer
+</pre>
+<p>Additionally, each ring has a command buffer to submit commands to the firmware.
+</p><p>There are two command formats:
+</p>
+<pre>struct tx_cmd {
+   struct cmd_hdr hdr;
+   uint8_t data[320];
+}
+</pre>
+<p><br />
+</p>
+<pre>struct tx_cmd_wide {
+   struct cmd_hdr_wide hdr;
+   uint8_t data[316];
+}
+</pre>
+<p><br />
+</p>
+<h3><span class="mw-headline" id="Command_Headers">Command Headers</span></h3>
+<pre>struct cmd_hdr {
+   uint8_t opcode;
+   uint8_t flags;
+   uint8_t index;
+   uint8_t queue_id;
+}
+</pre>
+<p><br />
+</p>
+<pre>struct cmd_hdr_wide {
+   uint8_t opcode;
+   uint8_t group_id;
+   uint8_t index;
+   uint8_t queue_id;
+   uint16_t length;
+   uint8_t rsv;
+   uint8_t ver;
+}
+</pre>
+<p><br />
+</p>
+<h2><span id="RX_Ring_.28256-byte_aligned.29"></span><span class="mw-headline" id="RX_Ring_(256-byte_aligned)">RX Ring (256-byte aligned)</span></h2>
+<p>There are up to 4096 RX rings (only power of two sizes supported), represented by an array of 32-bit addresses, each ring entry has a byte aligned 32-bit address pointing to an RX buffer. (RX_BUFFER_SIZE = 4096 or 8192 or 16384)
+</p>
+<h2><span id="RX_Status_Area_.2816-byte_aligned.29"></span><span class="mw-headline" id="RX_Status_Area_(16-byte_aligned)">RX Status Area (16-byte aligned)</span></h2>
+<p>This is a single region, that takes the following format:
+</p>
+<pre>struct rx_status {
+   uint16_t closed_rb_num;
+   uint16_t closed_frame_num;
+   uint16_t finished_rb_num;
+   uint16_t finished_frame_num;
+   uint32_t rsv;
+}
+</pre>
+<p><br />
+</p>
+<pre>closed_rb_num [0:11]&#160;: the index of the reserve buffer that was last closed
+closed_frame_num [0:11]&#160;: the index of the frame that was last closed
+finished_rb_num [0:11]&#160;: the index of the current reserve buffer, to which the previous frame was written
+finished_frame_num [0:11]&#160;: the index of the frame which was last transferred
+</pre>
+<h2><span class="mw-headline" id="RF_Hardware_switch_kill_functionality">RF Hardware switch kill functionality</span></h2>
+<p>Read CSR_GP_CNTRL, bit HW_RF_KILL_SW to get the switch status, 
+</p>
+<pre>   0 = RF kill is on, turn off radio
+   1 = RF kill is off, can turn on radio
+</pre>
+<p><br />
+</p>
+<h2><span class="mw-headline" id="Notification_Mechanism">Notification Mechanism</span></h2>
+<p>Firmware related communications are all done via queues, the device responds by sending response commands via the rx ring. The freebsd driver queues these into a notification queue.
+</p>
+<h2><span class="mw-headline" id="Firmware_Parsing">Firmware Parsing</span></h2>
+<h3><span class="mw-headline" id="uCode_Format">uCode Format</span></h3>
+<pre>#define UCODE_MAGIC 0x0a4c5749
+
+struct ucode_hdr {
+   uint32_t zr0;
+   uint32_t magic;
+   uint8_t name[64];
+   uint32_t version;
+   uint32_t build;
+   uint64_t rsv;
+   uint8_t data[0];
+}
+</pre>
+<p><br />
+</p>
+<pre>struct ucode_tlv {
+   uint32_t type;
+   uint32_t length;
+   uint8_t data[0];
+}
+</pre>
+<pre>enum ucode_tlv_type {
+   UCODE_TLV_INVALID = 0,
+   UCODE_TLV_INST = 1,
+   UCODE_TLV_DATA = 2,
+   UCODE_TLV_INIT = 3,
+   UCODE_TLV_INIT_DATA = 4,
+   UCODE_TLV_BOOT = 5,
+   UCODE_TLV_PROBE_MAX_LEN = 6,
+   UCODE_TLV_PAN = 7,
+   UCODE_TLV_RUNT_EVTLOG_PTR = 8,
+   UCODE_TLV_RUNT_EVTLOG_SIZE = 9,
+   UCODE_TLV_RUNT_ERRLOG_PTR = 10,
+   UCODE_TLV_INIT_EVTLOG_PTR = 11,
+   UCODE_TLV_INIT_EVTLOG_SIZE = 12,
+   UCODE_TLV_INIT_ERRLOG_PTR = 13,
+   UCODE_TLV_ENHANCE_SENS_TBL = 14,
+   UCODE_TLV_PHY_CALIBRATION_SIZE = 15,
+   UCODE_TLV_WOWLAN_INST = 16,
+   UCODE_TLV_WOWLAN_DATA = 17,
+   UCODE_TLV_FLAGS = 18,
+   UCODE_TLV_SEC_RT = 19,
+   UCODE_TLV_SEC_INIT = 20,
+   UCODE_TLV_SEC_WOWLAN = 21,
+   UCODE_TLV_DEF_CALIB = 22,
+   UCODE_TLV_PHY_SKU = 23,
+   UCODE_TLV_SECURE_SEC_RT = 24,
+   UCODE_TLV_SECURE_SEC_INIT = 25,
+   UCODE_TLV_SECURE_SEC_WOWLAN = 26,
+   UCODE_TLV_NUM_OF_CPU = 27,
+   UCODE_TLV_CSCHEME = 28,
+   UCODE_TLV_API_CHANGES_SET = 29,
+   UCODE_TLV_ENABLED_CAPABILITIES = 30,
+   UCODE_TLV_N_SCAN_CHANNELS = 31,
+   UCODE_TLV_PAGING = 32,
+   UCODE_TLV_SEC_RT_USNIFFER = 34,
+   UCODE_TLV_SDIO_ADMA_ADDR = 35,
+   UCODE_TLV_FW_VERSION = 36,
+   UCODE_TLV_FW_DBG_DEST = 38,
+   UCODE_TLV_FW_DBG_CONF = 39,
+   UCODE_TLV_FW_DBG_TRIGGER = 40,
+   UCODE_TLV_FW_GSCAN_CAPA = 50,
+   UCODE_TLV_FW_MEM_SEG = 51,
+}
+</pre>
+<p>Sample parsing code at <a rel="nofollow" class="external free" href="https://gitlab.com/hgoel0974/iwifi_fw_parser">https://gitlab.com/hgoel0974/iwifi_fw_parser</a>
+</p>
+<!-- 
+NewPP limit report
+Cached time: 20250211143737
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.016 seconds
+Real time usage: 0.016 seconds
+Preprocessor visited node count: 42/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 0/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:4278-0!canonical and timestamp 20250211143737 and revision id 28037.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Intel_Dual_Band_Wireless&amp;oldid=28037">https://wiki.osdev.org/index.php?title=Intel_Dual_Band_Wireless&amp;oldid=28037</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Category</a>: <ul><li><a href="./Category:Networking" title="Category:Networking">Networking</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Intel+Dual+Band+Wireless" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Intel_Dual_Band_Wireless#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Intel_Dual_Band_Wireless" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:Intel_Dual_Band_Wireless&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Intel_Dual_Band_Wireless"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Intel_Dual_Band_Wireless&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Intel_Dual_Band_Wireless&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="https://wiki.osdev.org/Special:WhatLinksHere/Intel_Dual_Band_Wireless" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Intel_Dual_Band_Wireless" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Intel_Dual_Band_Wireless&amp;oldid=28037" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Intel_Dual_Band_Wireless&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 9 July 2023, at 18:49.</li>
+	<li id="footer-info-0">This page has been accessed 1,269 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Intel_Dual_Band_Wireless&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.016","walltime":"0.016","ppvisitednodes":{"value":42,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":0,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250211143737","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":129});});</script>
+</body>
+</html>

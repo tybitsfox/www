@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>HPET - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"931832fade02e1b868f0e509","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"HPET","wgTitle":"HPET","wgCurRevisionId":28151,"wgRevisionId":28151,"wgArticleId":3378,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","Common Devices","Interrupts","Timers"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"HPET","wgRelevantArticleId":3378,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],
+"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-HPET rootpage-HPET skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">HPET</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="HPET#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="HPET#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><dl><dd><i>This page is not meant as a full description of HPET, only as a lightweight introduction. If you need any information not covered by this article, consult the <a rel="nofollow" class="external text" href="http://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/software-developers-hpet-spec-1-0a.pdf">HPET specification</a>.</i></dd></dl>
+<p><b>HPET</b>, or High Precision Event Timer, is a piece of hardware designed by Intel and Microsoft to replace older <a href="PIT" class="mw-redirect" title="PIT">PIT</a> and <a href="RTC" title="RTC">RTC</a>. It consists of (usually 64-bit) main counter (which counts up), as well as from 3 to 32 32-bit or 64-bit wide comparators. HPET is programmed using memory mapped IO, and the base address of HPET can be found using <a href="ACPI" title="ACPI">ACPI</a>.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="HPET#Detecting_HPET_using_ACPI"><span class="tocnumber">1</span> <span class="toctext">Detecting HPET using ACPI</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="HPET#HPET_-_timer_vs_comparators"><span class="tocnumber">2</span> <span class="toctext">HPET - timer vs comparators</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="HPET#HPET_operating_modes"><span class="tocnumber">3</span> <span class="toctext">HPET operating modes</span></a>
+<ul>
+<li class="toclevel-2 tocsection-4"><a href="HPET#One-shot_mode"><span class="tocnumber">3.1</span> <span class="toctext">One-shot mode</span></a></li>
+<li class="toclevel-2 tocsection-5"><a href="HPET#Periodic_mode"><span class="tocnumber">3.2</span> <span class="toctext">Periodic mode</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-6"><a href="HPET#Interrupt_routing"><span class="tocnumber">4</span> <span class="toctext">Interrupt routing</span></a>
+<ul>
+<li class="toclevel-2 tocsection-7"><a href="HPET#&quot;Legacy_replacement&quot;_mapping"><span class="tocnumber">4.1</span> <span class="toctext">"Legacy replacement" mapping</span></a></li>
+<li class="toclevel-2 tocsection-8"><a href="HPET#Standard_mapping"><span class="tocnumber">4.2</span> <span class="toctext">Standard mapping</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="HPET#FSB_mapping"><span class="tocnumber">4.3</span> <span class="toctext">FSB mapping</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-10"><a href="HPET#HPET_registers"><span class="tocnumber">5</span> <span class="toctext">HPET registers</span></a>
+<ul>
+<li class="toclevel-2 tocsection-11"><a href="HPET#General_Capabilities_and_ID_Register"><span class="tocnumber">5.1</span> <span class="toctext">General Capabilities and ID Register</span></a></li>
+<li class="toclevel-2 tocsection-12"><a href="HPET#General_Configuration_Register"><span class="tocnumber">5.2</span> <span class="toctext">General Configuration Register</span></a></li>
+<li class="toclevel-2 tocsection-13"><a href="HPET#General_Interrupt_Status_Register"><span class="tocnumber">5.3</span> <span class="toctext">General Interrupt Status Register</span></a></li>
+<li class="toclevel-2 tocsection-14"><a href="HPET#Main_Counter_Value_Register"><span class="tocnumber">5.4</span> <span class="toctext">Main Counter Value Register</span></a></li>
+<li class="toclevel-2 tocsection-15"><a href="HPET#Timer_N_Configuration_and_Capability_Register"><span class="tocnumber">5.5</span> <span class="toctext">Timer N Configuration and Capability Register</span></a></li>
+<li class="toclevel-2 tocsection-16"><a href="HPET#Timer_N_Comparator_Value_Register"><span class="tocnumber">5.6</span> <span class="toctext">Timer N Comparator Value Register</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-17"><a href="HPET#Initialization"><span class="tocnumber">6</span> <span class="toctext">Initialization</span></a></li>
+<li class="toclevel-1 tocsection-18"><a href="HPET#Using_timers"><span class="tocnumber">7</span> <span class="toctext">Using timers</span></a>
+<ul>
+<li class="toclevel-2 tocsection-19"><a href="HPET#One-shot_mode_2"><span class="tocnumber">7.1</span> <span class="toctext">One-shot mode</span></a></li>
+<li class="toclevel-2 tocsection-20"><a href="HPET#Periodic_mode_2"><span class="tocnumber">7.2</span> <span class="toctext">Periodic mode</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-21"><a href="HPET#See_also"><span class="tocnumber">8</span> <span class="toctext">See also</span></a></li>
+<li class="toclevel-1 tocsection-22"><a href="HPET#External_links"><span class="tocnumber">9</span> <span class="toctext">External links</span></a></li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Detecting_HPET_using_ACPI">Detecting HPET using ACPI</span></h2>
+<p>The <a rel="nofollow" class="external text" href="http://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/software-developers-hpet-spec-1-0a.pdf">HPET specification</a> defines an ACPI 2.0 table that is to be used to detect presence, address and capabilities of HPET present in the system. If this table doesn't exist, you should assume there is no HPET and you should fall back to <a href="PIT" class="mw-redirect" title="PIT">PIT</a> or the <a href="APIC_timer" class="mw-redirect" title="APIC timer">APIC timer</a>.
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">address_structure</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">address_space_id</span><span class="p">;</span><span class="w">    </span><span class="c1">// 0 - system memory, 1 - system I/O</span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">register_bit_width</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">register_bit_offset</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">reserved</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">address</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">__attribute__</span><span class="p">((</span><span class="n">packed</span><span class="p">));</span><span class="w"></span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">description_table_header</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">signature</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span><span class="w">    </span><span class="c1">// &#39;HPET&#39; in case of HPET table</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">length</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">revision</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">checksum</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">oemid</span><span class="p">[</span><span class="mi">6</span><span class="p">];</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">oem_tableid</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">oem_revision</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">creator_id</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">creator_revision</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">__attribute__</span><span class="p">((</span><span class="n">packed</span><span class="p">));</span><span class="w"></span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">hpet</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">description_table_header</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">hardware_rev_id</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">comparator_count</span><span class="o">:</span><span class="mi">5</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">counter_size</span><span class="o">:</span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">reserved</span><span class="o">:</span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">legacy_replacement</span><span class="o">:</span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">pci_vendor_id</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">address_structure</span><span class="w"> </span><span class="n">address</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">hpet_number</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">minimum_tick</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">page_protection</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">__attribute__</span><span class="p">((</span><span class="n">packed</span><span class="p">));</span><span class="w"></span>
+</pre></div>
+<h2><span class="mw-headline" id="HPET_-_timer_vs_comparators">HPET - timer vs comparators</span></h2>
+<p>There is just one up counting main counter in the timer, but interrupt generation is handled by *comparators*. There're from 3 to 32 comparators, and the exact amount is indicated by <code>comparator_count</code> field in the above <code>hpet</code> structure. Keep in mind you have to initialize both the main counter and all of the comparators. Also, the routing as well as <b>allowed</b> routing of comparator interrupts is independent, so you have to detect and set it up for each of them individually. More information on this procedure is provided further in the text.
+</p>
+<h2><span class="mw-headline" id="HPET_operating_modes">HPET operating modes</span></h2>
+<p>HPET offers two operating modes: one-shot (also called "non-periodic" by the specification) and periodic mode.
+</p>
+<h3><span class="mw-headline" id="One-shot_mode">One-shot mode</span></h3>
+<p>In non-periodic mode, the OS programs one of timer's comparator registers with value of main counter that is to trigger an interrupt. If the timer is set to 32 bit mode, it will also generate an interrupt when the counter wraps around. The comparator register's value is never written by the hardware, you are free to write to it and read from it at any time, therefore you can change at what value in the main counter the interrupt will be generated.
+</p><p>Every comparator in HPET <b>must support</b> non-periodic mode.
+</p>
+<h3><span class="mw-headline" id="Periodic_mode">Periodic mode</span></h3>
+<p>Periodic mode is more tricky than non-periodic mode. For periodic mode, similarly to one-shot mode, you write a value at which an interrupt shall be generated to the comparator register. When the interrupt is generated, however, the hardware will <b>increase the value in comparator register by the last value written to it</b>! This is a consequence of HPET's main counter being up-counting.
+</p><p>So, if the main counter's value is 12345 when we set the timer up, and we write 12456 to comparator (i.e. the interrupt should trigger 111 time units from now), when the interrupt triggers, 12456 will be <i>added</i> to the comparator register, so it will become 24912, which is 12456 time units from the first interrupt. There are two techniques to deal with this problem; they will both be described in later part of the article.
+</p><p>Comparators are <b>NOT required</b> to support this mode; you must detect this capability when initializing a comparator. More information on this is provided further in the article.
+</p>
+<h2><span class="mw-headline" id="Interrupt_routing">Interrupt routing</span></h2>
+<p>HPET supports three interrupt mapping options: "legacy replacement" option, standard option, and FSB option. 
+</p>
+<h3><span id=".22Legacy_replacement.22_mapping"></span><span class="mw-headline" id="&quot;Legacy_replacement&quot;_mapping">"Legacy replacement" mapping</span></h3>
+<p>In this mapping, HPET's timer (comparator) #0 replaces PIT interrupts, whereas timer #1 replaces RTC's interrupts (in other words, PIC and RTC will no longer cause interrupts). While the HPET specification provides the following table describing the routing of timers #0 and #1 in this mapping, it is recommended to at least check the routing of IRQ0 and IRQ8 to I/O APIC in ACPI tables.
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Timer
+</th>
+<th>PIC mapping
+</th>
+<th>IOAPIC mapping
+</th></tr>
+<tr>
+<td>0
+</td>
+<td>IRQ0
+</td>
+<td>IRQ2
+</td></tr>
+<tr>
+<td>1
+</td>
+<td>IRQ8
+</td>
+<td>IRQ8
+</td></tr>
+<tr>
+<td>N
+</td>
+<td>As per IRQ Routing Field
+</td>
+<td>As per IRQ Routing Field
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="Standard_mapping">Standard mapping</span></h3>
+<p>In standard mapping, each timer has its own interrupt routing control. Allowed I/O APIC inputs are found by reading timer's capabilities register.
+</p>
+<h3><span class="mw-headline" id="FSB_mapping">FSB mapping</span></h3>
+<p>This mapping is almost identical to PCI's Message Signaled Interrupts. The "Timer N FSB Interrupt Route Register" which defines how FSB interrupts are configured can be found in the specification. FSB interrupts are enabled using "Tn_FSB_EN_CNF" field in timer's configuration register. This mapping mode will not be further discussed in this article.
+</p>
+<h2><span class="mw-headline" id="HPET_registers">HPET registers</span></h2>
+<p>The following table and field descriptions can also be found in the specification. "Offset" means offset from the address defined in <code>address</code> field of <code>hpet</code> struct. The following table skips reserved registers defined in the specification.
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Offset
+</th>
+<th>Register
+</th>
+<th>Type
+</th></tr>
+<tr>
+<td>0x000 - 0x007
+</td>
+<td>General Capabilities and ID Register
+</td>
+<td>Read only
+</td></tr>
+<tr>
+<td>0x010 - 0x017
+</td>
+<td>General Configuration Register
+</td>
+<td>Read/write
+</td></tr>
+<tr>
+<td>0x020 - 0x027
+</td>
+<td>General Interrupt Status Register
+</td>
+<td>Read/write clear
+</td></tr>
+<tr>
+<td>0x0F0 - 0x0F7
+</td>
+<td>Main Counter Value Register
+</td>
+<td>Read/write
+</td></tr>
+<tr>
+<td>(0x100 + 0x20 * N) - (0x107 + 0x20 * N)
+</td>
+<td>Timer N Configuration and Capability Register
+</td>
+<td>Read/write
+</td></tr>
+<tr>
+<td>(0x108 + 0x20 * N) - (0x10F + 0x20 * N)
+</td>
+<td>Timer N Comparator Value Register
+</td>
+<td>Read/write
+</td></tr>
+<tr>
+<td>(0x110 + 0x20 * N) - (0x117 + 0x20 * N)
+</td>
+<td>Timer N FSB Interrupt Route Register
+</td>
+<td>Read/write
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="General_Capabilities_and_ID_Register">General Capabilities and ID Register</span></h3>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Bits
+</th>
+<th>Name
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td>63:32
+</td>
+<td>COUNTER_CLK_PERIOD
+</td>
+<td>Main counter tick period in femtoseconds (10^-15 seconds). Must not be zero, must be less or equal to 0x05F5E100, or 100 nanoseconds.
+</td></tr>
+<tr>
+<td>31-16
+</td>
+<td>VENDOR_ID
+</td>
+<td>This field should be interpreted similarly to PCI's vendor ID.
+</td></tr>
+<tr>
+<td>15
+</td>
+<td>LEG_RT_CAP
+</td>
+<td>If this bit is 1, HPET is capable of using "legacy replacement" mapping.
+</td></tr>
+<tr>
+<td>14
+</td>
+<td>Reserved
+</td>
+<td>-
+</td></tr>
+<tr>
+<td>13
+</td>
+<td>COUNT_SIZE_CAP
+</td>
+<td>If this bit is 1, HPET main counter is capable of operating in 64 bit mode.
+</td></tr>
+<tr>
+<td>12:8
+</td>
+<td>NUM_TIM_CAP
+</td>
+<td>The amount of timers - 1.
+</td></tr>
+<tr>
+<td>7:0
+</td>
+<td>REV_ID
+</td>
+<td>Indicates which revision of the function is implemented; must not be 0.
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="General_Configuration_Register">General Configuration Register</span></h3>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Bits
+</th>
+<th>Name
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td>63:2
+</td>
+<td>Reserved
+</td>
+<td>-
+</td></tr>
+<tr>
+<td>1
+</td>
+<td>LEG_RT_CNF
+</td>
+<td>0 - "legacy replacement" mapping is disabled
+<p>1 - "legacy replacement" mapping is enabled
+</p>
+</td></tr>
+<tr>
+<td>0
+</td>
+<td>ENABLE_CNF
+</td>
+<td>Overall enable.
+<p>0 - main counter is halted, timer interrupts are disabled
+</p><p>1 - main counter is running, timer interrupts are allowed if enabled
+</p>
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="General_Interrupt_Status_Register">General Interrupt Status Register</span></h3>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Bits
+</th>
+<th>Name
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td>63:32
+</td>
+<td>Reserved
+</td>
+<td>-
+</td></tr>
+<tr>
+<td>n
+</td>
+<td>Tn_INT_STS
+</td>
+<td>The functionality is dependent of whether edge or level-triggered mode is used for timer #n.
+<p><b>For level-triggered:</b> the default value is 0. When a corresponding timer interrupt is active, this bit is set. If it is set, software can clear it by writing 1 to this bit. Writes of 0 have no effect.
+</p><p><b>For edge-triggered:</b> this bit should be ignored. It is always set to 0.
+</p>
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="Main_Counter_Value_Register">Main Counter Value Register</span></h3>
+<p>Bits 63:0 of this register are called MAIN_COUNTER_VAL. Writes to this register should only be done when the counter is halted (ENABLE_CNF = 0). Reads will return current value of the main counter. 32-bit counters will always return 0 for the upper 32 bits. If 32 bit reads are performed on 64 bit counter, consult 2.4.7 in the specification for instructions how to do it safely. It is recommended to use 32 bit counter when on 32-bit only software.
+</p>
+<h3><span class="mw-headline" id="Timer_N_Configuration_and_Capability_Register">Timer N Configuration and Capability Register</span></h3>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Bits
+</th>
+<th>Name
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td>63:32
+</td>
+<td>Tn_INT_ROUTE_CAP
+</td>
+<td>Timer n Interrupt Routing Capability. If bit X is set in this field, it means that this timer can be mapped to IRQX line of I/O APIC.
+</td></tr>
+<tr>
+<td>31:16
+</td>
+<td>Reserved
+</td>
+<td>-
+</td></tr>
+<tr>
+<td>15
+</td>
+<td>Tn_FSB_INT_DEL_CAP
+</td>
+<td>If this read-only bit is 1, this timer supports FSB interrupt mapping.
+</td></tr>
+<tr>
+<td>14
+</td>
+<td>Tn_FSB_EN_CNF
+</td>
+<td>If this bit is set to 1, this timer will use FSB interrupt mapping.
+</td></tr>
+<tr>
+<td>13:9
+</td>
+<td>Tn_INT_ROUTE_CNF
+</td>
+<td>This field indicates I/O APIC routing. Allowed values can be determined using Tn_INT_ROUTE_CAP. If an illegal value is written, then value read back from this field will not match the written value.
+</td></tr>
+<tr>
+<td>8
+</td>
+<td>Tn_32MODE_CNF
+</td>
+<td>For 64-bit timer, if this field is set, the timer will be forced to work in 32-bit mode. Otherwise it has no effect.
+</td></tr>
+<tr>
+<td>7
+</td>
+<td>Reserved
+</td>
+<td>-
+</td></tr>
+<tr>
+<td>6
+</td>
+<td>Tn_VAL_SET_CNF
+</td>
+<td>This field is used to allow software to directly set periodic timer's accumulator. Detailed explanation is provided further in the article.
+</td></tr>
+<tr>
+<td>5
+</td>
+<td>Tn_SIZE_CAP
+</td>
+<td>If this read-only bit is set to 1, the size of the timer is 64-bit. Otherwise, it's 32-bit.
+</td></tr>
+<tr>
+<td>4
+</td>
+<td>Tn_PER_INT_CAP
+</td>
+<td>If this read-only bit is set to 1, this timer supports periodic mode.
+</td></tr>
+<tr>
+<td>3
+</td>
+<td>Tn_TYPE_CNF
+</td>
+<td>If Tn_PER_INT_CAP is 1, then writing 1 to this field enables periodic timer and writing 0 enables non-periodic mode. Otherwise, this bit will be ignored and reading it will always return 0.
+</td></tr>
+<tr>
+<td>2
+</td>
+<td>Tn_INT_ENB_CNF
+</td>
+<td>Setting this bit to 1 enables triggering of interrupts. Even if this bit is 0, this timer will still set Tn_INT_STS.
+</td></tr>
+<tr>
+<td>1
+</td>
+<td>Tn_INT_TYPE_CNF
+</td>
+<td>0 - this timer generates edge-triggered interrupts.
+<p>1 - this timer generates level-triggered interrupts. When the interrupt is generated, Tn_INT_STS is set. If another interrupt occurs before that bit is cleared, the interrupt will remain active.
+</p>
+</td></tr>
+<tr>
+<td>0
+</td>
+<td>Reserved
+</td>
+<td>-
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="Timer_N_Comparator_Value_Register">Timer N Comparator Value Register</span></h3>
+<p>Bits 63:0 (or 31:0, if the timer operates in 32 bit mode) are used to compare with main counter to check if an interrupt should be generated.
+</p>
+<h2><span class="mw-headline" id="Initialization">Initialization</span></h2>
+<p>The following is the procedure you need to perform to initialize main counter and comparators in order to receive interrupts.
+</p><p>General initialization:
+</p><p>1. Find HPET base address in 'HPET' ACPI table.
+</p><p>2. Calculate HPET frequency (f = 10^15 / period).
+</p><p>3. Save minimal tick (either from ACPI table or configuration register).
+</p><p>4. Initialize comparators.
+</p><p>5. Set ENABLE_CNF bit.
+</p><p>Timer N initialization:
+</p><p>1. Determine if timer N is periodic capable, save that information to avoid re-reading it every time.
+</p><p>2. Determine allowed interrupt routing for current timer and allocate an interrupt for it.
+</p><p>I am enabling the timers only when I actually use them, so there's no "real" initialization of comparators here.
+</p><p>Keep in mind that allowed interrupt routing <b>may be insane</b>. Namely, you probably want to use some of ISA interrupts - or, at very least, be able to use them at one point unambiguously. Last time I checked VirtualBox allowed mappings for HPET, it allowed every timer to be routed to <i>any</i> of 32 I/O APIC inputs present on the system. Knowing how buggy hardware can be, I wouldn't be too surprised if there exists a PC with HPET claiming that input #31 is allowed, when there are only 24 I/O APIC inputs. Be aware of this when choosing interrupt routing for timers.
+</p>
+<h2><span class="mw-headline" id="Using_timers">Using timers</span></h2>
+<h3><span class="mw-headline" id="One-shot_mode_2">One-shot mode</span></h3>
+<p>To enable one-shot mode:
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="c1">// &quot;time&quot; is time in femtoseconds from now to interrupt</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">COUNTER_CLK_PERIOD</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">adjust_time</span><span class="p">(</span><span class="n">time</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="n">write_register_64</span><span class="p">(</span><span class="n">timer_configuration</span><span class="p">(</span><span class="n">n</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="n">ioapic_input</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">9</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">));</span><span class="w"></span>
+<span class="n">write_register_64</span><span class="p">(</span><span class="n">timer_comparator</span><span class="p">(</span><span class="n">n</span><span class="p">),</span><span class="w"> </span><span class="n">read_register</span><span class="p">(</span><span class="n">main_counter</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">time</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+<p>I hope the above code is obvious. If it's not, please analyze the meaning of specific fields in registers used above.
+</p>
+<h3><span class="mw-headline" id="Periodic_mode_2">Periodic mode</span></h3>
+<p>To enable periodic mode:
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="c1">// &quot;time&quot; is time in femtoseconds from now to interrupt</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">COUNTER_CLK_PERIOD</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">adjust_time</span><span class="p">(</span><span class="n">time</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="n">write_register_64</span><span class="p">(</span><span class="n">timer_configuration</span><span class="p">(</span><span class="n">n</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="n">ioapic_input</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">9</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">6</span><span class="p">));</span><span class="w"></span>
+<span class="n">write_register_64</span><span class="p">(</span><span class="n">timer_comparator</span><span class="p">(</span><span class="n">n</span><span class="p">),</span><span class="w"> </span><span class="n">read_register</span><span class="p">(</span><span class="n">main_counter</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">time</span><span class="p">);</span><span class="w"></span>
+<span class="n">write_register_64</span><span class="p">(</span><span class="n">timer_comparator</span><span class="p">(</span><span class="n">n</span><span class="p">),</span><span class="w"> </span><span class="n">time</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+<p>This snippet requires some more comments.
+</p><p>Bit 2 is the same as above, Interrupt Enable. Bit 3 is also quite straightforward - 1 means periodic timer. But we've also set bit 6. Why?
+</p><p>Let's take a look at quote from the HPET specification:
+</p>
+<blockquote><p>Timer n Value Set: [...] Software uses this read/write bit only for timers that have been set to periodic mode. By writing this bit to a 1, the software is then allowed to directly set a periodic timer’s accumulator.</p></blockquote>
+<blockquote><p>Software does NOT have to write this bit back to 0 (it automatically clears). Software should not write a 1 to this bit position if the timer is set to non-periodic mode.</p></blockquote>
+<p>This means that next write to timer N comparator register will have the usual meaning, while <i>second</i> next write will write directly to the accumulator. I believe that the wording could've been much better.
+</p>
+<h2><span class="mw-headline" id="See_also">See also</span></h2>
+<ul><li><a href="IOAPIC" title="IOAPIC">IOAPIC</a></li>
+<li><a href="APIC" title="APIC">APIC</a></li>
+<li><a href="APIC_timer" class="mw-redirect" title="APIC timer">APIC timer</a></li>
+<li><a href="PIT" class="mw-redirect" title="PIT">PIT</a></li>
+<li><a href="RTC" title="RTC">RTC</a></li></ul>
+<h2><span class="mw-headline" id="External_links">External links</span></h2>
+<ul><li><a rel="nofollow" class="external text" href="https://en.wikipedia.org/wiki/High_Precision_Event_Timer">HPET article on Wikipedia</a></li>
+<li><a rel="nofollow" class="external text" href="http://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/software-developers-hpet-spec-1-0a.pdf">Intel's HPET Specification v1.0a</a></li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211122411
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.041 seconds
+Real time usage: 0.436 seconds
+Preprocessor visited node count: 111/1000000
+Post‐expand include size: 972/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 3/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 10533/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    1.205      1 -total
+ 75.01%    0.904      6 Template:Wikitable
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:3378-0!canonical and timestamp 20250211122410 and revision id 28151.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=HPET&amp;oldid=28151">https://wiki.osdev.org/index.php?title=HPET&amp;oldid=28151</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:Common_Devices" title="Category:Common Devices">Common Devices</a></li><li><a href="./Category:Interrupts" title="Category:Interrupts">Interrupts</a></li><li><a href="./Category:Timers" title="Category:Timers">Timers</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=HPET" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="HPET#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="HPET" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:HPET&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="HPET"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=HPET&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=HPET&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/HPET" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="./Special:RecentChangesLinked/HPET" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=HPET&amp;oldid=28151" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=HPET&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 10 July 2023, at 14:17.</li>
+	<li id="footer-info-0">This page has been accessed 11,183 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=HPET&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.041","walltime":"0.436","ppvisitednodes":{"value":111,"limit":1000000},"postexpandincludesize":{"value":972,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":3,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":10533,"limit":5000000},"timingprofile":["100.00%    1.205      1 -total"," 75.01%    0.904      6 Template:Wikitable"]},"cachereport":{"timestamp":"20250211122411","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":538});});</script>
+</body>
+</html>

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Graphics stack - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"c1a891100d500e93fa5a7ecf","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Graphics_stack","wgTitle":"Graphics stack","wgCurRevisionId":28083,"wgRevisionId":28083,"wgArticleId":4024,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Stubs","Graphical UI"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Graphics_stack","wgRelevantArticleId":4024,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{"search":false,
+"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","mmv.head","mmv.bootstrap.autostart","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Graphics_stack rootpage-Graphics_stack skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Graphics stack</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Graphics_stack#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Graphics_stack#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p><i><b>[NOTE:</b> This article's original text was based on <a rel="nofollow" class="external text" href="http://forum.osdev.org/viewtopic.php?f=13&amp;t=31328">a post in the forum</a>. It needs further cleanup and review. --<a href="./User:Schol-r-lea" title="User:Schol-r-lea">Schol-r-lea</a> 10:19, 4 February 2017 (CST)]</i>
+</p><p>There is no fixed way to implement video handling, and many hobby operating systems develop their UI as a unit, at least initially. However, for a number of practical reasons, most systems end up separating the details of communicating with the hardware from the process of rendering the image, and that in turn from the management of higher-level concerns such as window layout. In most systems, this leads to a layered approach that could be call the <i><b>graphics stack</b></i>, analogous to the networking stack.
+</p><p>(NB: this should not be confused with the graphics <i>pipeline</i>, which is the sequence of operations which a GPU applies to an image being rendered.)
+</p>
+<center>
+<table style="border: 1px solid #cfcfbf; margin-top: 25px; margin-bottom: 25px; background-color: #f0f0ff; text-align: center;">
+<tbody><tr>
+<td>
+<p><a href="./File:Stub.png" class="image" title="This article is a stub!"><img alt="This article is a stub!" src="images/f/fe/Stub.png" decoding="async" width="50" height="50" data-file-width="50" data-file-height="50" /></a>
+This page or section is a <a href="./Category:Stubs" title="Category:Stubs">stub</a>. You can help the wiki by <i>accurately</i> <a rel="nofollow" class="external text" href="https://wiki.osdev.org/index.php?title=Graphics_stack&amp;action=edit">contributing</a> to it.
+</p>
+</td>
+<td>
+</td></tr></tbody></table>
+</center>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Graphics_stack#A_Generalized_Graphics_Stack"><span class="tocnumber">1</span> <span class="toctext">A Generalized Graphics Stack</span></a>
+<ul>
+<li class="toclevel-2 tocsection-2"><a href="Graphics_stack#A_note_on_X_Window_System"><span class="tocnumber">1.1</span> <span class="toctext">A note on X Window System</span></a></li>
+<li class="toclevel-2 tocsection-3"><a href="Graphics_stack#Display_Layers"><span class="tocnumber">1.2</span> <span class="toctext">Display Layers</span></a>
+<ul>
+<li class="toclevel-3 tocsection-4"><a href="Graphics_stack#Device_Driver_Layer"><span class="tocnumber">1.2.1</span> <span class="toctext">Device Driver Layer</span></a></li>
+</ul>
+</li>
+<li class="toclevel-2 tocsection-5"><a href="Graphics_stack#Prsentation_Layers"><span class="tocnumber">1.3</span> <span class="toctext">Prsentation Layers</span></a>
+<ul>
+<li class="toclevel-3 tocsection-6"><a href="Graphics_stack#Rendering_Layer"><span class="tocnumber">1.3.1</span> <span class="toctext">Rendering Layer</span></a></li>
+<li class="toclevel-3 tocsection-7"><a href="Graphics_stack#Widget_Toolkit_Layer"><span class="tocnumber">1.3.2</span> <span class="toctext">Widget Toolkit Layer</span></a></li>
+<li class="toclevel-3 tocsection-8"><a href="Graphics_stack#Compositing_Layer"><span class="tocnumber">1.3.3</span> <span class="toctext">Compositing Layer</span></a>
+<ul>
+<li class="toclevel-4 tocsection-9"><a href="Graphics_stack#Historical_Development"><span class="tocnumber">1.3.3.1</span> <span class="toctext">Historical Development</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toclevel-2 tocsection-10"><a href="Graphics_stack#Interoperation_Layers"><span class="tocnumber">1.4</span> <span class="toctext">Interoperation Layers</span></a>
+<ul>
+<li class="toclevel-3 tocsection-11"><a href="Graphics_stack#Window_Management_Layer"><span class="tocnumber">1.4.1</span> <span class="toctext">Window Management Layer</span></a></li>
+<li class="toclevel-3 tocsection-12"><a href="Graphics_stack#Desktop_manager_Layer"><span class="tocnumber">1.4.2</span> <span class="toctext">Desktop manager Layer</span></a></li>
+</ul>
+</li>
+<li class="toclevel-2 tocsection-13"><a href="Graphics_stack#Application_Layer"><span class="tocnumber">1.5</span> <span class="toctext">Application Layer</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="A_Generalized_Graphics_Stack">A Generalized Graphics Stack</span></h2>
+<p>There is no fixed model for how to layer the graphics stack, though most are fairly similar. A general model for a graphics stack, from highest to lowest levels, might look like this:
+</p>
+<ol><li>Application Layer</li>
+<li>Interoperation Layers
+<ol><li>Desktop Management Layer</li>
+<li>Window Management Layer</li></ol></li>
+<li>Presentation Layers
+<ol><li>Compositing Layer</li>
+<li>Widget Toolkit Layer</li>
+<li>Rendering Layer</li></ol></li>
+<li>Display Layers
+<ol><li>Device Driver Layer</li>
+<li>Hardware Layer</li></ol></li></ol>
+<p>This is close to most of the well-known graphics stacks, such as Microsoft Windows, MacOS, X Window System, and Wayland, though not identical to any of them. The order of layers may differ, some layers may be missing or merged together, and some may have additional layers or even multiple stacks.
+</p><p>Furthermore, some layers may be more in parallel than sequential. Presentation, in particular, can involve some fairly complex relationships.
+</p>
+<h4><span class="mw-headline" id="A_note_on_X_Window_System">A note on X Window System</span></h4>
+<p>X Windows System differs from most of the others regarding its graphics stacks, as it was originally designed as a protocol for networked video, rather than as a specific display manager. X uses separate Client and Server Stacks each with their own Display Layers (even when used for rendering locally, as is the more common use case today), and splits some aspects of the remaining stacks between the Client (the remote program requesting the display being rendered) and the Server (the local system rendering the image - while this might seem to be a reversal of the usual client/server relationship, it makes sense if you view the client as the program requesting a service from a remote system). Further, the Client-Server relationship in X is potentially many-to-many, meaning that their may be several Server stacks rendering for a single client stack, while the Server in turn may be connected to other Clients and have to compose the graphics from each of them into a desktop. Finally, different applications may need different degrees of control, meaning that several details cannot be specified to belong to either the Server or the Client, but need to be negotiated between the two at the start of the operation.
+</p>
+<h3><span class="mw-headline" id="Display_Layers">Display Layers</span></h3>
+<h4><span class="mw-headline" id="Device_Driver_Layer">Device Driver Layer</span></h4>
+<p>At the lowest software level, we have the device drivers, which communicate with the actual hardware. These need to be able to work with either the specific display devices - the video memory, the GPU if any, the video signal generators, and even the monitor - or some common subset of it which it shares with disparate adapters. However, this does not mean that the driver must do all the work alone. The VESA VBE/Core defines a standard minimal interface to the hardware as an extension BIOS, which a compliant video adapter should provide as a way of interfacing with the hardware without needing any proprietary details of the adapter.
+</p><p>Somewhere here you would find things like the Mesa driver framework and the Xlib Direct Rendering Manager. This level doesn't have a formal name in most systems, at least not as far as I know of, which is a first abstraction layer which software system (not necessarily the operating system itself) provides to give a uniform model for drawing pixels on the screen, while still exposing the underlying hardware. The split between 2-D and 3-D often starts around here, as a 3-D renderer generally needs a lot more direct hardware access than a 2-D one.
+</p>
+<h3><span class="mw-headline" id="Prsentation_Layers">Prsentation Layers</span></h3>
+<h4><span class="mw-headline" id="Rendering_Layer">Rendering Layer</span></h4>
+<p>Then next level is the renderer, which is where individual images or sections of images get created. This is where you really see 3-D becoming a separate thing, as most systems prior to, say, 2007 would have used a strictly 2-D rendering for everything that didn't specifically require 3-D rendering, due to the need for hardware acceleration for practical real-time 3-D rendering at the time. There has been a Cycle of Reincarnation for graphics rendering going between CPU-driven rendering dedicated GPU rendering and back, with current systems often using both for different purposes. Note, however, that the graphics rendering Wheel of Incarnation has been rolling since the very first days of computer graphics in the early 1960s, so it is a good guess that this won't be the last word on the subject.
+</p><p>For example, the Mesa library used in many Linux systems started out in the 1990s as a software 3-D renderer, but currently is used to abstract the rendering process, allowing it to use hardware acceleration while providing software rendering a fallback mode.
+</p><p>This is where you need to decide how you are going to handle the differences between rendering 2-D images such as basic windows and widgets, and the more impressive but also more processing-intensive 3-D rendering. While the fact that you can treat 2-D as a special case of 3-D means it is tempting to use 3-D for everything, that approach has some significant down sides, especially on older hardware. You may need to consider where you can use less general 2-D rendering to avoid a lot of hardware crunching where possible.
+</p><p>You also need to look at how you separate different renderable elements such as glyphs (letters, digits, text symbols, etc.), widgets (window borders, menus, icons, the mouse pointer), 2-D images such as drawings and pictures, 3-D manipulable objects, etc. This relates, and raises the issue in, the next layer of the stack, the compositor. However, before that I need to mention another part of this layer, the widget toolkit.
+</p>
+<h4><span class="mw-headline" id="Widget_Toolkit_Layer">Widget Toolkit Layer</span></h4>
+<p>The widget toolkit is the set of primitive widgets - window frames, menus, drawing spaces, textboxes, text areas, radio buttons, checkboxes, etc. - that a window manager uses. In most designs, this is not a separate layer from the renderer, but side-by-side with it, and the widgets have to work together with the compositor as well.
+</p>
+<h4><span class="mw-headline" id="Compositing_Layer">Compositing Layer</span></h4>
+<p>The compositor is the part that combines the individual elements being rendered into the instantaneous display state, that is, the screen as it is at a given moment. In a 2-D design, this is usually done by the renderer directly, but 3-D UIs almost always have a separate compositor.
+</p>
+<h5><span class="mw-headline" id="Historical_Development">Historical Development</span></h5>
+<p>OK, quick history lesson. Early 2-D windowing systems generally composited in situ, that is, directly into the display. However, while this was feasible with the stroke-vector displays of the 1960s, or on raster displays that used fixed cells drawn from tables of glyphs such as PLATO and the majority of text-oriented terminals, this was problematic for bitmapped video systems even from the outset, as it meant that a large block of memory - often as much as 30% of system memory in the days of the Alto and 128K Macintosh - had to be set aside for the video, and the timing of drawing had to be synced with the vertical refresh in order to avoid flicker.
+</p><p>While double buffering was part of the answer, it ran into issues with time - copying that much data would take longer than the vrefresh, so a workable double buffer needed to be done by hardware. You would have to dedicate two buffer's worth of memory in hardware (one to drive the video, and the other to draw to), and the display would need even more hardware to let it switch which of the video buffers was driving it in order to make it work. Pretty much every video system today supports this as a matter of course. However, this did nothing for when you have to copy a bitmapped image from general memory - something loaded from a file, say - into the drawing video buffer.
+</p><p>In order to cut the time further, developers at Xerox PARC developed a technique called 'Bit BLT', in which a part of the image is prepared as a mask and only the mask is drawn to the video buffer. Other techniques, such as hardware sprites (which were drawn directly to the screen, bypassing the video buffer entirely) were also developed, but were mostly used in dedicated gaming and video editing systems.
+</p><p>I mention all this to get to compositing. Up until 2006 or so, the act of compositing for a window manager was done mainly as a 2-D action, and generally was focused on a) determining what parts of the display have changed, b) determining which parts of the screen were observable, and c) blitting the observable sections of a window that were getting changed to the draw buffer. This was generally easier for a tiling window manager, as there was no z-scaling - no windows overlapped, so everything could be drawn, and you could divide the windows into those which had changed and those which hadn't. Layering windows managers were a little more complicated because some windows might obscure parts of others, but generally it wasn't too difficult. Even so, 2-D hardware acceleration was still very useful for this, even if it wasn't absolutely necessary.
+</p><p>With the introduction of 3-D layered UIs such as Aqua and Aero, the issue of combining things became much more complex, leading to the need for a separate compositor layer. Most major window managers today have a 3-D compositor, and for a time it was almost impossible to get good performance from one without a dedicated GPU, meaning software rendering was out of the question even for the basic GUI, leading to issues that previously were mostly seen in gaming.
+</p><p>However, because this still has a performance cost, there are several Linux desktop managers (see below) which only use 2D compositing, a number of which (e.g., Notion, Awesome) are (or initially were) specifically tiling systems designed to avoid applying significant amounts of compositing. Many of these are also designed to be used keyboard-only, for those who prefer to avoid using the mouse, which is a separate issue but often seen as going hand in hand with the performance matters.
+</p>
+<h3><span class="mw-headline" id="Interoperation_Layers">Interoperation Layers</span></h3>
+<h4><span class="mw-headline" id="Window_Management_Layer">Window Management Layer</span></h4>
+<p>Getting back on track, we now get to the window manager itself, which is the part that actually decided where to put each rendered component, sets things related to the way widgets interact, and just generally, well, manages the windows. This is what X Window System was from the outset, and it acts as the glue between the lower level aspects of the GUI and the more abstract parts such as the desktop manager.
+</p>
+<h4><span class="mw-headline" id="Desktop_manager_Layer">Desktop manager Layer</span></h4>
+<p>The next layer is the desktop manager, and this is what most people are actually thinking when they talk of a GUI, and of the differences between Windows, Mac, and the various Linux desktops such as KDE, Gnome, Unity, XFCE, Cinnamon, MATE, and so forth.
+</p>
+<h3><span class="mw-headline" id="Application_Layer">Application Layer</span></h3>
+<p>The Application Layer is the part which is internal to the program itself.
+</p>
+<!-- 
+NewPP limit report
+Cached time: 20250211142236
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.015 seconds
+Real time usage: 0.016 seconds
+Preprocessor visited node count: 47/1000000
+Post‐expand include size: 470/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 4/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 0/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.804      1 Template:Stub
+100.00%    0.804      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:4024-0!canonical and timestamp 20250211142236 and revision id 28083.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Graphics_stack&amp;oldid=28083">https://wiki.osdev.org/index.php?title=Graphics_stack&amp;oldid=28083</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="./Category:Stubs" title="Category:Stubs">Stubs</a></li><li><a href="./Category:Graphical_UI" title="Category:Graphical UI">Graphical UI</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Graphics+stack" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Graphics_stack#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Graphics_stack" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:Graphics_stack&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Graphics_stack"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Graphics_stack&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Graphics_stack&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="https://wiki.osdev.org/Special:WhatLinksHere/Graphics_stack" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Graphics_stack" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Graphics_stack&amp;oldid=28083" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Graphics_stack&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 9 July 2023, at 21:10.</li>
+	<li id="footer-info-0">This page has been accessed 2,992 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Graphics_stack&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.015","walltime":"0.016","ppvisitednodes":{"value":47,"limit":1000000},"postexpandincludesize":{"value":470,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":4,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":0,"limit":5000000},"timingprofile":["100.00%    0.804      1 Template:Stub","100.00%    0.804      1 -total"]},"cachereport":{"timestamp":"20250211142236","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":121});});</script>
+</body>
+</html>

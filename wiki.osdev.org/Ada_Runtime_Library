@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Ada Runtime Library - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"99cf3ff8b862d5e478be4afe","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Ada_Runtime_Library","wgTitle":"Ada Runtime Library","wgCurRevisionId":24723,"wgRevisionId":24723,"wgArticleId":4421,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","Ada"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Ada_Runtime_Library","wgRelevantArticleId":4421,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],
+"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Ada_Runtime_Library rootpage-Ada_Runtime_Library skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Ada Runtime Library</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Ada_Runtime_Library#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Ada_Runtime_Library#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>This guide intends to serve as an introduction to the Ada run-time library, and as a guide to creating a basic Ada run-time library suitable for bare-metal development targeting the x86 platform.<br />
+For other architectures, AdaCore provides pre-made run-time libraries and board support packages targeting a variety of ARM/RISC-V boards. These are freely available on <a rel="nofollow" class="external text" href="https://github.com/AdaCore/bb-runtimes">Github</a>, as well as being packaged with their 'arm-elf' and 'riscv32-elf' compilers.
+</p><p><i>Note: This guide is specific to the GNAT Ada compiler, available from either the FSF as part of <a href="GCC" title="GCC">GCC</a>, or as a stand-alone product from <a rel="nofollow" class="external text" href="https://www.adacore.com/download">AdaCore</a>. Additionally it assumes the use of the GPRBuild suite of utilities, which are freely available as part of AdaCore’s GNAT compiler or can be built <a rel="nofollow" class="external text" href="https://github.com/AdaCore/gprbuild">from source</a>.</i>
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Ada_Runtime_Library#Background"><span class="tocnumber">1</span> <span class="toctext">Background</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="Ada_Runtime_Library#Anatomy_of_a_run-time_library"><span class="tocnumber">2</span> <span class="toctext">Anatomy of a run-time library</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="Ada_Runtime_Library#Creating_a_run-time_library_suitable_for_x86_operating-system_development"><span class="tocnumber">3</span> <span class="toctext">Creating a run-time library suitable for x86 operating-system development</span></a>
+<ul>
+<li class="toclevel-2 tocsection-4"><a href="Ada_Runtime_Library#System.ads"><span class="tocnumber">3.1</span> <span class="toctext">System.ads</span></a></li>
+<li class="toclevel-2 tocsection-5"><a href="Ada_Runtime_Library#Platform-specific_support_code"><span class="tocnumber">3.2</span> <span class="toctext">Platform-specific support code</span></a></li>
+<li class="toclevel-2 tocsection-6"><a href="Ada_Runtime_Library#System_initialization_code"><span class="tocnumber">3.3</span> <span class="toctext">System initialization code</span></a></li>
+<li class="toclevel-2 tocsection-7"><a href="Ada_Runtime_Library#Exceptions"><span class="tocnumber">3.4</span> <span class="toctext">Exceptions</span></a></li>
+<li class="toclevel-2 tocsection-8"><a href="Ada_Runtime_Library#Elaboration"><span class="tocnumber">3.5</span> <span class="toctext">Elaboration</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="Ada_Runtime_Library#Image_attributes"><span class="tocnumber">3.6</span> <span class="toctext">Image attributes</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-10"><a href="Ada_Runtime_Library#Initialization"><span class="tocnumber">4</span> <span class="toctext">Initialization</span></a></li>
+<li class="toclevel-1 tocsection-11"><a href="Ada_Runtime_Library#Additional_Resources"><span class="tocnumber">5</span> <span class="toctext">Additional Resources</span></a></li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Background">Background</span></h2>
+<p>The run-time library for a language is typically the standard library of functions responsible for implementing the interface with the underlying functionality exposed by the system. These are normally statically linked against the executable at compile-time.
+</p><p>The Ada run-time library is responsible for the implementation of the standard library defined in annexes A-H of the <a rel="nofollow" class="external text" href="http://ada-auth.org/standards/12rm/html/RM-TOC.html">Ada Language Reference Manual</a>. Not all annexes defined in the standard are required to be implemented for a specific platform.<br />
+The Ada run-time is the equivalent of C’s <a href="https://wikipedia.org/wiki/C_standard_library" class="extiw" title="wikipedia:C standard library">libc</a>. However unlike the C standard the Ada standard does not explicitly define a differentiation between hosted and freestanding environments.
+</p><p>As with other systems programming languages the program being compiled is statically linked against the run-time library to produce the final executable. The compiler will attempt to ensure that only the required sections of the run-time are linked, so as to minimize the final binary size. In the case that only minimal or no standard library features are required, the approach recommended by AdaCore <a rel="nofollow" class="external text" href="https://docs.adacore.com/gnat_rm-docs/html/gnat_rm/gnat_rm/obsolescent_features.html#pragma-no-run-time">here</a> is to use a run-time library implementing only the features required.
+</p><p>The GNAT compiler offers a facility for configuring the runtime-library used during the compilation process. This is done by either using the <tt>--RTS=example</tt> command-line switch, or by using the 
+</p>
+<pre>for Runtime ("Ada") use "example";
+</pre>
+<p>directive in the project’s configuration file.<br />
+This can be either the name of a run-time library that is visible to the compiler due to being in one of its search directories, or a relative path specifying the location of a run-time library directory.
+</p><p>As mentioned above, the Ada standard does not explicitly define a differentiation between hosted and freestanding environments. So unlike using GCC’s <tt>-ffreestanding</tt> switch to compile C for a bare-metal target, GNAT cannot automatically provide users with a valid run-time library suitable for targeting non-hosted environments. Bare-metal targets will often require fine-grained control to satisfy the limitations of the platform, so the developer will have to provide a run-time purpose built for the freestanding environment. For many targets there are Zero Foot Print' (zfp) run-time libraries available which are suitable for the purpose of operating-system development, but for x86 there are no zfp run-times freely available from the major vendors so the best option for a developer is to implement one themselves.
+</p>
+<h2><span class="mw-headline" id="Anatomy_of_a_run-time_library">Anatomy of a run-time library</span></h2>
+<p>An Ada run-time library is fundamentally a directory tree containing the run-time sources and compiled library files. The <tt>adainclude</tt> subdirectory contains the run-time sources, which will provide the Ada equivalent of C header files for our run-time. The <tt>adalib</tt> subdirectory contains the compiled library artifacts that programs will be statically linked against. The compiler will require the presence of these two directories within the run-time directory to detect it as valid. The location of these directories can be customised by creating two files named <tt>'ada_source_path'</tt> and <tt>'ada_object_path'</tt> which allow the specification of alternate locations for the source and object directories. For more information on this feature, refer to the <a rel="nofollow" class="external text" href="https://gcc.gnu.org/onlinedocs/gcc-8.2.0/gnat_ugn/Search-Paths-and-the-Run-Time-Library-RTL.html">GNAT documentation</a>.<br />
+A run-time library may be placed within the GNAT compiler's default search directories which will make it globally visible for the compiler, or can be placed in another location and specified as a relative path within the project's configuration file.<br />
+<i>Note: GPRBuild requires the presence of a run-time within its search path before it will fully acknowledge the presence of GNAT for a particular target.</i>
+</p>
+<h2><span class="mw-headline" id="Creating_a_run-time_library_suitable_for_x86_operating-system_development">Creating a run-time library suitable for x86 operating-system development</span></h2>
+<p><i>Note: This section assumes that you are using an x86/x86-64 host compiler and are targeting an x86 system. Creating a run-time for other targets will be different. This section also assumes that you have a suitable <a href="GNAT_Cross-Compiler" title="GNAT Cross-Compiler">cross-compiler</a>. While you may be able to copy run-time source files from your system GNAT installation, a compiler specific to your target system will still be required. A detailed guide to building a GNAT cross-compiler can be found <a href="GNAT_Cross-Compiler" title="GNAT Cross-Compiler">here</a>.</i>
+</p><p>In order to compile Ada code for bare-metal targets using the GNAT compiler, developers will need to configure an appropriate Ada run-time library for their target platform. The Ada standard recommends that all of the packages defined in ‘Annex A: Predefined Language Environment’ be defined for a platform, but for the purposes of bare-metal development this is impractical.<br />
+In practical terms, creating a new run-time for a particular target is accomplished through the creation and compilation of a static library. Control over which library units are included in the final run-time library is as simple as including and omitting the appropriate files from the library’s source tree.<br />
+For the purposes of operating-system development, at a bare-minimum the run-time library will need to implement parts of Annex C: ‘Systems Programming’. The terminology used within the Ada community for such a run-time library suitable for bare-metal is a 'zfp' run-time, short for 'Zero Foot Print'.
+</p><p>The best approach to creating a run-time library for a new platform is to start with components from the standard run-time library of your system's Ada compiler. Many of these components are platform independent and can be safely copied to your new run-time without further refinement.
+</p><p>Shown below is an example directory structure for a run-time library GNAT project:
+</p>
+<pre>- runtime
+    - build             ( The build directory. Contains the final built run-time library. )
+        - adainclude    ( Contains the run-time sources to be included in applications. )
+        - adalib        ( Contains the compiled run-time static library. )
+    - obj               ( The intermediate build directory. Contains build artifacts. )
+    - source            ( Contains the run-time library source files. )
+</pre>
+<p><br />
+An example GNAT project configuration file for creating a run-time library can be seen below. The comment annotations will explain the relevant options.<br />
+For more information regarding GNAT project configuration refer to the AdaCore documentation: <a rel="nofollow" class="external autonumber" href="https://docs.adacore.com/gprbuild-docs/html/gprbuild_ug/gnat_project_manager.html">[1]</a>
+</p>
+<div class="mw-highlight mw-highlight-lang-ada mw-content-ltr" dir="ltr"><pre><span></span><span class="n">library</span> <span class="n">project</span> <span class="n">Runtime</span> <span class="kr">is</span>
+   <span class="c1">--  Tells Gprbuild to create any missing directories in the build process.</span>
+   <span class="kr">for</span> <span class="n">Create_Missing_Dirs</span> <span class="kn">use</span> <span class="s">&quot;True&quot;</span><span class="p">;</span>
+   <span class="c1">--  The source files for the run-time library.</span>
+   <span class="c1">--  The &#39;build&#39; directory is used in this case so that GNAT can use our</span>
+   <span class="c1">--  run-time as the selected run-time library during the build process. </span>
+   <span class="c1">--  To facilitate this, we copy our source files to the build directory.</span>
+   <span class="c1">--  This serves two purposes, one is to build the run-time itself, the </span>
+   <span class="c1">--  second is to function as the run-time library&#39;s spec includes.</span>
+   <span class="kr">for</span> <span class="n">Source_Dirs</span> <span class="kn">use</span> <span class="p">(</span><span class="s">&quot;build/adainclude&quot;</span><span class="p">);</span>
+   <span class="c1">--  The directory used for build artifacts.</span>
+   <span class="kr">for</span> <span class="n">Object_Dir</span> <span class="kn">use</span> <span class="s">&quot;obj&quot;</span><span class="p">;</span>
+
+   <span class="kr">for</span> <span class="n">Languages</span> <span class="kn">use</span> <span class="p">(</span>
+     <span class="s">&quot;Ada&quot;</span><span class="p">,</span>
+     <span class="s">&quot;Asm_Cpp&quot;</span>
+   <span class="p">);</span>
+
+   <span class="kd">package</span> <span class="nc">Builder</span> <span class="kr">is</span>
+      <span class="kr">for</span> <span class="n">Global_Configuration_Pragmas</span> <span class="kn">use</span> <span class="s">&quot;runtime.adc&quot;</span><span class="p">;</span>
+      <span class="kr">for</span> <span class="n">Switches</span> <span class="p">(</span><span class="s">&quot;Ada&quot;</span><span class="p">)</span> <span class="kn">use</span> <span class="p">(</span>
+        <span class="s">&quot;-nostdlib&quot;</span><span class="p">,</span>
+        <span class="s">&quot;-nostdinc&quot;</span>
+      <span class="p">);</span>
+   <span class="kr">end</span> <span class="nf">Builder</span><span class="p">;</span>
+
+   <span class="c1">--  For a list of all compiler switches refer to: https://gcc.gnu.org/onlinedocs/gcc-9.2.0/gnat_ugn/Alphabetical-List-of-All-Switches.html#Alphabetical-List-of-All-Switches</span>
+   <span class="kd">package</span> <span class="nc">Compiler</span> <span class="kr">is</span>
+      <span class="kr">for</span> <span class="n">Default_Switches</span> <span class="p">(</span><span class="s">&quot;Ada&quot;</span><span class="p">)</span> <span class="kn">use</span> <span class="p">(</span>
+        <span class="s">&quot;-O0&quot;</span><span class="p">,</span>
+        <span class="c1">--  Using these directives instructs the Gnat GCC backend to place</span>
+        <span class="c1">--  each function and data object in its own section in the resulting</span>
+        <span class="c1">--  object file. GNAT requires this in order for the linker to </span>
+        <span class="c1">--  perform dead code elimination within the runtime library.</span>
+        <span class="c1">--  For more information refer to:</span>
+        <span class="c1">--    https://gcc.gnu.org/onlinedocs/gnat_ugn/Compilation-options.html</span>
+        <span class="s">&quot;-ffunction-sections&quot;</span><span class="p">,</span> 
+        <span class="s">&quot;-fdata-sections&quot;</span><span class="p">,</span>
+        <span class="s">&quot;-gnat2012&quot;</span><span class="p">,</span>
+        <span class="c1">--  This switch enables GNAT&#39;s Internal implementation mode. This </span>
+        <span class="c1">--  allows us to modify internal packages such as &#39;Ada&#39; or &#39;System&#39;</span>
+        <span class="c1">--  which are needed to build a run-time library. This switch is only</span>
+        <span class="c1">--  needed when building the run-time and should be disabled for all </span>
+        <span class="c1">--  other development.</span>
+        <span class="s">&quot;-gnatg&quot;</span><span class="p">,</span>
+        <span class="c1">--  Instructs GNAT to remove dead code from the runtime library.</span>
+        <span class="c1">--  Requires the use of the &#39;-ffunction-sections&#39; and</span>
+        <span class="c1">--  &#39;-fdata-sections&#39; directives as detailed above.</span>
+        <span class="s">&quot;-Wl,--gc-sections&quot;</span>
+      <span class="p">);</span>
+   <span class="kr">end</span> <span class="nf">Compiler</span><span class="p">;</span>
+
+   <span class="c1">--  The destination directory for the final library artifacts.</span>
+   <span class="c1">--  We need to select a static library for this purpose to ensure that the </span>
+   <span class="c1">--  run-time is linked staticly againt our executable.</span>
+   <span class="c1">--  For more information on library project options refer to: </span>
+   <span class="c1">--   http://docs.adacore.com/live/wave/gprbuild/html/gprbuild_ug/gprbuild_ug/gnat_project_manager.html#library-projects</span>
+   <span class="kr">for</span> <span class="n">Library_Dir</span> <span class="kn">use</span> <span class="s">&quot;build/adalib&quot;</span><span class="p">;</span>
+   <span class="kr">for</span> <span class="n">Library_Kind</span> <span class="kn">use</span> <span class="s">&quot;static&quot;</span><span class="p">;</span>
+   <span class="kr">for</span> <span class="n">Library_Name</span> <span class="kn">use</span> <span class="s">&quot;gnat&quot;</span><span class="p">;</span>
+
+   <span class="c1">--  We require a valid run-time library to build our run-time. </span>
+   <span class="c1">--  We need to ensure that the run-time we use for this purpose is built </span>
+   <span class="c1">--  using the same compiler and targets the same platform. A reliable way</span>
+   <span class="c1">--  to do this is to use our run-time&#39;s sources as a run-time to build</span>
+   <span class="c1">--  itself.</span>
+   <span class="kr">for</span> <span class="n">Runtime</span> <span class="p">(</span><span class="s">&quot;Ada&quot;</span><span class="p">)</span> <span class="kn">use</span> <span class="s">&quot;build&quot;</span><span class="p">;</span>
+
+   <span class="kr">for</span> <span class="n">Target</span> <span class="kn">use</span> <span class="s">&quot;i686-elf&quot;</span><span class="p">;</span>
+<span class="kr">end</span> <span class="nf">Runtime</span><span class="p">;</span>
+</pre></div>
+<p>As noted in the source code comments above, in this setup the run-time sources are used as a run-time library during the build process. One method to implement this is to include a pre-requisite step in your makefile to copy the sources to the final build destination <tt>adainclude</tt> directory, then to specify this build directory as the run-time for the project. An example makefile for facilitating this can be seen below. 
+</p><p><i>Please note that this makefile may not be fit for all projects and purposes.</i>
+</p>
+<div class="mw-highlight mw-highlight-lang-make mw-content-ltr" dir="ltr"><pre><span></span><span class="nv">RUNTIME_BINARY</span> <span class="o">:=</span> <span class="si">${</span><span class="nv">LIB_DIR</span><span class="si">}</span>/libgnat.a
+<span class="nv">RUNTIME_PROJ</span>   <span class="o">:=</span> runtime
+
+<span class="nv">SRC_DIR</span>        <span class="o">:=</span> src
+<span class="nv">BUILD_DIR</span>      <span class="o">:=</span> build
+<span class="nv">LIB_DIR</span>        <span class="o">:=</span> <span class="si">${</span><span class="nv">BUILD_DIR</span><span class="si">}</span>/adalib
+<span class="nv">INCLUDE_DIR</span>    <span class="o">:=</span> <span class="si">${</span><span class="nv">BUILD_DIR</span><span class="si">}</span>/adainclude
+
+<span class="nv">LINKER_SCRIPT</span>  <span class="o">:=</span> x86-multiboot.ld
+<span class="nv">RUNTIME_CONFIG</span> <span class="o">:=</span> runtime.xml
+
+<span class="nf">.PHONY</span><span class="o">:</span> <span class="n">clean</span>
+
+<span class="nf">all</span><span class="o">:</span> ${<span class="n">RUNTIME_BINARY</span>}
+
+<span class="nf">clean</span><span class="o">:</span>
+	gprclean -P<span class="si">${</span><span class="nv">RUNTIME_PROJ</span><span class="si">}</span>
+	rm -rf <span class="si">${</span><span class="nv">BUILD_DIR</span><span class="si">}</span>
+
+<span class="c"># Build the run-time library.</span>
+<span class="nf">${RUNTIME_BINARY}</span><span class="o">:</span> ${<span class="n">INCLUDE_DIR</span>}/*.<span class="n">ad</span>[<span class="n">sb</span>] ${<span class="n">INCLUDE_DIR</span>}/*.<span class="n">S</span> \
+	${<span class="n">LIB_DIR</span>} ${<span class="n">BUILD_DIR</span>}/${<span class="n">LINKER_SCRIPT</span>} ${<span class="n">BUILD_DIR</span>}/${<span class="n">RUNTIME_CONFIG</span>}
+	gprbuild -P<span class="si">${</span><span class="nv">RUNTIME_PROJ</span><span class="si">}</span>
+
+<span class="c"># Copy all Ada source files to the final include directory.</span>
+<span class="nf">${INCLUDE_DIR}/*.ad[sb]</span><span class="o">:</span> ${<span class="n">SRC_DIR</span>}/*.<span class="n">ad</span>[<span class="n">sb</span>] ${<span class="n">COMMON_SRC_DIR</span>}/*.<span class="n">ad</span>[<span class="n">sb</span>] ${<span class="n">INCLUDE_DIR</span>}
+	cp -a <span class="si">${</span><span class="nv">SRC_DIR</span><span class="si">}</span>/*.ad<span class="o">[</span>sb<span class="o">]</span> <span class="si">${</span><span class="nv">INCLUDE_DIR</span><span class="si">}</span>
+
+<span class="c"># Copy any Assemblersource files to the final include directory.</span>
+<span class="nf">${INCLUDE_DIR}/*.S</span><span class="o">:</span> ${<span class="n">SRC_DIR</span>}/*.<span class="n">S</span> ${<span class="n">INCLUDE_DIR</span>}
+	cp -a <span class="si">${</span><span class="nv">SRC_DIR</span><span class="si">}</span>/*.S <span class="si">${</span><span class="nv">INCLUDE_DIR</span><span class="si">}</span>
+
+<span class="c"># Copy the linker script to the final run-time directory.</span>
+<span class="nf">${BUILD_DIR}/${LINKER_SCRIPT}</span><span class="o">:</span>
+	cp -a <span class="si">${</span><span class="nv">SRC_DIR</span><span class="si">}</span>/<span class="si">${</span><span class="nv">LINKER_SCRIPT</span><span class="si">}</span> <span class="si">${</span><span class="nv">BUILD_DIR</span><span class="si">}</span>/<span class="si">${</span><span class="nv">LINKER_SCRIPT</span><span class="si">}</span>
+
+<span class="c"># Copy our run-time config to the final run-time directory.</span>
+<span class="nf">${BUILD_DIR}/${RUNTIME_CONFIG}</span><span class="o">:</span>
+	cp -a <span class="si">${</span><span class="nv">SRC_DIR</span><span class="si">}</span>/<span class="si">${</span><span class="nv">RUNTIME_CONFIG</span><span class="si">}</span> <span class="si">${</span><span class="nv">BUILD_DIR</span><span class="si">}</span>/<span class="si">${</span><span class="nv">RUNTIME_CONFIG</span><span class="si">}</span>
+
+<span class="c"># Create the necesary directory tree.</span>
+<span class="nf">${INCLUDE_DIR}</span><span class="o">:</span>
+	mkdir -p <span class="si">${</span><span class="nv">INCLUDE_DIR</span><span class="si">}</span>
+
+<span class="nf">${LIB_DIR}</span><span class="o">:</span>
+	mkdir -p <span class="si">${</span><span class="nv">LIB_DIR</span><span class="si">}</span>
+</pre></div>
+<p><br />
+We can begin creating the source code for a minimal run-time by copying a list of files from our compiler's native run-time directory into the source directory of our run-time GNAT project. If you're using FSF GNAT this is most likely in a similar location to: <tt>/usr/lib/gcc/x86_64-linux-gnu/&lt;version&gt;/adainclude/</tt>. If you're using AdaCore GNAT Pro the directory structure for run-time sources is broken down into different sections, but you should still be able to find the same required files. <i>Note: If you intend to use source files obtained from AdaCore's GNAT Pro or associated material in the construction of a run-time library, be sure to read their licensing to understand any restrictions imposed upon the use of their open-source material.</i> <br />
+A list of files to copy from your compiler's default hosted run-time to your run-time library project's source directory are found below, together with an explanation of their purpose.
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Filename
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td>a-unccon.ads
+</td>
+<td>Package specification for the <tt>Ada.Unchecked_Conversion </tt> package. This package provides a facility for unchecked casting from one type to another. This is generally discouraged in Ada, but can be necessary in bare-metal development.<br />
+<p>You may notice the <tt>pragma Import (Intrinsic, Ada.Unchecked_Conversion);</tt> line here. This tells us that the body of this procedure is an *intrinsic subprogram* within the GNAT compiler and a definition is supplied by GNAT which we can import. For more information regarding intrinsic subprograms refer to AdaCore's documentation here: <a rel="nofollow" class="external autonumber" href="https://docs.adacore.com/gnat_rm-docs/html/gnat_rm/gnat_rm/intrinsic_subprograms.html">[2]</a>
+</p>
+</td></tr>
+<tr>
+<td>ada.ads
+</td>
+<td>The spec for the <tt>Ada</tt> package. This is the main parent package for most of the run-time library and is required to be present.
+</td></tr>
+<tr>
+<td>interfac.ads
+</td>
+<td>The spec for the <tt>Interfaces</tt> package. This package defines the necessary data types and functions for interfacing with other languages. This is of particular note to bare-metal platforms, since it provides definitions of the <tt>Integer_X</tt> and <tt>Unsigned_X</tt> types. It also provides definitions of the intrinsic shift and rotate functions to work on these types.
+</td></tr>
+<tr>
+<td>s-maccod.ads
+</td>
+<td>The spec for the <tt>System.Machine_code</tt> package. This package provides functionality for using inline assembly. This is relevant to operating-system development since it allows us more control over functionality like Port I/O. GNAT uses the same format for inline assembly as the rest of GCC. However it has additional features and syntax.
+</td></tr>
+<tr>
+<td>s-stoele.ads
+</td>
+<td>The spec for the <tt>System.Storage_Elements</tt> package. This package provides functionality for using and manipulating memory addresses, which we will require for memory-mapped I/O.
+</td></tr>
+<tr>
+<td>s-stoele.adb
+</td>
+<td>The body for the <tt>System.Storage_elements</tt> package. See above. Contains the definitions for the functions contained in the spec.
+</td></tr>
+<tr>
+<td>s-unstyp.ads
+</td>
+<td>The spec for the <tt>System.Unsigned_Types</tt> package. Contains definitions for unsigned integer types.
+</td></tr>
+<tr>
+<td>system.ads
+</td>
+<td>This is the spec file for the <tt>System</tt> package, which is the parent package for many of the packages in our run-time library. Every Ada program requires the <tt>System</tt> package to be present. This package contains important information about the target system, which is referenced by the compiler during code generation.<br />
+<p>Refer to the 'System Implementation Parameters' section within the file for a list of parameters read by the compiler. For additional information regarding how these parameters are interpreted, refer to the following file within the compiler directory: <tt>gcc-&lt;version&gt;/gcc/ada/targparm.ads</tt>.<br />
+Additional changes are needed to be made to this file to make it suitable for a bare-metal target. These changes are detailed in the section below.
+</p>
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="System.ads">System.ads</span></h3>
+<p>Every Ada program is required to have access to the <tt>System</tt> package. This package provides a specification for the target system hardware to the compiler. Since a run-time is specific to a single target hardware configuration, there will only be one system specification per run-time.<br />
+Detailed below are the necessary changes required to convert the System package specification from a hosted run-time to a freestanding one suitable for kernel development. For more information on individual settings refer to this file within your GNAT installation: <tt>gcc-&lt;version&gt;/gcc/ada/targparm.ads</tt>. A copy of this file can be found online at: <a rel="nofollow" class="external autonumber" href="https://www2.adacore.com/gap-static/GNAT_Book/html/frontend/targparm__ads.htm">[3]</a>
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+
+<tbody><tr>
+<th>Change
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td><tt>Command_Line_Args&#160;:= False</tt>
+</td>
+<td>Since our platform is bare-metal, there is no access to command line parameters.
+</td></tr>
+<tr>
+<td><tt>Configurable_Run_Time&#160;:= True</tt>
+</td>
+<td>Instructs GNAT that this is a user-configured run-time library.
+</td></tr>
+<tr>
+<td><tt>Exit_Status_Supported&#160;:= False</tt>
+</td>
+<td>As above, our platform does not support exit statuses.
+</td></tr>
+<tr>
+<td><tt>Stack_Check_Probes&#160;:= False</tt>
+</td>
+<td>Indicates that our run-time does not use GCC's stack checking mechanism.
+</td></tr>
+<tr>
+<td><tt>Suppress_Standard_Library&#160;:= True</tt>
+</td>
+<td>According to the GNAT docs, If this flag is True, then the standard library is not included by default in the executable.
+</td></tr>
+<tr>
+<td><tt>ZCX_By_Default&#160;:= False</tt>
+</td>
+<td>Indicates if zero cost exceptions are active by default. Refer to the <a rel="nofollow" class="external text" href="https://gcc.gnu.org/onlinedocs/gnat_ugn/Run-Time-Libraries.html">documentation</a> for more information on Zero-cost-exceptions.
+</td></tr>
+<tr>
+<td><tt>GCC_ZCX_Support&#160;:= False</tt>
+</td>
+<td>Disables GCC's support for zero-cost exceptions.
+</td></tr></tbody></table>
+<p>Also, add the following line in the private part of the package:
+</p>
+<div class="mw-highlight mw-highlight-lang-ada mw-content-ltr" dir="ltr"><pre><span></span><span class="kd">private</span>
+   <span class="no">Run_Time_Name</span> <span class="p">:</span> <span class="kr">constant</span> <span class="kt">String</span> <span class="p">:=</span> <span class="s">&quot;Bare Bones Run Time&quot;</span><span class="p">;</span>
+</pre></div>
+<p>According to <tt>targparm.ads</tt>, this directive should be the first thing after the private keyword.
+</p>
+<h3><span class="mw-headline" id="Platform-specific_support_code">Platform-specific support code</span></h3>
+<p>For the purposes of bare-metal development, it may be advantageous to define platform-specific support packages within the run-time library to avoid cluttering the main kernel package with platform-specific code. This also supports a greater degree of abstraction, and better portability of the kernel itself.<br />
+Any packages contained within the runtime will be accessible to the linked program automatically. Be mindful not to declare any new packages as children of the top level <tt>Ada</tt> or <tt>System</tt> packages, as GNAT will consider any non-standard children to be ‘implementation-specific’: for internal use only and forbid their use outside of the run-time.
+</p><p>It might be advantageous in certain situations to declare platform-specific support packages as children of the <tt>System</tt> package to restrict the direct use of platform-specific code in the linked application.
+</p><p>One example of useful platform support code for x86 would be to implement functionality for <a href="Port_IO" title="Port IO">Port IO</a>. An example implementation can be seen below.
+</p><p><b>x86.ads</b>
+</p>
+<div class="mw-highlight mw-highlight-lang-ada mw-content-ltr" dir="ltr"><pre><span></span><span class="c1">-------------------------------------------------------------------------------</span>
+<span class="c1">--  X86</span>
+<span class="c1">--</span>
+<span class="c1">--  Purpose:</span>
+<span class="c1">--    This package contains support code for the x86 system.</span>
+<span class="c1">-------------------------------------------------------------------------------</span>
+<span class="kd">package</span> <span class="nc">x86</span> <span class="kr">is</span>
+   <span class="kr">pragma</span> <span class="cp">Preelaborate</span> <span class="p">(</span><span class="n">x86</span><span class="p">);</span>
+<span class="kr">end</span> <span class="nf">x86</span><span class="p">;</span>
+</pre></div>
+<p><b>x86-port_io.ads</b>
+</p>
+<div class="mw-highlight mw-highlight-lang-ada mw-content-ltr" dir="ltr"><pre><span></span><span class="kn">with</span> <span class="nn">Interfaces</span><span class="p">;</span>
+<span class="kn">with</span> <span class="nn">System</span><span class="p">;</span>
+
+<span class="c1">-------------------------------------------------------------------------------</span>
+<span class="c1">--  X86.PORT_IO</span>
+<span class="c1">--</span>
+<span class="c1">--  Purpose:</span>
+<span class="c1">--    This package contains functionality for port-mapped I/O on the x86</span>
+<span class="c1">--    platform.</span>
+<span class="c1">--    Functions are included for inputting and outputting data to port-mapped</span>
+<span class="c1">--    addresses, useful for interacting with system peripherals.</span>
+<span class="c1">-------------------------------------------------------------------------------</span>
+<span class="kd">package</span> <span class="nc">x86.Port_IO</span> <span class="kr">is</span>
+   <span class="kr">pragma</span> <span class="cp">Preelaborate</span> <span class="p">(</span><span class="n">x86</span><span class="p">.</span><span class="n">Port_IO</span><span class="p">);</span>
+
+   <span class="c1">----------------------------------------------------------------------------</span>
+   <span class="c1">--  Inb</span>
+   <span class="c1">--</span>
+   <span class="c1">--  Purpose:</span>
+   <span class="c1">--    This function reads a byte from a particular IO port.</span>
+   <span class="c1">--  Exceptions:</span>
+   <span class="c1">--    None.</span>
+   <span class="c1">----------------------------------------------------------------------------</span>
+   <span class="kd">function</span> <span class="nf">Inb</span> <span class="p">(</span>
+     <span class="nv">Port</span> <span class="p">: </span><span class="nv">System</span><span class="p">.</span><span class="nv">Address</span>
+   <span class="p">)</span> <span class="kr">return</span> <span class="n">Interfaces</span><span class="p">.</span><span class="n">Unsigned_8</span>
+   <span class="kn">with</span> <span class="nn">Volatile_Function</span><span class="p">;</span>
+
+   <span class="c1">----------------------------------------------------------------------------</span>
+   <span class="c1">--  Outb</span>
+   <span class="c1">--</span>
+   <span class="c1">--  Purpose:</span>
+   <span class="c1">--    This function writes a byte to a particular IO port.</span>
+   <span class="c1">--  Exceptions:</span>
+   <span class="c1">--    None.</span>
+   <span class="c1">----------------------------------------------------------------------------</span>
+   <span class="kd">procedure</span> <span class="nf">Outb</span> <span class="p">(</span>
+     <span class="nv">Port</span> <span class="p">: </span><span class="nv">System</span><span class="p">.</span><span class="nv">Address</span><span class="p">;</span>
+     <span class="nv">Data</span> <span class="p">: </span><span class="nv">Interfaces</span><span class="p">.</span><span class="nv">Unsigned_8</span>
+   <span class="p">);</span>
+<span class="kr">end</span> <span class="nf">x86.Port_IO</span><span class="p">;</span>
+</pre></div>
+<p><br />
+<b>x86-port_io.adb</b>
+</p>
+<div class="mw-highlight mw-highlight-lang-ada mw-content-ltr" dir="ltr"><pre><span></span><span class="kn">with</span> <span class="nn">System.Machine_Code</span><span class="p">;</span>
+
+<span class="kd">package</span> <span class="kd">body</span> <span class="nc">x86.Port_IO</span> <span class="kr">is</span>
+   <span class="c1">----------------------------------------------------------------------------</span>
+   <span class="c1">--  Inb</span>
+   <span class="c1">----------------------------------------------------------------------------</span>
+   <span class="kd">function</span> <span class="nf">Inb</span> <span class="p">(</span>
+     <span class="nv">Port</span> <span class="p">: </span><span class="nv">System</span><span class="p">.</span><span class="nv">Address</span>
+   <span class="p">)</span> <span class="kr">return</span> <span class="n">Interfaces</span><span class="p">.</span><span class="n">Unsigned_8</span> <span class="kr">is</span>
+      <span class="n">Data</span> <span class="p">:</span> <span class="n">Interfaces</span><span class="p">.</span><span class="n">Unsigned_8</span><span class="p">;</span>
+   <span class="kr">begin</span>
+      <span class="n">System</span><span class="p">.</span><span class="n">Machine_Code</span><span class="p">.</span><span class="n">Asm</span> <span class="p">(</span>
+        <span class="n">Template</span> <span class="p">=&gt;</span> <span class="s">&quot;inb %w1, %0&quot;</span><span class="p">,</span>
+        <span class="n">Inputs</span> <span class="p">=&gt;</span> <span class="p">(</span>
+          <span class="n">System</span><span class="p">.</span><span class="kt">Address</span><span class="p">&#39;</span><span class="na">Asm_Input</span> <span class="p">(</span><span class="s">&quot;Nd&quot;</span><span class="p">,</span> <span class="n">Port</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">Outputs</span> <span class="p">=&gt;</span> <span class="p">(</span>
+          <span class="n">Interfaces</span><span class="p">.</span><span class="n">Unsigned_8</span><span class="p">&#39;</span><span class="na">Asm_Output</span> <span class="p">(</span><span class="s">&quot;=a&quot;</span><span class="p">,</span> <span class="n">Data</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">Volatile</span> <span class="p">=&gt;</span> <span class="kc">True</span><span class="p">);</span>
+
+      <span class="kr">return</span> <span class="n">Data</span><span class="p">;</span>
+   <span class="kr">end</span> <span class="nf">Inb</span><span class="p">;</span>
+
+   <span class="c1">----------------------------------------------------------------------------</span>
+   <span class="c1">--  Outb</span>
+   <span class="c1">----------------------------------------------------------------------------</span>
+   <span class="kd">procedure</span> <span class="nf">Outb</span> <span class="p">(</span>
+     <span class="nv">Port</span> <span class="p">: </span><span class="nv">System</span><span class="p">.</span><span class="nv">Address</span><span class="p">;</span>
+     <span class="nv">Data</span> <span class="p">: </span><span class="nv">Interfaces</span><span class="p">.</span><span class="nv">Unsigned_8</span>
+   <span class="p">)</span> <span class="kr">is</span>
+   <span class="kr">begin</span>
+      <span class="n">System</span><span class="p">.</span><span class="n">Machine_Code</span><span class="p">.</span><span class="n">Asm</span> <span class="p">(</span>
+        <span class="n">Template</span> <span class="p">=&gt;</span> <span class="s">&quot;outb %0, %w1&quot;</span><span class="p">,</span>
+        <span class="n">Inputs</span> <span class="p">=&gt;</span> <span class="p">(</span>
+          <span class="n">Interfaces</span><span class="p">.</span><span class="n">Unsigned_8</span><span class="p">&#39;</span><span class="na">Asm_Input</span> <span class="p">(</span><span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="n">Data</span><span class="p">),</span>
+          <span class="n">System</span><span class="p">.</span><span class="kt">Address</span><span class="p">&#39;</span><span class="na">Asm_Input</span> <span class="p">(</span><span class="s">&quot;Nd&quot;</span><span class="p">,</span> <span class="n">Port</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">Volatile</span> <span class="p">=&gt;</span> <span class="kc">True</span><span class="p">);</span>
+   <span class="kr">end</span> <span class="nf">Outb</span><span class="p">;</span>
+<span class="kr">end</span> <span class="nf">x86.Port_IO</span><span class="p">;</span>
+</pre></div>
+<p>Fundamentally, the role of the runtime library is to implement the features defined in the Ada language standard for the particular target platform. This requires the creation of target-specific packages to interface with platform features such as internal clocks, <a href="UART" title="UART">UARTs</a> and <a href="PIT" class="mw-redirect" title="PIT">timers</a>, among other things. These packages can then be used by language-defined packages in the runtime library to expose this functionality to the linked application.
+</p>
+<h3><span class="mw-headline" id="System_initialization_code">System initialization code</span></h3>
+<p>It is possible to perform the initialization of the underlying hardware platform within the run-time library.<br />
+AdaCore GNAT’s ARM bareboard target run-times employ this method of system initialization, packaging the run-time library as a combined ‘board support package’.<br />
+These run-times typically include a linker script containing a memory map of the target as well as assembly code for initializing the target platform. These linker scripts are not used in the building of the run-time library itself, but are invoked when a program is linked against the run-time library. This is facilitated via the use of additional configuration files bundled with the run-time library.<br />
+GNAT/Gprbuild is capable of building Asm/C files bundled inside a GNAT project, which allows us to include platform initialization code. XML configuration files can be used to provide additional configuration options to Gprconfig when linking against the run-time library. These XML files are generally referred to in official documentation as gprbuild’s ‘knowledge base’. In addition to its own directory, Gprbuild will search the source directories for the program being compiled, as well as its run-time library directories. To see what directories are searched for source and configuration files, the ‘gprls’ utility can be used. Example usage is <tt>gprls -v -P project.gpr</tt>.
+</p><p>A practical usage of this would be to define a <tt>runtime.xml</tt> file, placed within the final <tt>adainclude</tt> directory of the run-time library. This is used to automatically use a linker script for the target platform when the kernel is linked against the library.
+</p>
+<div class="mw-highlight mw-highlight-lang-xml mw-content-ltr" dir="ltr"><pre><span></span><span class="cp">&lt;?xml version=&quot;1.0&quot;&#160;?&gt;</span>
+<span class="nt">&lt;gprconfig&gt;</span>
+<span class="nt">&lt;configuration&gt;</span>
+    <span class="nt">&lt;config&gt;</span>
+      <span class="cp">&lt;![CDATA[</span>
+<span class="cp">        package Linker is</span>
+<span class="cp">            for Required_Switches use Linker&#39;Required_Switches &amp; (</span>
+<span class="cp">              &quot;-T${RUNTIME_DIR(ada)}/x86-multiboot.ld&quot;</span>
+<span class="cp">            );</span>
+<span class="cp">        end Linker;</span>
+<span class="cp">      ]]&gt;</span>
+   <span class="nt">&lt;/config&gt;</span>
+  <span class="nt">&lt;/configuration&gt;</span>
+<span class="nt">&lt;/gprconfig&gt;</span>
+</pre></div>
+<p>Where <tt>${RUNTIME}</tt> is a predefined variable made available by Gprbuild.
+</p><p>Additional documentation for these features can be found at: <a rel="nofollow" class="external autonumber" href="http://docs.adacore.com/live/wave/gprbuild/html/gprbuild_ug/gprbuild_ug/companion_tools.html#configuration">[4]</a>
+</p>
+<h3><span class="mw-headline" id="Exceptions">Exceptions</span></h3>
+<p>Exception handling in Ada is implemented in the run-time library package <tt>Ada.Exceptions</tt>. This is defined in section 11 of the the Ada Language Reference Manual and can be referenced <a rel="nofollow" class="external text" href="http://www.adaic.com/resources/add_content/standards/12rm/html/RM-11-4-1.html">here</a>. Comprehensive exception handling functionality is typically disabled for bare-metal targets due to the large amount of underlying functionality required for its implementation, such as stack unwinding, streams, secondary stack, etc. As such it is not normally included in the run-time library for such targets. Local handling exceptions within a subprogram is still possible without the <tt>Ada.Exceptions</tt> package being implemented for a target.
+</p><p>For a bare-bones run-time library used for operating-system development it is recommended to use the <tt>No_Exception_Propagation</tt> restriction pragma. This restriction ensures that an exception is never propagated over a subprogram boundary into an outer scope. The implementation of exception handling over subprogram boundaries typically requires the use of <tt>setjmp/longjmp</tt>, which are unsuitable for the purpose of bare-metal development. With this restriction applied the only case in which an exception may be raised is when the exception handler is contained within the same subprogram. According to <a rel="nofollow" class="external text" href="https://docs.adacore.com/gnat_rm-docs/html/gnat_rm/gnat_rm/standard_and_implementation_defined_restrictions.html#no-exception-propagation">official documentation</a>, the effect of this is that raising an exception is essentially a <tt>goto</tt> statement.
+</p><p>Any exception not handled explicitly within the same subprogram will be caught by the <tt>Last_Chance_Handler</tt> subprogram.
+</p>
+<h3><span class="mw-headline" id="Elaboration">Elaboration</span></h3>
+<p>Ada refers to the expansion of definitions contained within package files as elaboration. The Ada standard defines the pragma directive <tt>Preelaborate</tt> to specify that a package requires no elaboration at run-time. This is ideal for our purposes since our run-time library will be instantiated and initialized at boot time, prior to having a fully functional system environment. At this point we have limited facilities for initializing run-time library components. Marking our run-time library components as pre-elaborable ensures that they do not require any additional execution at run-time, any violation of this pragma will generate a compile-time error. The legality rules for use of this directive can be found in the Reference Manual: <a rel="nofollow" class="external autonumber" href="http://ada-auth.org/standards/12rm/html/RM-C-4.html">[5]</a>
+</p><p>The language standard also defines the ‘pure’ pragma. This pragma specifies that any call to any of the package’s units should be considered to have no side-effects. This is ideal in many circumstances, but a developer would be advised to be wary that this pragma advises the compiler that it may cache subsequent calls to the same package unit. As a result this pragma directive is not suitable for a package using any volatile memory access.
+</p><p>Additional documentation on this subject is available from AdaCore at: 
+<a rel="nofollow" class="external autonumber" href="https://docs.adacore.com/gnat_ugn-docs/html/gnat_ugn/gnat_ugn/elaboration_order_handling_in_gnat.html">[6]</a>
+</p>
+<h3><span class="mw-headline" id="Image_attributes">Image attributes</span></h3>
+<p>Scalar types in Ada support the <tt>Image</tt> attribute. This attribute returns a string representation of a variable. This is of particular significance for operating-system development due to the need to ouput debugging information in string format to the console. The <tt>Image</tt> attribute is defined in <a rel="nofollow" class="external text" href="https://www.adaic.org/resources/add_content/standards/05rm/html/RM-K.html">Annex K</a> of the Ada Language Reference Manual. Support for the image attributes of a particular scalar type is implemented in the run-time library.<br />
+For operating-system development, arguably the most important types to be able to print are unsigned integer types. By default, the GNAT compiler expects functionality for imaging unsigned integer types to be defined in the package <tt>s-imguns.ads</tt> and its associated package body. Provided below is an example implementation:
+</p><p><b>s-imguns.ads</b>
+</p>
+<div class="mw-highlight mw-highlight-lang-ada mw-content-ltr" dir="ltr"><pre><span></span><span class="kn">with</span> <span class="nn">System.Unsigned_Types</span><span class="p">;</span>
+
+<span class="c1">-------------------------------------------------------------------------------</span>
+<span class="c1">--  SYSTEM.IMG_UNS</span>
+<span class="c1">--</span>
+<span class="c1">--  Purpose:</span>
+<span class="c1">--    This package provides an implementation of the Image attribute for</span>
+<span class="c1">--    unsigned integer types.</span>
+<span class="c1">-------------------------------------------------------------------------------</span>
+<span class="kd">package</span> <span class="nc">System.Img_Uns</span> <span class="kr">is</span>
+   <span class="kr">pragma</span> <span class="cp">Pure</span><span class="p">;</span>
+
+   <span class="c1">----------------------------------------------------------------------------</span>
+   <span class="c1">--  Image_Unsigned</span>
+   <span class="c1">--</span>
+   <span class="c1">--  purpose:</span>
+   <span class="c1">--    Computes Unsigned&#39;Image (V) and stores the result in S (1 .. P) \</span>
+   <span class="c1">--    setting the resulting value of P. The caller guarantees that S is</span>
+   <span class="c1">--    long enough to hold the result, and that S&#39;First is 1.</span>
+   <span class="c1">----------------------------------------------------------------------------</span>
+   <span class="kd">procedure</span> <span class="nf">Image_Unsigned</span> <span class="p">(</span>
+     <span class="nv">V</span> <span class="p">: </span>       <span class="nv">System</span><span class="p">.</span><span class="nv">Unsigned_Types</span><span class="p">.</span><span class="nv">Unsigned</span><span class="p">;</span>
+     <span class="nv">S</span> <span class="p">: </span><span class="nv">in</span> <span class="nv">out</span> <span class="nv">String</span><span class="p">;</span>
+     <span class="nv">P</span> <span class="p">: </span><span class="nv">out</span>    <span class="nv">Natural</span>
+   <span class="p">)</span>
+   <span class="kn">with</span> <span class="nn">Inline</span><span class="p">;</span>
+
+   <span class="c1">----------------------------------------------------------------------------</span>
+   <span class="c1">--  Set_Image_Unsigned</span>
+   <span class="c1">--</span>
+   <span class="c1">--  Purpose:</span>
+   <span class="c1">--    Stores the image of V in S starting at S (P + 1), P is updated to</span>
+   <span class="c1">--    point to the last character stored. The value stored is identical</span>
+   <span class="c1">--    to the value of Unsigned&#39;Image (V) except that no leading space is</span>
+   <span class="c1">--    stored. The caller guarantees that S is long enough to hold the</span>
+   <span class="c1">--    result. S need not have a lower bound of 1.</span>
+   <span class="c1">----------------------------------------------------------------------------</span>
+   <span class="kd">procedure</span> <span class="nf">Set_Image_Unsigned</span> <span class="p">(</span>
+      <span class="nv">V</span> <span class="p">: </span>       <span class="nv">System</span><span class="p">.</span><span class="nv">Unsigned_Types</span><span class="p">.</span><span class="nv">Unsigned</span><span class="p">;</span>
+      <span class="nv">S</span> <span class="p">: </span><span class="nv">in</span> <span class="nv">out</span> <span class="nv">String</span><span class="p">;</span>
+      <span class="nv">P</span> <span class="p">: </span><span class="nv">in</span> <span class="nv">out</span> <span class="nv">Natural</span>
+   <span class="p">);</span>
+
+<span class="kr">end</span> <span class="nf">System.Img_Uns</span><span class="p">;</span>
+</pre></div>
+<p><b>s-imguns.adb</b>
+</p>
+<div class="mw-highlight mw-highlight-lang-ada mw-content-ltr" dir="ltr"><pre><span></span><span class="kn">with</span> <span class="nn">System.Unsigned_Types</span><span class="p">;</span> <span class="kn">use</span> <span class="nn">System.Unsigned_Types</span><span class="p">;</span>
+
+<span class="kd">package</span> <span class="kd">body</span> <span class="nc">System.Img_Uns</span> <span class="kr">is</span>
+   <span class="c1">----------------------------------------------------------------------------</span>
+   <span class="c1">--  Image_Unsigned</span>
+   <span class="c1">----------------------------------------------------------------------------</span>
+   <span class="kd">procedure</span> <span class="nf">Image_Unsigned</span> <span class="p">(</span>
+     <span class="nv">V</span> <span class="p">: </span>       <span class="nv">System</span><span class="p">.</span><span class="nv">Unsigned_Types</span><span class="p">.</span><span class="nv">Unsigned</span><span class="p">;</span>
+     <span class="nv">S</span> <span class="p">: </span><span class="nv">in</span> <span class="nv">out</span> <span class="nv">String</span><span class="p">;</span>
+     <span class="nv">P</span> <span class="p">: </span><span class="nv">out</span>    <span class="nv">Natural</span>
+   <span class="p">)</span> <span class="kr">is</span>
+      <span class="kr">pragma</span> <span class="cp">Assert</span> <span class="p">(</span><span class="n">S</span><span class="p">&#39;</span><span class="na">First</span> <span class="o">=</span> <span class="mi">1</span><span class="p">);</span>
+   <span class="kr">begin</span>
+      <span class="n">S</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">:=</span> <span class="s s-Character">&#39; &#39;</span><span class="p">;</span>
+      <span class="n">P</span> <span class="p">:=</span> <span class="mi">1</span><span class="p">;</span>
+      <span class="n">Set_Image_Unsigned</span> <span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">P</span><span class="p">);</span>
+   <span class="kr">exception</span>
+      <span class="kr">when</span> <span class="n">Constraint_Error</span> <span class="p">=&gt;</span>
+         <span class="kr">return</span><span class="p">;</span>
+   <span class="kr">end</span> <span class="nf">Image_Unsigned</span><span class="p">;</span>
+
+   <span class="c1">----------------------------------------------------------------------------</span>
+   <span class="c1">--  Set_Image_Unsigned</span>
+   <span class="c1">--</span>
+   <span class="c1">--  Implementation Notes:</span>
+   <span class="c1">--    - Refer to: http://www.nihamkin.com/2016/11/25/</span>
+   <span class="c1">--      writing-linux-modules-in-ada-part-3/</span>
+   <span class="c1">----------------------------------------------------------------------------</span>
+   <span class="kd">procedure</span> <span class="nf">Set_Image_Unsigned</span> <span class="p">(</span>
+     <span class="nv">V</span> <span class="p">: </span>       <span class="nv">Unsigned</span><span class="p">;</span>
+     <span class="nv">S</span> <span class="p">: </span><span class="nv">in</span> <span class="nv">out</span> <span class="nv">String</span><span class="p">;</span>
+     <span class="nv">P</span> <span class="p">: </span><span class="nv">in</span> <span class="nv">out</span> <span class="nv">Natural</span>
+   <span class="p">)</span> <span class="kr">is</span>
+      <span class="c1">--  The number of digits in the resulting string.</span>
+      <span class="n">Digit_Count</span> <span class="p">:</span> <span class="kt">Natural</span> <span class="p">:=</span> <span class="mi">0</span><span class="p">;</span>
+   <span class="kr">begin</span>
+      <span class="nl">Get_Digit_Count</span> <span class="p">:</span>
+         <span class="kr">declare</span>
+            <span class="n">V2</span> <span class="p">:</span> <span class="n">Unsigned</span> <span class="p">:=</span> <span class="n">V</span><span class="p">;</span>
+         <span class="kr">begin</span>
+            <span class="kr">while</span> <span class="n">V2</span> <span class="o">/=</span> <span class="mi">0</span> <span class="kr">loop</span>
+               <span class="n">Digit_Count</span> <span class="p">:=</span> <span class="n">Digit_Count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+               <span class="n">V2</span> <span class="p">:=</span> <span class="n">V2</span> <span class="o">/</span> <span class="mi">10</span><span class="p">;</span>
+            <span class="kr">end</span> <span class="kr">loop</span><span class="p">;</span>
+         <span class="kr">exception</span>
+            <span class="kr">when</span> <span class="n">Constraint_Error</span> <span class="p">=&gt;</span>
+               <span class="n">Digit_Count</span> <span class="p">:=</span> <span class="mi">0</span><span class="p">;</span>
+         <span class="kr">end</span> <span class="nf">Get_Digit_Count</span><span class="p">;</span>
+
+      <span class="nl">Write_To_String</span> <span class="p">:</span>
+         <span class="kr">begin</span>
+            <span class="kr">if</span> <span class="n">Digit_Count</span> <span class="o">=</span> <span class="mi">0</span> <span class="kr">then</span>
+               <span class="n">P</span> <span class="p">:=</span> <span class="n">P</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+               <span class="n">S</span> <span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="p">:=</span> <span class="p">&#39;</span><span class="na">0</span><span class="p">&#39;;</span>
+            <span class="kr">else</span>
+               <span class="kr">for</span> <span class="n">I</span> <span class="ow">in</span> <span class="kr">reverse</span> <span class="mi">0</span> <span class="p">..</span> <span class="p">(</span><span class="n">Digit_Count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="kr">loop</span>
+                  <span class="n">P</span> <span class="p">:=</span> <span class="n">P</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+                  <span class="n">S</span> <span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="p">:=</span> <span class="kt">Character</span><span class="p">&#39;</span><span class="na">Val</span> <span class="p">(</span><span class="mi">48</span> <span class="o">+</span> <span class="p">(</span><span class="n">V</span> <span class="o">/</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">I</span><span class="p">)</span> <span class="ow">rem</span> <span class="mi">10</span><span class="p">);</span>
+               <span class="kr">end</span> <span class="kr">loop</span><span class="p">;</span>
+            <span class="kr">end</span> <span class="kr">if</span><span class="p">;</span>
+         <span class="kr">exception</span>
+            <span class="kr">when</span> <span class="n">Constraint_Error</span> <span class="p">=&gt;</span>
+               <span class="kr">return</span><span class="p">;</span>
+         <span class="kr">end</span> <span class="nf">Write_To_String</span><span class="p">;</span>
+   <span class="kr">end</span> <span class="nf">Set_Image_Unsigned</span><span class="p">;</span>
+
+<span class="kr">end</span> <span class="nf">System.Img_Uns</span><span class="p">;</span>
+</pre></div>
+<p>User-defined images for a given type can be implemented by overriding the default implementation of the <tt>Put_Image</tt> attribute.
+</p>
+<h2><span class="mw-headline" id="Initialization">Initialization</span></h2>
+<p>The Ada run-time library is initialized by calling the <tt>adainit</tt> procedure. This procedure is responsible for the elaboration of the individual packages within the run-time library.
+</p><p>It is the responsibility of the platform initialization code to call this procedure prior to using any of the subprograms in the run-time library.<br />
+As noted <a rel="nofollow" class="external text" href="https://gcc.gnu.org/onlinedocs/gnat_ugn/Binding-with-Non-Ada-Main-Programs.html">here</a> <i>"...it is assumed that the basic execution environment must be setup to be appropriate for Ada execution at the point where the first Ada subprogram is called. In particular, if the Ada code will do any floating-point operations, then the FPU must be setup in an appropriate manner. For the case of the x86, for example, full precision mode is required..."</i><br />
+</p><p>The Ada standard provides the following implementation advice: <i>"If an implementation supports Export for a given language, then it should also allow the main subprogram to be written in that language. It should support some mechanism for invoking the elaboration of the Ada library units included in the system, and for invoking the finalization of the environment task. On typical systems, the recommended mechanism is to provide two subprograms whose link names are '<tt>adainit</tt>' and '<tt>adafinal</tt>'. Adainit should contain the elaboration code for library units. Adafinal should contain the finalization code. These subprograms should have no effect the second and subsequent time they are called."</i> Additional documentation can be found <a rel="nofollow" class="external text" href="http://ada-auth.org/standards/12rm/html/RM-B-1.html">here</a>
+</p><p>In the case of a pure Ada kernel, a good place to put this procedure call is within the boot code assembly to ensure that the run-time is properly initialized prior to the jump to Ada code.
+</p>
+<h2><span class="mw-headline" id="Additional_Resources">Additional Resources</span></h2>
+<p>Additional documentation on the subject of creating a new run-time library is available from AdaCore at: 
+<a rel="nofollow" class="external autonumber" href="https://docs.adacore.com/gnathie_ug-docs/html/gnathie_ug/gnathie_ug/the_gnat_configurable_run_time_facility.html">[7]</a>
+</p><p>Information regarding porting AdaCore's ARM runtimes to a new system can be found here:
+<a rel="nofollow" class="external autonumber" href="https://blog.adacore.com/porting-the-ada-runtime-to-a-new-arm-board">[8]</a>
+</p>
+<!-- 
+NewPP limit report
+Cached time: 20250211124434
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.071 seconds
+Real time usage: 1.342 seconds
+Preprocessor visited node count: 103/1000000
+Post‐expand include size: 324/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 3/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 33439/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    1.002      1 -total
+ 87.51%    0.877      2 Template:Wikitable
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:4421-0!canonical and timestamp 20250211124433 and revision id 24723.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Ada_Runtime_Library&amp;oldid=24723">https://wiki.osdev.org/index.php?title=Ada_Runtime_Library&amp;oldid=24723</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:Ada" title="Category:Ada">Ada</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Ada+Runtime+Library" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Ada_Runtime_Library#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Ada_Runtime_Library" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:Ada_Runtime_Library&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Ada_Runtime_Library"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Ada_Runtime_Library&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Ada_Runtime_Library&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Ada_Runtime_Library" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Ada_Runtime_Library" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Ada_Runtime_Library&amp;oldid=24723" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Ada_Runtime_Library&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 25 May 2020, at 14:11.</li>
+	<li id="footer-info-0">This page has been accessed 2,844 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Ada_Runtime_Library&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.071","walltime":"1.342","ppvisitednodes":{"value":103,"limit":1000000},"postexpandincludesize":{"value":324,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":3,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":33439,"limit":5000000},"timingprofile":["100.00%    1.002      1 -total"," 87.51%    0.877      2 Template:Wikitable"]},"cachereport":{"timestamp":"20250211124434","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":1448});});</script>
+</body>
+</html>

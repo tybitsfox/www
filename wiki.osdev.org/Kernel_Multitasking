@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Kernel Multitasking - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"b942920a0ec395fcfc50736a","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Kernel_Multitasking","wgTitle":"Kernel Multitasking","wgCurRevisionId":28030,"wgRevisionId":28030,"wgArticleId":4503,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Task Models","Multitasking"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Kernel_Multitasking","wgRelevantArticleId":4503,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions"
+:{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Kernel_Multitasking rootpage-Kernel_Multitasking skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Kernel Multitasking</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Kernel_Multitasking#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Kernel_Multitasking#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>When a task (process, thread, application, program, ...) is using the CPU, some of the task's state is stored in the CPU - things like the contents of registers, the address of the task's current stack, the current instruction pointer, which virtual address space the task is using, etc.
+</p><p>A task switch involves saving any state that the previous task had in the CPU (that the task may have modified) and then loading any state that the next task expects to be in the CPU. Typically a kernel stores at some of this state on the task's (kernel) stack and some of the state in data structure/s in kernel-space (e.g. in a "task control block" structure).
+</p><p>There are two very different ways of implementing multi-tasking, depending on how the kernel stacks are done.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Kernel_Multitasking#Kernel_Stack_Per_Task"><span class="tocnumber">1</span> <span class="toctext">Kernel Stack Per Task</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="Kernel_Multitasking#Kernel_Stack_Per_CPU"><span class="tocnumber">2</span> <span class="toctext">Kernel Stack Per CPU</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="Kernel_Multitasking#See_Also"><span class="tocnumber">3</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-4"><a href="Kernel_Multitasking#Articles"><span class="tocnumber">3.1</span> <span class="toctext">Articles</span></a></li>
+<li class="toclevel-2 tocsection-5"><a href="Kernel_Multitasking#Threads"><span class="tocnumber">3.2</span> <span class="toctext">Threads</span></a></li>
+<li class="toclevel-2 tocsection-6"><a href="Kernel_Multitasking#External_Links"><span class="tocnumber">3.3</span> <span class="toctext">External Links</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Kernel_Stack_Per_Task">Kernel Stack Per Task</span></h2>
+<p>In most kernels, each task has its own kernel stack used when a task moves between user-space (and user stack) and kernel (and kernel stack). In this case, task switches only ever happen after something else (IRQ, exception, system call) has already caused the task to switch to kernel code and kernel stack; which means that task switches can only ever occur between tasks that are running kernel code.
+</p><p>For example (NASM syntax, 32-bit 80x86, "cdecl" calling convention, single-CPU only/globals used for "per CPU" variables, no support for FPU/MMX/SSE/AVX, untested):
+</p>
+<pre>;C declaration:
+;   void switch_tasks(thread_control_block *next_thread);
+;
+;WARNING: Caller is expected to disable IRQs before calling, and enable IRQs again after function returns
+
+switch_tasks:
+
+    ;Save previous task's state
+
+    ;Notes:
+   &#160;;  For cdecl; EAX, ECX, and EDX are already saved by the caller and don't need to be saved again
+   &#160;;  EIP is already saved on the stack by the caller's "CALL" instruction
+   &#160;;  The task isn't able to change CR3 so it doesn't need to be saved
+   &#160;;  Segment registers are constants (while running kernel code) so they don't need to be saved
+
+    push ebx
+    push esi
+    push edi
+    push ebp
+
+    mov edi,[current_task_TCB]    ;edi = address of the previous task's "thread control block"
+    mov [edi+TCB.ESP],esp         ;Save ESP for previous task's kernel stack in the thread's TCB
+
+    ;Load next task's state
+
+    mov esi,[esp+(4+1)*4]         ;esi = address of the next task's "thread control block" (parameter passed on stack)
+    mov [current_task_TCB],esi    ;Current task's TCB is the next task TCB
+
+    mov esp,[esi+TCB.ESP]         ;Load ESP for next task's kernel stack from the thread's TCB
+    mov eax,[esi+TCB.CR3]         ;eax = address of page directory for next task
+    mov ebx,[esi+TCB.ESP0]        ;ebx = address for the top of the next task's kernel stack
+    mov [TSS.ESP0],ebx            ;Adjust the ESP0 field in the TSS (used by CPU for for CPL=3 -&gt; CPL=0 privilege level changes)
+    mov ecx,cr3                   ;ecx = previous task's virtual address space
+
+    cmp eax,ecx                   ;Does the virtual address space need to being changed?
+    je .doneVAS                  &#160;; no, virtual address space is the same, so don't reload it and cause TLB flushes
+    mov cr3,eax                  &#160;; yes, load the next task's virtual address space
+.doneVAS:
+
+    pop ebp
+    pop edi
+    pop esi
+    pop ebx
+
+    ret                           ;Load next task's EIP from its kernel stack
+</pre>
+<p>Note that the low-level task switch code should be written in pure assembly. If it's written in inline assembly in the middle of a C function then the compiler may add its own "function prologue" and "function epilogue" code that changes the layout of the stack. This is important because when a new task is being created the kernel needs to put values on the new task's kernel stack to match the values that the "switch_tasks" expects to pop off of the new task's stack.
+</p><p>Also note that (for kernels primarily written in higher level languages) the low-level task switch code may be the only part of the scheduler that needs to be rewritten when porting the kernel to a different architecture.
+</p><p>This low-level task switch code may be called directly from other places in the kernel (e.g. when a task is being pre-empted and the caller knows exactly which task is pre-empting the current task); but may also be called by higher-level code that selects a task to switch to (e.g. when the currently running task is being terminated and the kernel doesn't know which task to switch to).
+</p>
+<h2><span class="mw-headline" id="Kernel_Stack_Per_CPU">Kernel Stack Per CPU</span></h2>
+<p>For some rare kernels (mostly only a few micro-kernels), there is only one kernel stack per CPU (and each task doesn't have its own kernel stack). In this case task switching becomes radically different because the kernel's stack can't be used to store any task's state. Instead, the user-space state has to be saved in some kind of data structure ("thread control block") immediately after any switch from user-space to kernel-space; and the user-space state has to be loaded from that structure immediately before any switch from kernel-space to user-space.
+</p><p>In this case; typically the kernel has a "thread to return to" variable (for each CPU); and any kernel code can modify this variable when it decides a task switch should happen.
+</p><p>Note that "kernel stack per CPU" is not recommended for beginners; partly because it's only beneficial in rare cases (e.g. it'd be silly for a monolithic kernel), and partly because it becomes a lot more complex as soon as you try to overcome the latency problems caused by having a non-preemptable kernel (e.g. expensive operations, like creating a new process, may need to be broken up into multiple smaller/less expensive pieces that are separated by explicit "preemption points").
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="Articles">Articles</span></h3>
+<ul><li><a href="Context_Switching" title="Context Switching">Context Switching</a></li>
+<li><a href="Multitasking_Systems" title="Multitasking Systems">Multitasking Systems</a></li>
+<li><a href="Monotasking_Systems" title="Monotasking Systems">Monotasking Systems</a></li>
+<li><a href="Scheduling_Algorithms" title="Scheduling Algorithms">Scheduling Algorithms</a></li></ul>
+<h3><span class="mw-headline" id="Threads">Threads</span></h3>
+<ul><li><a href="http://forum.osdev.org/viewtopic.php?t=9669" class="extiw" title="topic:9669">Designing a kernel to be preemptible</a></li>
+<li><a href="http://forum.osdev.org/viewtopic.php?t=812" class="extiw" title="topic:812">Making a fully preemptible kernel</a></li></ul>
+<h3><span class="mw-headline" id="External_Links">External Links</span></h3>
+<ul><li><a href="https://wikipedia.org/wiki/Computer_multitasking" class="extiw" title="wikipedia:Computer multitasking"> Computer Multitasking</a> on Wikipedia.</li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211125423
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.009 seconds
+Real time usage: 0.009 seconds
+Preprocessor visited node count: 29/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 1981/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:4503-0!canonical and timestamp 20250211125423 and revision id 28030.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Kernel_Multitasking&amp;oldid=28030">https://wiki.osdev.org/index.php?title=Kernel_Multitasking&amp;oldid=28030</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="./Category:Task_Models" title="Category:Task Models">Task Models</a></li><li><a href="./Category:Multitasking" title="Category:Multitasking">Multitasking</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Kernel+Multitasking" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Kernel_Multitasking#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Kernel_Multitasking" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="mw-list-item"><a href="./Talk:Kernel_Multitasking" rel="discussion" class="mw-redirect" title="Discussion about the content page [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Kernel_Multitasking"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Kernel_Multitasking&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Kernel_Multitasking&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Kernel_Multitasking" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Kernel_Multitasking" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Kernel_Multitasking&amp;oldid=28030" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Kernel_Multitasking&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 9 July 2023, at 18:36.</li>
+	<li id="footer-info-0">This page has been accessed 2,842 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Kernel_Multitasking&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.009","walltime":"0.009","ppvisitednodes":{"value":29,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":1981,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250211125423","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":109});});</script>
+</body>
+</html>

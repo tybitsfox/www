@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Hard Build System - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"9354543f9347c585b97cf314","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Hard_Build_System","wgTitle":"Hard Build System","wgCurRevisionId":22407,"wgRevisionId":22407,"wgArticleId":3698,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","FAQ"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Hard_Build_System","wgRelevantArticleId":3698,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],
+"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Hard_Build_System rootpage-Hard_Build_System skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Hard Build System</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Hard_Build_System#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Hard_Build_System#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><dl><dd><i>Everything should be made as simple as possible, but not simpler.</i></dd></dl>
+<p>Build systems for operating systems implement a complex task and tend to be highly customizable. It's crucial to pick good abstractions to manage this complexity. A source code tree has many aspects of configuration, such as the target processor architecture, what optimizations and warnings are used, where the code is installed, which compiler is used, and so on. No solution fits all.
+</p><p>It's tempting to fall in the trap of providing an easy build system. The user merely runs a script with administrator access, causing system-wide changes to occur, source code to be built, programs installed, and a somehow an operating system image appear on the other end. No effort, just waiting. This approach is too simple and ends up being too complex.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Hard_Build_System#Example"><span class="tocnumber">1</span> <span class="toctext">Example</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="Hard_Build_System#Hard_Build_System"><span class="tocnumber">2</span> <span class="toctext">Hard Build System</span></a>
+<ul>
+<li class="toclevel-2 tocsection-3"><a href="Hard_Build_System#Help_the_User"><span class="tocnumber">2.1</span> <span class="toctext">Help the User</span></a></li>
+<li class="toclevel-2 tocsection-4"><a href="Hard_Build_System#Cross-Compilation_is_Hard"><span class="tocnumber">2.2</span> <span class="toctext">Cross-Compilation is Hard</span></a></li>
+<li class="toclevel-2 tocsection-5"><a href="Hard_Build_System#Separate_the_Toolchain"><span class="tocnumber">2.3</span> <span class="toctext">Separate the Toolchain</span></a></li>
+<li class="toclevel-2 tocsection-6"><a href="Hard_Build_System#Doing_is_Learning"><span class="tocnumber">2.4</span> <span class="toctext">Doing is Learning</span></a></li>
+<li class="toclevel-2 tocsection-7"><a href="Hard_Build_System#Good_Users_Script"><span class="tocnumber">2.5</span> <span class="toctext">Good Users Script</span></a></li>
+<li class="toclevel-2 tocsection-8"><a href="Hard_Build_System#Configuration_is_Personal"><span class="tocnumber">2.6</span> <span class="toctext">Configuration is Personal</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-9"><a href="Hard_Build_System#Easy_Build_System"><span class="tocnumber">3</span> <span class="toctext">Easy Build System</span></a>
+<ul>
+<li class="toclevel-2 tocsection-10"><a href="Hard_Build_System#Interactive_Build_System"><span class="tocnumber">3.1</span> <span class="toctext">Interactive Build System</span></a></li>
+<li class="toclevel-2 tocsection-11"><a href="Hard_Build_System#Easy_Contributions_Fallacy"><span class="tocnumber">3.2</span> <span class="toctext">Easy Contributions Fallacy</span></a></li>
+<li class="toclevel-2 tocsection-12"><a href="Hard_Build_System#No_Error_Recovery"><span class="tocnumber">3.3</span> <span class="toctext">No Error Recovery</span></a></li>
+<li class="toclevel-2 tocsection-13"><a href="Hard_Build_System#Sourcing_Scripts"><span class="tocnumber">3.4</span> <span class="toctext">Sourcing Scripts</span></a></li>
+<li class="toclevel-2 tocsection-14"><a href="Hard_Build_System#Trust_Issues"><span class="tocnumber">3.5</span> <span class="toctext">Trust Issues</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-15"><a href="Hard_Build_System#See_Also"><span class="tocnumber">4</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-16"><a href="Hard_Build_System#Articles"><span class="tocnumber">4.1</span> <span class="toctext">Articles</span></a></li>
+<li class="toclevel-2 tocsection-17"><a href="Hard_Build_System#External_Links"><span class="tocnumber">4.2</span> <span class="toctext">External Links</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Example">Example</span></h2>
+<p>Cross-building a fully-featured Unix-like operating system with an user-space and ports could be done using these steps (requiring decisions):
+</p>
+<ul><li>Download the source code (toolchain sources, core operating system, ports).
+<ul><li>Decision: What mirrors to download from.</li>
+<li>Decision: Where to install the source code.</li></ul></li>
+<li>Install required programs as described in the documentation.
+<ul><li>Decision: Where to get the programs from (package management (deb, rpm, ...), build from source, ...).</li>
+<li>Decision: What version of the programs are used.</li>
+<li>Decision: Where to install the programs.</li></ul></li>
+<li>Build and install custom programs for this operating system.
+<ul><li>Decision: What compiler is used and the compiler options.</li>
+<li>Decision: Where to install the programs.</li></ul></li>
+<li>Prepare a <a href="System_Root" class="mw-redirect" title="System Root">System Root</a> containing the standard library headers (needed to make a <a href="Hosted_GCC_Cross-Compiler" title="Hosted GCC Cross-Compiler">Hosted GCC Cross-Compiler</a>).
+<ul><li>Decision: Where the system root is located.</li>
+<li>Decision: What processor architecture is used.</li></ul></li>
+<li>Build and install a cross toolchain:
+<ul><li>Decision: What compiler and compiler options are used to compile the cross-compiler.</li>
+<li>Decision: Where to install the cross-compiler.</li></ul></li>
+<li>Build the core operating system and ports and install into the system root.
+<ul><li>Decision: What cross-compiler to use and the compiler options used to compile your operating system and ports.</li>
+<li>Decision: Whether this is a debug build and whether compiler sanitation and security measures are used.</li>
+<li>Decision: What ports is to be built.</li></ul></li>
+<li>Create a bootable image from the sysroot contents.
+<ul><li>Decision: What boot method is used (cdrom, harddisk, floppy).</li>
+<li>Decision: What to include and what not to (if making a minimal build).</li>
+<li>Decision: What drivers are needed in the initrd.</li></ul></li>
+<li>Run the operating system in a virtual machine.
+<ul><li>Decision: Which virtual machine is used.</li>
+<li>Decision: What processor features, simulated hardware and how much memory is available.</li>
+<li>Decision: Whether hardware acceleration is enabled.</li></ul></li>
+<li>Install the operating system on real hardware.
+<ul><li>Decision: What bootloader is used.</li>
+<li>Decision: What harddisk and partition is used.</li>
+<li>Decision: What filesystem is used.</li></ul></li></ul>
+<p>It is obvious there are many more decisions to make and that users will make different decisions. You shouldn't make most of these decisions for the user. It is the user's responsibility to install software and make system-wide changes, not your build system's. Rather, you should document what needs to be done and let the user do it.
+</p>
+<h2><span class="mw-headline" id="Hard_Build_System">Hard Build System</span></h2>
+<p>An Hard Build System just builds the operating system. The user prepares the build environment manually by following the documentation, or perhaps using convenience scripts. It trusts the user is able to install prerequisite programs and libraries. It trusts the user to download the necessary source code.
+</p><p>The user is in control, the user decides what to do and does it manually or invokes the convenient scripts if applicable. This is in contrast to the easy build system, where the script is in control and the user might be consulted. The goal isn't to make things hard, but to embrace that particular decisions must be made by the user and make the design no simpler.
+</p>
+<h3><span class="mw-headline" id="Help_the_User">Help the User</span></h3>
+<p>Help the user do things:
+</p>
+<ul><li>Document the process.</li>
+<li>Link to the primary source code mirror.</li>
+<li>Document prerequisite programs and list package names for common Linux distributions.</li>
+<li>Document how to create a cross-compiler (Maybe offer a pre-built toolchain for common systems).</li>
+<li>Have an easy way to create a system root and populate it with standard library headers.</li>
+<li>Default to sane optimization settings if unspecified.</li></ul>
+<p>Document the primary way of doing things, and offer secondary short-cuts for those that desire.
+</p>
+<h3><span class="mw-headline" id="Cross-Compilation_is_Hard">Cross-Compilation is Hard</span></h3>
+<p>A cross-compilation inherently have more complexity than a native compilation. For instance, two toolchains exist: The one that makes local programs, and the one that cross-compiles. A <a href="System_Root" class="mw-redirect" title="System Root">System Root</a> is used. You have to prepare the compilation specially.
+</p><p>The solution is to accept this fact. Cross-compiling your operating system is the secondary way to build your operating system and it can only be so simple. The primary way to build your operating system is on itself. You might not be there yet, but design your build system to run on your own operating system primarily.
+</p><p>Have your build system always compile for the current system by default. This is the natural choice when you primarily develop under your OS. Have the user explicitly request cross-compilation code by setting <tt>CC</tt>, <tt>HOST</tt>, or perhaps passing a --host option to your build system. When your operating system supports multiple processors, it's not clear which platform to target by default when cross-compiling. What if you are on an ARM system compiling your MIPS and x86-64 OS? Solve the issue by targeting the local operating system (even if it is non-sensible to compile your OS with a Linux compiler) and thus forcing the user to specify the intended cross target.
+</p>
+<h3><span class="mw-headline" id="Separate_the_Toolchain">Separate the Toolchain</span></h3>
+<p>When you develop your operating system under itself, you use the system compiler to compile your operating system. The system compiler is merely a program installed in a system directory. It is natural for the same to be the case when cross-compiling: The cross-compiler is just a program installed somewhere.
+</p><p>Store the cross-compiler in a directory the user chooses, such as <tt>$HOME/opt/x86_64-myos</tt> and put its <tt>bin</tt> in the <tt>PATH</tt>. Don't put it inside the operating system's source directory, it's unrelated to that.
+</p><p>The compiler built by your toolchain should be the native compiler on your operating system, cross-compiled by the cross-compiler, when you get this far.
+</p>
+<h3><span class="mw-headline" id="Doing_is_Learning">Doing is Learning</span></h3>
+<p>The user learns by having to manually do operations following documentation. This information is crucial in operating system's development, where the developer is required to be an expert to succeed. Being able to make a cross-compiler is great practice for porting a compiler to your OS. Understanding the compilation process is helpful when it fails.
+</p>
+<h3><span class="mw-headline" id="Good_Users_Script">Good Users Script</span></h3>
+<p>You may find that you always make particular decisions (even though some people might take other decisions). In such cases, you can simply write personal scripts that make things easy for you. You can share those scripts, others can be adapt them to their needs or just use them.
+</p>
+<h3><span class="mw-headline" id="Configuration_is_Personal">Configuration is Personal</span></h3>
+<p>Don't require contributors to edit files that are part of the build system (those that would show as changed by version control if edited) to customize trivial decisions. Environment variables and options passed to the build system are examples of personal configuration that exists outside of the general purpose build system.
+</p><p>For instance, you may be tempted to hard-code the path to the cross-compiler directory in your project's Makefile. Don't do this, instead assume it is already in the <tt>PATH</tt>.
+</p>
+<h2><span class="mw-headline" id="Easy_Build_System">Easy Build System</span></h2>
+<p>An Easy Build System is responsible for as much as possible, avoiding any user effort. Degrees of this exist, of course. The ultimate easy build system is when the user blindly pipes an URL into an administrative shell:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>download-to-stdout http://example.com/myos.sh <span class="p">|</span> sudo sh
+</pre></div>
+<p>It'll attempt to do as much work as possible to reliably understand the local operating system. It'll figure out what software needs to be installed, detect the distro and install the correct packages, download and compile source code if needed, might make global changes if needed, and generally try to pick sensible defaults. The script will be very complex because the systems out there are very different. The user can merely hope it works and doesn't screw up the local system too much.
+</p>
+<h3><span class="mw-headline" id="Interactive_Build_System">Interactive Build System</span></h3>
+<p>A step up from the blind easy build system is the interactive build system. It asks questions underway, such as where the source code should be installed. A good one might ask a lot of questions and present sensible defaults. Such scripts tend to be even more complex than the blind scripts.
+</p><p>An alternate way is for the user to download a script and simply edit variables at the top. This avoids the complexity of interaction, at least.
+</p>
+<h3><span class="mw-headline" id="Easy_Contributions_Fallacy">Easy Contributions Fallacy</span></h3>
+<p>It's easier to attract contributors if it requires less effort for them to build the project. Preferably no effort at all and no decisions on their part. But consider: Are these contributors are worth it? If they are unable to manually build a cross-toolchain, install necessary programs, download the source code, and everything up - will they be able to make any non-trivial contributions to an operating system?
+</p><p>If you really wish to make things easy, instead of supporting the many wildly different systems they normally use, you should become self-hosting. You can then simply give them an image of your operating system containing the development tools and source code already set up perfectly. They can install it locally or run it in a virtual machine.
+</p><p>Perhaps the goal is only that they can try your OS easily? In that case, you simply need to do occasional releases or set up a nightly build service. Building from source is always harder than just running an existing image.
+</p>
+<h3><span class="mw-headline" id="No_Error_Recovery">No Error Recovery</span></h3>
+<p>Unfortunately things tend to go wrong when compiling an operating system. A naive script might seriously malfunction if this happens. A reliable script will detect this and simply fail out. This might mean the user has to completely start over, repeating the same work building a cross-compiler, just because you ran out of harddisk space linking the kernel.
+</p><p>A better interactive script might just ask if the user wants to try again or skip to a particular step, at the cost of more script complexity. Compare this with the user just entering commands manually in the shell.
+</p>
+<h3><span class="mw-headline" id="Sourcing_Scripts">Sourcing Scripts</span></h3>
+<p>Some solutions create a small script that the user sources (a shell equivalent of #include) in the current shell. These scripts usually set a few environment variables and adds stuff to the <tt>PATH</tt>. A hard build system would simply have the user add directories permanently to the <tt>PATH</tt> in <tt>~/.profile</tt> or such.
+</p>
+<h3><span class="mw-headline" id="Trust_Issues">Trust Issues</span></h3>
+<p>It's harder to trust an easy build system, when you have to comprehend complex shell scripts running as root. It's easier to verify commands you enter yourself, compile as an unprivileged user, read the Makefiles and build scripts before invoking them. It's easier to ensure the easy build system doesn't restart renaming files in <tt>/usr</tt> and other scary things.
+</p>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="Articles">Articles</span></h3>
+<ul><li><a href="Meaty_Skeleton" title="Meaty Skeleton">Meaty Skeleton</a> - A minimal operating system template with a hard build system.</li>
+<li><a href="Makefile" title="Makefile">Makefile</a> - A makefile tutorial</li></ul>
+<h3><span class="mw-headline" id="External_Links">External Links</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="http://www.gnu.org/software/make/manual/make.html">GNU Make manual</a> (<a rel="nofollow" class="external text" href="http://www.gnu.org/software/make/manual/make.pdf">PDF</a> is <a rel="nofollow" class="external text" href="https://www.gnu.org/copyleft/fdl.html">freely</a> available as well)</li>
+<li><a rel="nofollow" class="external text" href="https://sortix.org/man/man7/cross-development.7.html">Sortix Cross Development Guide</a> — a guide on how to build one of the hobby OSes</li>
+<li><a rel="nofollow" class="external text" href="http://aegis.sourceforge.net/auug97.pdf">Recursive Make Considered Harmful</a> — A white paper by Peter Miller on the hazards of using a recursive make build and a suggested alternative</li></ul>
+<p>Note: While the purpose of Peter Miller's paper is sound, the dependency configuration outlined in section 5.4 is considered inferior to the dependency configuration outlined in <a href="Makefile" title="Makefile">Makefile</a>.
+</p>
+<!-- 
+NewPP limit report
+Cached time: 20250211123813
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.017 seconds
+Real time usage: 0.146 seconds
+Preprocessor visited node count: 61/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 231/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:3698-0!canonical and timestamp 20250211123813 and revision id 22407.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Hard_Build_System&amp;oldid=22407">https://wiki.osdev.org/index.php?title=Hard_Build_System&amp;oldid=22407</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:FAQ" title="Category:FAQ">FAQ</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Hard+Build+System" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Hard_Build_System#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Hard_Build_System" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:Hard_Build_System&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Hard_Build_System"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Hard_Build_System&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Hard_Build_System&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Hard_Build_System" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Hard_Build_System" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Hard_Build_System&amp;oldid=22407" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Hard_Build_System&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 21 May 2018, at 17:58.</li>
+	<li id="footer-info-0">This page has been accessed 2,781 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Hard_Build_System&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.017","walltime":"0.146","ppvisitednodes":{"value":61,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":231,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250211123813","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":250});});</script>
+</body>
+</html>

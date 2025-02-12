@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>C++ to ASM linkage in GCC - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"ffc0717ba93f8cafd180c7b7","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"C++_to_ASM_linkage_in_GCC","wgTitle":"C++ to ASM linkage in GCC","wgCurRevisionId":28237,"wgRevisionId":28237,"wgArticleId":2714,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","C++","Assembly"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"C++_to_ASM_linkage_in_GCC","wgRelevantArticleId":2714,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],
+"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-C_to_ASM_linkage_in_GCC rootpage-C_to_ASM_linkage_in_GCC skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">C++ to ASM linkage in GCC</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="C++_to_ASM_linkage_in_GCC#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="C++_to_ASM_linkage_in_GCC#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>A small note before we begin: The GNU Compiler Collection C compiler, a very versatile compiler that has been around for a very long time, is pretty much the standard for OS Dev'ing, since it is even used (as you probably already know) to compile the Linux kernel. In fact, Linux is meant to be compiled with GCC. It has lots of useful extensions (__attribute__(())) which ease development by leaps and bounds, should you take the time to read about it enough.
+</p><p>Also, this article in itself is not really sufficient for a full understanding of Linking to C++ methods within C or assembly. C++ uses the hidden 'this' pointer, which will be discussed in another article proposed for a later date.
+</p><p>We will assume the use of the GCC compiler for your HLL development, and the use of C++ (C wouldn't be that different) for your little HLL - Assembly linkage escapade.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="C++_to_ASM_linkage_in_GCC#C++_Name_Mangling"><span class="tocnumber">1</span> <span class="toctext">C++ Name Mangling</span></a>
+<ul>
+<li class="toclevel-2 tocsection-2"><a href="C++_to_ASM_linkage_in_GCC#Why_Mangle_Symbol_Names?"><span class="tocnumber">1.1</span> <span class="toctext">Why Mangle Symbol Names?</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-3"><a href="C++_to_ASM_linkage_in_GCC#Essentially,_then,_What_is_&#39;Linking&#39;_to_external_an_external_function,_or_variable?"><span class="tocnumber">2</span> <span class="toctext">Essentially, then, What is 'Linking' to external an external function, or variable?</span></a>
+<ul>
+<li class="toclevel-2 tocsection-4"><a href="C++_to_ASM_linkage_in_GCC#Global_Symbols"><span class="tocnumber">2.1</span> <span class="toctext">Global Symbols</span></a></li>
+<li class="toclevel-2 tocsection-5"><a href="C++_to_ASM_linkage_in_GCC#Local_Symbols"><span class="tocnumber">2.2</span> <span class="toctext">Local Symbols</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-6"><a href="C++_to_ASM_linkage_in_GCC#Linking_to_External_Symbols_in_C++"><span class="tocnumber">3</span> <span class="toctext">Linking to External Symbols in C++</span></a>
+<ul>
+<li class="toclevel-2 tocsection-7"><a href="C++_to_ASM_linkage_in_GCC#&quot;C&quot;_Linkage"><span class="tocnumber">3.1</span> <span class="toctext">"C" Linkage</span></a></li>
+<li class="toclevel-2 tocsection-8"><a href="C++_to_ASM_linkage_in_GCC#&quot;C++&quot;_Linkage"><span class="tocnumber">3.2</span> <span class="toctext">"C++" Linkage</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-9"><a href="C++_to_ASM_linkage_in_GCC#C++_-_Assembly_linkage"><span class="tocnumber">4</span> <span class="toctext">C++ - Assembly linkage</span></a></li>
+<li class="toclevel-1 tocsection-10"><a href="C++_to_ASM_linkage_in_GCC#See_Also"><span class="tocnumber">5</span> <span class="toctext">See Also</span></a></li>
+</ul>
+</div>
+
+<h2><span id="C.2B.2B_Name_Mangling"></span><span class="mw-headline" id="C++_Name_Mangling">C++ Name Mangling</span></h2>
+<p>GCC follows the <a rel="nofollow" class="external text" href="http://www.codesourcery.com/public/cxx-abi/abi.html">Itanium C++ ABI</a>. The link preceding this text is of course a link to a public collection of documents on the Itanium C++ ABI. One of the things which prevents generally absolute portability of C++ libraries is the fact that different compilers use different <i>Name Mangling</i> schemes.
+</p>
+<h3><span id="Why_Mangle_Symbol_Names.3F"></span><span class="mw-headline" id="Why_Mangle_Symbol_Names?">Why Mangle Symbol Names?</span></h3>
+<p>In C++, the symbols you define are generally not exclusive. For example, the function, <tt>getObjId()</tt> in C would simply be encoded as getObjId in the object file output. But in C++, since this function may be overloaded, it needs to contain extra information about itself in the name so that when an argument (function signature is the correct term) match is to be made, the linker or compiler may know which function is to be linked to.
+</p><p>Take the following example: A global function (i.e. with no namespace attached) getObjId() in C++ may be overloaded to these three instances: (These are not technically correct; your compiler will most likely emit something different. They are for demonstration, and are simply scratched out from the general mangling pattern GCC uses).
+</p><p><tt>int getObjId(void); int getObjId(int); int getObjId(unsigned int);</tt>
+</p><p>From the source point of view, you believe that these three have the same name in the object file, and the compiler magically knows which one to choose for a call. However, three distinct symbols are generated respectively, in the general form:
+</p><p><tt>_ZN8getObjIdEv, _ZN8getObjIdEi, _ZN8getObjIdEj</tt>.
+</p><p>The compiler uses the generated symbol name to encode information about the symbol. This generally says that 'this is a mangled symbol' (_Z). 'It has 8 characters of user-defined symbol relevance' (8), and those are [getObjId]. The 'E' is probably used to mean END, and after that GCC generally places several letters and namespace/object names as details on the arguments. (v=void, i=int, j=unsigned int...).
+</p><p>After seeing this, you can tell that, in order therefore to call a C++ function from assembly, <b>if</b> the compiler has mangled it (there are many cases in which there is no need for mangling, and the compiler may naturally leave a symbol alone in many cases, e.g. global variables), you would need to use a executable symbol interpreter, such as <tt>nm</tt> or <tt>objdump</tt> to see the name GCC used in the generated object file.
+</p><p>Note well that varying compilers DO <i>NOT</i> use the same mangling scheme, and in fact, are encouraged by the C++ standards committee to go ahead and use their own mangling schemes as they see fit.
+</p><p>Keep this bit of information in mind.
+</p>
+<h2><span id="Essentially.2C_then.2C_What_is_.27Linking.27_to_external_an_external_function.2C_or_variable.3F"></span><span class="mw-headline" id="Essentially,_then,_What_is_'Linking'_to_external_an_external_function,_or_variable?">Essentially, then, What is 'Linking' to external an external function, or variable?</span></h2>
+<p>Variables in C++, and C, and many other languages have several <i>scope</i> levels. These are the levels of visibility of a symbol in one object file to the code in another object file. Generally, within one object file, unless you take steps to ensure otherwise, all static local and global symbols are available to the code in that file.
+</p>
+<h3><span class="mw-headline" id="Global_Symbols">Global Symbols</span></h3>
+<p>Global symbols are those which are seen universally by all object code in the entire program, at the linking phase. Technically, during execution, the whole program is just bytes, so actually, every symbol is just an address, so every function has access to every symbol. But it is useful to programmers to be able to <i>abstract</i> access to symbols.
+</p><p>In C and C++, you make a symbol global by defining it <i>outside</i> of any function. In C++, you may still hide the symbol by having it inside a 'private' section of a global symbol. But this is irrelevant to this article, seeing as anyone who is reading this article should be attempting to develop an OS. We assume you already understand your language.
+</p><p>In assembly, (NASM, specifically; the author does not use GAS. Anyone who knows how GAS works may add to this article as they see fit.) all symbols are automatically local to the particular assembly file in which they appear. To make a symbol global, you must use the 'global _SYMBOL_NAME_' directive. If I remember right, in GAS, that's '.globl _SYMBOL_NAME'.
+</p>
+<div class="mw-highlight mw-highlight-lang-asm mw-content-ltr" dir="ltr"><pre><span></span><span class="c1">;-------------------------------------</span>
+<span class="c1">; I usually like to place all my directives in a section above the code:</span>
+<span class="c1">;-------------------------------------</span>
+<span class="nf">global</span><span class="w"> </span><span class="no">mysymbol</span><span class="p">,</span><span class="w"> </span><span class="no">mycodesymbol</span><span class="w"></span>
+<span class="c1">;-------------------------------------</span>
+
+<span class="nl">mysymbol:</span><span class="w"></span>
+<span class="w">   </span><span class="nf">dd</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w"></span>
+
+<span class="nl">mycodeSymbol:</span><span class="w"></span>
+<span class="w">   </span><span class="nf">push</span><span class="w"> </span><span class="no">eax</span><span class="w"></span>
+<span class="w">   </span><span class="nf">pop</span><span class="w"> </span><span class="no">eax</span><span class="w"></span>
+<span class="nf">ret</span><span class="w"></span>
+
+<span class="c1">;; This symbol is confined to be seen only within this file, since the linker can&#39;t see it.</span>
+<span class="nl">mylocalSymbol:</span><span class="w"></span>
+<span class="w">   </span><span class="nf">push</span><span class="w"> </span><span class="no">eax</span><span class="w"></span>
+<span class="w">   </span><span class="nf">pop</span><span class="w"> </span><span class="no">eax</span><span class="w"></span>
+<span class="nf">ret</span><span class="w"></span>
+</pre></div>
+<p>To clarify, technically, the linker can 'see' all symbols. It just chooses to ignore linkage between files for symbols not exclusively declared global. If you were to write a second file:
+</p>
+<div class="mw-highlight mw-highlight-lang-asm mw-content-ltr" dir="ltr"><pre><span></span><span class="c1">;--------------------------------------</span>
+<span class="c1">; Extern directives here</span>
+<span class="c1">;--------------------------------------</span>
+<span class="nf">extern</span><span class="w"> </span><span class="no">mysymbol</span><span class="p">,</span><span class="w"> </span><span class="no">mycodesymbol</span><span class="w"></span>
+<span class="c1">;; This one won&#39;t work.</span>
+<span class="nf">extern</span><span class="w"> </span><span class="no">mylocalsymbol</span><span class="w"></span>
+<span class="c1">;--------------------------------------</span>
+</pre></div>
+<p>This file will assemble, but when passed through the linker, you will receive a message to the effect that no such symbol has been defined for 'mylocalsymbol'.
+</p>
+<h3><span class="mw-headline" id="Local_Symbols">Local Symbols</span></h3>
+<p>These are either Function local (on the stack, and therefore definitely not available to any other code since its persistence is unpredictable. It can be popped off at any time.) or File local (like mylocalsymbol above).
+</p><p>In C/C++, we know that a static variable defined outside of a function is file local. It may not be linked to outside of that particular file.
+</p><p>So now we get back to the main question presented at the top of this section of the article: What is external linkage? External linkage is the linking to a global symbol which is not defined in the same file scope as the file you're working in. The linker will therefore place the referred variable's address where it is referenced in the referencing file.
+</p>
+<h2><span id="Linking_to_External_Symbols_in_C.2B.2B"></span><span class="mw-headline" id="Linking_to_External_Symbols_in_C++">Linking to External Symbols in C++</span></h2>
+<p>In C++, the compiler has no idea what kind of symbol you intend to link to. There is technically no such thing as different 'kinds' of symbols, so we'll immediately discard that idea.
+</p><p>Technically, you can link to any kind of symbol using the "C" linkage style. I'll explain that now.
+</p>
+<h3><span id=".22C.22_Linkage"></span><span class="mw-headline" id="&quot;C&quot;_Linkage">"C" Linkage</span></h3>
+<p>Well, let's think this through. In C, all symbols are simply self representing. If I declare a function, getObjId, it will be called 'getObjId' in the output file. C uses no name mangling since you cannot have different symbols with the same name occurring in the same namespace in C.
+</p><p>In other words, when you tell the compiler that you are linking to an external variable with "C" style linkage, you are telling the compiler: "I am linking to a symbol of name XYZ. This is EXACTLY how the symbol looks, and there is no name mangling.". That is all 'extern "C"' means. It explicitly tells the compiler that there is nothing special about the symbol's name, and that it is to be taken exactly as you type it.
+</p><p>With this in mind, we not understand why in C, there is no need to specify a linkage style, since C only understands symbolas as you type them. C does not have any kind of name mangling, and expects plain, absolute symbol names. So to link to assembly f C, you just say 'extern SYMBOL NAME', and not 'extern "C" SYMBOL NAME'.
+</p><p>So <tt>extern "C" getObjId</tt> tell the compiler to insert references to a symbol of the exact name 'getObjId' within your output object file. The linker will see your references, and look for a global symbol of that exact name, and if it is found, and there are no duplicates, it simply places the address of that symbol wherever the compiler placed a reference to it.
+</p><p>Now, let's go back to name mangling. Name mangling is simply the generation of a symbol as you define it, but with extra information encoded so as to ensure that symbols in an output object file are unique. Remember: No two global symbols may have the same name. No two File local symbols within the <i>same file</i> may have the same name either. When the linker links together object files with identical symbols, if the symbols are file local, it doesn't matter.
+</p><p>But the most important thing is that AFTER the file is compiled, the symbols are already determined, and so you can then link to any kind of symbol as a "C" style symbol if you know its absolute, post-mangled name, not so?
+</p><p>If say, you have a class 'foo' with a method 'bar(void)', the mangled symbol after compiling looks something like this (if compiled with GCC):
+</p><p><tt>_ZN3foo3barEv</tt>.
+</p><p>This is the absolute symbol name for foo::bar. You may link to it therefore, from plain C, provided that the function does not expect a 'this' pointer, which is another matter altogether. Technically it won't work until you satisfy the 'this' pointer condition, but I'm just trying to help you understand exactly what it means when you say a symbol has "C" linkage, and what the compiler takes that to mean.
+</p><p>So linking to 'extern "C"' symbols is the same as telling the compiler to just trust you, and place references to XYZ symbol name as is, even though it may never see the definition of that symbol within the <i>current file</i>. The symbol is defined elsewhere. It may even be defined in a shared library, and be expected to be linked in by the OS at runtime (Dynamic Linking), although this usually requires a little more, and is usually handled by the compiler and linker as set up by the host OS (this is where OS libraries come in).
+</p>
+<h3><span id=".22C.2B.2B.22_Linkage"></span><span class="mw-headline" id="&quot;C++&quot;_Linkage">"C++" Linkage</span></h3>
+<p>Surprised? Yes, it does exist. However, a C++ compiler uses this linkage style by default. If you explicitly state it, it won't actually change anything. I know for a fact that GCC/G++ will not complain if you tell it to link to a symbol in C++ style.
+</p><p>So what does "extern "C++"" tell the compiler? It means: "Do your thing."
+</p><p>If you do the following:
+</p>
+<div class="mw-highlight mw-highlight-lang-cpp mw-content-ltr" dir="ltr"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">foo</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">   </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
+<span class="w">      </span><span class="kt">int</span><span class="w"> </span><span class="n">bar</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="k">extern</span><span class="w"> </span><span class="n">foo</span><span class="w"> </span><span class="n">fubar</span><span class="p">;</span><span class="w"></span>
+<span class="k">extern</span><span class="w"> </span><span class="s">&quot;C++&quot;</span><span class="w"> </span><span class="n">foo</span><span class="w"> </span><span class="n">fubar</span><span class="w"></span>
+</pre></div>
+<p>The compiler will take them both to mean the same thing: 'Link to an external symbol which has the <i>demangled</i> name fubar, and is of type foo'.
+</p><p>The compiler will apply its OWN mangling scheme to the symbol, then insert references to the symbol in its own mangling scheme. So what say, a symbol was compiled in MSVC, and then you externally reference it in a C++ file to be compiled in GCC. Will the symbol link?
+</p><p>No. These two compilers will do the following: The symbol is compiled in one object file by MSVC. MSVC places the symbol, all mangled in its own way, into the output object file.
+</p><p>Then GCC is told to link to that symbol. It places a reference to a symbol name, all mangled in <i>its</i> own way. The linker is called on both object files. The second one is referencing a symbols which the linker sees nowhere. You are told the symbol referenced by the second object file does not exist.
+</p>
+<h2><span id="C.2B.2B_-_Assembly_linkage"></span><span class="mw-headline" id="C++_-_Assembly_linkage">C++ - Assembly linkage</span></h2>
+<p>I'm sorry I took this long to get to this part of the article, but the facts given above are pertinent.
+</p><p>To link to a C/C++ symbol from an assembly file, you simply tell the Assembler that the symbol is external. Assemblers <i>always</i> insert references as they see them, so they are always "C" style, if you please. The assembler takes you at your word. This is why you can look for the mangled symbol name of a function, or variable, and then actually place the mangled name into your assembly file (extern _ZN3foo3barEv) and it will work (depending on whether or not a 'this' pointer is involved).
+</p><p>To link to an assembly symbol from C/C++, you must know what the absolute symbol name in the assembly file is, and ensure it's global, then link to the absolute symbol name "C" style. (extern "C" SYMBOL_NAME).
+</p><p>The 'This' pointer issue is another thing altogether, and is actually a very serious consideration you should take into account when designing your kernel, or choosing whether or not to use C++ altogether. C makes library generation, and linking easier. C++ makes design and re-structuring (you will restructure your design many times, so this is a big plus) much easier.
+</p>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<p><a href="Calling_Conventions" title="Calling Conventions">Calling Conventions</a>
+</p>
+<!-- 
+NewPP limit report
+Cached time: 20250211142956
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.026 seconds
+Real time usage: 0.430 seconds
+Preprocessor visited node count: 45/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 3632/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:2714-0!canonical and timestamp 20250211142955 and revision id 28237.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=C%2B%2B_to_ASM_linkage_in_GCC&amp;oldid=28237">https://wiki.osdev.org/index.php?title=C%2B%2B_to_ASM_linkage_in_GCC&amp;oldid=28237</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:C++" title="Category:C++">C++</a></li><li><a href="./Category:Assembly" title="Category:Assembly">Assembly</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=C%2B%2B+to+ASM+linkage+in+GCC" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="C++_to_ASM_linkage_in_GCC#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="C++_to_ASM_linkage_in_GCC" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:C%2B%2B_to_ASM_linkage_in_GCC&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="C++_to_ASM_linkage_in_GCC"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=C%2B%2B_to_ASM_linkage_in_GCC&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=C%2B%2B_to_ASM_linkage_in_GCC&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/C++_to_ASM_linkage_in_GCC" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="./Special:RecentChangesLinked/C++_to_ASM_linkage_in_GCC" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=C%2B%2B_to_ASM_linkage_in_GCC&amp;oldid=28237" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=C%2B%2B_to_ASM_linkage_in_GCC&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 10 July 2023, at 22:05.</li>
+	<li id="footer-info-0">This page has been accessed 2,427 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=C%2B%2B_to_ASM_linkage_in_GCC&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.026","walltime":"0.430","ppvisitednodes":{"value":45,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":3632,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250211142956","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":536});});</script>
+</body>
+</html>

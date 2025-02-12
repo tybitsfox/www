@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Message Passing - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"179f9f442f9132987e717497","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Message_Passing","wgTitle":"Message Passing","wgCurRevisionId":29080,"wgRevisionId":29080,"wgArticleId":1711,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["IPC","OS theory"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Message_Passing","wgRelevantArticleId":1711,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{"search":false,
+"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Message_Passing rootpage-Message_Passing skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Message Passing</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Message_Passing#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Message_Passing#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>If you consider writing a <a href="Microkernel" title="Microkernel">Microkernel</a>, you should layout how you'll manage the message passing. This page collects considerations on how you can do it.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Message_Passing#Reliable_vs_Best-Effort"><span class="tocnumber">1</span> <span class="toctext">Reliable vs Best-Effort</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="Message_Passing#Synchronous_vs_Asynchronous"><span class="tocnumber">2</span> <span class="toctext">Synchronous vs Asynchronous</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="Message_Passing#The_&quot;Port&quot;_abstraction"><span class="tocnumber">3</span> <span class="toctext">The "Port" abstraction</span></a></li>
+<li class="toclevel-1 tocsection-4"><a href="Message_Passing#Mailboxes"><span class="tocnumber">4</span> <span class="toctext">Mailboxes</span></a></li>
+<li class="toclevel-1 tocsection-5"><a href="Message_Passing#Variable_or_Fixed_Messages_Size"><span class="tocnumber">5</span> <span class="toctext">Variable or Fixed Messages Size</span></a></li>
+<li class="toclevel-1 tocsection-6"><a href="Message_Passing#See_Also"><span class="tocnumber">6</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-7"><a href="Message_Passing#Articles"><span class="tocnumber">6.1</span> <span class="toctext">Articles</span></a></li>
+<li class="toclevel-2 tocsection-8"><a href="Message_Passing#Threads"><span class="tocnumber">6.2</span> <span class="toctext">Threads</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="Message_Passing#External_Links"><span class="tocnumber">6.3</span> <span class="toctext">External Links</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Reliable_vs_Best-Effort">Reliable vs Best-Effort</span></h2>
+<dl><dt>reliable</dt>
+<dd>Messages are guaranteed to be delivered unless the recipient does not exist. On failure, the sender is notified. In order to provide reliability, the message passing system ensures that messages have not been altered or corrupted during transmission and reception. Out-of-order message blocks are reordered and duplicate message blocks are removed. If an error occurs, the system will attempt to retransmit the message automatically. A message's transmission time will tend to be predictable. Reliable delivery of messages, however, usually comes with noticeable overhead.</dd></dl>
+<dl><dt>best-effort</dt>
+<dd>Messages may/may not be delivered to the recipient. If a message <i>is</i> delivered, it may be after a variable delay. Messages could be corrupted, out of order, or duplicated. Also, the sender might not receive any acknowledgment of a successful delivery. This may sound entirely useless, but best-effort delivery is typically simpler to implement than reliable delivery and comes with lower overhead. By implementing a reliable messaging protocol on top of a best-effort delivery protocol, reliable delivery of messages can be achieved (very much like the TCP protocol[reliable] with IP packets[best-effort]). Such a protocol might utilize "ACK" messages and timeouts to support reliable messages.</dd></dl>
+<p>Reliable delivery is used when data <i>must</i> be delivered correctly bit-by-bit (as in transferring a file). Best-effort delivery is used when lots of data must be sent with low processing overhead or when it doesn't really matter if a few messages are corrupted or lost (like periodic "I'm alive" messages or when streaming audio/video).
+</p>
+<h2><span class="mw-headline" id="Synchronous_vs_Asynchronous">Synchronous vs Asynchronous</span></h2>
+<dl><dt>synchronous</dt>
+<dd>Process A delivers the message directly to process B. If process B is not ready to receive at the moment of sending, Process A is suspended and queued upon Process B's 'sending' queue, until Process B is receiving. Using this method, you don't need to care for message queues - but you enqueue processes. Note that if process B is waiting to receive a message from process A, and the message fails to be delivered (due to an error, or some failure in the message delivery system, for example) then process B will block indefinitely.</dd></dl>
+<dl><dt>asynchronous</dt>
+<dd>Process A sends the message to Process B. The message is copied to a dedicated region in kernel space and attached to Process B's message queue (lets call it the Post box). The next time, Process B looks into its postbox, it will retrieve the message. You can have processes block for receiving a message or just stroll by and check whether there is something to fetch. One could call this method "store and forward message passing". The main benefit of asynchronous messaging is that it allows a single thread/process to wait for the results of many unrelated "requests" at the same time. However, any erroneous (or malicious) process can repeatedly spam messages in quick succession to other processes, thus tying up system resources in a denial-of-service attack.</dd></dl>
+<p>We may note that in the synchronous approach, A has the guarantee that B received the message when the deliver call terminates, which makes it especially interesting for local RPC. It should be noted that it can be very difficult to implement standard C library functions without this guarantee.
+</p><p>It isn't a bad idea to wrap some brains around the following problem: What, if Process A expects a message from Process C. It needs a possibility to communicate this to the message routing subsystem. If Process B sends a message to Process A, Process A shall not be woken up for it wants something from Process C. Process C sends a message to Process A. Then and only then shall the message routing subsystem wake up Process A.
+</p><p>What primitives will you need to get synchronous message passing running? Two: request(message) and respond(message).
+</p><p>What primitives will you need to get asynchronous message passing running? Two: send(message) and receive(message).
+</p><p>What primitives will you need to get both asynchronous and synchronous message passing running? Three: send(message), receive(message) and request(message), as the send(message) primitive is/can be the same as the respond(message) primitive.
+</p><p>It is possible to get synchronous message passing via asynchronous message passing primitives and vice-versa. Message forwarders along with acknowledgment messages and messaging protocols can make this possible. Unfortunately, doing it this way is not efficient.
+</p>
+<h2><span id="The_.22Port.22_abstraction"></span><span class="mw-headline" id="The_&quot;Port&quot;_abstraction">The "Port" abstraction</span></h2>
+<p>Many microkernels use the notion of port, which is a 'point for receiving messages', or a 'one-way message communication channel'. The idea of ports is that you no longer send a message to a thread but to a port (which is linked to a unique thread).
+</p><p>Ports can be allocated by servers at will and may restrict who can send and who cannot send on it. Using ports, the 'A listen to C, B sends to A' problem above can be solved by creating a new port p that A will open to C only (and sending a message to C to tell p's port number). A can now wait for C's message by receiving on p only. B's attempt to send a message on port q of A will not interfere.
+</p><p>To solve situations when a server is willing to receive messages from different ports (and synchronous messaging is used), we need a select-like interface that will allow reception of a message from any port p in a given set of ports.
+</p>
+<h2><span class="mw-headline" id="Mailboxes">Mailboxes</span></h2>
+<p>There may be some cases in which a thread will want to broadcast the same message to multiple threads at once, or perhaps a set of producer threads has to communicate with another set of consumer threads. In such cases, mailboxes can queue messages for multiple receivers. Mailboxes are similar to ports, except multiple recipients may retrieve messages instead of just one. A mailbox is not owned by a single thread, but is a common resource provided by the OS that's shared among the receiving threads. The order in which messages are received may either be <i>first-in-first-out</i> (FIFO) or based on message priority.
+</p>
+<h2><span class="mw-headline" id="Variable_or_Fixed_Messages_Size">Variable or Fixed Messages Size</span></h2>
+<p>A message typically includes the ID of the emitting thread (or a replying port), a message code and a few arguments. Message queuing and dispatching code can be greatly simplified if message size is fixed.
+</p><p>When messages longer than the fixed-size are required, one will need to provide a way to describe the long message in the small structure. If copying a 4-word message forth and back doesn't imply excessive processing cost, it will be very different for the 1MB of data you send to a disk server. In that case, it is suggested to toy with paging in order to map the real data from the emitter to the receiver's address space.
+</p>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="Articles">Articles</span></h3>
+<ul><li><a href="Remote_Procedure_Call" title="Remote Procedure Call">Remote Procedure Call (RPC)</a></li>
+<li><a href="Message_Passing_Tutorial" title="Message Passing Tutorial">Message Passing Tutorial</a></li>
+<li><a href="IPC_Data_Copying_methods" title="IPC Data Copying methods">IPC Data Copying methods</a></li></ul>
+<h3><span class="mw-headline" id="Threads">Threads</span></h3>
+<ul><li><a href="http://forum.osdev.org/viewtopic.php?t=10116" class="extiw" title="topic:10116">passing messages through registers</a></li>
+<li><a href="http://forum.osdev.org/viewtopic.php?t=10922" class="extiw" title="topic:10922">RPC message size, handling oversized messages</a></li></ul>
+<h3><span class="mw-headline" id="External_Links">External Links</span></h3>
+<ul><li><a href="https://wikipedia.org/wiki/Message_Passing" class="extiw" title="wikipedia:Message Passing"> Message Passing</a> on Wikipedia</li>
+<li><a href="https://wikipedia.org/wiki/Message_queue" class="extiw" title="wikipedia:Message queue"> Message Queue</a> on Wikipedia</li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211121916
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.009 seconds
+Real time usage: 0.009 seconds
+Preprocessor visited node count: 33/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 0/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:1711-0!canonical and timestamp 20250211121916 and revision id 29080.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Message_Passing&amp;oldid=29080">https://wiki.osdev.org/index.php?title=Message_Passing&amp;oldid=29080</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="./Category:IPC" title="Category:IPC">IPC</a></li><li><a href="./Category:OS_theory" title="Category:OS theory">OS theory</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Message+Passing" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Message_Passing#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Message_Passing" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="mw-list-item"><a href="./Talk:Message_Passing" rel="discussion" title="Discussion about the content page [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Message_Passing"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Message_Passing&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Message_Passing&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Message_Passing" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Message_Passing" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Message_Passing&amp;oldid=29080" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Message_Passing&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 7 June 2024, at 13:37.</li>
+	<li id="footer-info-0">This page has been accessed 5,703 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Message_Passing&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.009","walltime":"0.009","ppvisitednodes":{"value":33,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":0,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250211121916","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":100});});</script>
+</body>
+</html>

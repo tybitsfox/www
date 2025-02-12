@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>VirtualBox Guest Additions - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"39daeb07575d9dc61e486094","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"VirtualBox_Guest_Additions","wgTitle":"VirtualBox Guest Additions","wgCurRevisionId":28067,"wgRevisionId":28067,"wgArticleId":3968,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","Emulators"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"VirtualBox_Guest_Additions","wgRelevantArticleId":3968,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],
+"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-VirtualBox_Guest_Additions rootpage-VirtualBox_Guest_Additions skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">VirtualBox Guest Additions</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="VirtualBox_Guest_Additions#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="VirtualBox_Guest_Additions#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>This article aims to describe some of the more useful / easier to implement features of the VirtualBox Guest Additions.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="VirtualBox_Guest_Additions#The_VirtualBox_Guest_Device"><span class="tocnumber">1</span> <span class="toctext">The VirtualBox Guest Device</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="VirtualBox_Guest_Additions#Initializing_the_Device"><span class="tocnumber">2</span> <span class="toctext">Initializing the Device</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="VirtualBox_Guest_Additions#Auto-resize_Guest_Display"><span class="tocnumber">3</span> <span class="toctext">Auto-resize Guest Display</span></a></li>
+<li class="toclevel-1 tocsection-4"><a href="VirtualBox_Guest_Additions#Mouse_Integration"><span class="tocnumber">4</span> <span class="toctext">Mouse Integration</span></a></li>
+<li class="toclevel-1 tocsection-5"><a href="VirtualBox_Guest_Additions#Seamless_Desktop"><span class="tocnumber">5</span> <span class="toctext">Seamless Desktop</span></a></li>
+<li class="toclevel-1 tocsection-6"><a href="VirtualBox_Guest_Additions#Pointer_Shape"><span class="tocnumber">6</span> <span class="toctext">Pointer Shape</span></a></li>
+<li class="toclevel-1 tocsection-7"><a href="VirtualBox_Guest_Additions#Shared_Folders_and_Clipboard"><span class="tocnumber">7</span> <span class="toctext">Shared Folders and Clipboard</span></a>
+<ul>
+<li class="toclevel-2 tocsection-8"><a href="VirtualBox_Guest_Additions#Connect"><span class="tocnumber">7.1</span> <span class="toctext">Connect</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="VirtualBox_Guest_Additions#Disconnect"><span class="tocnumber">7.2</span> <span class="toctext">Disconnect</span></a></li>
+<li class="toclevel-2 tocsection-10"><a href="VirtualBox_Guest_Additions#Call_Function"><span class="tocnumber">7.3</span> <span class="toctext">Call Function</span></a>
+<ul>
+<li class="toclevel-3 tocsection-11"><a href="VirtualBox_Guest_Additions#32-bit_Parameter"><span class="tocnumber">7.3.1</span> <span class="toctext">32-bit Parameter</span></a></li>
+<li class="toclevel-3 tocsection-12"><a href="VirtualBox_Guest_Additions#64-bit_Parameter"><span class="tocnumber">7.3.2</span> <span class="toctext">64-bit Parameter</span></a></li>
+<li class="toclevel-3 tocsection-13"><a href="VirtualBox_Guest_Additions#Parameter_Types"><span class="tocnumber">7.3.3</span> <span class="toctext">Parameter Types</span></a></li>
+</ul>
+</li>
+<li class="toclevel-2 tocsection-14"><a href="VirtualBox_Guest_Additions#Functions"><span class="tocnumber">7.4</span> <span class="toctext">Functions</span></a></li>
+<li class="toclevel-2 tocsection-15"><a href="VirtualBox_Guest_Additions#Query_Mappings"><span class="tocnumber">7.5</span> <span class="toctext">Query Mappings</span></a>
+<ul>
+<li class="toclevel-3 tocsection-16"><a href="VirtualBox_Guest_Additions#Mapping_Record"><span class="tocnumber">7.5.1</span> <span class="toctext">Mapping Record</span></a></li>
+</ul>
+</li>
+<li class="toclevel-2 tocsection-17"><a href="VirtualBox_Guest_Additions#Query_Map_Name"><span class="tocnumber">7.6</span> <span class="toctext">Query Map Name</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-18"><a href="VirtualBox_Guest_Additions#Other_Stuff"><span class="tocnumber">8</span> <span class="toctext">Other Stuff</span></a></li>
+<li class="toclevel-1 tocsection-19"><a href="VirtualBox_Guest_Additions#See_Also"><span class="tocnumber">9</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-20"><a href="VirtualBox_Guest_Additions#External_Links"><span class="tocnumber">9.1</span> <span class="toctext">External Links</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="The_VirtualBox_Guest_Device">The VirtualBox Guest Device</span></h2>
+<p>The Guest Additions package operates through a PCI/mmio device provided by the VM. A combination of memory-mapped packets, MMIO port writes, and IRQs allow the guest to communicate its feature support to the VM and for the VM to communicate events such as display changes and mouse movement. The PCI device has the vendor ID <b>0x80EE</b>, same as the VirtualBox implementation of the Bochs display adapter, and a device ID of <b>0xCAFE</b>. BAR0 is the MMIO port and BAR1 is a memory region that contains some shared state for the device, such as a bit mask for what events the guest wishes to receive. The format for the latter is unimportant for the features described on this page - you need only know that the region can be interpreted as an array of 32-bit unsigned integers and offset 3 contains the IRQ mask.
+</p><p>Communication between the guest and the host happens through packets in memory. These can be anywhere in physical memory, and are relatively short. The MMIO operations that read or populate packets are synchronous, so setting up one page to pass back and forth is feasible. The basic process for sending a message to the VM is to prepare a packet and then write its (physical) address to the MMIO port. Receiving works the same way, as you must prepare a packet with a request type and provide its physical address; after the MMIO port write finishes, the packet will be populated with the appropriate values if the request was successful. Communication from the VM is primarily initiated by an IRQ on the PCI device's interrupt line, which should then be followed up by appropriate packet requests, one of which should be of a special "Acknowledge Events" type.
+</p><p>This page contains some struct definitions which could alternatively be obtained from headers provided by VirtualBox, but those headers are rather heavy and assume they are being used alongside a robust set of system headers, so instead we will define these structs ourselves.
+</p><p>Pseudo-code examples in the following sections will assume the availability of these functions; adjust them to match your environment:
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="c1">// Allocate one page of memory, providing its physical address as an output and virtual address as a return value.</span>
+<span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nf">allocate_physical_page</span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">physical</span><span class="p">);</span><span class="w"></span>
+<span class="c1">// Map a physical page into the virtual memory space.</span>
+<span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nf">map_physical_page</span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">physical</span><span class="p">);</span><span class="w"></span>
+<span class="c1">// Install an interrupt request handler function.</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">install_interrupt_handler</span><span class="p">(</span><span class="n">irq</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">irq_function</span><span class="p">)(</span><span class="kt">void</span><span class="p">));</span><span class="w"></span>
+<span class="c1">// Write a 32-bit value to an MMIO port.</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">outportl</span><span class="p">(</span><span class="n">port</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">);</span><span class="w"></span>
+<span class="c1">// Write a 16-bit value to an MMIO port.</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">outports</span><span class="p">(</span><span class="n">port</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">);</span><span class="w"></span>
+<span class="c1">// Return an object describing the requested PCI device, if found.</span>
+<span class="n">pci_device_t</span><span class="w"> </span><span class="nf">pci_find</span><span class="p">(</span><span class="n">vendor</span><span class="p">,</span><span class="n">device</span><span class="p">);</span><span class="w"></span>
+<span class="c1">// Read a field from the given PCI device</span>
+<span class="kt">uint32_t</span><span class="w"> </span><span class="nf">pci_read_field</span><span class="p">(</span><span class="n">pci_device_t</span><span class="w"> </span><span class="n">device</span><span class="p">,</span><span class="w"> </span><span class="n">field</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+<h2><span class="mw-headline" id="Initializing_the_Device">Initializing the Device</span></h2>
+<p>Before we can do anything with the guest device, we need to tell it about ourselves. There are two protocols that current versions of VirtualBox support: 1.03 and 1.04. We will use 1.03, the so-called "Legacy Protocol", as it is slightly simpler.
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cp">#define VBOX_VENDOR_ID 0x80EE</span>
+<span class="cp">#define VBOX_DEVICE_ID 0xCAFE</span>
+<span class="cp">#define VBOX_VMMDEV_VERSION 0x00010003</span>
+<span class="cp">#define VBOX_REQUEST_HEADER_VERSION 0x10001</span>
+
+<span class="cp">#define VBOX_REQUEST_GUEST_INFO 50</span>
+
+<span class="cm">/* VBox Guest packet header */</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">vbox_header</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">size</span><span class="p">;</span><span class="w"> </span><span class="cm">/* Size of the entire packet (including this header) */</span><span class="w"></span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">version</span><span class="p">;</span><span class="w"> </span><span class="cm">/* Version; always VBOX_REQUEST_HEADER_VERSION */</span><span class="w"></span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">requestType</span><span class="p">;</span><span class="w"> </span><span class="cm">/* Request code */</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int32_t</span><span class="w">  </span><span class="n">rc</span><span class="p">;</span><span class="w"> </span><span class="cm">/* This will get filled with the return code from the requset */</span><span class="w"></span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">reserved1</span><span class="p">;</span><span class="w"> </span><span class="cm">/* These are unused */</span><span class="w"></span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">reserved2</span><span class="p">;</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="cm">/* VBox Guest Info packet (legacy) */</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">vbox_guest_info</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">vbox_header</span><span class="w"> </span><span class="n">header</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">version</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">ostype</span><span class="p">;</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="n">pci_device_t</span><span class="w"> </span><span class="n">vbox_pci</span><span class="p">;</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">vbox_port</span><span class="p">;</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">vbox_vmmdev</span><span class="p">;</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">vbox_guest_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="cm">/* Find the guest device */</span><span class="w"></span>
+<span class="w">    </span><span class="n">pci_device_t</span><span class="w"> </span><span class="n">vbox_pci</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pci_find</span><span class="p">(</span><span class="n">VBOX_VENDOR_ID</span><span class="p">,</span><span class="w"> </span><span class="n">VBOX_DEVICE_ID</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span>
+<span class="w">    </span><span class="cm">/* BAR0 is the IO port. */</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pci_read_field</span><span class="p">(</span><span class="n">vbox_pci</span><span class="p">,</span><span class="w"> </span><span class="n">PCI_BAR0</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xFFFFFFFC</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* BAR1 is the memory-mapped &quot;vmmdevmem&quot; area. */</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_vmmdev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">map_physical_page</span><span class="p">(</span><span class="n">pci_read_field</span><span class="p">(</span><span class="n">vbox_pci</span><span class="p">,</span><span class="w"> </span><span class="n">PCI_BAR1</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xFFFFFFF0</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* Allocate some space for our Guest Info packet */</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">guest_info_phys</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">vbox_guest_info</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">guest_info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">allocate_physical_page</span><span class="p">(</span><span class="o">&amp;</span><span class="n">guest_info_phys</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* Populate the packet */</span><span class="w"></span>
+<span class="w">    </span><span class="n">guest_info</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vbox_guest_info</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">guest_info</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VBOX_REQUEST_HEADER_VERSION</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">guest_info</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">requestType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VBOX_REQUEST_GUEST_INFO</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">guest_info</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">guest_info</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">reserved1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">guest_info</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">reserved2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">guest_info</span><span class="o">-&gt;</span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VBOX_VMMDEV_VERSION</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">guest_info</span><span class="o">-&gt;</span><span class="n">ostype</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="cm">/* 0 = Unknown (32-bit); we don&#39;t need to lie about being another OS here */</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* And send it to the VM */</span><span class="w"></span>
+<span class="w">    </span><span class="n">outportl</span><span class="p">(</span><span class="n">vbox_port</span><span class="p">,</span><span class="w"> </span><span class="n">guest_info_phys</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* (We could check the return value here as well) */</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p><br />
+</p>
+<h2><span class="mw-headline" id="Auto-resize_Guest_Display">Auto-resize Guest Display</span></h2>
+<p>The first feature of the Guest Additions we'll look at is "Auto-resize Guest Display", which will allow your OS to be informed of the best resolution to use on the display adapter. The VirtualBox display adapter is itself based on the Bochs/Qemu display adapter, though it uses a different PCI vendor and device ID. It allows for any resolution to be set (in older versions, it required widths to be multiples of 4). With this capability enabled, we can receive interrupts when the host window size changes, and querying the guest device will tell us what resolution we should set the display to.
+</p><p>We'll need to define some new packets, install an interrupt handler, and also set some bits in the VMMDevMem space.
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cp">#define VBOX_REQUEST_ACK_EVENTS 41</span>
+<span class="cp">#define VBOX_REQUEST_GET_DISPLAY_CHANGE 51</span>
+<span class="cp">#define VBOX_REQUEST_SET_GUEST_CAPS 55</span>
+
+<span class="cm">/* VBox Guest Capabilities packet */</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">vbox_guest_caps</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">vbox_header</span><span class="w"> </span><span class="n">header</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">caps</span><span class="p">;</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="cm">/* VBox Acknowledge Events packet */</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">vbox_ack_events</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">vbox_header</span><span class="w"> </span><span class="n">header</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">events</span><span class="p">;</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="cm">/* VBox GetDisplayChange packet */</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">vbox_display_change</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">vbox_header</span><span class="w"> </span><span class="n">header</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">xres</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">yres</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">bpp</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">eventack</span><span class="p">;</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="cm">/* We&#39;ll use separate pages for our packets for simplicity. */</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">vbox_display_phys</span><span class="p">;</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">vbox_ack_phys</span><span class="p">;</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="n">vbox_display_change</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">vbox_display</span><span class="p">;</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="n">vbox_ack_events</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">vbox_ack</span><span class="p">;</span><span class="w"></span>
+
+<span class="cm">/* Adjust as necessary for your interrupt handling. */</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">vbox_irq_handler</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">regs</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">r</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">vbox_vmmdev</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="cm">/* Nothing to process? Maybe this interrupt was from something sharing the line. */</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">vbox_ack</span><span class="o">-&gt;</span><span class="n">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vbox_vmmdev</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span><span class="w"></span>
+<span class="w">    </span><span class="n">outportl</span><span class="p">(</span><span class="n">vbox_port</span><span class="p">,</span><span class="w"> </span><span class="n">vbox_ack_phys</span><span class="p">);</span><span class="w"> </span><span class="cm">/* Acknowledge events */</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">outportl</span><span class="p">(</span><span class="n">vbox_port</span><span class="p">,</span><span class="w"> </span><span class="n">vbox_display_phys</span><span class="p">);</span><span class="w"> </span><span class="cm">/* Request display change information. */</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* vbox_display now has information on our display size. If it changed we can tell our display driver to update. */</span><span class="w"></span>
+<span class="w">    </span><span class="n">set_new_graphics_mode_maybe</span><span class="p">(</span><span class="n">vbox_display</span><span class="o">-&gt;</span><span class="n">xres</span><span class="p">,</span><span class="w"> </span><span class="n">vbox_display</span><span class="o">-&gt;</span><span class="n">yres</span><span class="p">,</span><span class="w"> </span><span class="n">vbox_display</span><span class="o">-&gt;</span><span class="n">bpp</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* You probably want to make sure you have a way of informing your userspace that the</span>
+<span class="cm">       display resolution is changing, so your window manager or whatever updates. */</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* Don&#39;t forget to acknowledge the interrupt itself if you need to. */</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">vbox_guest_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* Install an interrupt handler. */</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">irq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pci_read_field</span><span class="p">(</span><span class="n">vbox_pci</span><span class="p">,</span><span class="w"> </span><span class="n">PCI_INTERRUPT_LINE</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">install_interrupt_handler</span><span class="p">(</span><span class="n">irq</span><span class="p">,</span><span class="w"> </span><span class="n">vbox_irq_handler</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* We need to tell the VM that we support this capability. The Guest Capabilities request tells the VM about our ability to support seamless and auto-resize modes. */</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">guest_caps_phys</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">vbox_guest_caps</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">guest_caps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">allocate_physical_page</span><span class="p">(</span><span class="o">&amp;</span><span class="n">guest_caps_phys</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">guest_caps</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vbox_guest_caps</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">guest_caps</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VBOX_REQUEST_HEADER_VERSION</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">guest_caps</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">requestType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VBOX_REQUEST_SET_GUEST_CAPS</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">guest_caps</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">guest_caps</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">reserved1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">guest_caps</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">reserved2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">guest_caps</span><span class="o">-&gt;</span><span class="n">caps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="cm">/* set bit 2, which indicates we support &quot;graphics&quot; (auto-resize guest display). */</span><span class="w"></span>
+<span class="w">    </span><span class="n">outportl</span><span class="p">(</span><span class="n">vbox_port</span><span class="p">,</span><span class="w"> </span><span class="n">guest_caps_phys</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* We&#39;ll also set up the packets we&#39;ll use later for AcknowledgeEvents and GetDisplayChange */</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_ack</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">allocate_physical_page</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vbox_ack_phys</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_ack</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vbox_ack_events</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_ack</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VBOX_REQUEST_HEADER_VERSION</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_ack</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">requestType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VBOX_REQUEST_ACK_EVENTS</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_ack</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_ack</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">reserved1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_ack</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">reserved2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_ack</span><span class="o">-&gt;</span><span class="n">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">vbox_display</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">allocate_physical_page</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vbox_display_phys</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_display</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vbox_display_change</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_display</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VBOX_REQUEST_HEADER_VERSION</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_display</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">requestType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VBOX_REQUEST_GET_DISPLAY_CHANGE</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_display</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_display</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">reserved1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_display</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">reserved2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_display</span><span class="o">-&gt;</span><span class="n">xres</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_display</span><span class="o">-&gt;</span><span class="n">yres</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_display</span><span class="o">-&gt;</span><span class="n">bpp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_display</span><span class="o">-&gt;</span><span class="n">eventack</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* Finally, we need to enable interrupts for the capabilities we&#39;ve advertised. We&#39;re just going to enable all of them. */</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_vmmdev</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0xFFFFFFFF</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<h2><span class="mw-headline" id="Mouse_Integration">Mouse Integration</span></h2>
+<p>Mouse Integration provides mouse position information using an absolute coordinate system. It does not provide information on mouse buttons, though, and that continues to go through the standard PS/2 (or USB) mouse devices. If your OS supports USB devices, mouse integration can implemented through a USB tablet devices instead of the mechanism described in this article.
+</p><p>Mouse Integration operates entirely over the guest device. Once enabled, mouse movements are sent to the guest through mouse packet requests and a corresponding interrupt. It is important to note that the format of the coordinates in these packets is based on a range from 0 to 0xFFFF which needs to be scaled to the display resolution. Why this approach was taken over using actual pixel coordinates (scaled or otherwise) is unknown.
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cp">#define VBOX_REQUEST_GET_MOUSE 1</span>
+<span class="cp">#define VBOX_REQUEST_SET_MOUSE 2</span>
+
+<span class="cm">/* The Mouse packet is used both to advertise our guest capabilities and to receive mouse movements. */</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">vbox_mouse_absolute</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">vbox_header</span><span class="w"> </span><span class="n">header</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">features</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int32_t</span><span class="w"> </span><span class="n">x</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int32_t</span><span class="w"> </span><span class="n">y</span><span class="p">;</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">vbox_mouse_phys</span><span class="p">;</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="n">vbox_mouse_absolute</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">vbox_mouse</span><span class="p">;</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">vbox_irq_handler</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">regs</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">r</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">outportl</span><span class="p">(</span><span class="n">vbox_port</span><span class="p">,</span><span class="w"> </span><span class="n">vbox_mouse_phys</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* The mouse coordinates are scaled to the range (0x0,0xFFFF) independently in each dimension, so let&#39;s convert to pixels.</span>
+<span class="cm">       If you prefer to have a more accurate mouse (subpixel support, etc.) you can convert to something else. */</span><span class="w"></span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="p">)</span><span class="n">vbox_mouse</span><span class="o">-&gt;</span><span class="n">x</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">display_resolution_width</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mh">0xFFFF</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="p">)</span><span class="n">vbox_mouse</span><span class="o">-&gt;</span><span class="n">y</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">display_resolution_height</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mh">0xFFFF</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">do_something_useful_with_mouse_coordinates</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span>
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">vbox_guest_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">vbox_mouse</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">allocate_physical_page</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vbox_mouse_phys</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_mouse</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vbox_mouse_absolute</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_mouse</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VBOX_REQUEST_HEADER_VERSION</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_mouse</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">requestType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VBOX_REQUEST_SET_MOUSE</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_mouse</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_mouse</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">reserved1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_mouse</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">reserved2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_mouse</span><span class="o">-&gt;</span><span class="n">features</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">);</span><span class="w"> </span><span class="cm">/* bit 0 says &quot;guest supports (and wants) absolute mouse&quot;; bit 4 says we&#39;ll query absolute positions on interrupts */</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_mouse</span><span class="o">-&gt;</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_mouse</span><span class="o">-&gt;</span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">outportl</span><span class="p">(</span><span class="n">vbox_port</span><span class="p">,</span><span class="w"> </span><span class="n">vbox_mouse_phys</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">vbox_mouse</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">requestType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VBOX_REQUEST_GET_MOUSE</span><span class="p">;</span><span class="w"> </span><span class="cm">/* Change the packet to a Get packet for use in the interrupt handler. */</span><span class="w"></span>
+
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<h2><span class="mw-headline" id="Seamless_Desktop">Seamless Desktop</span></h2>
+<p>The seamless desktop mode in VirtualBox works by sending the virtual machine a list of rectangles representing the non-background visible regions of the desktop. The host creates a borderless, maximized window and shapes it based on the rectangles provided by the guest, yielding the appearance of a seamless desktop. You can tie this into a driver that receives window bounds information from your GUI. Note that seamless works best with (and maybe requires?) Auto-Resize Guest Display support.
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cp">#define VBOX_REQUEST_SET_VISIBLE_REGION 71</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">vbox_rtrect</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int32_t</span><span class="w"> </span><span class="n">xLeft</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int32_t</span><span class="w"> </span><span class="n">yTop</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int32_t</span><span class="w"> </span><span class="n">xRight</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int32_t</span><span class="w"> </span><span class="n">yBottom</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">vbox_visibleregion</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">vbox_header</span><span class="w"> </span><span class="n">header</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">count</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">vbox_rtrect</span><span class="w"> </span><span class="n">rect</span><span class="p">[];</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">vbox_visibleregion_phys</span><span class="p">;</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="n">vbox_visibleregion</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">vbox_visibleregion</span><span class="p">;</span><span class="w"></span>
+
+<span class="p">...</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">vbox_set_visible_region</span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_visibleregion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">allocate_physical_page</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vbox_visibleregion_phys</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_visibleregion</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">vbox_visibleregion</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">vbox_rtrect</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">count</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_visibleregion</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VBOX_REQUEST_HEADER_VERSION</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_visibleregion</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">requestType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VBOX_REQUEST_SET_VISIBLE_REGION</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_visibleregion</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_visibleregion</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">reserved1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_visibleregion</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">.</span><span class="n">reserved2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_visibleregion</span><span class="o">-&gt;</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">count</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* Set each of the rectangles... */</span><span class="w"></span>
+<span class="w">    </span><span class="n">vbox_visibleregion</span><span class="o">-&gt;</span><span class="n">rect</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">xLeft</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...;</span><span class="w"></span>
+<span class="w">    </span><span class="cm">/* etc */</span><span class="w"></span>
+<span class="w">    </span>
+<span class="w">    </span><span class="n">outportl</span><span class="p">(</span><span class="n">vbox_port</span><span class="p">,</span><span class="w"> </span><span class="n">vbox_visibleregion_phys</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p><i>There is an additional interface for the seamless mode using the (undocumented) host-guest communication interface. In the case of the seamless mode, this functionality only communicates whether the seamless mode has been requested and is not necessary for it to function.</i>
+</p><p><i>There are also hints in the VirtualBox codebase that a direct guest-host window mapping feature was planned but has not been implemented. This would presumably allow the guest to provide separate textures for each window, possibly alongside window title and icon information...</i>
+</p>
+<h2><span class="mw-headline" id="Pointer_Shape">Pointer Shape</span></h2>
+<p>The Pointer Shape functionality allows you to send a mouse cursor texture to the host, saving you the need to draw it yourself in software. This functionality is especially useful in combination with the Seamless mode, as it allows your cursor to be rendered outside of the visible regions. This works with the absolute mouse functionality so there is no need to inform the host of the mouse cursor position as it already knows.
+</p>
+<h2><span class="mw-headline" id="Shared_Folders_and_Clipboard">Shared Folders and Clipboard</span></h2>
+<p>The virtual Guest Additions PCI device provides access to a service on the host called the Host-Guest Communication Manager (HGCM).  This service is responsible for providing functionality for Shared Folders, Shared Clipboard and making configuration changes to the guest itself.
+</p><p>All requests to the communication manager are made with the same packet header, and there are 5 values used for the packet type field:
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Value (decimal)
+</th>
+<th>Request Type
+</th></tr>
+<tr>
+<td>60</td>
+<td>Connect
+</td></tr>
+<tr>
+<td>61</td>
+<td>Disconnect
+</td></tr>
+<tr>
+<td>62</td>
+<td>Call Function (32-bit)
+</td></tr>
+<tr>
+<td>63</td>
+<td>Call Function (64-bit)
+</td></tr>
+<tr>
+<td>64</td>
+<td>Cancel Request
+</td></tr></tbody></table>
+<p>After the standard Guest Addition Header, each communication manager packet (except the cancel request packet) has a second header, depending on the request type above.
+</p>
+<h3><span class="mw-headline" id="Connect">Connect</span></h3>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Offset (hex)
+</th>
+<th>Length
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td>0x20</td>
+<td>4</td>
+<td>Location Type
+</td></tr>
+<tr>
+<td>0x24</td>
+<td>128</td>
+<td>Location
+</td></tr>
+<tr>
+<td>0xA4</td>
+<td>4</td>
+<td>Client ID
+</td></tr></tbody></table>
+<p>The Location field contains the name of the library to connect.  There are 4 pre-defined library names: VBoxSharedFolders, VBoxSharedClipboard, VBoxGuestPropSvc, VBoxSharedOpenGL
+</p><p>Additional libraries may also be accessed by providing the library name in the Location field.
+</p><p>The Location Type field should be set to 1 to connect to an additional library, and 2 to connect to one of the pre-defined libraries.
+</p><p>The Client ID is filled by the host after the request is complete.  This value should be used in any further calls to this service.
+</p>
+<h3><span class="mw-headline" id="Disconnect">Disconnect</span></h3>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Offset (hex)
+</th>
+<th>Length
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td>0x20</td>
+<td>4</td>
+<td>Client ID
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="Call_Function">Call Function</span></h3>
+<p>Both the 32-bit and 64-bit call function packets use the same service header, followed by a list of parameter records.  32-bit function parameter records are 12 bytes long, and 64-bit function parameter records are 16 bytes long.
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Offset (hex)
+</th>
+<th>Length
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td>0x20</td>
+<td>4</td>
+<td>Type
+</td></tr>
+<tr>
+<td>0x24</td>
+<td>4</td>
+<td>Client ID
+</td></tr>
+<tr>
+<td>0x28</td>
+<td>4</td>
+<td>Function Code
+</td></tr>
+<tr>
+<td>0x2c</td>
+<td>4</td>
+<td>Parameter Count
+</td></tr>
+<tr>
+<td>0x30</td>
+<td>*</td>
+<td>Parameters
+</td></tr></tbody></table>
+<p><br />
+</p>
+<h4><span class="mw-headline" id="32-bit_Parameter">32-bit Parameter</span></h4>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Offset (hex)
+</th>
+<th>Length
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td>0x00</td>
+<td>4</td>
+<td>Type
+</td></tr>
+<tr>
+<td>0x04</td>
+<td>8</td>
+<td>Value
+</td></tr></tbody></table>
+<h4><span class="mw-headline" id="64-bit_Parameter">64-bit Parameter</span></h4>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Offset (hex)
+</th>
+<th>Length
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td>0x00</td>
+<td>4</td>
+<td>Type
+</td></tr>
+<tr>
+<td>0x04</td>
+<td>12</td>
+<td>Value
+</td></tr></tbody></table>
+<h4><span class="mw-headline" id="Parameter_Types">Parameter Types</span></h4>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Value (decimal)
+</th>
+<th>Request Type
+</th></tr>
+<tr>
+<td>1</td>
+<td>32-bit Value
+</td></tr>
+<tr>
+<td>2</td>
+<td>64-bit Value
+</td></tr>
+<tr>
+<td>3</td>
+<td>Physical Address
+</td></tr>
+<tr>
+<td>4</td>
+<td>Linear Address
+</td></tr>
+<tr>
+<td>5</td>
+<td>Linear Address (Host-to-Guest only)
+</td></tr>
+<tr>
+<td>6</td>
+<td>Linear Address (Guest-to-Host only)
+</td></tr>
+<tr>
+<td>7</td>
+<td>Linear Address (Pre-Locked by Guest)
+</td></tr>
+<tr>
+<td>8</td>
+<td>Linear Address (Host-to-Guest only, Pre-Locked by Guest)
+</td></tr>
+<tr>
+<td>9</td>
+<td>Linear Address (Guest-to-Host only, Pre-Locked by Guest)
+</td></tr></tbody></table>
+<p>Physical and Linear Address parameter values have the following structure:
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Offset (hex)
+</th>
+<th>Length
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td>0x00</td>
+<td>4</td>
+<td>Buffer Length
+</td></tr>
+<tr>
+<td>0x04</td>
+<td>4/8</td>
+<td>Address (32-Bit/64-Bit)
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="Functions">Functions</span></h3>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Value (decimal)
+</th>
+<th>Function
+</th>
+<th>Parameters
+</th></tr>
+<tr>
+<td>1</td>
+<td>Query Mappings</td>
+<td>3
+</td></tr>
+<tr>
+<td>2</td>
+<td>Query Map Name</td>
+<td>2
+</td></tr>
+<tr>
+<td>3</td>
+<td>Create Handle</td>
+<td>3
+</td></tr>
+<tr>
+<td>4</td>
+<td>Close Handle</td>
+<td>2
+</td></tr>
+<tr>
+<td>5</td>
+<td>Read</td>
+<td>5
+</td></tr>
+<tr>
+<td>6</td>
+<td>Write</td>
+<td>5
+</td></tr>
+<tr>
+<td>7</td>
+<td>Lock</td>
+<td>5
+</td></tr>
+<tr>
+<td>8</td>
+<td>List Directory</td>
+<td>8
+</td></tr>
+<tr>
+<td>9</td>
+<td>Information</td>
+<td>5
+</td></tr>
+<tr>
+<td>11</td>
+<td>Delete</td>
+<td>3
+</td></tr>
+<tr>
+<td>14</td>
+<td>Rename</td>
+<td>4
+</td></tr>
+<tr>
+<td>15</td>
+<td>Flush</td>
+<td>2
+</td></tr>
+<tr>
+<td>24</td>
+<td>Set File Size</td>
+<td>3
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="Query_Mappings">Query Mappings</span></h3>
+<p>The Query Mappings command returns a list of all of the shared folders configured for this guest.  The buffer passed by the guest will be filled with mapping records, and the Count parameter will be set to the number of records returned.  The Root value for each record will be used to reference this shared folder in future commands.  If the buffer size is insufficient to hold all of the records, the buffer pointer size field will be set to the minimum size necessary to contain the entire list of mapping records.  By default, all strings returned by the host will be in UCS2 encoding.  Passing the UTF8 flag will force all requests to return strings in UTF8 format.  The Automount Only flag will only return shared folders that have been marked as Automount in the guest configuration.
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Number
+</th>
+<th>Parameter
+</th>
+<th>Type
+</th></tr>
+<tr>
+<td>1</td>
+<td>Flags</td>
+<td>32-Bit (0 - UCS2, 1 - UTF8, 2 - Automount Only)
+</td></tr>
+<tr>
+<td>2</td>
+<td>Count</td>
+<td>32-Bit
+</td></tr>
+<tr>
+<td>3</td>
+<td>Buffer</td>
+<td>Pointer
+</td></tr></tbody></table>
+<h4><span class="mw-headline" id="Mapping_Record">Mapping Record</span></h4>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Offset (hex)
+</th>
+<th>Length
+</th>
+<th>Description
+</th></tr>
+<tr>
+<td>0x00</td>
+<td>4</td>
+<td>Flags (1 - New, 2 - Deleted)
+</td></tr>
+<tr>
+<td>0x04</td>
+<td>4</td>
+<td>Root
+</td></tr></tbody></table>
+<p><br />
+</p>
+<h3><span class="mw-headline" id="Query_Map_Name">Query Map Name</span></h3>
+<p>The Query Map Name command will return the name for the specified shared folder in the guest configuration.
+</p>
+<table border="2" cellpadding="4" cellspacing="0" style="margin-top:1em; margin-bottom:1em; background:#f9f9f9; border:1px #aaa solid; border-collapse:collapse; &#123;&#123;&#123;1&#125;&#125;&#125;">
+<tbody><tr>
+<th>Number
+</th>
+<th>Parameter
+</th>
+<th>Type
+</th></tr>
+<tr>
+<td>1</td>
+<td>Root</td>
+<td>32-Bit
+</td></tr>
+<tr>
+<td>2</td>
+<td>Buffer</td>
+<td>Pointer
+</td></tr></tbody></table>
+<p><br />
+</p>
+<h2><span class="mw-headline" id="Other_Stuff">Other Stuff</span></h2>
+<p>VirtualBox also provides a mechanism for writing to its log files, though this is not managed through the guest device. Simple writing bytes to port 0x504 will produce log entries. The capability bit for this functionality is bit 0.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="External_Links">External Links</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="https://github.com/klange/toaruos/blob/master/modules/vbox.c">ToaruOS VirtualBox guest driver</a></li>
+<li><a rel="nofollow" class="external text" href="https://www.virtualbox.org/browser/vbox/trunk/src/VBox/Devices/VMMDev/VMMDev.cpp">VirtualBox host implementation of the guest additions</a></li>
+<li><a rel="nofollow" class="external text" href="https://www.virtualbox.org/browser/vbox/trunk/src/VBox/Additions">VirtualBox guest implementations</a></li>
+<li><a rel="nofollow" class="external text" href="https://www.virtualbox.org/wiki/Technical_documentation">VirtualBox Technical Documentation (SDK)</a></li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211131717
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.064 seconds
+Real time usage: 0.711 seconds
+Preprocessor visited node count: 123/1000000
+Post‐expand include size: 1944/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 3/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 48518/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    1.483      1 -total
+ 65.24%    0.968     12 Template:Wikitable
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:3968-0!canonical and timestamp 20250211131717 and revision id 28067.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=VirtualBox_Guest_Additions&amp;oldid=28067">https://wiki.osdev.org/index.php?title=VirtualBox_Guest_Additions&amp;oldid=28067</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:Emulators" title="Category:Emulators">Emulators</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=VirtualBox+Guest+Additions" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="VirtualBox_Guest_Additions#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="VirtualBox_Guest_Additions" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:VirtualBox_Guest_Additions&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="VirtualBox_Guest_Additions"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=VirtualBox_Guest_Additions&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=VirtualBox_Guest_Additions&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/VirtualBox_Guest_Additions" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/VirtualBox_Guest_Additions" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=VirtualBox_Guest_Additions&amp;oldid=28067" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=VirtualBox_Guest_Additions&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 9 July 2023, at 20:39.</li>
+	<li id="footer-info-0">This page has been accessed 4,261 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=VirtualBox_Guest_Additions&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.064","walltime":"0.711","ppvisitednodes":{"value":123,"limit":1000000},"postexpandincludesize":{"value":1944,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":3,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":48518,"limit":5000000},"timingprofile":["100.00%    1.483      1 -total"," 65.24%    0.968     12 Template:Wikitable"]},"cachereport":{"timestamp":"20250211131717","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":807});});</script>
+</body>
+</html>

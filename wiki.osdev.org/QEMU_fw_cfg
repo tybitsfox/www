@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>QEMU fw cfg - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"f2c72d465f1b1ed3a7d9d11c","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"QEMU_fw_cfg","wgTitle":"QEMU fw cfg","wgCurRevisionId":27877,"wgRevisionId":27877,"wgArticleId":4276,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","QEMU"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"QEMU_fw_cfg","wgRelevantArticleId":4276,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{
+"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-QEMU_fw_cfg rootpage-QEMU_fw_cfg skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">QEMU fw cfg</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="QEMU_fw_cfg#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="QEMU_fw_cfg#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>QEMU provides a facility for passing strings and files into the VM. This facility is useful for passing kernel parameters, files, or other resources into a guest.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="QEMU_fw_cfg#QEMU_command_line"><span class="tocnumber">1</span> <span class="toctext">QEMU command line</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="QEMU_fw_cfg#Detecting_QEMU"><span class="tocnumber">2</span> <span class="toctext">Detecting QEMU</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="QEMU_fw_cfg#Accessing_the_device_from_your_OS"><span class="tocnumber">3</span> <span class="toctext">Accessing the device from your OS</span></a>
+<ul>
+<li class="toclevel-2 tocsection-4"><a href="QEMU_fw_cfg#Selectors"><span class="tocnumber">3.1</span> <span class="toctext">Selectors</span></a></li>
+<li class="toclevel-2 tocsection-5"><a href="QEMU_fw_cfg#Enumerating_Files"><span class="tocnumber">3.2</span> <span class="toctext">Enumerating Files</span></a></li>
+<li class="toclevel-2 tocsection-6"><a href="QEMU_fw_cfg#Reading_files"><span class="tocnumber">3.3</span> <span class="toctext">Reading files</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-7"><a href="QEMU_fw_cfg#Advanced_Usage"><span class="tocnumber">4</span> <span class="toctext">Advanced Usage</span></a>
+<ul>
+<li class="toclevel-2 tocsection-8"><a href="QEMU_fw_cfg#DMA"><span class="tocnumber">4.1</span> <span class="toctext">DMA</span></a>
+<ul>
+<li class="toclevel-3 tocsection-9"><a href="QEMU_fw_cfg#Commands"><span class="tocnumber">4.1.1</span> <span class="toctext">Commands</span></a>
+<ul>
+<li class="toclevel-4 tocsection-10"><a href="QEMU_fw_cfg#Select"><span class="tocnumber">4.1.1.1</span> <span class="toctext">Select</span></a></li>
+<li class="toclevel-4 tocsection-11"><a href="QEMU_fw_cfg#Skip"><span class="tocnumber">4.1.1.2</span> <span class="toctext">Skip</span></a></li>
+<li class="toclevel-4 tocsection-12"><a href="QEMU_fw_cfg#Read"><span class="tocnumber">4.1.1.3</span> <span class="toctext">Read</span></a></li>
+<li class="toclevel-4 tocsection-13"><a href="QEMU_fw_cfg#Write"><span class="tocnumber">4.1.1.4</span> <span class="toctext">Write</span></a></li>
+</ul>
+</li>
+<li class="toclevel-3 tocsection-14"><a href="QEMU_fw_cfg#Command_Errors"><span class="tocnumber">4.1.2</span> <span class="toctext">Command Errors</span></a></li>
+<li class="toclevel-3 tocsection-15"><a href="QEMU_fw_cfg#Command_Completion"><span class="tocnumber">4.1.3</span> <span class="toctext">Command Completion</span></a></li>
+<li class="toclevel-3 tocsection-16"><a href="QEMU_fw_cfg#DMA_I/O_Ports"><span class="tocnumber">4.1.4</span> <span class="toctext">DMA I/O Ports</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-17"><a href="QEMU_fw_cfg#References"><span class="tocnumber">5</span> <span class="toctext">References</span></a></li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="QEMU_command_line">QEMU command line</span></h2>
+<p>To pass strings or files into QEMU to appear in the fw_cfg device, use one or more command line parameters like those shown below:
+</p>
+<pre> -fw_cfg name=opt/com.name.domain.your.example,string=1
+ -fw_cfg name=opt/com.name.domain.your.example,file=example_filename.png
+ -fw_cfg opt/com.name.domain.your.example,file=example_filename.png
+</pre>
+<p>Names that begin with "opt/" are reserved for users. It is strongly recommended to use a RFQDN (Reversed Fully Qualified Domain Name) as a prefix for the resource name. In the example above, it is assumed you are the owner of the domain "your.domain.name.com", and your resource is named "example". Following this advice guarantees that there will never be a conflict, since only one entity can own a given domain name. The name may be up to 55 characters long, including the "opt/" prefix. The "name=" part of the argument may be omitted, as shown in the third example above.
+</p>
+<h2><span class="mw-headline" id="Detecting_QEMU">Detecting QEMU</span></h2>
+<p>It is a very good idea for your OS to first make sure it is running under QEMU, before attempting to access the fw_cfg device. Accessing I/O ports for devices that don't exist on a real machine may have undefined behavior. To detect the presence of QEMU, you should read CPUID leaf 0x40000000 and check for the hypervisor signature in the ebx, ecx, edx registers. Under QEMU, those registers will contain the signature "TCGTCGTCGTCG" or "KVMKVMKVM\0\0\0". A link to a CPUID hypervisor leaf reference is at the end of the article.
+</p><p>Since the hypervisor leaf can be disabled in QEMU, an alternate way to detect QEMU is to look for ACPI PnP ID "QEMU0002" in the ACPI tables. This is required to detect the fw_cfg MMIO address on non-x86 architectures, and is a reliable way to auto-detect the I/O port base addresses, in case they are changed in the future.
+</p>
+<h2><span class="mw-headline" id="Accessing_the_device_from_your_OS">Accessing the device from your OS</span></h2>
+<p>QEMU provides three I/O ports on x86, or three MMIO addresses on other architectures (<i>details for other architectures are omitted in this article for now, see the QEMU documentation file below if you need to use fw_cfg on another architecture</i>).
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="w">  </span><span class="cp">#define FW_CFG_PORT_SEL     0x510</span>
+<span class="w">  </span><span class="cp">#define FW_CFG_PORT_DATA    0x511</span>
+<span class="w">  </span><span class="cp">#define FW_CFG_PORT_DMA     0x514</span>
+</pre></div>
+<p><i>FW_CFG_PORT_SEL</i> is a 16-bit port at I/O address 0x510. You write a "selector" to this port to control which data will be read when reading <i>FW_CFG_PORT_DATA</i>. More about selectors below.
+</p><p><i>FW_CFG_PORT_DATA</i> is an 8-bit port at I/O address 0x511. You read one byte at a time of the file from this port, after selecting a file by writing a value to <i>FW_CFG_PORT_SEL</i>.
+</p><p><i>FW_CFG_PORT_DMA</i> is a 32-bit port at I/O address 0x514. DMA is covered later in this article.
+</p>
+<h3><span class="mw-headline" id="Selectors">Selectors</span></h3>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="w">  </span><span class="cp">#define FW_CFG_SIGNATURE    0x0000</span>
+<span class="w">  </span><span class="cp">#define FW_CFG_ID           0x0001</span>
+<span class="w">  </span><span class="cp">#define FW_CFG_FILE_DIR     0x0019</span>
+</pre></div>
+<p>Listed above are a few fixed-purpose selectors for probing for the existence of the device, and for getting the number of files present in the device. Besides those selectors, each file will be assigned a selector. You determine the selector to use for a file you wish to read by reading the directory file <i>FW_CFG_FILE_DIR</i>.
+</p><p>You should ensure that the fw_cfg device is present by outputting <i>FW_CFG_SIGNATURE</i> to I/O port <i>FW_CFG_PORT_SEL</i>, then read four bytes from <i>FW_CFG_PORT_DATA</i>. If you read "QEMU" from the data port, the fw_cfg device is present.
+</p>
+<h3><span class="mw-headline" id="Enumerating_Files">Enumerating Files</span></h3>
+<p>The first four bytes of the <i>FW_CFG_FILE_DIR</i> selector will be a 32-bit big-endian number which is the number of files present in the directory.
+</p><p>Following the count, there is a sequence of entries with the following structure:
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="w">  </span><span class="k">struct</span><span class="w"> </span><span class="nc">FWCfgFile</span><span class="w"> </span><span class="p">{</span><span class="w">		</span><span class="cm">/* an individual file entry, 64 bytes total */</span><span class="w"></span>
+<span class="w">      </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">size</span><span class="p">;</span><span class="w">		</span><span class="cm">/* size of referenced fw_cfg item, big-endian */</span><span class="w"></span>
+<span class="w">      </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">select</span><span class="p">;</span><span class="w">		</span><span class="cm">/* selector key of fw_cfg item, big-endian */</span><span class="w"></span>
+<span class="w">      </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">reserved</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="kt">char</span><span class="w"> </span><span class="n">name</span><span class="p">[</span><span class="mi">56</span><span class="p">];</span><span class="w">		</span><span class="cm">/* fw_cfg item name, NUL-terminated ascii */</span><span class="w"></span>
+<span class="w">  </span><span class="p">};</span><span class="w"></span>
+</pre></div>
+<p>These can be read one at a time by reading <i>sizeof(FWCfgFile)</i> bytes into a single variable of type <i>FWCfgFile</i> and examined one by one until you find a structure with the desired name. There is no requirement to read one entry at a time, you may read multiple entries, or even all entries, in a single operation.
+</p>
+<h3><span class="mw-headline" id="Reading_files">Reading files</span></h3>
+<p>Once you have found the <i>FWCfgFile</i> structure which has the desired name, read the <i>select</i> field from the structure. It will contain the big-endian selector for the file. After byte-swapping the selector, output it to <i>FW_CFG_PORT_SEL</i>, then read <i>size</i> bytes from <i>FW_CFG_PORT_DATA</i> and write them to the desired location in memory.
+</p><p>An example implementation is provided in the references below.
+</p>
+<h1><span class="mw-headline" id="Advanced_Usage">Advanced Usage</span></h1>
+<p>The information provided earlier in this article is sufficient to use fw_cfg. The following sections describe DMA mode, which provides increased performance, the ability to seek to an offset within a file before doing a data access. Early versions of QEMU (before 2.4) allowed you to write changes back into the firmware.
+</p>
+<h3><span class="mw-headline" id="DMA">DMA</span></h3>
+<p>Without DMA, you would be writing an I/O port to select a file then repeating I/O to read each byte. DMA replaces that with a more efficient operation, you put a 16 byte descriptor in memory for an operation, then write the physical address of that descriptor to the DMA register. The command descriptors must have the following memory layout:
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="c1">// fw_cfg DMA commands</span>
+<span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="n">fw_cfg_ctl_t</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">fw_ctl_error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">fw_ctl_read</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">fw_ctl_skip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">fw_ctl_select</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">fw_ctl_write</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">16</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">fw_cfg_ctl_t</span><span class="p">;</span><span class="w"></span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">FWCfgDmaAccess</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">control</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">length</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">address</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">FWCfgDmaAccess</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+<h4><span class="mw-headline" id="Commands">Commands</span></h4>
+<p>Commands are specified in the <i>control</i> field. Some commands use the upper 16 bits of the <i>control</i> field to hold a file selector. Some or all of the other fields may be unused depending upon which command is being issued, and should be initialized to zeros unless they hold usable information.
+</p><p>NOTE: All three fields must be in big-endian order. You can ensure that the values written are in big-endian "network" order using <i>htonl</i> and <i>htobe64</i> byte swapping functions. Those functions will pass the value through unmodified on big-endian machines, and will byte swap the input on little-endian machines.
+</p>
+<h5><span class="mw-headline" id="Select">Select</span></h5>
+<p>The select command selects the file specified in the upper 16 bits of the <i>control</i> field. Selecting a file also resets its seek position to the beginning of the file.
+</p>
+<h5><span class="mw-headline" id="Skip">Skip</span></h5>
+<p>The skip command advances the seek position through the file by the amount specified in the <i>length</i> field.
+</p>
+<h5><span class="mw-headline" id="Read">Read</span></h5>
+<p>The read command copies <i>length</i> bytes from the current seek position of the currently selected file into memory at the physical memory address <i>address</i>, and advances the seek position of the file appropriately.
+</p>
+<h5><span class="mw-headline" id="Write">Write</span></h5>
+<p>The write command writes <i>length</i> bytes to the current seek position of the currently selected file from physical memory address <i>address</i>, and advances the seek position of the file appropriately.
+</p><p>NOTE: Writing is not supported in QEMU starting at version 2.4. Earlier versions allowed writes.
+</p>
+<h4><span class="mw-headline" id="Command_Errors">Command Errors</span></h4>
+<p>If any I/O operation goes outside the bounds of the selected file, then the entire operation is cancelled immediately before changing any memory or firmware values, and the <i>error</i> bit (bit 0) of the command descriptor is updated to be nonzero.
+</p>
+<h4><span class="mw-headline" id="Command_Completion">Command Completion</span></h4>
+<p>Currently QEMU will immediately complete every command (whether it succeeds or fails) during the time that your driver is writing to the DMA register. QEMU documentation warns that fw_cfg may become asynchronous some day (meaning, it may not continue to complete commands instantly in the future). Your driver should enter a loop that reads the command field until it becomes zero after issuing a command, just in case. Typically it will check the command field and it will already be zero, and it won't run one iteration of the loop. You must also break out of the loop if bit 0 of the <i>control</i> field becomes set, which occurs in an error condition.
+</p>
+<h4><span id="DMA_I.2FO_Ports"></span><span class="mw-headline" id="DMA_I/O_Ports">DMA I/O Ports</span></h4>
+<p>The value written to the DMA port must be in big-endian byte order. The upper 32 bits of the command descriptor physical address must be written to the DMA port if the value is nonzero. Then, the lower 32 bits of the address must be written to (DMA port + 4). For example:
+</p>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="w">        </span><span class="n">FWCfgDmaAccess</span><span class="w"> </span><span class="n">cmd</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">cmd</span><span class="p">.</span><span class="n">control</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">htonl</span><span class="p">(</span><span class="n">fw_ctl_read</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">cmd</span><span class="p">.</span><span class="n">address</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">htobe64</span><span class="p">(</span><span class="n">buffer_ptr</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">cmd</span><span class="p">.</span><span class="n">length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">htonl</span><span class="p">(</span><span class="n">size</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// Assumes identity mapping - replace this with</span>
+<span class="w">        </span><span class="c1">// virt-to-phys translation if necessary</span>
+<span class="w">        </span><span class="kt">uintptr_t</span><span class="w"> </span><span class="n">cmd_physaddr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">uintptr_t</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cmd</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// Split it into halves and avoid warning for upper bits in 32 bit build</span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">cmd_physaddr_lo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">uint32_t</span><span class="p">(</span><span class="n">cmd_physaddr</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xFFFFFFFFU</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">cmd_physaddr_hi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">uintptr_t</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="o">?</span><span class="w"> </span><span class="kt">uint32_t</span><span class="p">(</span><span class="n">cmd_physaddr</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="mi">32</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// Skip writing high half if unnecessary.</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cmd_physaddr_hi</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">outl</span><span class="p">(</span><span class="n">FW_CFG_PORT_DMA</span><span class="p">,</span><span class="w"> </span><span class="n">htonl</span><span class="p">(</span><span class="n">cmd_physaddr_hi</span><span class="p">));</span><span class="w"></span>
+<span class="w">        </span><span class="n">outl</span><span class="p">(</span><span class="n">FW_CFG_PORT_DMA</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">htonl</span><span class="p">(</span><span class="n">cmd_physaddr_lo</span><span class="p">));</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// Hardware loads zero into the entire command address register</span>
+<span class="w">        </span><span class="c1">// after executing a command. In particular, subsequent commands</span>
+<span class="w">        </span><span class="c1">// can skip writing the upper half of the address if their value</span>
+<span class="w">        </span><span class="c1">// is all zeros</span>
+</pre></div>
+<h1><span class="mw-headline" id="References">References</span></h1>
+<p><a rel="nofollow" class="external text" href="https://github.com/qemu/qemu/blob/master/docs/specs/fw_cfg.rst">QEMU fw_cfg documentation on GitHub</a>
+</p><p><a rel="nofollow" class="external text" href="https://github.com/doug65536/dgos/blob/master/boot/x86/qemu_x86.cc">Example implementation</a>
+</p><p><a rel="nofollow" class="external text" href="http://www.sandpile.org/x86/cpuid.htm#level_4000_0000h">CPUID hypervisor leaf</a>
+</p>
+<!-- 
+NewPP limit report
+Cached time: 20250211130957
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.042 seconds
+Real time usage: 0.691 seconds
+Preprocessor visited node count: 76/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 9497/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:4276-0!canonical and timestamp 20250211130956 and revision id 27877.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=QEMU_fw_cfg&amp;oldid=27877">https://wiki.osdev.org/index.php?title=QEMU_fw_cfg&amp;oldid=27877</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:QEMU" title="Category:QEMU">QEMU</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=QEMU+fw+cfg" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="QEMU_fw_cfg#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="QEMU_fw_cfg" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:QEMU_fw_cfg&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="QEMU_fw_cfg"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=QEMU_fw_cfg&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=QEMU_fw_cfg&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/QEMU_fw_cfg" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/QEMU_fw_cfg" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=QEMU_fw_cfg&amp;oldid=27877" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=QEMU_fw_cfg&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 9 July 2023, at 04:21.</li>
+	<li id="footer-info-0">This page has been accessed 5,910 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=QEMU_fw_cfg&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.042","walltime":"0.691","ppvisitednodes":{"value":76,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":9497,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250211130957","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":96});});</script>
+</body>
+</html>

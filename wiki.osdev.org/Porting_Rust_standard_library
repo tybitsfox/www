@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Porting Rust standard library - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"fb7b6e84da8803296852e9dd","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Porting_Rust_standard_library","wgTitle":"Porting Rust standard library","wgCurRevisionId":29206,"wgRevisionId":29206,"wgArticleId":4698,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using duplicate arguments in template calls","Level 1 Tutorials","In Progress","Rust","Standard Libraries"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Porting_Rust_standard_library","wgRelevantArticleId":4698,"wgIsProbablyEditable":false,
+"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","mmv.head","mmv.bootstrap.autostart","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Porting_Rust_standard_library rootpage-Porting_Rust_standard_library skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Porting Rust standard library</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Porting_Rust_standard_library#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Porting_Rust_standard_library#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><table style="font-size:95%; line-height:1.5em; padding:0.25em; float:right; margin: 0 0 8px 15px; clear:right; border:1px solid #aaaaaa; background:#eee; text-align:center;;"><tbody><tr><th>Difficulty level</th></tr><tr><td><a href="./File:Difficulty_1.png" class="image"><img alt="Difficulty 1.png" src="images/d/d3/Difficulty_1.png" decoding="async" width="46" height="14" data-file-width="46" data-file-height="14" /></a><br />Beginner</td></tr></tbody></table>
+<center>
+<table style="border: 1px solid #cfcfbf; margin-top: 25px; margin-bottom: 25px; background-color: #f0f0ff; text-align: center;">
+<tbody><tr>
+<td>
+<p><a href="./File:Under_Construction.png" class="image" title="This page is under construction!"><img alt="This page is under construction!" src="images/1/14/Under_Construction.png" decoding="async" width="50" height="50" data-file-width="50" data-file-height="50" /></a>
+This page or section is a work in progress and may thus be incomplete. Its content may be changed in the near future.
+</p>
+</td>
+<td>
+</td></tr></tbody></table>
+</center>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Porting_Rust_standard_library#Guide"><span class="tocnumber">1</span> <span class="toctext">Guide</span></a>
+<ul>
+<li class="toclevel-2 tocsection-2"><a href="Porting_Rust_standard_library#Get_sources"><span class="tocnumber">1.1</span> <span class="toctext">Get sources</span></a></li>
+<li class="toclevel-2 tocsection-3"><a href="Porting_Rust_standard_library#Configuration"><span class="tocnumber">1.2</span> <span class="toctext">Configuration</span></a></li>
+<li class="toclevel-2 tocsection-4"><a href="Porting_Rust_standard_library#Adding_the_target"><span class="tocnumber">1.3</span> <span class="toctext">Adding the target</span></a></li>
+<li class="toclevel-2 tocsection-5"><a href="Porting_Rust_standard_library#Adapt_library/std"><span class="tocnumber">1.4</span> <span class="toctext">Adapt library/std</span></a></li>
+<li class="toclevel-2 tocsection-6"><a href="Porting_Rust_standard_library#Add_toolchain"><span class="tocnumber">1.5</span> <span class="toctext">Add toolchain</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-7"><a href="Porting_Rust_standard_library#Making_the_standard_library_functional"><span class="tocnumber">2</span> <span class="toctext">Making the standard library functional</span></a>
+<ul>
+<li class="toclevel-2 tocsection-8"><a href="Porting_Rust_standard_library#Memory_allocator"><span class="tocnumber">2.1</span> <span class="toctext">Memory allocator</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="Porting_Rust_standard_library#Thread_local_storage"><span class="tocnumber">2.2</span> <span class="toctext">Thread local storage</span></a>
+<ul>
+<li class="toclevel-3 tocsection-10"><a href="Porting_Rust_standard_library#Global_statics_(easiest,_single-threaded_only)"><span class="tocnumber">2.2.1</span> <span class="toctext">Global statics (easiest, single-threaded only)</span></a></li>
+<li class="toclevel-3 tocsection-11"><a href="Porting_Rust_standard_library#OS_APIs_(slow,_easier_than_ELF_native)"><span class="tocnumber">2.2.2</span> <span class="toctext">OS APIs (slow, easier than ELF native)</span></a></li>
+<li class="toclevel-3 tocsection-12"><a href="Porting_Rust_standard_library#Native_ELF_TLS_(fastest)"><span class="tocnumber">2.2.3</span> <span class="toctext">Native ELF TLS (fastest)</span></a></li>
+</ul>
+</li>
+<li class="toclevel-2 tocsection-13"><a href="Porting_Rust_standard_library#Basic_printing"><span class="tocnumber">2.3</span> <span class="toctext">Basic printing</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-14"><a href="Porting_Rust_standard_library#Runtime"><span class="tocnumber">3</span> <span class="toctext">Runtime</span></a>
+<ul>
+<li class="toclevel-2 tocsection-15"><a href="Porting_Rust_standard_library#Integrating_a_crate"><span class="tocnumber">3.1</span> <span class="toctext">Integrating a crate</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-16"><a href="Porting_Rust_standard_library#Troubleshooting"><span class="tocnumber">4</span> <span class="toctext">Troubleshooting</span></a>
+<ul>
+<li class="toclevel-2 tocsection-17"><a href="Porting_Rust_standard_library#error[E0463]:_can&#39;t_find_crate_for_`compiler_builtins`"><span class="tocnumber">4.1</span> <span class="toctext">error[E0463]: can't find crate for `compiler_builtins`</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Guide">Guide</span></h2>
+<p>This guide shows how to get the standard library to compile and run for a custom target.
+</p><p>By the end you should be able to compile a project with
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>cargo +dev-x86_64-unknown-myos r --target x86_64-unknown-myos
+</pre></div>
+<h3><span class="mw-headline" id="Get_sources">Get sources</span></h3>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>git clone https://github.com/rust-lang/rust
+</pre></div>
+<h3><span class="mw-headline" id="Configuration">Configuration</span></h3>
+<div class="mw-highlight mw-highlight-lang-ini mw-content-ltr" dir="ltr"><pre><span></span><span class="c1"># config.toml</span><span class="w"></span>
+<span class="na">profile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;compiler&quot;</span><span class="w"></span>
+<span class="na">change-id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">125535</span><span class="w"></span>
+
+<span class="k">[build]</span><span class="w"></span>
+<span class="na">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[&quot;x86_64-unknown-linux-gnu&quot;]</span><span class="w"></span>
+<span class="na">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[&quot;x86_64-unknown-linux-gnu&quot;, &quot;x86_64-unknown-myos&quot;]</span><span class="w"></span>
+
+<span class="k">[rust]</span><span class="w"></span>
+<span class="na">incremental</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">true</span><span class="w"></span>
+</pre></div>
+<h3><span class="mw-headline" id="Adding_the_target">Adding the target</span></h3>
+<p>Adding a target to the rust compiler takes several files. rustc_target must be told about the new target with a base spec and a target spec. The bootstrap crate must be told that the new target, while not in the downloaded bootstrap compiler, is valid. Also, a test is added for the new target that checks assembly code generation. The test is not strictly necessary, but tidy, the rust compiler's style enforcer, will not pass without it, so it is good practice.
+</p><p><br />
+In addition, a <code>_start</code> symbol must be provided to rustc. This can be done in one of two ways. Either rustc can be given a crt0 object file that provides start, or the standard library can be modified to provide it for our target. The CRT option is done in the target files and thus shown here, while the standard library approach is described in the next section.
+</p>
+<div class="mw-highlight mw-highlight-lang-rust mw-content-ltr" dir="ltr"><pre><span></span><span class="c1">// compiler/rustc_target/src/spec/base/myos.rs</span>
+<span class="c1">// Only if using external CRT to provide _start</span>
+<span class="k">use</span><span class="w"> </span><span class="k">crate</span>::<span class="n">spec</span>::<span class="n">crt_objects</span><span class="p">;</span><span class="w"></span>
+<span class="k">use</span><span class="w"> </span><span class="k">crate</span>::<span class="n">spec</span>::<span class="p">{</span><span class="n">Cc</span><span class="p">,</span><span class="w"> </span><span class="n">LinkerFlavor</span><span class="p">,</span><span class="w"> </span><span class="n">Lld</span><span class="p">,</span><span class="w"> </span><span class="n">RelocModel</span><span class="p">,</span><span class="w"> </span><span class="n">StackProbeType</span><span class="p">,</span><span class="w"> </span><span class="n">TargetOptions</span><span class="p">};</span><span class="w"></span>
+
+<span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">opts</span><span class="p">()</span><span class="w"> </span>-&gt; <span class="nc">TargetOptions</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">TargetOptions</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">os</span>: <span class="s">&quot;myos&quot;</span><span class="p">.</span><span class="n">into</span><span class="p">(),</span><span class="w"></span>
+<span class="w">        </span><span class="n">linker</span>: <span class="nb">Some</span><span class="p">(</span><span class="s">&quot;rust-lld&quot;</span><span class="p">.</span><span class="n">into</span><span class="p">()),</span><span class="w"></span>
+<span class="w">        </span><span class="n">linker_flavor</span>: <span class="nc">LinkerFlavor</span>::<span class="n">Gnu</span><span class="p">(</span><span class="n">Cc</span>::<span class="n">No</span><span class="p">,</span><span class="w"> </span><span class="n">Lld</span>::<span class="n">Yes</span><span class="p">),</span><span class="w"></span>
+<span class="w">        </span><span class="n">stack_probes</span>: <span class="nc">StackProbeType</span>::<span class="n">Inline</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="n">relocation_model</span>: <span class="nc">RelocModel</span>::<span class="n">Static</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// Following two only if using external CRT to provide _start</span>
+<span class="w">        </span><span class="n">pre_link_objects</span>: <span class="nc">crt_objects</span>::<span class="n">pre_myos</span><span class="p">(),</span><span class="w"></span>
+<span class="w">        </span><span class="n">post_link_objects</span>: <span class="nc">crt_objects</span>::<span class="n">post_myos</span><span class="p">(),</span><span class="w"></span>
+<span class="w">        </span><span class="o">..</span><span class="nb">Default</span>::<span class="n">default</span><span class="p">()</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p><br />
+</p>
+<div class="mw-highlight mw-highlight-lang-rust mw-content-ltr" dir="ltr"><pre><span></span><span class="c1">// compiler/rustc_target/src/spec/targets/x86_64_unknown_myos.rs</span>
+<span class="k">use</span><span class="w"> </span><span class="k">crate</span>::<span class="n">spec</span>::<span class="p">{</span><span class="n">base</span><span class="p">,</span><span class="w"> </span><span class="n">PanicStrategy</span><span class="p">,</span><span class="w"> </span><span class="n">Target</span><span class="p">,</span><span class="w"> </span><span class="n">TargetMetadata</span><span class="p">};</span><span class="w"></span>
+
+<span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">target</span><span class="p">()</span><span class="w"> </span>-&gt; <span class="nc">Target</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">base</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">base</span>::<span class="n">myos</span>::<span class="n">opts</span><span class="p">();</span><span class="w"></span>
+<span class="w">    </span><span class="n">base</span><span class="p">.</span><span class="n">cpu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;x86-64&quot;</span><span class="p">.</span><span class="n">into</span><span class="p">();</span><span class="w"></span>
+<span class="w">    </span><span class="n">base</span><span class="p">.</span><span class="n">disable_redzone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">base</span><span class="p">.</span><span class="n">panic_strategy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PanicStrategy</span>::<span class="n">Abort</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">base</span><span class="p">.</span><span class="n">features</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;-mmx,-sse,+soft-float&quot;</span><span class="p">.</span><span class="n">into</span><span class="p">();</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">Target</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">llvm_target</span>: <span class="s">&quot;x86_64-unknown-none&quot;</span><span class="p">.</span><span class="n">into</span><span class="p">(),</span><span class="w"></span>
+<span class="w">        </span><span class="n">pointer_width</span>: <span class="mi">64</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="n">data_layout</span>:
+            <span class="s">&quot;e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128&quot;</span><span class="p">.</span><span class="n">into</span><span class="p">(),</span><span class="w"></span>
+<span class="w">        </span><span class="n">arch</span>: <span class="s">&quot;x86_64&quot;</span><span class="p">.</span><span class="n">into</span><span class="p">(),</span><span class="w"></span>
+<span class="w">        </span><span class="n">options</span>: <span class="nc">base</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="n">metadata</span>: <span class="nc">TargetMetadata</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">description</span>: <span class="nb">None</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">tier</span>: <span class="nb">None</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">host_tools</span>: <span class="nb">None</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">std</span>: <span class="nb">None</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p><br />
+</p>
+<div class="mw-highlight mw-highlight-lang-diff mw-content-ltr" dir="ltr"><pre><span></span><span class="gd">--- a/compiler/rustc_target/src/spec/base/mod.rs</span><span class="w"></span>
+<span class="gi">+++ b/compiler/rustc_target/src/spec/base/mod.rs</span><span class="w"></span>
+<span class="gu">@@ -18,6 +18,7 @@</span><span class="w"></span>
+<span class="w"> </span>pub(crate) mod linux_ohos;<span class="w"></span>
+<span class="w"> </span>pub(crate) mod linux_uclibc;<span class="w"></span>
+<span class="w"> </span>pub(crate) mod msvc;<span class="w"></span>
+<span class="gi">+pub(crate) mod myos;</span><span class="w"></span>
+<span class="w"> </span>pub(crate) mod netbsd;<span class="w"></span>
+<span class="w"> </span>pub(crate) mod nto_qnx;<span class="w"></span>
+<span class="w"> </span>pub(crate) mod openbsd;<span class="w"></span>
+</pre></div>
+<p><br />
+</p>
+<div class="mw-highlight mw-highlight-lang-diff mw-content-ltr" dir="ltr"><pre><span></span><span class="gd">--- a/compiler/rustc_target/src/spec/mod.rs</span><span class="w"></span>
+<span class="gi">+++ b/compiler/rustc_target/src/spec/mod.rs</span><span class="w"></span>
+<span class="gu">@@ -1826,6 +1826,8 @@ fn $module() {</span><span class="w"></span>
+<span class="w"> </span>
+<span class="w"> </span>    (&quot;x86_64-unknown-linux-none&quot;, x86_64_unknown_linux_none),<span class="w"></span>
+<span class="w"> </span>
+<span class="gi">+    (&quot;x86_64-unknown-myos&quot;, x86_64_unknown_myos),</span><span class="w"></span>
+<span class="gi">+</span><span class="w"></span>
+<span class="w"> </span>}<span class="w"></span>
+</pre></div>
+<p><br />
+</p>
+<div class="mw-highlight mw-highlight-lang-diff mw-content-ltr" dir="ltr"><pre><span></span><span class="gd">--- a/compiler/rustc_target/src/spec/crt_objects.rs</span><span class="w"></span>
+<span class="gi">+++ b/compiler/rustc_target/src/spec/crt_objects.rs</span><span class="w"></span>
+<span class="gu">@@ -106,6 +106,14 @@ pub(super) fn post_mingw() -&gt; CrtObjects {</span><span class="w"></span>
+<span class="w"> </span>    all(&quot;rsend.o&quot;)<span class="w"></span>
+<span class="w"> </span>}<span class="w"></span>
+<span class="w"> </span>
+<span class="gi">+pub(super) fn pre_myos() -&gt; CrtObjects {</span><span class="w"></span>
+<span class="gi">+    all(&lt;PATH TO CRT0 HERE&gt;)</span><span class="w"></span>
+<span class="gi">+}</span><span class="w"></span>
+<span class="gi">+</span><span class="w"></span>
+<span class="gi">+pub(super) fn post_myos() -&gt; CrtObjects {</span><span class="w"></span>
+<span class="gi">+    new(&amp;[])</span><span class="w"></span>
+<span class="gi">+}</span><span class="w"></span>
+<span class="gi">+</span><span class="w"></span>
+</pre></div>
+<p><br />
+</p>
+<div class="mw-highlight mw-highlight-lang-diff mw-content-ltr" dir="ltr"><pre><span></span><span class="gd">--- a/src/bootstrap/src/core/sanity.rs</span><span class="w"></span>
+<span class="gi">+++ b/src/bootstrap/src/core/sanity.rs</span><span class="w"></span>
+<span class="gu">@@ -40,6 +40,7 @@ pub struct Finder {</span><span class="w"></span>
+<span class="w"> </span>#[cfg(not(feature = &quot;bootstrap-self-test&quot;))]<span class="w"></span>
+<span class="w"> </span>const STAGE0_MISSING_TARGETS: &amp;[&amp;str] = &amp;[<span class="w"></span>
+<span class="w"> </span>    // just a dummy comment so the list doesn&#39;t get onelined<span class="w"></span>
+<span class="gi">+    &quot;x86_64-unknown-myos&quot;,</span><span class="w"></span>
+<span class="w"> </span>];<span class="w"></span>
+</pre></div>
+<div class="mw-highlight mw-highlight-lang-diff mw-content-ltr" dir="ltr"><pre><span></span><span class="gd">--- a/src/bootstrap/src/lib.rs</span><span class="w"></span>
+<span class="gi">+++ b/src/bootstrap/src/lib.rs</span><span class="w"></span>
+<span class="gu">@@ -94,7 +94,7 @@</span><span class="w"></span>
+<span class="w"> </span>    (Some(Mode::Std), &quot;no_sync&quot;, None),<span class="w"></span>
+<span class="w"> </span>    /* Extra values not defined in the built-in targets yet, but used in std */<span class="w"></span>
+<span class="w"> </span>    (Some(Mode::Std), &quot;target_env&quot;, Some(&amp;[&quot;libnx&quot;, &quot;p2&quot;])),<span class="w"></span>
+<span class="gd">-    (Some(Mode::Std), &quot;target_os&quot;, Some(&amp;[&quot;visionos&quot;])),</span><span class="w"></span>
+<span class="gi">+    (Some(Mode::Std), &quot;target_os&quot;, Some(&amp;[&quot;myos&quot;, &quot;visionos&quot;])),</span><span class="w"></span>
+<span class="w"> </span>    (Some(Mode::Std), &quot;target_arch&quot;, Some(&amp;[&quot;arm64ec&quot;, &quot;spirv&quot;, &quot;nvptx&quot;, &quot;xtensa&quot;])),<span class="w"></span>
+<span class="w"> </span>    (Some(Mode::ToolStd), &quot;target_os&quot;, Some(&amp;[&quot;visionos&quot;])),<span class="w"></span>
+</pre></div>
+<p><br />
+</p>
+<div class="mw-highlight mw-highlight-lang-diff mw-content-ltr" dir="ltr"><pre><span></span><span class="gd">--- a/tests/assembly/targets/targets-elf.rs</span><span class="w"></span>
+<span class="gi">+++ b/tests/assembly/targets/targets-elf.rs</span><span class="w"></span>
+<span class="gu">@@ -561,6 +561,9 @@</span><span class="w"></span>
+<span class="w"> </span>//@ revisions: x86_64_unknown_linux_none<span class="w"></span>
+<span class="w"> </span>//@ [x86_64_unknown_linux_none] compile-flags: --target x86_64-unknown-linux-none<span class="w"></span>
+<span class="w"> </span>//@ [x86_64_unknown_linux_none] needs-llvm-components: x86<span class="w"></span>
+<span class="gi">+//@ revisions: x86_64_unknown_myos</span><span class="w"></span>
+<span class="gi">+//@ [x86_64_unknown_myos] compile-flags: --target x86_64-unknown-myos</span><span class="w"></span>
+<span class="gi">+//@ [x86_64_unknown_myos] needs-llvm-components: x86</span><span class="w"></span>
+<span class="w"> </span>//@ revisions: x86_64_unknown_netbsd<span class="w"></span>
+<span class="w"> </span>//@ [x86_64_unknown_netbsd] compile-flags: --target x86_64-unknown-netbsd<span class="w"></span>
+<span class="w"> </span>//@ [x86_64_unknown_netbsd] needs-llvm-components: x86<span class="w"></span>
+</pre></div>
+<h3><span id="Adapt_library.2Fstd"></span><span class="mw-headline" id="Adapt_library/std">Adapt library/std</span></h3>
+<p>In addition to rustc, std must also be modified to support the target. By default, std will error on build if the OS isn't explicitly supported, so we must add our OS to the list of supported OSes. In addition, we must provide a PAL (Platform Abstraction Layer) to tell std how to interact with our OS.
+</p>
+<div class="mw-highlight mw-highlight-lang-diff mw-content-ltr" dir="ltr"><pre><span></span><span class="gd">--- a/library/std/build.rs</span><span class="w"></span>
+<span class="gi">+++ b/library/std/build.rs</span><span class="w"></span>
+<span class="gu">@@ -48,6 +48,7 @@ fn main() {</span><span class="w"></span>
+<span class="w"> </span>        || target_os == &quot;uefi&quot;<span class="w"></span>
+<span class="w"> </span>        || target_os == &quot;teeos&quot;<span class="w"></span>
+<span class="w"> </span>        || target_os == &quot;zkvm&quot;<span class="w"></span>
+<span class="gi">+        || target_os == &quot;myos&quot;</span><span class="w"></span>
+<span class="w"> </span>
+<span class="w"> </span>        // See src/bootstrap/src/core/build_steps/synthetic_targets.rs<span class="w"></span>
+<span class="w"> </span>        || env::var(&quot;RUSTC_BOOTSTRAP_SYNTHETIC_TARGET&quot;).is_ok()<span class="w"></span>
+</pre></div>
+<p>Copy <code>library/std/src/sys/pal/unsupported</code> to <code>library/std/src/sys/pal/myos</code>.
+</p>
+<div class="mw-highlight mw-highlight-lang-diff mw-content-ltr" dir="ltr"><pre><span></span><span class="gd">--- a/library/std/src/sys/pal/mod.rs</span><span class="w"></span>
+<span class="gi">+++ b/library/std/src/sys/pal/mod.rs</span><span class="w"></span>
+<span class="gu">@@ -61,6 +61,9 @@</span><span class="w"></span>
+<span class="w"> </span>    } else if #[cfg(target_os = &quot;zkvm&quot;)] {<span class="w"></span>
+<span class="w"> </span>        mod zkvm;<span class="w"></span>
+<span class="w"> </span>        pub use self::zkvm::*;<span class="w"></span>
+<span class="gi">+    } else if #[cfg(target_os = &quot;myos&quot;)] {</span><span class="w"></span>
+<span class="gi">+        mod myos;</span><span class="w"></span>
+<span class="gi">+        pub use self::myos::*;</span><span class="w"></span>
+<span class="w"> </span>    } else {<span class="w"></span>
+<span class="w"> </span>        mod unsupported;<span class="w"></span>
+<span class="w"> </span>        pub use self::unsupported::*;<span class="w"></span>
+</pre></div><p>If using the standard library to provide <code>_start</code>, you will need to add a module to the PAL containing a <code>#[no_mangle]</code> and <code>extern "C"</code> <code>_start</code> function. The following file works as a basic template. Note that you will have to add a <code>mod start;</code> line to the PAL's <code>mod.rs</code> file.</p><div class="mw-highlight mw-highlight-lang-rust mw-content-ltr" dir="ltr"><pre><span></span><span class="c1">// library/std/src/sys/pal/myos/start.rs</span>
+<span class="k">use</span><span class="w"> </span><span class="k">crate</span>::<span class="n">ffi</span>::<span class="p">{</span><span class="n">c_char</span><span class="p">,</span><span class="w"> </span><span class="n">c_int</span><span class="p">};</span><span class="w"></span>
+<span class="k">use</span><span class="w"> </span><span class="k">crate</span>::<span class="n">ptr</span><span class="p">;</span><span class="w"></span>
+
+<span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">fn</span> <span class="nf">main</span><span class="p">(</span><span class="n">argc</span>: <span class="nc">c_int</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span>: <span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">c_char</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">c_int</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="cp">#[no_mangle]</span><span class="w"></span>
+<span class="cp">#[allow(unused)]</span><span class="w"></span>
+<span class="k">pub</span><span class="w"> </span><span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="k">fn</span> <span class="nf">_start</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">unsafe</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">main</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">ptr</span>::<span class="n">null</span><span class="p">());</span><span class="w"></span>
+<span class="w">    </span><span class="p">};</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>If your kernel does not provide a stack in <code>rsp</code> or provides its CLI arguments in a way impossible to read from a C function, you will have to use <a rel="nofollow" class="external text" href="https://github.com/rust-lang/rfcs/blob/master/text/2972-constrained-naked.md">naked functions</a> to provide <code>_start</code> as assembly.
+</p>
+<h3><span class="mw-headline" id="Add_toolchain">Add toolchain</span></h3>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>rustup toolchain link dev-x86_64-unknown-myos ~/Documents/rust/rust/build/x86_64-unknown-linux-gnu/stage2
+</pre></div>
+<h2><span class="mw-headline" id="Making_the_standard_library_functional">Making the standard library functional</span></h2>
+<p>Even though both rustc and std know about the target, not even an empty program will run. This is because the standard library requires two things from the OS to be able to initialize. A memory allocator and <a href="Thread_Local_Storage" title="Thread Local Storage">thread local storage</a> (TLS).  
+</p>
+<h3><span class="mw-headline" id="Memory_allocator">Memory allocator</span></h3><p>
+Implementing a memory allocator is done in the PAL's <code>alloc.rs</code> file and requires implementing the GlobalAlloc trait. The following bump allocator will work to let the stdlib initialize.`</p><div class="mw-highlight mw-highlight-lang-rust mw-content-ltr" dir="ltr"><pre><span></span><span class="c1">// library/std/src/sys/pal/myos/alloc.rs</span>
+<span class="k">use</span><span class="w"> </span><span class="k">crate</span>::<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">alloc</span>::<span class="p">{</span><span class="n">GlobalAlloc</span><span class="p">,</span><span class="w"> </span><span class="n">Layout</span><span class="p">,</span><span class="w"> </span><span class="n">System</span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="n">ptr</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">sync</span>::<span class="n">atomic</span>::<span class="p">{</span><span class="n">AtomicUsize</span><span class="p">,</span><span class="w"> </span><span class="n">Ordering</span><span class="p">},</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="cp">#[repr(align(4096))]</span><span class="w"></span>
+<span class="k">struct</span> <span class="nc">HeapData</span><span class="p">([</span><span class="kt">u8</span><span class="p">;</span><span class="w"> </span><span class="mi">65536</span><span class="p">]);</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">HEAP_DATA</span>: <span class="nc">HeapData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">HeapData</span><span class="p">([</span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="mi">65536</span><span class="p">]);</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="n">HEAP_USED</span>: <span class="nc">AtomicUsize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AtomicUsize</span>::<span class="n">new</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+
+<span class="cp">#[stable(feature = </span><span class="s">&quot;alloc_system_type&quot;</span><span class="cp">, since = </span><span class="s">&quot;1.28.0&quot;</span><span class="cp">)]</span><span class="w"></span>
+<span class="k">unsafe</span><span class="w"> </span><span class="k">impl</span><span class="w"> </span><span class="n">GlobalAlloc</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">System</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="cp">#[inline]</span><span class="w"></span>
+<span class="w">    </span><span class="k">unsafe</span><span class="w"> </span><span class="k">fn</span> <span class="nf">alloc</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">layout</span>: <span class="nc">Layout</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="o">*</span><span class="k">mut</span><span class="w"> </span><span class="kt">u8</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">layout</span><span class="p">.</span><span class="n">align</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">8</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">ptr</span>::<span class="n">null_mut</span><span class="p">();</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">num_blocks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">layout</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">8</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">layout</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">8</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="n">layout</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">        </span><span class="p">};</span><span class="w"></span>
+<span class="w">        </span><span class="n">HEAP_USED</span><span class="p">.</span><span class="n">fetch_add</span><span class="p">(</span><span class="n">num_blocks</span><span class="p">,</span><span class="w"> </span><span class="n">Ordering</span>::<span class="n">Relaxed</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">unsafe</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ptr</span>::<span class="n">addr_of_mut</span><span class="o">!</span><span class="p">(</span><span class="n">HEAP_DATA</span><span class="p">.</span><span class="mi">0</span><span class="p">[</span><span class="n">HEAP_USED</span><span class="p">.</span><span class="n">load</span><span class="p">(</span><span class="n">Ordering</span>::<span class="n">Relaxed</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">num_blocks</span><span class="w"> </span><span class="p">])</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="o">*</span><span class="k">mut</span><span class="w"> </span><span class="kt">u8</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
+<span class="w">        </span><span class="n">ptr</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="cp">#[inline]</span><span class="w"></span>
+<span class="w">    </span><span class="k">unsafe</span><span class="w"> </span><span class="k">fn</span> <span class="nf">dealloc</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">_ptr</span>: <span class="o">*</span><span class="k">mut</span><span class="w"> </span><span class="kt">u8</span><span class="p">,</span><span class="w"> </span><span class="n">_layout</span>: <span class="nc">Layout</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<h3><span class="mw-headline" id="Thread_local_storage">Thread local storage</span></h3>
+<h4><span id="Global_statics_.28easiest.2C_single-threaded_only.29"></span><span class="mw-headline" id="Global_statics_(easiest,_single-threaded_only)">Global statics (easiest, single-threaded only)</span></h4>
+<center>
+<table style="border: 1px solid #bfcfcf; padding: .0em .25em .0em; background-color: #fff0f0; text-align: center;">
+<tbody><tr>
+<td>
+<p><b>WARNING:</b>  This WILL not work on multi-threaded systems.
+</p>
+</td></tr></tbody></table>
+</center>
+<p>If your OS is single-threaded or you don't want to implement full TLS before adding multithreading to your PAL, Rust can implement TLS via global statics. 
+</p>
+<div class="mw-highlight mw-highlight-lang-diff mw-content-ltr" dir="ltr"><pre><span></span><span class="gd">--- a/library/std/src/sys/thread_local/mod.rs</span><span class="w"></span>
+<span class="gi">+++ b/library/std/src/sys/thread_local/mod.rs</span><span class="w"></span>
+<span class="gu">@@ -7,7 +7,7 @@</span><span class="w"></span>
+<span class="w"> </span>// &quot;static&quot; is for single-threaded platforms where a global static is sufficient.<span class="w"></span>
+<span class="w"> </span>
+<span class="w"> </span>cfg_if::cfg_if! {<span class="w"></span>
+<span class="gd">-    if #[cfg(any(all(target_family = &quot;wasm&quot;, not(target_feature = &quot;atomics&quot;)), target_os = &quot;uefi&quot;))] {</span><span class="w"></span>
+<span class="gi">+    if #[cfg(any(all(target_family = &quot;wasm&quot;, not(target_feature = &quot;atomics&quot;)), target_os = &quot;uefi&quot;, target_os = &quot;myos&quot;))] {</span><span class="w"></span>
+<span class="w"> </span>        #[doc(hidden)]<span class="w"></span>
+<span class="w"> </span>        mod static_local;<span class="w"></span>
+<span class="w"> </span>        #[doc(hidden)]<span class="w"></span>
+</pre></div>
+<h4><span id="OS_APIs_.28slow.2C_easier_than_ELF_native.29"></span><span class="mw-headline" id="OS_APIs_(slow,_easier_than_ELF_native)">OS APIs (slow, easier than ELF native)</span></h4>
+<p>This option is slower than the other multi-threaded compatible version, but is easier to implement, requiring only to implement the functions in the PAL's <code>thread_local_key.rs</code> file. The key is a value unique to a TLS variable, though shared amongst threads. This is rustc's default method of doing TLS.
+</p>
+<h4><span id="Native_ELF_TLS_.28fastest.29"></span><span class="mw-headline" id="Native_ELF_TLS_(fastest)">Native ELF TLS (fastest)</span></h4>
+<p>This option is the fastest way of doing TLS, but requires more complex suport from the OS. To implement it, see the linked wiki article on TLS. Enabling it in rustc is done by adding a target option for your OS.
+</p>
+<div class="mw-highlight mw-highlight-lang-diff mw-content-ltr" dir="ltr"><pre><span></span><span class="gd">--- a/compiler/rustc_target/src/spec/base/myos.rs</span><span class="w"></span>
+<span class="gi">+++ b/compiler/rustc_target/src/spec/base/myos.rs</span><span class="w"></span>
+<span class="gu">@@ -10,6 +10,7 @@ pub fn opts() -&gt; TargetOptions {</span><span class="w"></span>
+<span class="w"> </span>        relocation_model: RelocModel::Static,<span class="w"></span>
+<span class="w"> </span>        pre_link_objects: crt_objects::pre_myos(),<span class="w"></span>
+<span class="w"> </span>        post_link_objects: crt_objects::post_myos(),<span class="w"></span>
+<span class="gi">+        has_thread_local: true,</span><span class="w"></span>
+<span class="w"> </span>        ..Default::default()<span class="w"></span>
+<span class="w"> </span>    }<span class="w"></span>
+<span class="w"> </span>}<span class="w"></span>
+</pre></div>
+<h3><span class="mw-headline" id="Basic_printing">Basic printing</span></h3>
+<p>With memory allocation and TLS in place, the Rust stdlib is now functional enough to not crash. However, it's fairly useless as no IO functions work. Adding print output is a natural next step, and will also allow easier debugging of panics.
+</p><p>Adding print support is fairly simple given the architecture of the PAL, and merly requires filling out the Write implementations of stdout/err in <code>stdio.rs</code>. In addition, the panic_output function shoudl be set to the desired output stream for panic messages, usually stderr. 
+</p><p>Example code is provided below. The given code assumes syscalls are done with interrupt 0x80 with the number in rax and the first parameter in rcx, and syscall 0 takes a byte to write to some text output device. You will probably need to change the syscall number and parameters for your OS, but this should work as a basic starting point.
+</p>
+<div class="mw-highlight mw-highlight-lang-diff mw-content-ltr" dir="ltr"><pre><span></span><span class="gd">--- a/library/std/src/sys/pal/myos/stdio.rs</span><span class="w"></span>
+<span class="gi">+++ b/library/std/src/sys/pal/myos/stdio.rs</span><span class="w"></span>
+<span class="gu">@@ -1,3 +1,4 @@</span><span class="w"></span>
+<span class="gi">+use crate::arch::asm;</span><span class="w"></span>
+<span class="w"> </span>use crate::io;<span class="w"></span>
+<span class="w"> </span>
+<span class="w"> </span>pub struct Stdin;<span class="w"></span>
+<span class="gu">@@ -24,6 +25,11 @@ pub const fn new() -&gt; Stdout {</span><span class="w"></span>
+<span class="w"> </span>
+<span class="w"> </span>impl io::Write for Stdout {<span class="w"></span>
+<span class="w"> </span>    fn write(&amp;mut self, buf: &amp;[u8]) -&gt; io::Result&lt;usize&gt; {<span class="w"></span>
+<span class="gi">+        for byte in buf {</span><span class="w"></span>
+<span class="gi">+            unsafe {</span><span class="w"></span>
+<span class="gi">+                asm!(&quot;int 0x80&quot;, in(&quot;rax&quot;) 0, in (&quot;rcx&quot;) *byte as u64);</span><span class="w"></span>
+<span class="gi">+            };</span><span class="w"></span>
+<span class="gi">+        }</span><span class="w"></span>
+<span class="w"> </span>        Ok(buf.len())<span class="w"></span>
+<span class="w"> </span>    }<span class="w"></span>
+<span class="w"> </span>
+<span class="gu">@@ -40,6 +46,11 @@ pub const fn new() -&gt; Stderr {</span><span class="w"></span>
+<span class="w"> </span>
+<span class="w"> </span>impl io::Write for Stderr {<span class="w"></span>
+<span class="w"> </span>    fn write(&amp;mut self, buf: &amp;[u8]) -&gt; io::Result&lt;usize&gt; {<span class="w"></span>
+<span class="gi">+        for byte in buf {</span><span class="w"></span>
+<span class="gi">+            unsafe {</span><span class="w"></span>
+<span class="gi">+                asm!(&quot;int 0x80&quot;, in(&quot;rax&quot;) 0, in (&quot;rcx&quot;) *byte as u64);</span><span class="w"></span>
+<span class="gi">+            };</span><span class="w"></span>
+<span class="gi">+        }</span><span class="w"></span>
+<span class="w"> </span>        Ok(buf.len())<span class="w"></span>
+<span class="w"> </span>    }<span class="w"></span>
+<span class="w"> </span>
+<span class="gu">@@ -54,6 +65,6 @@ pub fn is_ebadf(_err: &amp;io::Error) -&gt; bool {</span><span class="w"></span>
+<span class="w"> </span>    true<span class="w"></span>
+<span class="w"> </span>}<span class="w"></span>
+<span class="w"> </span>
+<span class="gd">-pub fn panic_output() -&gt; Option&lt;Vec&lt;u8&gt;&gt; {</span><span class="w"></span>
+<span class="gd">-    None</span><span class="w"></span>
+<span class="gi">+pub fn panic_output() -&gt; Option&lt;impl io::Write&gt; {</span><span class="w"></span>
+<span class="gi">+    Some(Stderr::new())</span><span class="w"></span>
+<span class="w"> </span>}<span class="w"></span>
+</pre></div>
+<p>Now you should be able to compile and run the default Rust hello world program for your target and see it print to screen.
+</p>
+<h2><span class="mw-headline" id="Runtime">Runtime</span></h2>
+<h3><span class="mw-headline" id="Integrating_a_crate">Integrating a crate</span></h3>
+<p>If you use a crate for the runtime (e.g. <code>myos_rt</code>), you can add it as a dependency to the standard library:
+</p>
+<div class="mw-highlight mw-highlight-lang-toml mw-content-ltr" dir="ltr"><pre><span></span><span class="k">[target.&#39;cfg(target_os = &quot;myos&quot;)&#39;.dependencies]</span><span class="w"></span>
+<span class="n">myos_rt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;*&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">features</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;rustc-dep-of-std&quot;</span><span class="p">]</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+<p>The <code>rustc-dep-of-std</code> feature is necessary since <code>libcore</code> et al. don't exist yet.
+</p><p>Modify the <code>Cargo.toml</code> of your runtime library to include the feature and propagate it up, e.g.:
+</p>
+<div class="mw-highlight mw-highlight-lang-toml mw-content-ltr" dir="ltr"><pre><span></span><span class="k">[dependencies]</span><span class="w"></span>
+<span class="n">cfg-if</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;1.0&quot;</span><span class="w"></span>
+<span class="n">core</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;1.0.0&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">optional</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">true</span><span class="p">,</span><span class="w"> </span><span class="n">package</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;rustc-std-workspace-core&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="n">compiler_builtins</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;0.1&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">optional</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">true</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+
+<span class="k">[features]</span><span class="w"></span>
+<span class="n">rustc-dep-of-std</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">	</span><span class="s">&quot;core&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">	</span><span class="s">&quot;compiler_builtins&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">	</span><span class="s">&quot;cfg-if/rustc-dep-of-std&quot;</span><span class="w"></span>
+<span class="p">]</span><span class="w"></span>
+</pre></div>
+<p>Do keep in mind that the same crate with different feature flags are seen as <a rel="nofollow" class="external text" href="https://github.com/rust-lang/cargo/issues/2363"><strong>different crates</strong> by the compiler</a>. This means that if you any globals in the runtime crate and have a project that uses both stdlib and your runtime crate there will be two separate sets of those globals. One way to work around this is by giving these globals an explicit name with <code>#[export_name = "__rt_whatever"]</code> and weakly linking them with <code>#[linkage = "weak"]</code>.
+</p>
+<h2><span class="mw-headline" id="Troubleshooting">Troubleshooting</span></h2>
+<h3><span id="error.5BE0463.5D:_can.27t_find_crate_for_.60compiler_builtins.60"></span><span class="mw-headline" id="error[E0463]:_can't_find_crate_for_`compiler_builtins`">error[E0463]: can't find crate for `compiler_builtins`</span></h3>
+<p>Add <code>compiler_builtins</code> as a dependency for the crates you use in stdlib, e.g.:
+</p>
+<div class="mw-highlight mw-highlight-lang-ini mw-content-ltr" dir="ltr"><pre><span></span><span class="k">[dependencies]</span><span class="w"></span>
+<span class="na">core</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">{ version = &quot;1.0.0&quot;, optional = true, package = &quot;rustc-std-workspace-core&quot; }</span><span class="w"></span>
+<span class="na">compiler_builtins</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">{ version = &quot;*&quot;, optional = true } # &lt;--</span><span class="w"></span>
+
+<span class="k">[features]</span><span class="w"></span>
+<span class="na">rustc-dep-of-std</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span><span class="w"></span>
+<span class="w">	</span><span class="na">&quot;core&quot;,</span><span class="w"></span>
+<span class="w">	</span><span class="na">&quot;compiler_builtins/rustc-dep-of-std&quot;, # &lt;--</span><span class="w"></span>
+<span class="na">]</span><span class="w"></span>
+</pre></div>
+<!-- 
+NewPP limit report
+Cached time: 20250211141717
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.131 seconds
+Real time usage: 2.908 seconds
+Preprocessor visited node count: 233/1000000
+Post‐expand include size: 893/2097152 bytes
+Template argument size: 90/2097152 bytes
+Highest expansion depth: 15/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 38225/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00% 2058.550      1 -total
+  0.19%    3.924      1 Template:Rating
+  0.17%    3.574      1 Template:Warning
+  0.15%    3.073      2 Template:If
+  0.12%    2.550      2 Template:Show1
+  0.04%    0.862      2 Template:Eq
+  0.02%    0.497      1 Template:In_Progress
+  0.02%    0.393      2 Template:Eq1
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:4698-0!canonical and timestamp 20250211141714 and revision id 29206.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Porting_Rust_standard_library&amp;oldid=29206">https://wiki.osdev.org/index.php?title=Porting_Rust_standard_library&amp;oldid=29206</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_duplicate_arguments_in_template_calls&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using duplicate arguments in template calls (page does not exist)">Pages using duplicate arguments in template calls</a></li><li><a href="./Category:Level_1_Tutorials" title="Category:Level 1 Tutorials">Level 1 Tutorials</a></li><li><a href="./Category:In_Progress" title="Category:In Progress">In Progress</a></li><li><a href="./Category:Rust" title="Category:Rust">Rust</a></li><li><a href="./Category:Standard_Libraries" title="Category:Standard Libraries">Standard Libraries</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Porting+Rust+standard+library" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Porting_Rust_standard_library#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Porting_Rust_standard_library" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:Porting_Rust_standard_library&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Porting_Rust_standard_library"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Porting_Rust_standard_library&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Porting_Rust_standard_library&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Porting_Rust_standard_library" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Porting_Rust_standard_library" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Porting_Rust_standard_library&amp;oldid=29206" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Porting_Rust_standard_library&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 7 August 2024, at 15:29.</li>
+	<li id="footer-info-0">This page has been accessed 4,590 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Porting_Rust_standard_library&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.131","walltime":"2.908","ppvisitednodes":{"value":233,"limit":1000000},"postexpandincludesize":{"value":893,"limit":2097152},"templateargumentsize":{"value":90,"limit":2097152},"expansiondepth":{"value":15,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":38225,"limit":5000000},"timingprofile":["100.00% 2058.550      1 -total","  0.19%    3.924      1 Template:Rating","  0.17%    3.574      1 Template:Warning","  0.15%    3.073      2 Template:If","  0.12%    2.550      2 Template:Show1","  0.04%    0.862      2 Template:Eq","  0.02%    0.497      1 Template:In_Progress","  0.02%    0.393      2 Template:Eq1"]},"cachereport":{"timestamp":"20250211141717","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":121});});</script>
+</body>
+</html>

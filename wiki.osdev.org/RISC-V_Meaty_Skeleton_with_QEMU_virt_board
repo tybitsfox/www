@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>RISC-V Meaty Skeleton with QEMU virt board - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"8ca2082da3847b17e026ec18","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"RISC-V_Meaty_Skeleton_with_QEMU_virt_board","wgTitle":"RISC-V Meaty Skeleton with QEMU virt board","wgCurRevisionId":29092,"wgRevisionId":29092,"wgArticleId":4722,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using duplicate arguments in template calls","Pages using deprecated source tags","Level 1 Tutorials","RISC-V","Bare bones tutorials","C","QEMU"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":
+"RISC-V_Meaty_Skeleton_with_QEMU_virt_board","wgRelevantArticleId":4722,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","mmv.head","mmv.bootstrap.autostart","ext.DarkMode","ext.moderation.notify",
+"ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-RISC-V_Meaty_Skeleton_with_QEMU_virt_board rootpage-RISC-V_Meaty_Skeleton_with_QEMU_virt_board skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">RISC-V Meaty Skeleton with QEMU virt board</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><center>
+<table style="border: 1px solid #cfcfbf; margin-top: 25px; margin-bottom: 25px; background-color: #f0f0ff; text-align: center;">
+<tbody><tr>
+<td>
+<p><big><b>WAIT! Have you read <a href="Getting_Started" title="Getting Started">Getting Started</a>, <a href="Beginner_Mistakes" title="Beginner Mistakes">Beginner Mistakes</a>, and some of the related <a href="./Category:OS_theory" title="Category:OS theory">OS theory</a>?</b></big>
+</p>
+</td></tr></tbody></table>
+</center><table style="font-size:95%; line-height:1.5em; padding:0.25em; float:right; margin: 0 0 8px 15px; clear:right; border:1px solid #aaaaaa; background:#eee; text-align:center;;"><tbody><tr><th>Difficulty level</th></tr><tr><td><a href="./File:Difficulty_1.png" class="image"><img alt="Difficulty 1.png" src="images/d/d3/Difficulty_1.png" decoding="async" width="46" height="14" data-file-width="46" data-file-height="14" /></a><br />Beginner</td></tr></tbody></table>
+<table style="font-size:95%; line-height:1.5em; padding:0.25em; float:right; margin: 0 0 8px 15px; clear: right; border:1px solid #aaaaaa; background:#eee; text-align:center; width:200px; ;"><tbody><tr><th style="background:#ffce7b; padding:0.3em; font-size:1.1em;"><a href="Kernels" class="mw-redirect" title="Kernels">Kernel Designs</a></th></tr><tr><th>Models</th></tr><tr><td><div>
+<p><a href="Monolithic_Kernel" title="Monolithic Kernel">Monolithic Kernel</a><br />
+<a href="Microkernel" title="Microkernel">Microkernel</a><br />
+<a href="Hybrid_Kernel" title="Hybrid Kernel">Hybrid Kernel</a><br />
+<a href="Exokernel" title="Exokernel">Exokernel</a><br />
+<a href="Nanokernel" class="mw-redirect" title="Nanokernel">Nano/Picokernel</a><br />
+<a href="Exokernel#Cache_Kernel" title="Exokernel">Cache Kernel</a><br />
+<a href="Exokernel#Virtualizing_Kernel" title="Exokernel">Virtualizing Kernel</a><br />
+<a href="Megalithic_Kernel" title="Megalithic Kernel">Megalithic Kernel</a><br />
+</p>
+</div></td></tr><tr><th>Other Concepts</th></tr><tr><td><div>
+<p><a href="Modular_Kernel" title="Modular Kernel">Modular Kernel</a><br />
+<a href="Higher_Half_Kernel" title="Higher Half Kernel">Higher Half Kernel</a><br />
+<a href="Creating_a_64-bit_kernel" title="Creating a 64-bit kernel">64-bit Kernel</a><br />
+</p>
+</div></td></tr></tbody></table>
+<p>This tutorial assumes you have completed <a href="RISC-V_Bare_Bones" title="RISC-V Bare Bones">RISC-V Bare Bones</a> on the QEMU <code>virt</code> board, or alternatively, <a href="HiFive-1_Bare_Bones" title="HiFive-1 Bare Bones">HiFive-1 Bare Bones</a>. If not, you should complete them first for an overview of how to boot your own operating system on RISC-V. This tutorial is deliberately brief on concepts that have already been covered in the bare bones tutorials and their transitive prerequisites.
+</p><p>The bare bones tutorials provide minimal examples that are not structured to enable sustainable mid- to long-term development of the codebase. This tutorial attempts to rectify that by providing a well-structured project that should serve you well through your OSDev journey with the following features:
+</p>
+<ul><li>Hierarchical project structure with <code>make</code> build system for sustainable mid- to long-term development</li>
+<li>Includes <code>debug</code> target for debugging with <a href="GDB" title="GDB">GDB</a> (requires cross-debugger targeting <code>riscv64-elf</code>)</li>
+<li>Basic console output through NS16550A UART</li>
+<li>Convenience wrappers for powering off and rebooting the device</li>
+<li>Working <code>kprintf</code> supporting base format specifiers (no floating point support; no sub-specifiers; no <code>n</code> specifier) to facilitate <code>printf</code> debugging</li>
+<li><code>panic</code> function for kernel panics</li></ul>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#RISC-V_Bare_Bones"><span class="tocnumber">1</span> <span class="toctext">RISC-V Bare Bones</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#Building_a_Cross-Compiler"><span class="tocnumber">2</span> <span class="toctext">Building a Cross-Compiler</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#Building_a_Cross-Debugger_(optional)"><span class="tocnumber">3</span> <span class="toctext">Building a Cross-Debugger (optional)</span></a></li>
+<li class="toclevel-1 tocsection-4"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#Dependencies"><span class="tocnumber">4</span> <span class="toctext">Dependencies</span></a></li>
+<li class="toclevel-1 tocsection-5"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#Acknowledgements"><span class="tocnumber">5</span> <span class="toctext">Acknowledgements</span></a></li>
+<li class="toclevel-1 tocsection-6"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#Source_Code"><span class="tocnumber">6</span> <span class="toctext">Source Code</span></a>
+<ul>
+<li class="toclevel-2 tocsection-7"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#Project_Structure"><span class="tocnumber">6.1</span> <span class="toctext">Project Structure</span></a></li>
+<li class="toclevel-2 tocsection-8"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#Makefile"><span class="tocnumber">6.2</span> <span class="toctext">Makefile</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#Kernel_source"><span class="tocnumber">6.3</span> <span class="toctext">Kernel source</span></a>
+<ul>
+<li class="toclevel-3 tocsection-10"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#src/common/common.h"><span class="tocnumber">6.3.1</span> <span class="toctext">src/common/common.h</span></a></li>
+<li class="toclevel-3 tocsection-11"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#src/common/common.c"><span class="tocnumber">6.3.2</span> <span class="toctext">src/common/common.c</span></a></li>
+<li class="toclevel-3 tocsection-12"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#src/syscon/syscon.h"><span class="tocnumber">6.3.3</span> <span class="toctext">src/syscon/syscon.h</span></a></li>
+<li class="toclevel-3 tocsection-13"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#src/syscon/syscon.c"><span class="tocnumber">6.3.4</span> <span class="toctext">src/syscon/syscon.c</span></a></li>
+<li class="toclevel-3 tocsection-14"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#src/uart/uart.h"><span class="tocnumber">6.3.5</span> <span class="toctext">src/uart/uart.h</span></a></li>
+<li class="toclevel-3 tocsection-15"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#src/uart/uart.c"><span class="tocnumber">6.3.6</span> <span class="toctext">src/uart/uart.c</span></a></li>
+<li class="toclevel-3 tocsection-16"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#src/kmain.c"><span class="tocnumber">6.3.7</span> <span class="toctext">src/kmain.c</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-17"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#Running_the_project"><span class="tocnumber">7</span> <span class="toctext">Running the project</span></a></li>
+<li class="toclevel-1 tocsection-18"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#Final_remarks_and_going_further"><span class="tocnumber">8</span> <span class="toctext">Final remarks and going further</span></a></li>
+<li class="toclevel-1 tocsection-19"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#See_also"><span class="tocnumber">9</span> <span class="toctext">See also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-20"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#External_links"><span class="tocnumber">9.1</span> <span class="toctext">External links</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="RISC-V_Bare_Bones">RISC-V Bare Bones</span></h2>
+<dl><dd><i>Main article:</i> <a href="RISC-V_Bare_Bones" title="RISC-V Bare Bones">RISC-V Bare Bones</a></dd></dl>
+<p>It is assumed you have completed RISC-V Bare Bones or another comparable bare bones tutorial. Though not a strict requirement, it is useful for confirming that your development environment works and explaining a few basic things.
+</p><p>We won't be reusing any code from those tutorials though, so throw it away (or save it to an archive) and we'll start over again.
+</p>
+<h2><span class="mw-headline" id="Building_a_Cross-Compiler">Building a Cross-Compiler</span></h2>
+<dl><dd><i>Main article:</i> <a href="GCC_Cross-Compiler" title="GCC Cross-Compiler">GCC Cross-Compiler</a>, <a href="Why_do_I_need_a_Cross_Compiler?" title="Why do I need a Cross Compiler?">Why do I need a Cross Compiler?</a></dd></dl>
+<p>You <i>must</i> use a <a href="GCC_Cross-Compiler" title="GCC Cross-Compiler">GCC Cross-Compiler</a> in this tutorial as in the <a href="RISC-V_Bare_Bones" title="RISC-V Bare Bones">RISC-V Bare Bones</a> tutorial, with <code>riscv64-elf</code> as the target.
+</p><p>You <i>must</i> configure your cross-binutils with the <tt>--with-sysroot</tt> option, otherwise linking will mysteriously fail with the <i>this linker was not configured to use sysroots</i> error message. If you forgot to configure your cross-binutils with that option, you'll have to rebuild it, but you can keep your cross-gcc.
+</p>
+<h2><span id="Building_a_Cross-Debugger_.28optional.29"></span><span class="mw-headline" id="Building_a_Cross-Debugger_(optional)">Building a Cross-Debugger (optional)</span></h2>
+<dl><dd><i>Main article:</i> <a href="GDB" title="GDB">GDB</a></dd></dl>
+<p>If you wish to debug your kernel with <a href="GDB" title="GDB">GDB</a>, you'll need to build it separately with <code>riscv64-elf</code> as the target, since it's not included by default with GCC and Binutils. Otherwise, if <code>printf</code> debugging is your style, you may safely skip this section.
+</p><p>The process is similar to building a cross-GCC or cross-binutils, and you may refer to the <a rel="nofollow" class="external text" href="https://www.linuxfromscratch.org/blfs/view/svn/general/gdb.html">GDB page in BLFS</a> for most details sans cross-debugging support, but we'll go through the process in detail here anyway.
+</p><p>Fetch the latest version of GDB through <a rel="nofollow" class="external text" href="https://ftp.gnu.org/gnu/gdb/">https://ftp.gnu.org/gnu/gdb/</a>. The latest version at the time of writing is 12.1:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span><span class="nb">export</span> <span class="nv">GDB_VERSION</span><span class="o">=</span><span class="s2">&quot;12.1&quot;</span>
+wget https://ftp.gnu.org/gnu/gdb/gdb-<span class="si">${</span><span class="nv">GDB_VERSION</span><span class="si">}</span>.tar.xz
+</pre></div>
+<p>Unpack the archive:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>tar xvf gdb-<span class="si">${</span><span class="nv">GDB_VERSION</span><span class="si">}</span>.tar.xz
+</pre></div>
+<p>Now move into the source directory:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span><span class="nb">pushd</span> gdb-<span class="si">${</span><span class="nv">GDB_VERSION</span><span class="si">}</span>/
+</pre></div>
+<p>Create a build directory and move into it:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>mkdir build
+<span class="nb">pushd</span> build/
+</pre></div>
+<p>Now export a few variables as with building a cross-GCC or cross-binutils:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span><span class="nb">export</span> <span class="nv">PREFIX</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$HOME</span><span class="s2">/opt/cross&quot;</span>
+<span class="nb">export</span> <span class="nv">TARGET</span><span class="o">=</span>riscv64-elf
+<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PREFIX</span><span class="s2">/bin:</span><span class="nv">$PATH</span><span class="s2">&quot;</span>
+</pre></div>
+<p>Configuration options are mostly the same as with building cross-GCC or cross-binutils. In particular, you may wish to enable the following features:
+</p>
+<ul><li><code>--enable-tui=yes</code>: Enables TUI mode for debugging. Requires development headers for Ncurses to be installed on the build host</li>
+<li><code>--with-expat</code>: Build with Expat, a library for XML parsing. Requires development headers for Expat to be installed on the build host</li></ul>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>../configure --target<span class="o">=</span><span class="nv">$TARGET</span> <span class="se">\</span>
+  --prefix<span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PREFIX</span><span class="s2">&quot;</span> <span class="se">\</span>
+  --with-sysroot <span class="se">\</span>
+  --disable-nls <span class="se">\</span>
+  --disable-werror <span class="se">\</span>
+  --enable-languages<span class="o">=</span>c,c++ <span class="se">\</span>
+  --without-headers <span class="se">\</span>
+  --enable-tui<span class="o">=</span>yes <span class="se">\</span>
+  --with-expat
+</pre></div>
+<p>Now build the source code (this can take a while):
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>make -j<span class="k">$(</span>nproc<span class="k">)</span>
+</pre></div>
+<p>And install:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>make -C gdb install
+</pre></div>
+<p>If you wish to keep the source tree available for conveniently re-building GDB in the future (e.g. with a different set of options), clean up the build files now:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>make clean
+</pre></div>
+<p>Move one level up to the project root:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span><span class="nb">popd</span>
+</pre></div>
+<p>Remove the <code>build/</code> directory we created:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>rm -rf build/
+</pre></div>
+<p>Move up one more level:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span><span class="nb">popd</span>
+</pre></div>
+<p>Double check our cross-debugger is properly installed:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>which -- <span class="nv">$TARGET</span>-gdb <span class="o">||</span> <span class="nb">echo</span> <span class="nv">$TARGET</span>-gdb is not <span class="k">in</span> the PATH
+</pre></div>
+<p>Now you may safely remove the source tree and archive, if you wish:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>rm -rf gdb-<span class="si">${</span><span class="nv">GDB_VERSION</span><span class="si">}</span>/
+rm gdb-<span class="si">${</span><span class="nv">GDB_VERSION</span><span class="si">}</span>.tar.xz
+</pre></div>
+<p>If <code>$PREFIX/bin</code> is not in your path already, you may wish to persist it by writing it to your profile:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span><span class="nb">echo</span> <span class="s2">&quot;export PATH=\&quot;\$HOME/opt/cross/bin:\$PATH\&quot;&quot;</span> &gt;&gt; <span class="nv">$HOME</span>/.profile
+<span class="nb">source</span> <span class="nv">$HOME</span>/.profile
+</pre></div>
+<h2><span class="mw-headline" id="Dependencies">Dependencies</span></h2>
+<p>You will need these dependencies in order to complete the tutorial:
+</p>
+<ul><li><a rel="nofollow" class="external text" href="https://www.qemu.org/docs/master/system/index.html">QEMU full-system emulator</a> for 64-bit RISC-V, of which your distribution-provided package should suffice</li>
+<li><code>riscv64-elf</code> toolchain, as discussed above</li>
+<li>(Optional, required for debugging with GDB) <a rel="nofollow" class="external text" href="https://www.linuxfromscratch.org/blfs/view/svn/general/gdb.html">GNU debugger</a> targeting <code>riscv64-elf</code>, as discussed above</li></ul>
+<p>This tutorial requires a GNU/Linux system, or a similar enough system. The BSD systems may almost work. OS X is not supported but can possibly be made to work with some changes. Windows is not supported, but Windows environments like Cygwin and Windows Subsystem For Linux (WSL) might work.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Acknowledgements">Acknowledgements</span></h2>
+<p>The initial project setup is based on <a rel="nofollow" class="external text" href="https://github.com/twilco/riscv-from-scratch">RISC-V from scratch</a> (C runtime, linker script) and <a rel="nofollow" class="external text" href="https://github.com/sgmarz/osblog">The Adventures of OS</a> (overall project structure, Makefile), with the section on building a cross-GDB based on <a rel="nofollow" class="external text" href="https://linuxfromscratch.org/">(Beyond) Linux From Scratch</a>.
+</p>
+<h2><span class="mw-headline" id="Source_Code">Source Code</span></h2>
+<p>Fetch the source code from the <code>v0.0.1</code> release of <a rel="nofollow" class="external text" href="https://github.com/DonaldKellett/marvelos">https://github.com/DonaldKellett/marvelos</a> code-named "Meaty Skeleton", using <a rel="nofollow" class="external text" href="https://git-scm.com/">Git</a>:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>git clone --branch v0.0.1 https://github.com/DonaldKellett/marvelos.git
+</pre></div>
+<p>Operating systems development is about being an expert. Take the time to read the code carefully through and understand it. Please seek further information and help if you don't understand aspects of it. This code is minimal and almost everything is done deliberately, often to pre-emptively solve future problems.
+</p>
+<h3><span class="mw-headline" id="Project_Structure">Project Structure</span></h3>
+<ul><li><code>Makefile</code>: used for building the project with <code>make</code> build system</li>
+<li><code>misc/riscv64-virt.dts</code>: device tree of QEMU RISC-V <code>virt</code> board. See <a rel="nofollow" class="external text" href="https://twilco.github.io/riscv-from-scratch/2019/04/27/riscv-from-scratch-2.html#finding-our-stack">Finding our stack</a> for details</li>
+<li><code>src/</code>: source tree containing files used to build the project
+<ul><li><code>src/asm/crt0.s</code>: minimal C runtime; see <a rel="nofollow" class="external text" href="https://twilco.github.io/riscv-from-scratch/2019/04/27/riscv-from-scratch-2.html#stop--hammertime-runtime">Stop! Runtime!</a> for details</li>
+<li><code>src/lds/riscv64-virt.ld</code>: custom linker script adapted from the output of <code>riscv64-unknown-elf-ld --verbose</code>; see <a rel="nofollow" class="external text" href="https://twilco.github.io/riscv-from-scratch/2019/04/27/riscv-from-scratch-2.html#link-it-up">Link it up</a> for details</li>
+<li><code>src/common/</code>: common utilities and library functions for use across our project</li>
+<li><code>src/syscon/</code>: <a rel="nofollow" class="external text" href="https://elixir.bootlin.com/linux/v4.0/source/Documentation/devicetree/bindings/mfd/syscon.txt">syscon</a> drivers for poweroff and reboot</li>
+<li><code>src/uart/</code>: UART drivers and I/O-related code</li>
+<li><code>src/kmain.c</code>: Entry point for our kernel</li></ul></li></ul>
+<h3><span class="mw-headline" id="Makefile">Makefile</span></h3>
+<p>The <code>Makefile</code> makes extensive use of environment variables for conciseness and configurability. The following top-level targets are supported (along with sub-targets for building only a specific subsystem):
+</p>
+<ul><li><code>all</code>: to build the kernel image</li>
+<li><code>run</code>: to build the kernel image and run it in QEMU</li>
+<li><code>debug</code>: to build the kernel image and run it in debug mode to enable debugging with GDB. The "remote" GDB server runs at port <code>$GDB_PORT</code> on the host (default: <code>1234</code>). Requires a cross-debugger to be installed; see above for details</li>
+<li><code>clean</code>: to clean up build files so the next build won't be affected by the previous build</li></ul>
+<p>Run <code>make $TARGET</code> with <code>TARGET</code> set to your desired target to execute the specified target. For example, to build the kernel image and run it in QEMU:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>make run
+</pre></div>
+<p>Additionally, the default target is <code>all</code> if not specified:
+</p>
+<div class="mw-highlight mw-highlight-lang-bash mw-content-ltr" dir="ltr"><pre><span></span>make
+</pre></div>
+<div class="mw-highlight mw-highlight-lang-make mw-content-ltr" dir="ltr"><pre><span></span><span class="c"># Build</span>
+<span class="nv">CC</span><span class="o">=</span>riscv64-elf-gcc
+<span class="nv">CFLAGS</span><span class="o">=</span>-ffreestanding -nostartfiles -nostdlib -nodefaultlibs
+<span class="nv">CFLAGS</span><span class="o">+=</span>-g -Wl,--gc-sections -mcmodel<span class="o">=</span>medany
+<span class="nv">RUNTIME</span><span class="o">=</span>src/asm/crt0.s
+<span class="nv">LINKER_SCRIPT</span><span class="o">=</span>src/lds/riscv64-virt.ld
+<span class="nv">KERNEL_IMAGE</span><span class="o">=</span>kmain
+
+<span class="c"># QEMU</span>
+<span class="nv">QEMU</span><span class="o">=</span>qemu-system-riscv64
+<span class="nv">MACH</span><span class="o">=</span>virt
+<span class="nv">MEM</span><span class="o">=</span>128M
+<span class="nv">RUN</span><span class="o">=</span><span class="k">$(</span>QEMU<span class="k">)</span> -nographic -machine <span class="k">$(</span>MACH<span class="k">)</span> -m <span class="k">$(</span>MEM<span class="k">)</span>
+<span class="nv">RUN</span><span class="o">+=</span>-bios none -kernel <span class="k">$(</span>KERNEL_IMAGE<span class="k">)</span>
+
+<span class="c"># QEMU (debug)</span>
+<span class="nv">GDB_PORT</span><span class="o">=</span><span class="m">1234</span>
+
+<span class="nf">all</span><span class="o">:</span> <span class="n">uart</span> <span class="n">syscon</span> <span class="n">common</span> <span class="n">kmain</span>
+	<span class="k">$(</span>CC<span class="k">)</span> *.o <span class="k">$(</span>RUNTIME<span class="k">)</span> <span class="k">$(</span>CFLAGS<span class="k">)</span> -T <span class="k">$(</span>LINKER_SCRIPT<span class="k">)</span> -o <span class="k">$(</span>KERNEL_IMAGE<span class="k">)</span>
+
+<span class="nf">uart</span><span class="o">:</span>
+	<span class="k">$(</span>CC<span class="k">)</span> -c src/uart/uart.c <span class="k">$(</span>CFLAGS<span class="k">)</span> -o uart.o
+
+<span class="nf">syscon</span><span class="o">:</span>
+	<span class="k">$(</span>CC<span class="k">)</span> -c src/syscon/syscon.c <span class="k">$(</span>CFLAGS<span class="k">)</span> -o syscon.o
+
+<span class="nf">common</span><span class="o">:</span>
+	<span class="k">$(</span>CC<span class="k">)</span> -c src/common/common.c <span class="k">$(</span>CFLAGS<span class="k">)</span> -o common.o
+
+<span class="nf">kmain</span><span class="o">:</span>
+	<span class="k">$(</span>CC<span class="k">)</span> -c src/kmain.c <span class="k">$(</span>CFLAGS<span class="k">)</span> -o kmain.o
+
+<span class="nf">run</span><span class="o">:</span> <span class="n">all</span>
+	<span class="k">$(</span>RUN<span class="k">)</span>
+
+<span class="nf">debug</span><span class="o">:</span> <span class="n">all</span>
+	<span class="k">$(</span>RUN<span class="k">)</span> -gdb tcp::<span class="k">$(</span>GDB_PORT<span class="k">)</span> -S
+
+<span class="nf">clean</span><span class="o">:</span>
+	rm -vf *.o
+	rm -vf <span class="k">$(</span>KERNEL_IMAGE<span class="k">)</span>
+</pre></div>
+<h3><span class="mw-headline" id="Kernel_source">Kernel source</span></h3>
+<h4><span id="src.2Fcommon.2Fcommon.h"></span><span class="mw-headline" id="src/common/common.h">src/common/common.h</span></h4>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cp">#ifndef COMMON_H</span>
+<span class="cp">#define COMMON_H</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">toupper</span><span class="p">(</span><span class="kt">int</span><span class="p">);</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">panic</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="p">...);</span><span class="w"></span>
+
+<span class="cp">#endif</span>
+</pre></div>
+<h4><span id="src.2Fcommon.2Fcommon.c"></span><span class="mw-headline" id="src/common/common.c">src/common/common.c</span></h4>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdarg.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;common.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;../uart/uart.h&quot;</span><span class="cp"></span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">toupper</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="sc">&#39;a&#39;</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="sc">&#39;z&#39;</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="sc">&#39;A&#39;</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="sc">&#39;a&#39;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">c</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">panic</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">format</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">kputs</span><span class="p">(</span><span class="s">&quot;Kernel panic!&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">kputs</span><span class="p">(</span><span class="s">&quot;Reason:&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="kt">va_list</span><span class="w"> </span><span class="n">arg</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="n">va_start</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="w"> </span><span class="n">format</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">kvprintf</span><span class="p">(</span><span class="n">format</span><span class="p">,</span><span class="w"> </span><span class="n">arg</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">va_end</span><span class="p">(</span><span class="n">arg</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="k">asm</span><span class="w"> </span><span class="k">volatile</span><span class="w"> </span><span class="p">(</span><span class="s">&quot;wfi&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<h4><span id="src.2Fsyscon.2Fsyscon.h"></span><span class="mw-headline" id="src/syscon/syscon.h">src/syscon/syscon.h</span></h4>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cp">#ifndef SYSCON_H</span>
+<span class="cp">#define SYSCON_H</span>
+
+<span class="c1">// &quot;test&quot; syscon-compatible device is at memory-mapped address 0x100000</span>
+<span class="c1">// according to our device tree</span>
+<span class="cp">#define SYSCON_ADDR 0x100000</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">poweroff</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">reboot</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span><span class="w"></span>
+
+<span class="cp">#endif</span>
+</pre></div>
+<h4><span id="src.2Fsyscon.2Fsyscon.c"></span><span class="mw-headline" id="src/syscon/syscon.c">src/syscon/syscon.c</span></h4>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdint.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;syscon.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;../uart/uart.h&quot;</span><span class="cp"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">poweroff</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">kputs</span><span class="p">(</span><span class="s">&quot;Poweroff requested&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="o">*</span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">SYSCON_ADDR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x5555</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">reboot</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">kputs</span><span class="p">(</span><span class="s">&quot;Reboot requested&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="o">*</span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">SYSCON_ADDR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x7777</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<h4><span id="src.2Fuart.2Fuart.h"></span><span class="mw-headline" id="src/uart/uart.h">src/uart/uart.h</span></h4>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cp">#ifndef UART_H</span>
+<span class="cp">#define UART_H</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stddef.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdarg.h&gt;</span><span class="cp"></span>
+
+<span class="c1">// 0x10000000 is memory-mapped address of UART according to device tree</span>
+<span class="cp">#define UART_ADDR 0x10000000</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">uart_init</span><span class="p">(</span><span class="kt">size_t</span><span class="p">);</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">kputchar</span><span class="p">(</span><span class="kt">int</span><span class="p">);</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">kputs</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">);</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">kvprintf</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="kt">va_list</span><span class="p">);</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">kprintf</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="p">...);</span><span class="w"></span>
+
+<span class="cp">#endif</span>
+</pre></div>
+<h4><span id="src.2Fuart.2Fuart.c"></span><span class="mw-headline" id="src/uart/uart.c">src/uart/uart.c</span></h4>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stddef.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdint.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdarg.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;limits.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;uart.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;../common/common.h&quot;</span><span class="cp"></span>
+
+<span class="cp">#define to_hex_digit(n) (&#39;0&#39; + (n) + ((n) &lt; 10&#160;? 0&#160;: &#39;a&#39; - &#39;0&#39; - 10))</span>
+
+<span class="cm">/*</span>
+<span class="cm"> * Initialize NS16550A UART</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">uart_init</span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">base_addr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">volatile</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">base_addr</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="c1">// Set word length to 8 (LCR[1:0])</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">LCR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mb">0b11</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="n">ptr</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LCR</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="c1">// Enable FIFO (FCR[0])</span>
+<span class="w">  </span><span class="n">ptr</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mb">0b1</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="c1">// Enable receiver buffer interrupts (IER[0])</span>
+<span class="w">  </span><span class="n">ptr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mb">0b1</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="c1">// For a real UART, we need to compute and set the baud rate</span>
+<span class="w">  </span><span class="c1">// But since this is an emulated UART, we don&#39;t need to do anything</span>
+<span class="w">  </span><span class="c1">//</span>
+<span class="w">  </span><span class="c1">// Assuming clock rate of 22.729 MHz, set signaling rate to 2400 baud</span>
+<span class="w">  </span><span class="c1">// divisor = ceil(CLOCK_HZ / (16 * BAUD_RATE))</span>
+<span class="w">  </span><span class="c1">//         = ceil(22729000 / (16 * 2400))</span>
+<span class="w">  </span><span class="c1">//         = 592</span>
+<span class="w">  </span><span class="c1">//</span>
+<span class="w">  </span><span class="c1">// uint16_t divisor = 592;</span>
+<span class="w">  </span><span class="c1">// uint8_t divisor_least = divisor &amp; 0xFF;</span>
+<span class="w">  </span><span class="c1">// uint8_t divisor_most = divisor &gt;&gt; 8;</span>
+<span class="w">  </span><span class="c1">// ptr[3] = LCR | 0x80;</span>
+<span class="w">  </span><span class="c1">// ptr[0] = divisor_least;</span>
+<span class="w">  </span><span class="c1">// ptr[1] = divisor_most;</span>
+<span class="w">  </span><span class="c1">// ptr[3] = LCR;</span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">uart_put</span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">base_addr</span><span class="p">,</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="o">*</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">base_addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">kputchar</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">character</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">uart_put</span><span class="p">(</span><span class="n">UART_ADDR</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">uint8_t</span><span class="p">)</span><span class="n">character</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">character</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">kprint</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">str</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">str</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">kputchar</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="o">*</span><span class="n">str</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="o">++</span><span class="n">str</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">kputs</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">str</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">kprint</span><span class="p">(</span><span class="n">str</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">kputchar</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="sc">&#39;\n&#39;</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="c1">// Limited version of vprintf() which only supports the following specifiers:</span>
+<span class="c1">//</span>
+<span class="c1">// - d/i: Signed decimal integer</span>
+<span class="c1">// - u: Unsigned decimal integer</span>
+<span class="c1">// - o: Unsigned octal</span>
+<span class="c1">// - x: Unsigned hexadecimal integer</span>
+<span class="c1">// - X: Unsigned hexadecimal integer (uppercase)</span>
+<span class="c1">// - c: Character</span>
+<span class="c1">// - s: String of characters</span>
+<span class="c1">// - p: Pointer address</span>
+<span class="c1">// -&#160;%: Literal &#39;%&#39;</span>
+<span class="c1">//</span>
+<span class="c1">// None of the sub-specifiers are supported for the sake of simplicity.</span>
+<span class="c1">// The `n` specifier is not supported since that is a major source of</span>
+<span class="c1">// security vulnerabilities. None of the floating-point specifiers are</span>
+<span class="c1">// supported since floating point operations don&#39;t make sense in kernel</span>
+<span class="c1">// space</span>
+<span class="c1">//</span>
+<span class="c1">// Anyway, this subset should suffice for printf debugging</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">kvprintf</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">format</span><span class="p">,</span><span class="w"> </span><span class="kt">va_list</span><span class="w"> </span><span class="n">arg</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">format</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">format</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;%&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="o">++</span><span class="n">format</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!*</span><span class="n">format</span><span class="p">)</span><span class="w"></span>
+<span class="w">	</span><span class="k">return</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">format</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="sc">&#39;d&#39;</span><span class="o">:</span><span class="w"></span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="sc">&#39;i&#39;</span><span class="o">:</span><span class="w"></span>
+<span class="w">	</span><span class="p">{</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">va_arg</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">);</span><span class="w"></span>
+<span class="w">	  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">INT_MIN</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	    </span><span class="n">kprint</span><span class="p">(</span><span class="s">&quot;-2147483648&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">	    </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="p">}</span><span class="w"></span>
+<span class="w">	  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	    </span><span class="n">kputchar</span><span class="p">(</span><span class="sc">&#39;-&#39;</span><span class="p">);</span><span class="w"></span>
+<span class="w">	    </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">~</span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="p">}</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="n">lsh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;0&#39;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="n">n</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="n">buf</span><span class="p">[</span><span class="mi">9</span><span class="p">];</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">p_buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="o">*</span><span class="n">p_buf</span><span class="o">++</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;0&#39;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w"></span>
+<span class="w">	    </span><span class="n">n</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="p">}</span><span class="w"></span>
+<span class="w">	  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">p_buf</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">buf</span><span class="p">)</span><span class="w"></span>
+<span class="w">	    </span><span class="n">kputchar</span><span class="p">(</span><span class="o">*--</span><span class="n">p_buf</span><span class="p">);</span><span class="w"></span>
+<span class="w">	  </span><span class="n">kputchar</span><span class="p">(</span><span class="n">lsh</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="sc">&#39;u&#39;</span><span class="o">:</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">va_arg</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="p">);</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="n">lsh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;0&#39;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="n">n</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="n">buf</span><span class="p">[</span><span class="mi">9</span><span class="p">];</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">p_buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="o">*</span><span class="n">p_buf</span><span class="o">++</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;0&#39;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w"></span>
+<span class="w">	    </span><span class="n">n</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="p">}</span><span class="w"></span>
+<span class="w">	  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">p_buf</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">buf</span><span class="p">)</span><span class="w"></span>
+<span class="w">	    </span><span class="n">kputchar</span><span class="p">(</span><span class="o">*--</span><span class="n">p_buf</span><span class="p">);</span><span class="w"></span>
+<span class="w">	  </span><span class="n">kputchar</span><span class="p">(</span><span class="n">lsh</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="sc">&#39;o&#39;</span><span class="o">:</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">va_arg</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="p">);</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="n">lsh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;0&#39;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">8</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="n">n</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">8</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="n">buf</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">p_buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="o">*</span><span class="n">p_buf</span><span class="o">++</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;0&#39;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">8</span><span class="p">;</span><span class="w"></span>
+<span class="w">	    </span><span class="n">n</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">8</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="p">}</span><span class="w"></span>
+<span class="w">	  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">p_buf</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">buf</span><span class="p">)</span><span class="w"></span>
+<span class="w">	    </span><span class="n">kputchar</span><span class="p">(</span><span class="o">*--</span><span class="n">p_buf</span><span class="p">);</span><span class="w"></span>
+<span class="w">	  </span><span class="n">kputchar</span><span class="p">(</span><span class="n">lsh</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="sc">&#39;x&#39;</span><span class="o">:</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">va_arg</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="p">);</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="n">lsh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">to_hex_digit</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">16</span><span class="p">);</span><span class="w"></span>
+<span class="w">	  </span><span class="n">n</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">16</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="n">buf</span><span class="p">[</span><span class="mi">7</span><span class="p">];</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">p_buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="o">*</span><span class="n">p_buf</span><span class="o">++</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">to_hex_digit</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">16</span><span class="p">);</span><span class="w"></span>
+<span class="w">	    </span><span class="n">n</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">16</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="p">}</span><span class="w"></span>
+<span class="w">	  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">p_buf</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">buf</span><span class="p">)</span><span class="w"></span>
+<span class="w">	    </span><span class="n">kputchar</span><span class="p">(</span><span class="o">*--</span><span class="n">p_buf</span><span class="p">);</span><span class="w"></span>
+<span class="w">	  </span><span class="n">kputchar</span><span class="p">(</span><span class="n">lsh</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="sc">&#39;X&#39;</span><span class="o">:</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">va_arg</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="p">);</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="n">lsh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">to_hex_digit</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">16</span><span class="p">);</span><span class="w"></span>
+<span class="w">	  </span><span class="n">n</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">16</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="n">buf</span><span class="p">[</span><span class="mi">7</span><span class="p">];</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">p_buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="o">*</span><span class="n">p_buf</span><span class="o">++</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">to_hex_digit</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">16</span><span class="p">);</span><span class="w"></span>
+<span class="w">	    </span><span class="n">n</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">16</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="p">}</span><span class="w"></span>
+<span class="w">	  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">p_buf</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">buf</span><span class="p">)</span><span class="w"></span>
+<span class="w">	    </span><span class="n">kputchar</span><span class="p">(</span><span class="n">toupper</span><span class="p">(</span><span class="o">*--</span><span class="n">p_buf</span><span class="p">));</span><span class="w"></span>
+<span class="w">	  </span><span class="n">kputchar</span><span class="p">(</span><span class="n">toupper</span><span class="p">(</span><span class="n">lsh</span><span class="p">));</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="sc">&#39;c&#39;</span><span class="o">:</span><span class="w"></span>
+<span class="w">	</span><span class="n">kputchar</span><span class="p">(</span><span class="n">va_arg</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">));</span><span class="w"></span>
+<span class="w">	</span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="sc">&#39;s&#39;</span><span class="o">:</span><span class="w"></span>
+<span class="w">	</span><span class="n">kprint</span><span class="p">(</span><span class="n">va_arg</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">));</span><span class="w"></span>
+<span class="w">	</span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="sc">&#39;p&#39;</span><span class="o">:</span><span class="w"></span>
+<span class="w">	</span><span class="p">{</span><span class="w"></span>
+<span class="w">          </span><span class="n">kprint</span><span class="p">(</span><span class="s">&quot;0x&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">size_t</span><span class="w"> </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">va_arg</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="p">);</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="n">lsh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">to_hex_digit</span><span class="p">(</span><span class="n">ptr</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">16</span><span class="p">);</span><span class="w"></span>
+<span class="w">	  </span><span class="n">ptr</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">16</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="n">buf</span><span class="p">[</span><span class="mi">15</span><span class="p">];</span><span class="w"></span>
+<span class="w">	  </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">p_buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="o">*</span><span class="n">p_buf</span><span class="o">++</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">to_hex_digit</span><span class="p">(</span><span class="n">ptr</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">16</span><span class="p">);</span><span class="w"></span>
+<span class="w">	    </span><span class="n">ptr</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">16</span><span class="p">;</span><span class="w"></span>
+<span class="w">	  </span><span class="p">}</span><span class="w"></span>
+<span class="w">	  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">p_buf</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">buf</span><span class="p">)</span><span class="w"></span>
+<span class="w">	    </span><span class="n">kputchar</span><span class="p">(</span><span class="o">*--</span><span class="n">p_buf</span><span class="p">);</span><span class="w"></span>
+<span class="w">	  </span><span class="n">kputchar</span><span class="p">(</span><span class="n">lsh</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="p">}</span><span class="w"></span>
+<span class="w">	</span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="sc">&#39;%&#39;</span><span class="o">:</span><span class="w"></span>
+<span class="w">	</span><span class="n">kputchar</span><span class="p">(</span><span class="sc">&#39;%&#39;</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="k">default</span><span class="o">:</span><span class="w"></span>
+<span class="w">	</span><span class="n">kputchar</span><span class="p">(</span><span class="sc">&#39;%&#39;</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="n">kputchar</span><span class="p">(</span><span class="o">*</span><span class="n">format</span><span class="p">);</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"></span>
+<span class="w">      </span><span class="n">kputchar</span><span class="p">(</span><span class="o">*</span><span class="n">format</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="o">++</span><span class="n">format</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">kprintf</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">format</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="kt">va_list</span><span class="w"> </span><span class="n">arg</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="n">va_start</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="w"> </span><span class="n">format</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">kvprintf</span><span class="p">(</span><span class="n">format</span><span class="p">,</span><span class="w"> </span><span class="n">arg</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">va_end</span><span class="p">(</span><span class="n">arg</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<h4><span id="src.2Fkmain.c"></span><span class="mw-headline" id="src/kmain.c">src/kmain.c</span></h4>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;uart/uart.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;syscon/syscon.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;common/common.h&quot;</span><span class="cp"></span>
+
+<span class="cp">#define ARCH &quot;RISC-V&quot;</span>
+<span class="cp">#define MODE &#39;M&#39;</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">kmain</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">uart_init</span><span class="p">(</span><span class="n">UART_ADDR</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">kprintf</span><span class="p">(</span><span class="s">&quot;Hello %s World!</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ARCH</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">kprintf</span><span class="p">(</span><span class="s">&quot;We are in %c-mode!</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">MODE</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">poweroff</span><span class="p">();</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<h2><span class="mw-headline" id="Running_the_project">Running the project</span></h2>
+<p>Invoke <code>make run</code> in the project root. You should see the following output:
+</p>
+<pre>Hello RISC-V World!
+We are in M-mode!
+Poweroff requested
+</pre>
+<h2><span class="mw-headline" id="Final_remarks_and_going_further">Final remarks and going further</span></h2>
+<p>This is by no means an end to your OSDev adventures on RISC-V. Make the OS kernel your own! Add support for memory management, interrupt handling, porting newlib ... you name it. Give your own RISC-V OS a creative name! "maRVelOS" / <code>marvelos</code> is already taken by <a href="https://wiki.osdev.org/index.php?title=User:Donaldsebleung&amp;action=edit&amp;redlink=1" class="new" title="User:Donaldsebleung (page does not exist)">User:Donaldsebleung</a> though&#160;;-)
+</p><p>Also note that this example RISC-V OS runs in M-mode usually reserved for firmware, rather than the S-mode recommended for RISC-V supervisors (OSes). If you wish to follow the RISC-V conventions closely, you may want to look into RISC-V privilege modes and <a rel="nofollow" class="external text" href="https://github.com/riscv-software-src/opensbi">OpenSBI</a> early on and port your OS kernel accordingly. More information about RISC-V privilege modes available on <a href="RISC-V#Privileges" title="RISC-V">our wiki</a>.
+</p>
+<h2><span class="mw-headline" id="See_also">See also</span></h2>
+<ul><li><a href="RISC-V" title="RISC-V">RISC-V</a></li>
+<li><a href="RISC-V_Bare_Bones" title="RISC-V Bare Bones">RISC-V Bare Bones</a></li>
+<li><a href="HiFive-1_Bare_Bones" title="HiFive-1 Bare Bones">HiFive-1 Bare Bones</a></li>
+<li><a href="Meaty_Skeleton" title="Meaty Skeleton">Meaty Skeleton</a></li></ul>
+<h3><span class="mw-headline" id="External_links">External links</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="https://github.com/twilco/riscv-from-scratch">RISC-V from scratch</a></li>
+<li><a rel="nofollow" class="external text" href="https://github.com/sgmarz/osblog">The Adventures of OS</a></li>
+<li><a rel="nofollow" class="external text" href="https://linuxfromscratch.org/">Linux From Scratch</a></li>
+<li><a rel="nofollow" class="external text" href="https://github.com/riscv-software-src/opensbi">OpenSBI</a></li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250211124705
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.160 seconds
+Real time usage: 3.408 seconds
+Preprocessor visited node count: 583/1000000
+Post‐expand include size: 3126/2097152 bytes
+Template argument size: 2382/2097152 bytes
+Highest expansion depth: 15/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 57502/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    8.926      1 -total
+ 61.99%    5.533     22 Template:If
+ 46.60%    4.160      1 Template:Kernel_designs
+ 45.96%    4.102     22 Template:Show1
+ 41.06%    3.665      1 Template:SmallNavBox
+ 39.08%    3.488      1 Template:Rating
+ 13.05%    1.165      1 Template:BeginnersWarning
+  8.98%    0.802      2 Template:Eq
+  5.59%    0.499      1 Template:NoteBox
+  4.41%    0.394      2 Template:Eq1
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:4722-0!canonical and timestamp 20250211124701 and revision id 29092.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=RISC-V_Meaty_Skeleton_with_QEMU_virt_board&amp;oldid=29092">https://wiki.osdev.org/index.php?title=RISC-V_Meaty_Skeleton_with_QEMU_virt_board&amp;oldid=29092</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_duplicate_arguments_in_template_calls&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using duplicate arguments in template calls (page does not exist)">Pages using duplicate arguments in template calls</a></li><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:Level_1_Tutorials" title="Category:Level 1 Tutorials">Level 1 Tutorials</a></li><li><a href="./Category:RISC-V" title="Category:RISC-V">RISC-V</a></li><li><a href="./Category:Bare_bones_tutorials" title="Category:Bare bones tutorials">Bare bones tutorials</a></li><li><a href="./Category:C" title="Category:C">C</a></li><li><a href="./Category:QEMU" title="Category:QEMU">QEMU</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=RISC-V+Meaty+Skeleton+with+QEMU+virt+board" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:RISC-V_Meaty_Skeleton_with_QEMU_virt_board&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="RISC-V_Meaty_Skeleton_with_QEMU_virt_board"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=RISC-V_Meaty_Skeleton_with_QEMU_virt_board&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=RISC-V_Meaty_Skeleton_with_QEMU_virt_board&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/RISC-V_Meaty_Skeleton_with_QEMU_virt_board" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/RISC-V_Meaty_Skeleton_with_QEMU_virt_board" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=RISC-V_Meaty_Skeleton_with_QEMU_virt_board&amp;oldid=29092" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=RISC-V_Meaty_Skeleton_with_QEMU_virt_board&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 7 June 2024, at 13:39.</li>
+	<li id="footer-info-0">This page has been accessed 7,177 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=RISC-V_Meaty_Skeleton_with_QEMU_virt_board&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.160","walltime":"3.408","ppvisitednodes":{"value":583,"limit":1000000},"postexpandincludesize":{"value":3126,"limit":2097152},"templateargumentsize":{"value":2382,"limit":2097152},"expansiondepth":{"value":15,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":57502,"limit":5000000},"timingprofile":["100.00%    8.926      1 -total"," 61.99%    5.533     22 Template:If"," 46.60%    4.160      1 Template:Kernel_designs"," 45.96%    4.102     22 Template:Show1"," 41.06%    3.665      1 Template:SmallNavBox"," 39.08%    3.488      1 Template:Rating"," 13.05%    1.165      1 Template:BeginnersWarning","  8.98%    0.802      2 Template:Eq","  5.59%    0.499      1 Template:NoteBox","  4.41%    0.394      2 Template:Eq1"]},"cachereport":{"timestamp":"20250211124705","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":3510});});</script>
+</body>
+</html>

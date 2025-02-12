@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>UDI Driver Loading - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"7f6daa0630883517ba11eab5","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"UDI_Driver_Loading","wgTitle":"UDI Driver Loading","wgCurRevisionId":24113,"wgRevisionId":24113,"wgArticleId":3368,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","Uniform Driver Interface"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"UDI_Driver_Loading","wgRelevantArticleId":3368,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],
+"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-UDI_Driver_Loading rootpage-UDI_Driver_Loading skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">UDI Driver Loading</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="UDI_Driver_Loading#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="UDI_Driver_Loading#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p><br />
+This page seeks to give a minimalistic overview of the general sequence for loading a UDI driver from disk, and using it to instantiate a detected device. It touches on what information is needed to load a driver, and how the various parts of the <tt>'udi_init_info_t'</tt> work together with the .udiprops/udiprops.txt configuration files and metalanguages to enable the kernel to make decisions on which drivers to load when attempting to instantiate drivers for the devices in its device tree.
+</p><p>This is a non-trivial article, and is probably only useful to persons with a moderately advanced kernel of their own. Recommended prior reading includes, but is not limited to <a href="./User:Gravaera/UDI_Device_Enumeration" class="mw-redirect" title="User:Gravaera/UDI Device Enumeration">UDI Device Enumeration</a>, and the UDI v1.01 specifications.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="UDI_Driver_Loading#The_UDI_device_tree_model"><span class="tocnumber">1</span> <span class="toctext">The UDI device tree model</span></a>
+<ul>
+<li class="toclevel-2 tocsection-2"><a href="UDI_Driver_Loading#The_relationship_between_metalanguages_and_device_enumeration"><span class="tocnumber">1.1</span> <span class="toctext">The relationship between metalanguages and device enumeration</span></a>
+<ul>
+<li class="toclevel-3 tocsection-3"><a href="UDI_Driver_Loading#Key_structures"><span class="tocnumber">1.1.1</span> <span class="toctext">Key structures</span></a></li>
+<li class="toclevel-3 tocsection-4"><a href="UDI_Driver_Loading#Device_Instance_Attributes"><span class="tocnumber">1.1.2</span> <span class="toctext">Device Instance Attributes</span></a></li>
+<li class="toclevel-3 tocsection-5"><a href="UDI_Driver_Loading#Synopsis_so_far"><span class="tocnumber">1.1.3</span> <span class="toctext">Synopsis so far</span></a></li>
+</ul>
+</li>
+<li class="toclevel-2 tocsection-6"><a href="UDI_Driver_Loading#The_relationship_between_Device_Instance_Attributes_and_udiprops.txt/.udiprops"><span class="tocnumber">1.2</span> <span class="toctext">The relationship between Device Instance Attributes and udiprops.txt/.udiprops</span></a>
+<ul>
+<li class="toclevel-3 tocsection-7"><a href="UDI_Driver_Loading#Introduction_to_Udiprops"><span class="tocnumber">1.2.1</span> <span class="toctext">Introduction to Udiprops</span></a></li>
+<li class="toclevel-3 tocsection-8"><a href="UDI_Driver_Loading#What_is_udiprops_used_for?"><span class="tocnumber">1.2.2</span> <span class="toctext">What is udiprops used for?</span></a></li>
+<li class="toclevel-3 tocsection-9"><a href="UDI_Driver_Loading#Matching_device_instance_attributes_against_udiprops"><span class="tocnumber">1.2.3</span> <span class="toctext">Matching device instance attributes against udiprops</span></a>
+<ul>
+<li class="toclevel-4 tocsection-10"><a href="UDI_Driver_Loading#&quot;Device&quot;_lines_in_udiprops"><span class="tocnumber">1.2.3.1</span> <span class="toctext">"Device" lines in udiprops</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toclevel-2 tocsection-11"><a href="UDI_Driver_Loading#Conclusion"><span class="tocnumber">1.3</span> <span class="toctext">Conclusion</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h1><span class="mw-headline" id="The_UDI_device_tree_model">The UDI device tree model</span></h1>
+<p>UDI employes a very simple device tree model: devices enumerate children for the kernel, and the kernel instantiates the devices by loading drivers for them, and then if those devices have children, their drivers enumerate them in turn, and then the kernel instantiates those child devices by loading drivers for them, and so on ad infinitum.
+</p><p>The most obvious approach that would occur to the reader then, is most likely to have a tree-like structure, or some other such structure to hold device nodes in the kernel's device tree, and build the device tree from the information returned by UDI drivers.
+</p>
+<h2><span class="mw-headline" id="The_relationship_between_metalanguages_and_device_enumeration">The relationship between metalanguages and device enumeration</span></h2>
+<h3><span class="mw-headline" id="Key_structures">Key structures</span></h3>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cm">/* The structure used to represent a single named attribute and its value. */</span><span class="w"></span>
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="kt">char</span><span class="w"> </span><span class="n">attr_name</span><span class="p">[</span><span class="n">UDI_MAX_ATTR_NAMELEN</span><span class="p">];</span><span class="w"></span>
+<span class="w">	</span><span class="n">udi_ubit8_t</span><span class="w"> </span><span class="n">attr_value</span><span class="p">[</span><span class="n">UDI_MAX_ATTR_SIZE</span><span class="p">];</span><span class="w"></span>
+<span class="w">	</span><span class="n">udi_ubit8_t</span><span class="w"> </span><span class="n">attr_length</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">udi_instance_attr_type_t</span><span class="w"> </span><span class="n">attr_type</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">udi_instance_attr_list_t</span><span class="p">;</span><span class="w"></span>
+
+<span class="cm">/* The structure used to represent a child device when being enumerated by a parent driver.</span>
+<span class="cm"> * Notice the &quot;attr_list&quot; struct member, which is essentially an array of named</span>
+<span class="cm"> * attributes.</span>
+<span class="cm"> **/</span><span class="w"></span>
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">udi_cb_t</span><span class="w"> </span><span class="n">gcb</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">udi_ubit32_t</span><span class="w"> </span><span class="n">child_ID</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">child_data</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">udi_instance_attr_list_t</span><span class="w"> </span><span class="o">*</span><span class="n">attr_list</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">udi_ubit8_t</span><span class="w"> </span><span class="n">attr_valid_length</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="k">const</span><span class="w"> </span><span class="n">udi_filter_element_t</span><span class="w"> </span><span class="o">*</span><span class="n">filter_list</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">udi_ubit8_t</span><span class="w"> </span><span class="n">filter_list_length</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">udi_ubit8_t</span><span class="w"> </span><span class="n">parent_ID</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">udi_enumerate_cb_t</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+<h3><span class="mw-headline" id="Device_Instance_Attributes">Device Instance Attributes</span></h3>
+<p>When a UDI driver enumerates its child devices to the kernel, it does so using a series of named "instance attributes". The particular attributes returned by the driver for the child device depend on the type of device that the parent is: for example, if the parent is a PCI bus, then it would return attributes that describe a PCI device. If the parent device is an ISA root bus device, it would return attributes that best describe an ISA device.
+</p><p>Who decides what attributes "best" describe a PCI child device? Or what guarantee is there that different drivers for the same bus won't return different named attributes, or employ custom naming schemes for attributes? The answer is quite simple: the attributes returned by enumerator drivers for a particular bus, are determined by the UDI metalanguage for that bus. For example, the UDI PCI Metalanguage specifies the bindings for PCI drivers, relative to the core specification. In more detail, we can examine the PCI Metalanguage's actual attributes, as it defines them:
+</p>
+<ul><li>bus_type (attr_type: STRING).</li>
+<li>pci_vendor_id (attr_type: UBIT32).</li>
+<li>pci_device_id (attr_type: UBIT32).</li>
+<li>pci_revision_id (attr_type: UBIT32).</li>
+<li>pci_baseclass (attr_type: UBIT32).</li>
+<li>pci_sub_class (attr_type: UBIT32).</li>
+<li>pci_prog_if (attr_type: UBIT32).</li>
+<li>pci_subsystem_vendor_id (attr_type: UBIT32).</li>
+<li>pci_subsystem_id (attr_type: UBIT32).</li>
+<li>pci_unit_address (attr_type: UBIT32).</li>
+<li>pci_slot (attr_type: UBIT32).</li></ul>
+<p>These attributes "best" describe a PCI child device to the kernel. This information is complete, and more than sufficient for enabling the kernel to add this new child device to its device tree. The <tt>'pci_vendor_id'</tt> and <tt>'pci_device_id'</tt> can then be used to search the disk for a driver that matches those attributes (PCI device/vendor ID).
+</p><p>Naturally, this is the recommended, and officially standardized Metalanguage for the PCI bus, but the UDI specification is generic in nature, and new metalanguages can be developed with ease; it is perfectly possible for a <del>retarded</del> rogue party to choose to define a custom PCI Metalanguage binding. Thankfully, even this would not cause any problems with interoperability: the rogue party's custom PCI metalanguage would actually seamlessly fit into existing UDI environments without any modification. The reasons for this are beyond the scope of this article -- suffice it to say that competing standards are not an issue for, or a threat to UDI compliant kernels. Drivers will "just work".
+</p>
+<h3><span class="mw-headline" id="Synopsis_so_far">Synopsis so far</span></h3>
+<p>Parent drivers enumerate their child devices to the kernel, and they tell the kernel about the attributes of their child devices using attributes specified by a standardized UDI committee sanctioned metalanguage, or a custom metalanguage. The kernel can then use these attributes as criteria when searching the disk for the correct or preferred driver for a device.
+</p>
+<h2><span id="The_relationship_between_Device_Instance_Attributes_and_udiprops.txt.2F.udiprops"></span><span class="mw-headline" id="The_relationship_between_Device_Instance_Attributes_and_udiprops.txt/.udiprops">The relationship between Device Instance Attributes and udiprops.txt/.udiprops</span></h2>
+<h3><span class="mw-headline" id="Introduction_to_Udiprops">Introduction to Udiprops</span></h3>
+<p>Much like Microsoft Windows' .INI configuration information files that come with drivers, UDI uses a text based configuration approach to distributing drivers. This configuration shall always be distributed with drivers in one of the following forms:
+</p>
+<ul><li>For binary-only drivers, the configuration information <b>shall</b> be embedded into the driver's executable binary object in an executable section called "<b>.udiprops</b>".</li>
+<li>For source distributions of drivers, the configuration information <b>shall</b> be found in a file called "<b>udiprops.txt</b>" within the source distribution.</li></ul>
+<h3><span id="What_is_udiprops_used_for.3F"></span><span class="mw-headline" id="What_is_udiprops_used_for?">What is udiprops used for?</span></h3>
+<p>Udiprops gives information about how to compile the driver (for source distributions), the metalanguages used in the driver binaries, and it also gives information about <b>how to match the driver against instance attributes</b> when a kernel is searching the disk for the correct driver to use to instantiate a given device.
+</p><p>Naturally, it would occur to any fast-thinking reader that this means that the kernel would need to search the udiprops of each driver when trying to find the correct driver for a device. Naturally, it would also subsequently occur to a faster-thinking reader that a more mature implementation could have a database or registry of sorts with the instance attribute information stripped out to enable fast index lookups for driver attributes. The actual method used to search the drivers available on disk is not specified by the UDI Core Specification. A kernel can choose to slowly read each driver's udiprops, or compile the information in a database, or even not to do either of these, and just load a fixed set of drivers that it knows it needs. All of this is up to the implementor.
+</p>
+<h3><span class="mw-headline" id="Matching_device_instance_attributes_against_udiprops">Matching device instance attributes against udiprops</span></h3>
+<div class="mw-highlight mw-highlight-lang-text mw-content-ltr" dir="ltr"><pre><span></span>message 1001 Fake driver written by DeceptionCorp Inc.
+message 1002 DeceptionCorp Inc.
+message 1003 PO-BOX #123 Fake Valley, Not Real City, USA; Tel 765-4321;
+
+name     1002
+supplier 1002
+contact  1003
+
+requires udi_pci 0x101
+requires udi_sysbus 0x101
+
+meta 1 udi_pci
+meta 2 udi_sysbus
+
+message 200 Example VGA graphics device, model 1
+message 201 Example VGA graphics device, model 2
+
+device 200 1 \
+   bus_type      string pci \
+   pci_vendor_id ubit32 0x8086 \
+   pci_device_id ubit32 0x1234
+
+device 201 1 \
+   bus_type      string pci \
+   pci_vendor_id   ubit32 0x8086 \
+   pci_device_id   ubit32 0x2345 \
+   pci_revision_id ubit32 0x02
+
+device 201 2 \
+   bus_type           string system \
+   sysbus_mem_addr_lo 0xA0000 \
+   sysbus_mem_addr_hi 0x0 \
+   sysbus_mem_size    0x20000 \
+   sysbus_io_addr_lo  0x3C0 \
+   sysbus_io_addr_hi  0x0 \
+   sysbus_io_size     0x8 \
+   sysbus_intr0       16
+</pre></div>
+<p>The above is an example udiprops which has been constructed on the fly to meet the needs of this article. It is simplified to the extent of being non-compliant, so that the bare minimum information needed to enable a kernel to match a driver against instance attributes can be explained. That said, a few extra lines have been added (name, supplier, contact) to make it look more wholesome. It demonstrates declaration of a single driver that supports multiple different devices (model 1 and model 2), and shows how to declare a single device that can be found on multiple buses (Model 2 can be found on the PCI bus or the ISA bus, as is very common for VGA devices).
+</p>
+<h4><span id=".22Device.22_lines_in_udiprops"></span><span class="mw-headline" id="&quot;Device&quot;_lines_in_udiprops">"Device" lines in udiprops</span></h4>
+<p>Each "device" line in a udiprops configuration describes one set of attribute match values which are meant to be compared against a given device in the kernel's device tree. In most cases, these will describe separate devices, but it is also possible for a device to be configurable on multiple different buses. For example, a VGA graphics controller may be enumerated as part of the ISA bus, or it may be enumerated from the PCI bus. The I/O ports and memory locations will usually remain the same regardless of which bus it is exposed on, but naturally, each device is different, and this may not hold true for every device.
+</p>
+<div class="mw-highlight mw-highlight-lang-text mw-content-ltr" dir="ltr"><pre><span></span>device &lt;device_name_string_index&gt; &lt;bus_metalanguage_index&gt; \
+   &lt;attribute_name&gt; &lt;attribute_type&gt; &lt;attribute_value&gt;
+</pre></div>
+<p>"Device" declaration lines with the same <tt>'&lt;device_name_string_index&gt;'</tt> number refer to the same device. "Device" declaration lines with differing <tt>'&lt;device_name_string_index&gt;'</tt> numbers refer to different devices. As can be seen in the example udiprops above, there are two distinct devices which our example driver claims to support:
+</p>
+<ul><li>Example VGA graphics device, model 1; message-string-index 200.</li>
+<li>Example VGA graphics device, model 2; message-string-index 201.</li></ul>
+<p><br />
+The <tt>'&lt;bus_metalanguage_index&gt;'</tt> enables the kernel to know what Metalanguage libraries need to be loaded to properly start the driver process when the driver is loaded for a match against this "device" line. For example, the first two devices would require the <tt>'udi_pci'</tt> bus metalanguage libraries to be loaded, while the third device declaration would instead require the <tt>'udi_sysbus'</tt> library. Our fake driver's udiprops claims to enumerate devices on two buses:
+</p>
+<ul><li>udi_pci (metalanguage index 1).</li>
+<li>udi_sysbus (metalanguage index 2).</li></ul>
+<p><br />
+The named device instance attributes which follow the <tt>'&lt;bus_metalanguage_index&gt;'</tt> all follow the attributes mandated by the particular UDI bus Metalanguage that the device declaration uses. For example, the UDI PCI Metalanguage uses <tt>'bus_type'</tt>, <tt>'pci_vendor_id'</tt> and <tt>'pci_device_id'</tt> among other attributes for device attributes. <i>A driver need not specify every named attribute in a "device" declaration, but supplying a large number of attributes will make locating the correct driver easier.</i> For the PCI bus though, drivers really need only specify <tt>'pci_vendor_id'</tt> and <tt>'pci_device_id'</tt>, because as the user most likely already knows, these two are for the most part all that are needed to match a PCI device against its driver.
+</p><p>A sharp reader would also have noticed that the named instance attributes listed for the ISA sysbus "device" declaration of "Model 2" <b>do not have</b> the same attributes as a PCI device. This is because the attributes of a PCI device differ from the attributes of an ISA device, and the UDI Sysbus Metalanguage defines different attributes for sysbus devices. Different bus metalanguages use different attributes to describe child devices because different buses work differently. The same would apply to say, IDE devices enumerated by an IDE driver. IDE/PATA disks obviously cannot rationally be expected to be identified by <tt>'pci_vendor_id'</tt> and <tt>'pci_device_id'</tt>.
+</p>
+<h2><span class="mw-headline" id="Conclusion">Conclusion</span></h2>
+<p>So in conclusion, our fake driver above declares two distinct devices. The first can only be found on the PCI bus, and the second can be found on both the PCI and the ISA buses. The kernel would match the device tree instance attributes against the udiprops of each driver on disk, or against its database, or whatever its search method may be, and find the best driver to use, and load that driver to service the device.
+</p>
+<!-- 
+NewPP limit report
+Cached time: 20250211170025
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.026 seconds
+Real time usage: 0.425 seconds
+Preprocessor visited node count: 49/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 4773/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:3368-0!canonical and timestamp 20250211170025 and revision id 24113.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=UDI_Driver_Loading&amp;oldid=24113">https://wiki.osdev.org/index.php?title=UDI_Driver_Loading&amp;oldid=24113</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="./Category:Uniform_Driver_Interface" title="Category:Uniform Driver Interface">Uniform Driver Interface</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=UDI+Driver+Loading" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="UDI_Driver_Loading#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="UDI_Driver_Loading" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:UDI_Driver_Loading&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="UDI_Driver_Loading"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=UDI_Driver_Loading&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=UDI_Driver_Loading&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/UDI_Driver_Loading" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/UDI_Driver_Loading" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=UDI_Driver_Loading&amp;oldid=24113" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=UDI_Driver_Loading&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 23 November 2019, at 04:38.</li>
+	<li id="footer-info-0">This page has been accessed 744 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=UDI_Driver_Loading&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.026","walltime":"0.425","ppvisitednodes":{"value":49,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":4773,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250211170025","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":522});});</script>
+</body>
+</html>

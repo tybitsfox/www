@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>3D Renderer Basics - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"650339991e0a75bc8ee149d9","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"3D_Renderer_Basics","wgTitle":"3D Renderer Basics","wgCurRevisionId":23566,"wgRevisionId":23566,"wgArticleId":4019,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Video"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"3D_Renderer_Basics","wgRelevantArticleId":4019,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{"search":false,
+"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-3D_Renderer_Basics rootpage-3D_Renderer_Basics skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">3D Renderer Basics</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="3D_Renderer_Basics#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="3D_Renderer_Basics#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p>3D graphics is something most operating systems want to support one day. Unfortunately, video drivers that support GPUs are extremely complex to implement, and it's hard to find information that covers the basics of software rendering.
+</p><p>The goal here is to describe the simplest 3D rendering pipeline possible, and then show ideas to improve on it, to give the reader (you) a basic understanding. Please note we do not intend this to be "state-of-the art" and will cover nothing advanced and is also not intended to be maths tutorial and won't include formulas (these can be found with a simple web search).
+</p><p><br />
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="3D_Renderer_Basics#Data_Structures"><span class="tocnumber">1</span> <span class="toctext">Data Structures</span></a>
+<ul>
+<li class="toclevel-2 tocsection-2"><a href="3D_Renderer_Basics#Camera"><span class="tocnumber">1.1</span> <span class="toctext">Camera</span></a></li>
+<li class="toclevel-2 tocsection-3"><a href="3D_Renderer_Basics#World"><span class="tocnumber">1.2</span> <span class="toctext">World</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-4"><a href="3D_Renderer_Basics#Objects"><span class="tocnumber">2</span> <span class="toctext">Objects</span></a>
+<ul>
+<li class="toclevel-2 tocsection-5"><a href="3D_Renderer_Basics#Meshes"><span class="tocnumber">2.1</span> <span class="toctext">Meshes</span></a>
+<ul>
+<li class="toclevel-3 tocsection-6"><a href="3D_Renderer_Basics#Coordinates"><span class="tocnumber">2.1.1</span> <span class="toctext">Coordinates</span></a></li>
+<li class="toclevel-3 tocsection-7"><a href="3D_Renderer_Basics#Polygons"><span class="tocnumber">2.1.2</span> <span class="toctext">Polygons</span></a>
+<ul>
+<li class="toclevel-4 tocsection-8"><a href="3D_Renderer_Basics#Textured_Polygons"><span class="tocnumber">2.1.2.1</span> <span class="toctext">Textured Polygons</span></a></li>
+<li class="toclevel-4 tocsection-9"><a href="3D_Renderer_Basics#Gradient_Polygons"><span class="tocnumber">2.1.2.2</span> <span class="toctext">Gradient Polygons</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-10"><a href="3D_Renderer_Basics#Coordinate_Systems_and_Transformations"><span class="tocnumber">3</span> <span class="toctext">Coordinate Systems and Transformations</span></a></li>
+<li class="toclevel-1 tocsection-11"><a href="3D_Renderer_Basics#Back_Face_Culling"><span class="tocnumber">4</span> <span class="toctext">Back Face Culling</span></a></li>
+<li class="toclevel-1 tocsection-12"><a href="3D_Renderer_Basics#Viewing_Volume_Culling"><span class="tocnumber">5</span> <span class="toctext">Viewing Volume Culling</span></a></li>
+<li class="toclevel-1 tocsection-13"><a href="3D_Renderer_Basics#Viewing_Volume_Clipping"><span class="tocnumber">6</span> <span class="toctext">Viewing Volume Clipping</span></a></li>
+<li class="toclevel-1 tocsection-14"><a href="3D_Renderer_Basics#Viewing_Volume_Warning"><span class="tocnumber">7</span> <span class="toctext">Viewing Volume Warning</span></a></li>
+<li class="toclevel-1 tocsection-15"><a href="3D_Renderer_Basics#Rasterisation"><span class="tocnumber">8</span> <span class="toctext">Rasterisation</span></a></li>
+<li class="toclevel-1 tocsection-16"><a href="3D_Renderer_Basics#Fragment_Rendering"><span class="tocnumber">9</span> <span class="toctext">Fragment Rendering</span></a></li>
+<li class="toclevel-1 tocsection-17"><a href="3D_Renderer_Basics#Occlusion"><span class="tocnumber">10</span> <span class="toctext">Occlusion</span></a>
+<ul>
+<li class="toclevel-2 tocsection-18"><a href="3D_Renderer_Basics#Painter&#39;s_Algorithm"><span class="tocnumber">10.1</span> <span class="toctext">Painter's Algorithm</span></a></li>
+<li class="toclevel-2 tocsection-19"><a href="3D_Renderer_Basics#Z_Buffer"><span class="tocnumber">10.2</span> <span class="toctext">Z Buffer</span></a></li>
+<li class="toclevel-2 tocsection-20"><a href="3D_Renderer_Basics#Fragment_Buffer"><span class="tocnumber">10.3</span> <span class="toctext">Fragment Buffer</span></a></li>
+<li class="toclevel-2 tocsection-21"><a href="3D_Renderer_Basics#Polygon_Occlusion"><span class="tocnumber">10.4</span> <span class="toctext">Polygon Occlusion</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-22"><a href="3D_Renderer_Basics#Object_Meshes_Revisited"><span class="tocnumber">11</span> <span class="toctext">Object Meshes Revisited</span></a>
+<ul>
+<li class="toclevel-2 tocsection-23"><a href="3D_Renderer_Basics#Meshes_For_Different_Distances"><span class="tocnumber">11.1</span> <span class="toctext">Meshes For Different Distances</span></a></li>
+<li class="toclevel-2 tocsection-24"><a href="3D_Renderer_Basics#Spherical_Mesh_Culling"><span class="tocnumber">11.2</span> <span class="toctext">Spherical Mesh Culling</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-25"><a href="3D_Renderer_Basics#Partial_Frame_Rendering"><span class="tocnumber">12</span> <span class="toctext">Partial Frame Rendering</span></a>
+<ul>
+<li class="toclevel-2 tocsection-26"><a href="3D_Renderer_Basics#Texture_Change"><span class="tocnumber">12.1</span> <span class="toctext">Texture Change</span></a></li>
+<li class="toclevel-2 tocsection-27"><a href="3D_Renderer_Basics#Object_Movement"><span class="tocnumber">12.2</span> <span class="toctext">Object Movement</span></a></li>
+<li class="toclevel-2 tocsection-28"><a href="3D_Renderer_Basics#(Small)_Camera_Rotation"><span class="tocnumber">12.3</span> <span class="toctext">(Small) Camera Rotation</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-29"><a href="3D_Renderer_Basics#Rendering_Distance_Cube"><span class="tocnumber">13</span> <span class="toctext">Rendering Distance Cube</span></a></li>
+<li class="toclevel-1 tocsection-30"><a href="3D_Renderer_Basics#Static_Distant_Impostors"><span class="tocnumber">14</span> <span class="toctext">Static Distant Impostors</span></a></li>
+<li class="toclevel-1 tocsection-31"><a href="3D_Renderer_Basics#Dynamic_Distant_Impostors"><span class="tocnumber">15</span> <span class="toctext">Dynamic Distant Impostors</span></a></li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Data_Structures">Data Structures</span></h2>
+<p>Before a 3D renderer can do anything it needs data describing a scene to render. A scene shall comprise a camera, a world, and objects within that world.
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Camera">Camera</span></h3>
+<p>To describe a camera you need the camera's location (x, y, z), which direction it is facing (a "front vector") and which direction is the top of the camera ("up vector"). You can think of a vector as a displacement in 3D space (amount to add to x, amount to add to y, amount to add to z). For the mathematics you'll want later it's best to use unit vectors for the camera's "front vector" and "up vector". A unit vector is a vector where the distance is 1. To convert a vector into a unit vector divide each component by the distance (e.g. "distance = sqrt(x*x + y*y + z*z); x /= distance; y /= distance; z /= distance;").
+</p><p>A camera might also have other data associated with it (e.g. field of view).
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="World">World</span></h3>
+<p>The world is a special kind of object that may be literally nothing (a coordinate system only), or may describe things that can not move (e.g. terrain, sky). The world needs no direction vectors (it is the primary coordinate system that everything else is relative to), but otherwise can be the same as an object.
+</p>
+<h2><span class="mw-headline" id="Objects">Objects</span></h2>
+<p>An object comprises another coordinate system (the object's "local coordinate system"); several values to describe where the object is in the world's coordinate system, one or meshes, plus the data that each mesh needs. For simplicity (initially) you can assume that an object only ever has one mesh.
+</p><p>The values to describe where the object is in the world's coordinate system are a coordinate describing where the object's local coordinate system's origin would end up in the world's coordinate system; plus a "front vector" and "up vector"  to describe the object's orientation within the world's coordinate system.
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Meshes">Meshes</span></h3>
+<p>A mesh comprises a list of coordinates, then a list of polygons.
+</p><p><br />
+</p>
+<h4><span class="mw-headline" id="Coordinates">Coordinates</span></h4>
+<p>Coordinates are just a location within a coordinate system, typically described as 3 values "(x, y, z)" with no additional information. For performance it is recommended that coordinates are stored in "structure of arrays" format (and not "array of structures" format). What this means is that you do something like "float x[COORDS]; float y[COORDS]; float z[COORDS];" and not "struct coord myCoords[COORDS];". The reason for this is that it makes it much easier to use SIMD (SSE, AVX) to process many coords.
+</p><p><i>Note: Sometime people get "coordinate" and "vertex" confused or use them interchangeably. In my opinion this is wrong. For this wiki page, a vertex is a coordinate with additional information, and is not the same as a coordinate that has no addition information.</i>
+</p><p><br />
+</p>
+<h4><span class="mw-headline" id="Polygons">Polygons</span></h4>
+<p>For simplicity, we will assume there are only 2 kinds of polygons - textured polygons and gradient polygons.
+</p><p>Every polygon has a set of flags, where one/some of the flags are used to determine what type of polygon it is (and the other flags are used for other things described later), and every polygon has a "number of vertices". Everything else depends on the type of polygon.
+</p><p><br />
+</p>
+<h5><span class="mw-headline" id="Textured_Polygons">Textured Polygons</span></h5>
+<p>For textured polygons the polygon also has some kind of "texture reference". Each vertex used by a textured polygon has a reference to the coordinate (in the meshes' list of coordinates) plus a location in the texture (typically a "(u, v)" coordinate within the texture the polygon uses).
+</p><p>Note that for repeating patterns the texture coordinate may be larger than the texture's dimensions. When drawing polygons on the screen later on, the renderer will do something like "u = u&#160;% texture_width; v = v&#160;% texture_height" for each pixel, so that if the"(u, v)" coordinate within the polygon's vertex is larger than the size of the texture then the texture's ends up being repeated across the polygon. This is very beneficial for things like (e.g.) brick walls, where the same "brick texture" might be repeated over a large area, because that large area can be described with one polygon rather than many polygons.
+</p><p><br />
+</p>
+<h5><span class="mw-headline" id="Gradient_Polygons">Gradient Polygons</span></h5>
+<p>For gradient polygons; each vertex has a reference to the coordinate (in the meshes' list of coordinates) plus a colour. When drawing polygons on the screen later on, the renderer will use interpolation to determine a pixel's colour. For example, if the polygon is a triangle and has a top vertex that is blue, a left vertex that is red and a right vertex that is green; then we'd find the points on the left edge and right edge where a horizontal line through the pixel would intersect those edges and use the vertices' colours and the distances between those vertices along the edge to determine a "left colour" and a "right colour"; then use distances that the pixel is between the left and right (and the "left colour" and a "right colour") to determine the pixel's colour.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Coordinate_Systems_and_Transformations">Coordinate Systems and Transformations</span></h2>
+<p>There are multiple different coordinate systems (each object's local coordinate system, the world's coordinate system, the camera's coordinate system, then the screen's coordinate system). One of the first things the 3D renderer will need to do is transform all coordinates (from objects and the world) into screen coordinates. This involves is multiple steps (because there multiple coordinate systems).
+</p><p>Most steps involve building a rotation matrix (from the "front vector" and "up vector" of one coordinate system) and a translation matrix (from the "location of origin in the other coordinate system"); and then multiplying each coordinate (in each object's meshes' coordinate list) by each matrix in order. However, this can be optimised by multiplying the matrices together, so you only end up multiplying a coordinate by a single "all steps combined" transformation matrix.
+</p><p>The first step is building a transformation matrix to convert coordinates in the camera's coordinate system into screen coordinates. This is special and unlike the other steps. For this you need a projection matrix (which essentially does "x = x/z; y = y/z"), a scaling matrix (to scale coordinates to suit the screen's resolution, possibly derived from the camera's field of view), and a translation matrix (which subtracts half the screen's horizontal resolution from x values and subtracts half the screen's vertical resolution from y values). These 3 matrices should be combined (multiplied) to form the final "camera to screen transformation matrix".
+</p><p><i>Note: This is a simplification used to keep things in a "nicer to understand" order. See the warning in "Viewing Volume Warning" section below about problems involving "z = 0" and division by zero.</i>
+</p><p>The second step is building a transformation matrix to convert coordinates in the world's coordinate system into the camera's coordinate system. This involves creating a rotation matrix from the camera's "front vector" and "up vector", creating a translation matrix from the camera's location in world space, then combining these 2 matrices with the "camera to screen transformation matrix" from the previous step to get a final "world to screen transformation matrix".
+</p><p>Once you have the "world to screen transformation matrix" it can be applied to world coordinates to convert them to screen coordinates, and this is what makes the world special (because you need one less step to create the transformation matrix for the world's mesh).
+</p><p>The third step is, for each object in the world, use the object's "front vector" and "up vector" to create a rotation matrix, and the object's position to create a translation matrix; then combine the object's 2 matrices with the "world to screen transformation matrix" to get a "object to screen transformation matrix" for the object. Once you have the "object to screen transformation matrix" for an object it can be applied to the object's coordinates to convert them to screen coordinates.
+</p><p>When you've finished all of this (applied the transformation matrices to the world and all objects in the world), all coordinates will be screen coordinates.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Back_Face_Culling">Back Face Culling</span></h2>
+<p>To improve performance we want to discard ("cull") polygons that can't be seen as early as possible (after doing the least unnecessary work for them). For opaque objects that have thickness, some polygons will be on the object's front side and some will be on the object's back side, and the polygons on the object's back side can't be seen (and can be culled). It turns out it's easy to test for this.
+</p><p>If the vertices of a polygon are in a specific order (e.g. clockwise when looking at the polygon), after coordinates are transformed into screen coordinates you can test if the polygon's screen coordinates are in the same specific order (e.g. clockwise) by using any 3 coordinates in sequence (e.g. just the first 3 coordinates) to find 2 vectors ("first to middle" and "middle to last"), and then calculate the vector dot product of those 2 vectors. The sign of the vector dot product will determine if the polygon is a front face or a back face. If it is a back face, then the polygon can be discarded.
+</p><p>Note: You may want to use one of the polygon's flags for "if this flag is set, discard polygon if it's facing backwards". This allows you to disable back face culling for some polygons (e.g. if you want a "zero thickness" fence that looks the same from both sides, then you can use one polygon for both sides instead of having 2 polygons). Also; if you know that the polygon will be a front face for some other reason (e.g. because it's part of the sky and you don't allow the camera to get higher than the sky) you can clear the flag to bypass the overhead of the ("known unnecessary") back face culling test.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Viewing_Volume_Culling">Viewing Volume Culling</span></h2>
+<p>If all of a polygon's z coordinates are negative, then the entire polygon must be behind the camera and impossible to see, and that polygon can be culled. This is (should be) very easy to understand.
+</p><p>Now imagine a "viewing volume" described by a left plane, a top plane, a right plane, a bottom plane, a near plane and a far plane; where everything inside that volume is visible and everything outside that volume is not visible. With screen coordinates, the "near plane" is described by "z = 0" so if all of a polygon's z coordinates are negative the polygon must be outside the viewing volume and the polygon can be culled.
+</p><p>The other planes are similar. The far plane can be described by "z = some far away constant" and if all of a polygon's z coordinates are larger than "some far away constant" then the polygon must be outside the viewing volume and the polygon can be culled.
+</p><p>The left plane can be described by "x = 0" (and if all of a polygon's z coordinates are negative then the polygon must be outside the viewing volume and the polygon can be culled). The right plane can be described by "x = horizontal_resolution". The top plane can be described by "y = 0". The bottom plane can be described by "y = vertical_resolution".
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Viewing_Volume_Clipping">Viewing Volume Clipping</span></h2>
+<p>If some of a polygon's z coordinates are negative but some aren't; then you can find the points on the polygons edges that intersect with "z = 0" and clip the polygon at those new points. The same applies to all other planes that describe the viewing volume.
+</p><p>To do this, start by finding the intersection points and then calculating the other data that a vertex needs - for a gradient polygon you need to calculate the colour for the vertex at the intersection point, and for a textured polygon you need to calculate the texture coordinate for the new vertex at the intersection point. The new vertices can be inserted into the polygon's list of vertices. Then it starts to get slightly tricky.
+</p><p>There are 2 types of polygon shapes - convex and concave. A convex polygon is a polygon where any line that passes through the polygon can only intersect with 2 points on the polygon's circumference. A concave polygon is a polygon where a line that passes through the polygon might intersect with more than 2 points on the polygon's circumference. Convex polygons complicate things throughout the renderer, and for this reason it might be a good idea to say "all polygons must be convex" (and not bother supporting conc(left, right, top, bottom)ave polygons).
+</p><p>If a polygon is convex, then you will have found (at most) 2 intersection points and created 2 new vertices at those intersection points; and all of the original polygons vertices that fail your clipping test (e.g. have a negative z if you're clipping to "z = 0") can be discarded.
+</p><p>If a polygon is concave, then you may have found 2 or more intersection points and created 2 or more vertices at those intersection points. If you found 2 intersection points then it becomes the same as convex polygons (simply discard any vertices that fail your clipping test). Otherwise you have a choice: you can leave the polygon alone and deal with "incomplete clipping" later (during rasterisation); or you can deal with it during viewing volume clipping. If you do deal with this case during viewing volume clipping then it gets complicated, partly because you can end up with multiple polygons.
+</p><p><i>Note 1: It is entirely possible to not do viewing volume clipping at all, and always leave it until later (during rasterisation). However, it's better for performance to clip a smaller number of whole polygons and avoid the need to do clipping on a much larger number of line fragments.</i>
+</p><p><i>Note 2: Depending on what you felt like doing (e.g. if you support convex polygons, etc); it may be a good idea to use a polygon flag to indicate if the polygon was fully clipped or partially clipped, so that (during rasterisation) you don't do a bunch of unnecessary clipping tests for polygons that were fully clipped.</i>
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Viewing_Volume_Warning">Viewing Volume Warning</span></h2>
+<p>Above I've described the near plane (used for viewing volume culling and viewing volume clipping) as "z = 0". In practice this is a bad idea because you end up having to deal with the possibility of division by zero. One of the places where you will have to worry about division by zero (caused by "z = 0") is in the projection matrix mentioned above (in the "Coordinate Systems and Transformations" section), where that projection matrix does something like "x = x/z; y = y/z".
+</p><p>For this reason it's much better to use "z = some small positive value" (instead of "z = 0") for the near plane (used for viewing volume culling and viewing volume clipping); and then apply the projection matrix after viewing volume culling and viewing volume clipping. However this complicates things again, because it makes volume culling and viewing volume clipping complicated for the other (left, right, top, bottom) planes.
+</p><p>The practical solution is to do viewing volume culling and viewing volume clipping for the near plane (and maybe the far plane too); then apply the projection matrix (after you know that z must be a non-zero positive number for all remaining coordinates); then do viewing volume culling and viewing volume clipping for the remaining (left, right, top, bottom, and maybe far) planes after that. 
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Rasterisation">Rasterisation</span></h2>
+<p>The idea of rasterisation is to convert each polygon into horizontal line fragments. In the most simplest way, this can be done by finding the coordinates with the highest and lowest y value, then doing a "for each y from lowest to highest" loop where you find the left and right intersections for each horizontal line fragment.
+</p><p>For convex polygons the simplest way isn't very good - it can be improved a lot by keeping track of "left edge" and "right edge" and calculating the intersection from that, switching to the next edge when you y goes beyond an edge's vertex.
+</p><p>For concave polygons it gets complicated again - for each y you can multiple intersections (where the number of intersections is always even). For example, for a shape like the letter "W", near the bottom of the shape you might get 4 pairs of intersections, resulting in 4 horizontal line fragments.
+</p><p>Because we're using 2 different types of polygons (textured polygons and gradient polygons) we will end up with 2 different types of line fragments (textured fragments and gradient fragments).
+</p><p>For textured polygons you want to know the "screen y" for the fragment, which texture it is, the left intersection's x and its texture coordinates (u1, v1), and the right intersection's x and its texture coordinates (u2, v2).
+</p><p>For gradient polygons you want to know the "screen y" for the fragment, the left intersection's x and its colour, and the right intersection's x and its colour.
+</p><p><i>Note: To avoid distortion caused by "non-linear depth" you might also want to know the left and right intersection's z for each fragment (if you take that into account later when determining what colour each pixel would be). Because correcting this distortion can be complicated I'd recommend not bothering initially (and worrying about it later, after you've got the renderer working).</i>
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Fragment_Rendering">Fragment Rendering</span></h2>
+<p>Once you have fragments, you can draw them on the screen (sort of). The basic idea is to have a loop that goes from the fragment's left x to the fragment right x; where you find the pixel at the current x (and the fragment's y), then determine the colour for that pixel from the rest of the fragment's data.
+</p><p>For textured fragments you want to use the current x to find the texture coordinate between "left intersection (u1, v1)" and "right intersection (u2, v2)", and then do texture coordinate reduction mentioned earlier for repetition ("u = u&#160;% texture_width; v = v&#160;% texture_height"), then find the colour of the textel at the resulting texture coordinate and use that for the pixel. 
+</p><p>For gradient fragments you want to use the current x, "left colour" and "right colour" to determine the pixel's colour.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Occlusion">Occlusion</span></h2>
+<p>If you simply draw fragments, then you're going to get an ugly mess - polygons that are behind other polygons may be drawn as if they were in front instead. Occlusion is all about preventing that problem. There are several different ways to do occlusion, each with their own advantages/disadvantages.
+</p><p><br />
+</p>
+<h3><span id="Painter.27s_Algorithm"></span><span class="mw-headline" id="Painter's_Algorithm">Painter's Algorithm</span></h3>
+<p>One way to do occlusion sounds simple - just draw everything in "back to front" order. In practice, determining the correct order to draw polygons can be expensive when there's many polygons, and can be very complicated (up to "impossible without splitting polygons up" - e.g. if polygon A is in front of polygon B, polygon B is in front of polygon C, and polygon C is in front of polygon A).
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Z_Buffer">Z Buffer</span></h3>
+<p>Another way to do occlusion is to use a buffer to store the "current Z for each pixel" that is initially (at the start of rendering a frame) set to "all z coordinates are far away". When you're drawing a fragment you determine the z coordinate for the pixel (for that fragment) and compare it with the z value in the buffer. If the z value in the buffer is smaller then this pixel is behind something and not drawn, and if the z value in the buffer is larger then this pixel is in front of whatever was previously drawn and you set the pixel's colour and also set the z value in the buffer.
+</p><p>There are a few problem with this. The first problem is when you the z value for a fragment's pixel is equal to the z value in the buffer (e.g. due to precision loss/rounding), you can't know if the pixel should be kept or not. This leads to a problem called "z fighting". The second problem is performance - for every pixel of every fragment, you determine if the pixel should be "kept for now" and if the pixel is kept you do work to determine the pixel's colour; but there is no guarantee the pixel won't be overwritten later and the work you did to determine the pixel's colour will be a waste of time.
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Fragment_Buffer">Fragment Buffer</span></h3>
+<p>Imagine if, for each horizontal screen line, you have a list of fragments for that y. Initially these lists will all be empty; and during rasterisation you insert fragments into the list for that y.
+</p><p>When you insert a fragment in the list for that y, you can determine if the fragment is in front of or behind any existing fragments for that y. If the new fragment is (completely or partially) behind another fragment then the new fragment can be (completely or partially) discarded, and if other fragments are (completely or partially) behind the new fragment you can (completely or partially) discard the other fragments.
+</p><p>After you've done this for all fragments; you end up with a list of fragments that are not occluded, and then you'd render those fragments (and never determine the colour of a pixel that can't be seen).
+</p><p>This can be a complicated for memory management (e.g. using "malloc()" and "free()" for every fragment would be unusable slow), and takes some cleverness to do the fragment insertion quickly (possibly starting with storing fragments "starting x order" and using binary search).
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Polygon_Occlusion">Polygon Occlusion</span></h3>
+<p>It is possible to do occlusion before rasterisation, and this can (in theory) be much better for performance because it avoids doing all unnecessary work (in rasteristation and fragment rendering) for everything that's occluded.
+</p><p>This is extremely complex. For each pair of polygons, determine which polygon is closer and which is further away, then create a "masking polygon" by mapping the closer polygon onto the plane of the further polygon, then subtract the masking polygon from the further polygon. Note that polygon subtraction can lead to concave polygons (which most people would've decided to avoid) and "donuts polygons" (where a polygon has an outer circumference and an inner circumference and needs 2 vertex lists to describe).
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Object_Meshes_Revisited">Object Meshes Revisited</span></h2>
+<p>Earlier I mentioned that each object might have one or more meshes; and you might be wondering why an object might want multiple meshes. There are a few reasons for this.
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Meshes_For_Different_Distances">Meshes For Different Distances</span></h3>
+<p>One reason for multiple meshes is that maybe you want to have one detailed mesh (with lots of polygons) for when the object is close to the camera, and then another simpler mesh (with fewer polygons) for when the object is far away from the camera. This improves performance when objects are too far away for the details to matter. You can extend this idea to many meshes at different levels of detail.
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Spherical_Mesh_Culling">Spherical Mesh Culling</span></h3>
+<p>Imagine an object that has an exterior and an interior (like a space ship, or car, or submarine, or house, or...). When the camera is outside the object there will be polygons in the interior that are impossible to see (and if there's no windows all interior polygons will be impossible to see). When the camera is inside the object there will be polygons on the exterior that are impossible to see (and if there's no windows all exterior polygons will be impossible to see).
+</p><p>Now assume you have 2 spheres centered at the object's origin, where each sphere is stored as its radius. The radius of the first sphere is determined by distance from the object's origin to the furthermost interior polygon coordinate; and if the camera is further from the object's origin than this sphere's radius then the camera must be outside the object.
+</p><p>The radius of the second sphere is determined by the distance from the object's origin to the closest exterior polygon coordinate. If the camera is closer to the object's origin than this sphere's radius then the camera must be inside the object.
+</p><p>Now imagine you have 3 meshes. The first mesh is for polygons that can only be visible when the camera is outside the object; the second mesh is for polygons that can be visible regardless of where the camera is (e.g. exterior polygons that can be seen from the interior through a window); and the third mesh is for polygons that can only be visible when the camera is inside the object.
+</p><p>This gives us 3 cases (camera definitely inside object, camera definitely outside object, and camera may be inside or outside) where you can determine which of these cases it is extremely quickly (by using "distance from camera to object's origin" and comparing it to the radius of each sphere); where for 2 of those cases you can cull entire groups of polygons very early in the renderer (before you do anything else).
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Partial_Frame_Rendering">Partial Frame Rendering</span></h2>
+<p>There are a few cases where you might be able to avoid redrawing everything for a frame from scratch.
+</p><p>Note that it may be possible to support all of these, and may be beneficial to have a preliminary "assessment" step that determines how much needs to be rendered when multiple things have changed since last frame.
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Texture_Change">Texture Change</span></h3>
+<p>If a texture changed (but camera and objects remain in the same position) you can (at a minimum) start rendering the new frame at the "rasterisation" step. For this to work you need to keep the data used for rasterisation (the "screen coords" and lists of polygons that weren't culled) until after you know if it will/won't be needed for the next frame. This can potentially be improved by determining which area/s of the screen may have been effected by the texture that was changed, and only rendering that area of the screen.
+</p><p>If you used "polygon occlusion"; then you could rasterise and redraw the polygons that used the modified texture and nothing else.
+</p><p>If you used "fragment buffer"; then you can skip redraw the fragments that used the modified texture and nothing else.
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="Object_Movement">Object Movement</span></h3>
+<p>If an object moves (but camera and textures remain the same); then you can determine the area of the screen that was effected (e.g. use the object's bounding sphere, it's previous location and its new location to determine a bounding rectangle on the screen) and then only render that area of the screen.==
+</p><p><br />
+</p>
+<h3><span id=".28Small.29_Camera_Rotation"></span><span class="mw-headline" id="(Small)_Camera_Rotation">(Small) Camera Rotation</span></h3>
+<p>For 2 of the 3 possible rotations (excluding "roll"), if the camera rotates (but objects and textures remain the same) then you can scroll the previous frame's pixels in the corresponding direction. This creates "not rendered before" area/s on the left or right of the screen and/or on the top or bottom of the screen; where you only need to render the "not rendered before" area/s.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Rendering_Distance_Cube">Rendering Distance Cube</span></h2>
+<p>You can have a set of 6 textures (north, east, south, west, up, down) that form a cube, and use these textures to represent everything that is past the rendering distance. Because these textures represent "past the rendering distance" they can either be drawn first (so that all polygons occlude them), or they can be drawn last (after rendering everything else, if there's no data for a pixel then get the pixel's colour from the rendering distance cube). The benefit of this is that it can be a relatively cheap way to give the illusion of huge open areas (without the expense of using meshes/polygons to draw things like distant mountains, etc).
+</p><p>These textures can be replaced. For example, if the camera moves a certain distance then maybe you change to a different set of 6 textures.
+</p><p>These textures can be changed. For example, maybe the "top" texture is dynamically generated clouds that move slowly.
+</p><p>These textures can be morphed. For example, maybe you have "midday textures", "dusk textures", "midnight textures" and "dawn textures"; and depending on the time of day you blend 2 textures together (e.g. if the time is 20% of the way between midday and dusk, then you take 80% of a pixel from "midday" and the other 20% from "dusk").
+</p><p>These textures can be dynamically generated. For example, maybe (for the "north" texture) you have mountain in the distance, but there's a large hot air balloon flying over that mountain, so you regenerate the "north texture" every 250 ms by taking the original and drawing a "hot air balloon sprite" into it at a different positions.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Static_Distant_Impostors">Static Distant Impostors</span></h2>
+<p>For objects in the distance (especially things like trees where it doesn't matter so much which angle you look at them from); you can draw a single static textured polygon (an "impostor") instead of drawing the object itself (many polygons) to improve performance (reduce the number of polygons you have to deal with). When the camera gets close enough, then you switch to the object and stop using the impostor.
+</p><p><br />
+</p>
+<h2><span class="mw-headline" id="Dynamic_Distant_Impostors">Dynamic Distant Impostors</span></h2>
+<p>For objects in the distance, you can render the object all by itself to dynamically generate a suitable distant impostor (and then use that dynamically generated distant impostor in the same way you would've used a static distant impostor). This takes a little care to determine when to update the distant impostor from the object.
+</p>
+<!-- 
+NewPP limit report
+Cached time: 20250211133251
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.016 seconds
+Real time usage: 0.016 seconds
+Preprocessor visited node count: 93/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 0/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:4019-0!canonical and timestamp 20250211133251 and revision id 23566.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=3D_Renderer_Basics&amp;oldid=23566">https://wiki.osdev.org/index.php?title=3D_Renderer_Basics&amp;oldid=23566</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Category</a>: <ul><li><a href="./Category:Video" title="Category:Video">Video</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=3D+Renderer+Basics" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="3D_Renderer_Basics#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="3D_Renderer_Basics" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Talk:3D_Renderer_Basics&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="3D_Renderer_Basics"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=3D_Renderer_Basics&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=3D_Renderer_Basics&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/3D_Renderer_Basics" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/3D_Renderer_Basics" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=3D_Renderer_Basics&amp;oldid=23566" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=3D_Renderer_Basics&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 8 April 2019, at 09:15.</li>
+	<li id="footer-info-0">This page has been accessed 1,817 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=3D_Renderer_Basics&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.016","walltime":"0.016","ppvisitednodes":{"value":93,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":0,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250211133251","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":132});});</script>
+</body>
+</html>
