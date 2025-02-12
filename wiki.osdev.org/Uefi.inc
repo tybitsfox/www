@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <title>Uefi.inc - OSDev Wiki</title>
-<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"e186be0280431f3a270fc728","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Uefi.inc","wgTitle":"Uefi.inc","wgCurRevisionId":25442,"wgRevisionId":25442,"wgArticleId":3317,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","Tone","UEFI","X86"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Uefi.inc","wgRelevantArticleId":3317,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"c73d82b5a504748f961105ba","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Uefi.inc","wgTitle":"Uefi.inc","wgCurRevisionId":25442,"wgRevisionId":25442,"wgArticleId":3317,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","Tone","UEFI","X86"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Uefi.inc","wgRelevantArticleId":3317,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{
 "search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
 <script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
 <link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
@@ -790,12 +790,12 @@ They were written for those who wants to roll their own UEFI boot loader in asse
 </pre></div>
 <!-- 
 NewPP limit report
-Cached time: 20250211123704
+Cached time: 20250212011005
 Cache expiry: 86400
 Reduced expiry: false
 Complications: [show‐toc]
-CPU time usage: 0.105 seconds
-Real time usage: 1.056 seconds
+CPU time usage: 0.109 seconds
+Real time usage: 1.190 seconds
 Preprocessor visited node count: 80/1000000
 Post‐expand include size: 507/2097152 bytes
 Template argument size: 4/2097152 bytes
@@ -806,12 +806,12 @@ Unstrip post‐expand size: 121870/5000000 bytes
 -->
 <!--
 Transclusion expansion time report (%,ms,calls,template)
-100.00%    1.398      1 -total
-100.00%    1.398      1 Template:TutorialTone
- 51.37%    0.718      1 Template:EditThis
+100.00%    1.725      1 -total
+100.00%    1.725      1 Template:TutorialTone
+ 48.11%    0.830      1 Template:EditThis
 -->
 
-<!-- Saved in parser cache with key wikidb:pcache:idhash:3317-0!canonical and timestamp 20250211123703 and revision id 25442.
+<!-- Saved in parser cache with key wikidb:pcache:idhash:3317-0!canonical and timestamp 20250212011004 and revision id 25442.
  -->
 </div>
 <div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Uefi.inc&amp;oldid=25442">https://wiki.osdev.org/index.php?title=Uefi.inc&amp;oldid=25442</a>"</div></div>
@@ -1017,7 +1017,7 @@ Transclusion expansion time report (%,ms,calls,template)
 <footer id="footer" class="mw-footer" role="contentinfo" >
 	<ul id="footer-info">
 	<li id="footer-info-lastmod"> This page was last edited on 15 December 2020, at 16:46.</li>
-	<li id="footer-info-0">This page has been accessed 7,264 times.</li>
+	<li id="footer-info-0">This page has been accessed 7,275 times.</li>
 </ul>
 
 	<ul id="footer-places">
@@ -1033,6 +1033,6 @@ Transclusion expansion time report (%,ms,calls,template)
 
 </footer>
 
-<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.105","walltime":"1.056","ppvisitednodes":{"value":80,"limit":1000000},"postexpandincludesize":{"value":507,"limit":2097152},"templateargumentsize":{"value":4,"limit":2097152},"expansiondepth":{"value":5,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":121870,"limit":5000000},"timingprofile":["100.00%    1.398      1 -total","100.00%    1.398      1 Template:TutorialTone"," 51.37%    0.718      1 Template:EditThis"]},"cachereport":{"timestamp":"20250211123704","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":1154});});</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.109","walltime":"1.190","ppvisitednodes":{"value":80,"limit":1000000},"postexpandincludesize":{"value":507,"limit":2097152},"templateargumentsize":{"value":4,"limit":2097152},"expansiondepth":{"value":5,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":121870,"limit":5000000},"timingprofile":["100.00%    1.725      1 -total","100.00%    1.725      1 Template:TutorialTone"," 48.11%    0.830      1 Template:EditThis"]},"cachereport":{"timestamp":"20250212011005","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":1290});});</script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <title>Makefile - OSDev Wiki</title>
-<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"e6f4b05eb4c52219b521927d","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Makefile","wgTitle":"Makefile","wgCurRevisionId":28008,"wgRevisionId":28008,"wgArticleId":1785,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using duplicate arguments in template calls","Pages using deprecated source tags","Level 1 Tutorials","Tutorials","Build Tools"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Makefile","wgRelevantArticleId":1785,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"724540978aca40f4e41bf88f","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Makefile","wgTitle":"Makefile","wgCurRevisionId":28008,"wgRevisionId":28008,"wgArticleId":1785,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using duplicate arguments in template calls","Pages using deprecated source tags","Level 1 Tutorials","Tutorials","Build Tools"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Makefile","wgRelevantArticleId":1785,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,
 "wgRestrictionEdit":[],"wgRestrictionMove":[],"wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","mmv.head","mmv.bootstrap.autostart","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
 <script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
 <link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
@@ -286,12 +286,12 @@
 <hr />
 <!-- 
 NewPP limit report
-Cached time: 20250211123153
+Cached time: 20250212010832
 Cache expiry: 86400
 Reduced expiry: false
 Complications: [show‐toc]
-CPU time usage: 0.110 seconds
-Real time usage: 2.491 seconds
+CPU time usage: 0.101 seconds
+Real time usage: 2.477 seconds
 Preprocessor visited node count: 238/1000000
 Post‐expand include size: 340/2097152 bytes
 Template argument size: 44/2097152 bytes
@@ -302,15 +302,15 @@ Unstrip post‐expand size: 10770/5000000 bytes
 -->
 <!--
 Transclusion expansion time report (%,ms,calls,template)
-100.00%    4.340      1 Template:Rating
-100.00%    4.340      1 -total
- 77.99%    3.385      2 Template:If
- 64.96%    2.819      2 Template:Show1
- 23.18%    1.006      2 Template:Eq
-  9.80%    0.425      2 Template:Eq1
+100.00%    5.759      1 Template:Rating
+100.00%    5.759      1 -total
+ 56.78%    3.270      2 Template:If
+ 47.42%    2.731      2 Template:Show1
+ 13.96%    0.804      2 Template:Eq
+  6.59%    0.380      2 Template:Eq1
 -->
 
-<!-- Saved in parser cache with key wikidb:pcache:idhash:1785-0!canonical and timestamp 20250211123150 and revision id 28008.
+<!-- Saved in parser cache with key wikidb:pcache:idhash:1785-0!canonical and timestamp 20250212010830 and revision id 28008.
  -->
 </div>
 <div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Makefile&amp;oldid=28008">https://wiki.osdev.org/index.php?title=Makefile&amp;oldid=28008</a>"</div></div>
@@ -532,7 +532,7 @@ Transclusion expansion time report (%,ms,calls,template)
 <footer id="footer" class="mw-footer" role="contentinfo" >
 	<ul id="footer-info">
 	<li id="footer-info-lastmod"> This page was last edited on 9 July 2023, at 17:54.</li>
-	<li id="footer-info-0">This page has been accessed 8,881 times.</li>
+	<li id="footer-info-0">This page has been accessed 8,896 times.</li>
 </ul>
 
 	<ul id="footer-places">
@@ -548,6 +548,6 @@ Transclusion expansion time report (%,ms,calls,template)
 
 </footer>
 
-<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.110","walltime":"2.491","ppvisitednodes":{"value":238,"limit":1000000},"postexpandincludesize":{"value":340,"limit":2097152},"templateargumentsize":{"value":44,"limit":2097152},"expansiondepth":{"value":15,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":10770,"limit":5000000},"timingprofile":["100.00%    4.340      1 Template:Rating","100.00%    4.340      1 -total"," 77.99%    3.385      2 Template:If"," 64.96%    2.819      2 Template:Show1"," 23.18%    1.006      2 Template:Eq","  9.80%    0.425      2 Template:Eq1"]},"cachereport":{"timestamp":"20250211123153","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":2603});});</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.101","walltime":"2.477","ppvisitednodes":{"value":238,"limit":1000000},"postexpandincludesize":{"value":340,"limit":2097152},"templateargumentsize":{"value":44,"limit":2097152},"expansiondepth":{"value":15,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":10770,"limit":5000000},"timingprofile":["100.00%    5.759      1 Template:Rating","100.00%    5.759      1 -total"," 56.78%    3.270      2 Template:If"," 47.42%    2.731      2 Template:Show1"," 13.96%    0.804      2 Template:Eq","  6.59%    0.380      2 Template:Eq1"]},"cachereport":{"timestamp":"20250212010832","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":2586});});</script>
 </body>
 </html>

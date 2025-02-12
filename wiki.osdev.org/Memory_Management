@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>Memory management - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"8dfd8abc9d2b2599aeaec512","wgCSPNonce":false,"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Memory_management","wgTitle":"Memory management","wgCurRevisionId":28211,"wgRevisionId":28211,"wgArticleId":1469,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Memory management","Physical Memory","Virtual Memory"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Memory_management","wgRelevantArticleId":1469,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],
+"wgRedirectedFrom":"Memory_Management","wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgInternalRedirectTargetUrl":"/Memory_management","wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["mediawiki.action.view.redirect","site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","mmv.head","mmv.bootstrap.autostart","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+<link rel="canonical" href="Memory_management"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Memory_management rootpage-Memory_management skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Memory management</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"><span class="mw-redirectedfrom">(Redirected from <a href="https://wiki.osdev.org/index.php?title=Memory_Management&amp;redirect=no" class="mw-redirect" title="Memory Management">Memory Management</a>)</span></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="Memory_Management#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="Memory_Management#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><p><b>Memory management</b> is a critical part of any operating system <a href="Kernels" class="mw-redirect" title="Kernels">kernel</a>. Providing a quick way for programs to allocate and free memory on a regular basis is a major responsibility of the kernel. There are many implementations for <a href="Page_Frame_Allocation" title="Page Frame Allocation">allocating physical memory</a> including bitmaps,  buddy allocation and using tree structures or queues/stacks.
+</p><p><i>For an overview of memory allocation models, and methods of allocating memory, see <a href="Program_Memory_Allocation_Types" title="Program Memory Allocation Types">Program Memory Allocation Types</a>. If you are looking for heap type memory management, which is the allocation of smaller chunks of memory not on large boundaries then see the <a href="Heap" title="Heap">Heap</a> page. A heap is commonly implemented (in the popular way of thinking) not only in the kernel, but also in applications - in the form of a standard library. For a discussion of automatic memory management methods, see <a href="Garbage_Collection" class="mw-redirect" title="Garbage Collection">Garbage Collection</a>.</i>
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="Memory_Management#Address_Spaces"><span class="tocnumber">1</span> <span class="toctext">Address Spaces</span></a>
+<ul>
+<li class="toclevel-2 tocsection-2"><a href="Memory_Management#Physical_Address_Space"><span class="tocnumber">1.1</span> <span class="toctext">Physical Address Space</span></a></li>
+<li class="toclevel-2 tocsection-3"><a href="Memory_Management#Virtual_Address_Space"><span class="tocnumber">1.2</span> <span class="toctext">Virtual Address Space</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-4"><a href="Memory_Management#Memory_Translation_Systems"><span class="tocnumber">2</span> <span class="toctext">Memory Translation Systems</span></a>
+<ul>
+<li class="toclevel-2 tocsection-5"><a href="Memory_Management#Segmentation"><span class="tocnumber">2.1</span> <span class="toctext">Segmentation</span></a></li>
+<li class="toclevel-2 tocsection-6"><a href="Memory_Management#Paging"><span class="tocnumber">2.2</span> <span class="toctext">Paging</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-7"><a href="Memory_Management#Virtual_Memory"><span class="tocnumber">3</span> <span class="toctext">Virtual Memory</span></a></li>
+<li class="toclevel-1 tocsection-8"><a href="Memory_Management#See_Also"><span class="tocnumber">4</span> <span class="toctext">See Also</span></a>
+<ul>
+<li class="toclevel-2 tocsection-9"><a href="Memory_Management#Articles"><span class="tocnumber">4.1</span> <span class="toctext">Articles</span></a></li>
+<li class="toclevel-2 tocsection-10"><a href="Memory_Management#Threads"><span class="tocnumber">4.2</span> <span class="toctext">Threads</span></a></li>
+<li class="toclevel-2 tocsection-11"><a href="Memory_Management#External_Links"><span class="tocnumber">4.3</span> <span class="toctext">External Links</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Address_Spaces">Address Spaces</span></h2>
+<p>Many platforms, including x86, use a memory management unit (<a href="MMU" class="mw-redirect" title="MMU">MMU</a>) to handle translation between the virtual and physical address spaces. Some architectures have the MMU built-in, while others have a separate chip. Having multiple address spaces allows each task to have its own memory space to work in. In modern systems this is a major part of memory protection. Keeping processes' memory spaces separate allows them to run without causing problems in another process's memory space.
+</p>
+<h3><span class="mw-headline" id="Physical_Address_Space">Physical Address Space</span></h3>
+<p>The physical address space is the direct memory address used to access a real location in RAM. The addresses used in this space are the bit patterns used to identify a memory location on the address bus.
+</p><p>In this memory model, every executable or library must either use PIC (position-independent code), or come with relocation tables so jump and branch targets can be adjusted by the loader.
+</p><p>The AmigaOS used this memory model, in absence of a <a href="MMU" class="mw-redirect" title="MMU">MMU</a> in early 680x0 CPUs. It is most efficient, but it does not allow for protecting processes from each other, thus it is considered obsolete in today's desktop operating systems. It is also prone to memory fragmentation; certain embedded systems still use it, however.
+</p>
+<h3><span class="mw-headline" id="Virtual_Address_Space">Virtual Address Space</span></h3>
+<p>The advent of <a href="MMU" class="mw-redirect" title="MMU">MMUs</a> (Memory Management Units) allows virtual addresses to be used. A virtual address can be mapped to any physical address. It is possible to provide each executable with its own address space, so that memory always starts at 0x0000 0000. This relieves the executable loader of some relocation work, and solves the memory fragmentation problem - you no longer need physically continuous blocks of memory. And since the kernel is in control of the virtual-to-physical mapping, processes cannot access each other's memory unless allowed to do so by the kernel.
+</p>
+<h2><span class="mw-headline" id="Memory_Translation_Systems">Memory Translation Systems</span></h2>
+<p>The x86 platform is unique in modern computer systems in that it has two methods for handling the mapping between virtual and physical addresses. The two methods, paging and segmentation, each use a very different system to manage memory mapping.
+</p>
+<h3><span class="mw-headline" id="Segmentation">Segmentation</span></h3>
+<dl><dd><i>Main article:</i> <a href="Segmentation" title="Segmentation">Segmentation</a></dd></dl>
+<p>Segmentation is not commonly available in mainstream systems except for the x86. In protected mode this method involves separating each area of memory for a process into units. This is handled by the <a href="CPU_Registers_x86#Segment_Registers" title="CPU Registers x86">segment registers</a>: <b>CS, DS, SS, ES, FS, GS</b> (CodeSegment, DataSegment, StackSegment, the rest are ExtraSegments).
+</p>
+<h3><span class="mw-headline" id="Paging">Paging</span></h3>
+<dl><dd><i>Main article:</i> <a href="Paging" title="Paging">Paging</a></dd></dl>
+<p>Having an individual virtual-to-physical mapping for each address is of course ineffective. The traditional approach to virtual memory is to split up the available physical memory into chunks (pages), and to map virtual to physical addresses <i>page-wise</i>. This task is largely handled by the <a href="MMU" class="mw-redirect" title="MMU">MMU</a>, so the performance impact is low, and generally accepted as an appropriate price to pay for memory protection.
+</p>
+<div class="thumb tnone"><div class="thumbinner" style="width:552px;"><a href="./File:Virtual_memory.png" class="image"><img alt="" src="images/a/a7/Virtual_memory.png" decoding="async" width="550" height="175" class="thumbimage" data-file-width="550" data-file-height="175" /></a>  <div class="thumbcaption">paging illustrated: two process with different views of the same physical memory</div></div></div>
+<h2><span class="mw-headline" id="Virtual_Memory">Virtual Memory</span></h2>
+<p>The next step is, instead of reporting an "out of memory" once the physical memory runs out, is to take pages that are not actually accessed currently, and write them to hard disk (swapfile or -partition) - freeing up the physical memory page. This is referred to as "paging out" memory.
+</p><p>This requires additional bookkeeping and scheduling, introduces a severe performance hit when a process accesses a page that's currently swapped out and must be swapped in again from hard drive, and requires some smart design to run efficiently at all. Do it wrong, and this one part of your OS can <i>severely</i> impact your performance.
+</p><p>On the other hand, your "virtual address space" grows to whatever your CPU and hard drive can handle. In concept, CPU caches and RAM simply become cache layers on top of your hard drive, which represents your "real" memory limitation.
+</p><p>Page swapping systems relies on the assumption that, at a given time, a process does not need all of its memory to work properly, but only a subset of it (like, if you're copying a book, you certainly don't need the whole book and a full set of blank pages: the current chapter and a bunch of blank page can be enough if someone can bring you new blank pages and archive the pages you've just written when you come short on blank pages, or bring you the next chapter when you're almost done with the current one). This is known as the <i>working set</i> abstraction. In order to run correctly, a process requires at least its working set of physical pages: if less pages are provided to the process, there's a high risk of <i>thrashing</i>, which means the process will be constantly requiring pages to be swapped in -- which forces other pages from this process's working set to be swapped out while they should have remained present.
+</p>
+<blockquote>
+<p>   <i>Note: there are alternatives to page-swapping like segments-swapping and process-swapping. In those cases, the swap is rather user-software controlled, which puts more stress on the application developer and leads to longer swapping burst as the logical things to be swapped are bigger than 4K pages.</i>
+</p><p>   <i>Other note: mainstream desktop OSes have a speculative algorithm that tries to reduce the 'page miss' frequency by loading *more* than what is required, and hoping that these extra pages will be useful. As programs tend to have *localized* access and that disks can read a track of N sectors faster than N independent sector, speculative swap-in may pay.</i>
+</p>
+</blockquote>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<h3><span class="mw-headline" id="Articles">Articles</span></h3>
+<ul><li><a href="Detecting_Memory_(x86)" title="Detecting Memory (x86)">Detecting Memory (x86)</a></li>
+<li><a href="Garbage_collection" title="Garbage collection">Garbage collection</a></li>
+<li><a href="Memory_Allocation" title="Memory Allocation">Memory Allocation</a></li>
+<li><a href="Page_Frame_Allocation" title="Page Frame Allocation">Page Frame Allocation</a></li>
+<li><a href="Writing_a_memory_manager" title="Writing a memory manager">Writing a memory manager</a> - a tutorial</li>
+<li><a href="Brendan's_Memory_Management_Guide" title="Brendan&#39;s Memory Management Guide">Brendan's Memory Management Guide</a></li></ul>
+<h3><span class="mw-headline" id="Threads">Threads</span></h3>
+<ul><li><a href="http://forum.osdev.org/viewtopic.php?t=12307" class="extiw" title="topic:12307">Paging Mechanisms</a></li>
+<li><a href="http://forum.osdev.org/viewtopic.php?t=12022" class="extiw" title="topic:12022">Paging Concepts (by Brendan)</a></li>
+<li><a href="http://forum.osdev.org/viewtopic.php?t=22661" class="extiw" title="topic:22661">Paging Explained (by Creature)</a></li></ul>
+<h3><span class="mw-headline" id="External_Links">External Links</span></h3>
+<ul><li><a rel="nofollow" class="external text" href="http://www.amd.com/us-en/Processors/DevelopWithAMD/0,,30_2252_739_7044,00.html">AMD Systems Programming Documentation</a> Chapters 3 &amp; 4 of Volume 2</li>
+<li><a rel="nofollow" class="external text" href="http://www.intel.com/products/processor/manuals/">Intel Systems Programming Documentation</a> Chapters 3 &amp; 4 of Volume 3A</li>
+<li><a rel="nofollow" class="external text" href="http://linux-mm.org/">LinuxMM</a> - A wiki documenting memory management projects and development</li>
+<li><a rel="nofollow" class="external text" href="http://www.osdever.net/tutorials/index#Memory-Management">Memory Management Articles</a> - Bona Fide OS Development Tutorials on Memory Management</li>
+<li><a href="https://wikipedia.org/wiki/Memory_management" class="extiw" title="wikipedia:Memory management"> Memory management</a> on Wikipedia.</li>
+<li><a rel="nofollow" class="external text" href="http://duartes.org/gustavo/blog/post/motherboard-chipsets-memory-map">Jun 2008: Motherboard Chipsets and the Memory Map</a> by Gustavo Duarte</li>
+<li><a rel="nofollow" class="external text" href="http://duartes.org/gustavo/blog/post/anatomy-of-a-program-in-memory">Jan 2009: Anatomy of a Program in Memory</a> by Gustavo Duarte</li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20250212010811
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.014 seconds
+Real time usage: 0.014 seconds
+Preprocessor visited node count: 65/1000000
+Post‐expand include size: 64/2097152 bytes
+Template argument size: 18/2097152 bytes
+Highest expansion depth: 3/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 0/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.660      1 -total
+ 87.43%    0.577      2 Template:Main
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:1469-0!canonical and timestamp 20250212010811 and revision id 28211.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=Memory_management&amp;oldid=28211">https://wiki.osdev.org/index.php?title=Memory_management&amp;oldid=28211</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="./Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="./Category:Memory_management" title="Category:Memory management">Memory management</a></li><li><a href="./Category:Physical_Memory" title="Category:Physical Memory">Physical Memory</a></li><li><a href="./Category:Virtual_Memory" title="Category:Virtual Memory">Virtual Memory</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=Memory+management" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="Memory_Management#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-main" class="selected mw-list-item"><a href="Memory_management" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="mw-list-item"><a href="./Talk:Memory_management" rel="discussion" title="Discussion about the content page [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="Memory_management"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Memory_management&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Memory_management&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="./Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="./OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="./OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="./OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="./Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="./Special:WhatLinksHere/Memory_management" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/Memory_management" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="./Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Memory_management&amp;oldid=28211" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Memory_management&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-lang" class="vector-menu mw-portlet mw-portlet-lang vector-menu-portal portal" aria-labelledby="p-lang-label" role="navigation"  >
+	<h3
+		id="p-lang-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">In other languages</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li class="interlanguage-link interwiki-de mw-list-item"><a href="http://www.lowlevel.eu/wiki/Speicherverwaltung" title="Speicherverwaltung – Deutsch" lang="de" hreflang="de" class="interlanguage-link-target"><span>Deutsch</span></a></li></ul>
+		
+	</div>
+</nav>
+
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 10 July 2023, at 18:52.</li>
+	<li id="footer-info-0">This page has been accessed 20,336 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="./OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="./OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="./OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=Memory_management&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="resources/assets/poweredby_mediawiki_132x47.png 1.5x, resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.014","walltime":"0.014","ppvisitednodes":{"value":65,"limit":1000000},"postexpandincludesize":{"value":64,"limit":2097152},"templateargumentsize":{"value":18,"limit":2097152},"expansiondepth":{"value":3,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":0,"limit":5000000},"timingprofile":["100.00%    0.660      1 -total"," 87.43%    0.577      2 Template:Main"]},"cachereport":{"timestamp":"20250212010811","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":108});});</script>
+</body>
+</html>

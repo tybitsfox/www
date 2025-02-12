@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>User:Mrvn/LinkedListBucketHeapImplementation - OSDev Wiki</title>
+<script>document.documentElement.className="client-js";RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"e7882c8b77ba05a3e251cae2","wgCSPNonce":false,"wgCanonicalNamespace":"User","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":2,"wgPageName":"User:Mrvn/LinkedListBucketHeapImplementation","wgTitle":"Mrvn/LinkedListBucketHeapImplementation","wgCurRevisionId":16346,"wgRevisionId":16346,"wgArticleId":3593,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags"],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"User:Mrvn/LinkedListBucketHeapImplementation","wgRelevantArticleId":3593,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":
+false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgRelevantUserName":"Mrvn","wgMFDisplayWikibaseDescriptions":{"search":false,"nearby":false,"watchlist":false,"tagline":false},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgVector2022PreviewPages":[],"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgEditSubmitButtonLabelPublish":false};RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.DarkMode.styles":"ready"};RLPAGEMODULES=["site","mediawiki.page.ready","skins.vector.legacy.js","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.DarkMode","ext.moderation.notify","ext.moderation.ve","ext.moderation.ajaxhook","ext.moderation.notify.desktop"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=ext.DarkMode.styles%7Cext.pygments%7Cext.visualEditor.desktopArticleTarget.noscript%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector"/>
+<script async="" src="https://wiki.osdev.org/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector"></script>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="https://wiki.osdev.org/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector"/>
+<meta name="generator" content="MediaWiki 1.39.7"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="viewport" content="width=1000"/>
+<link rel="icon" href="../favicon.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="../opensearch_desc.php" title="OSDev Wiki (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="../api.php?action=rsd"/>
+<link rel="alternate" type="application/atom+xml" title="OSDev Wiki Atom feed" href="https://wiki.osdev.org/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-2 ns-subject page-User_Mrvn_LinkedListBucketHeapImplementation rootpage-User_Mrvn skin-vector action-view skin-vector-legacy vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-disabled vector-feature-sticky-header-disabled vector-feature-sticky-header-edit-disabled vector-feature-table-of-contents-disabled vector-feature-visual-enhancement-next-disabled"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-namespace">User</span><span class="mw-page-title-separator">:</span><span class="mw-page-title-main">Mrvn/LinkedListBucketHeapImplementation</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From OSDev Wiki</div>
+		<div id="contentSub"></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="LinkedListBucketHeapImplementation#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="LinkedListBucketHeapImplementation#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content mw-content-ltr" lang="en" dir="ltr"><div class="mw-parser-output"><h2><span class="mw-headline" id="Linked_List_Bucket_Implementation">Linked List Bucket Implementation</span></h2>
+<p>I prefixed all the external functions with <i>mrvn</i> the IRC name of the guy who wrote 
+this implementation. You can find his email and name before at the top of the source.
+</p><p>You should be able to implement any of the standard C library calls with ones of your kernel
+or your own user space. It has very minimal dependencies. 
+</p>
+<h3><span class="mw-headline" id="Usage">Usage</span></h3>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="w">    </span><span class="n">mrvn_memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">malloc</span><span class="p">(</span><span class="n">p</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">mrvn_memory_init</span><span class="p">(</span><span class="n">mrvn_memory</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">uintptr</span><span class="p">)</span><span class="n">mrvn_malloc</span><span class="p">(</span><span class="n">p</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">mrvn_free</span><span class="p">((</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">p</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+<h3><span class="mw-headline" id="Source">Source</span></h3>
+<div class="mw-highlight mw-highlight-lang-c mw-content-ltr" dir="ltr"><pre><span></span><span class="cm">/* </span>
+<span class="cm">	Linked List Bucket Heap 2013 Goswin von Brederlow &lt;<a href="../cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5b3c34282c3235762d76391b2c3e39753f3e">[email&#160;protected]</a>&gt;  </span>
+<span class="cm">	</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdint.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;assert.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;mrvn.h&quot;</span><span class="cp"></span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">DList</span><span class="w"> </span><span class="n">DList</span><span class="p">;</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">DList</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="n">next</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="n">prev</span><span class="p">;</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="c1">// initialize a one element DList</span>
+<span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">dlist_init</span><span class="p">(</span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="n">dlist</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="c1">//printf(&quot;%s(%p)\n&quot;, __FUNCTION__, dlist);</span>
+<span class="w">    </span><span class="n">dlist</span><span class="o">-&gt;</span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dlist</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">dlist</span><span class="o">-&gt;</span><span class="n">prev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dlist</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="c1">// insert d2 after d1</span>
+<span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">dlist_insert_after</span><span class="p">(</span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="n">d1</span><span class="p">,</span><span class="w"> </span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="n">d2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="c1">//printf(&quot;%s(%p, %p)\n&quot;, __FUNCTION__, d1, d2);</span>
+<span class="w">    </span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="n">n1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d1</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="n">e2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d2</span><span class="o">-&gt;</span><span class="n">prev</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">d1</span><span class="o">-&gt;</span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d2</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">d2</span><span class="o">-&gt;</span><span class="n">prev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">e2</span><span class="o">-&gt;</span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">n1</span><span class="o">-&gt;</span><span class="n">prev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">e2</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="c1">// insert d2 before d1</span>
+<span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">dlist_insert_before</span><span class="p">(</span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="n">d1</span><span class="p">,</span><span class="w"> </span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="n">d2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="c1">//printf(&quot;%s(%p, %p)\n&quot;, __FUNCTION__, d1, d2);</span>
+<span class="w">    </span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="n">e1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d1</span><span class="o">-&gt;</span><span class="n">prev</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="n">e2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d2</span><span class="o">-&gt;</span><span class="n">prev</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">e1</span><span class="o">-&gt;</span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d2</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">d2</span><span class="o">-&gt;</span><span class="n">prev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">e1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">e2</span><span class="o">-&gt;</span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">d1</span><span class="o">-&gt;</span><span class="n">prev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">e2</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="c1">// remove d from the list</span>
+<span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">dlist_remove</span><span class="p">(</span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="n">d</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="c1">//printf(&quot;%s(%p)\n&quot;, __FUNCTION__, d);</span>
+<span class="w">    </span><span class="n">d</span><span class="o">-&gt;</span><span class="n">prev</span><span class="o">-&gt;</span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">d</span><span class="o">-&gt;</span><span class="n">next</span><span class="o">-&gt;</span><span class="n">prev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="o">-&gt;</span><span class="n">prev</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">d</span><span class="o">-&gt;</span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">d</span><span class="o">-&gt;</span><span class="n">prev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="p">;</span><span class="w">    </span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="c1">// push d2 to the front of the d1p list</span>
+<span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">dlist_push</span><span class="p">(</span><span class="n">DList</span><span class="w"> </span><span class="o">**</span><span class="n">d1p</span><span class="p">,</span><span class="w"> </span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="n">d2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="c1">//printf(&quot;%s(%p, %p)\n&quot;, __FUNCTION__, d1p, d2);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">d1p</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">dlist_insert_before</span><span class="p">(</span><span class="o">*</span><span class="n">d1p</span><span class="p">,</span><span class="w"> </span><span class="n">d2</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="o">*</span><span class="n">d1p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d2</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="c1">// pop the front of the dp list</span>
+<span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nf">dlist_pop</span><span class="p">(</span><span class="n">DList</span><span class="w"> </span><span class="o">**</span><span class="n">dp</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="c1">//printf(&quot;%s(%p)\n&quot;, __FUNCTION__, dp);</span>
+<span class="w">    </span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="n">d1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">dp</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="n">d2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d1</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">dlist_remove</span><span class="p">(</span><span class="n">d1</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">d1</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">d2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="o">*</span><span class="n">dp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="o">*</span><span class="n">dp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d2</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">d1</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="c1">// remove d2 from the list, advancing d1p if needed</span>
+<span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">dlist_remove_from</span><span class="p">(</span><span class="n">DList</span><span class="w"> </span><span class="o">**</span><span class="n">d1p</span><span class="p">,</span><span class="w"> </span><span class="n">DList</span><span class="w"> </span><span class="o">*</span><span class="n">d2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="c1">//printf(&quot;%s(%p, %p)\n&quot;, __FUNCTION__, d1p, d2);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">d1p</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">d2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">dlist_pop</span><span class="p">(</span><span class="n">d1p</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="n">dlist_remove</span><span class="p">(</span><span class="n">d2</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="cp">#define CONTAINER(C, l, v) ((C*)(((char*)v) - (intptr_t)&amp;(((C*)0)-&gt;l)))</span>
+<span class="cp">#define OFFSETOF(TYPE, MEMBER)  __builtin_offsetof (TYPE, MEMBER)</span>
+
+<span class="cp">#define DLIST_INIT(v, l) dlist_init(&amp;v-&gt;l)</span>
+
+<span class="cp">#define DLIST_REMOVE_FROM(h, d, l)					\</span>
+<span class="cp">    {									\</span>
+<span class="cp">	typeof(**h) **h_ = h, *d_ = d;					\</span>
+<span class="cp">	DList *head = &amp;(*h_)-&gt;l;					\</span>
+<span class="cp">	dlist_remove_from(&amp;head, &amp;d_-&gt;l);					\</span>
+<span class="cp">	if (head == NULL) {						\</span>
+<span class="cp">	    *h_ = NULL;							\</span>
+<span class="cp">	} else {							\</span>
+<span class="cp">	    *h_ = CONTAINER(typeof(**h), l, head);			\</span>
+<span class="cp">	}								\</span>
+<span class="cp">    }</span>
+
+<span class="cp">#define DLIST_PUSH(h, v, l)						\</span>
+<span class="cp">    {									\</span>
+<span class="cp">	typeof(*v) **h_ = h, *v_ = v;					\</span>
+<span class="cp">	DList *head = &amp;(*h_)-&gt;l;					\</span>
+<span class="cp">	if (*h_ == NULL) head = NULL;					\</span>
+<span class="cp">	dlist_push(&amp;head, &amp;v_-&gt;l);					\</span>
+<span class="cp">	*h_ = CONTAINER(typeof(*v), l, head);				\</span>
+<span class="cp">    }</span>
+
+<span class="cp">#define DLIST_POP(h, l)							\</span>
+<span class="cp">    ({									\</span>
+<span class="cp">	typeof(**h) **h_ = h;						\</span>
+<span class="cp">	DList *head = &amp;(*h_)-&gt;l;					\</span>
+<span class="cp">	DList *res = dlist_pop(&amp;head);					\</span>
+<span class="cp">	if (head == NULL) {						\</span>
+<span class="cp">	    *h_ = NULL;							\</span>
+<span class="cp">	} else {							\</span>
+<span class="cp">	    *h_ = CONTAINER(typeof(**h), l, head);			\</span>
+<span class="cp">	}								\</span>
+<span class="cp">	CONTAINER(typeof(**h), l, res);					\</span>
+<span class="cp">    })</span>
+
+<span class="cp">#define DLIST_ITERATOR_BEGIN(h, l, it)					\</span>
+<span class="cp">    {									\</span>
+<span class="cp">        typeof(*h) *h_ = h;						\</span>
+<span class="cp">	DList *last_##it = h_-&gt;l.prev, *iter_##it = &amp;h_-&gt;l, *next_##it;	\</span>
+<span class="cp">	do {								\</span>
+<span class="cp">	    if (iter_##it == last_##it) {				\</span>
+<span class="cp">		next_##it = NULL;					\</span>
+<span class="cp">	    } else {							\</span>
+<span class="cp">		next_##it = iter_##it-&gt;next;				\</span>
+<span class="cp">	    }								\</span>
+<span class="cp">	    typeof(*h)* it = CONTAINER(typeof(*h), l, iter_##it);</span>
+
+<span class="cp">#define DLIST_ITERATOR_END(it)						\</span>
+<span class="cp">	} while((iter_##it = next_##it));				\</span>
+<span class="cp">    }</span>
+
+<span class="cp">#define DLIST_ITERATOR_REMOVE_FROM(h, it, l) DLIST_REMOVE_FROM(h, iter_##it, l)</span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Chunk</span><span class="w"> </span><span class="n">Chunk</span><span class="p">;</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Chunk</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">DList</span><span class="w"> </span><span class="n">all</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">used</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">union</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="kt">char</span><span class="w"> </span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span><span class="w"></span>
+<span class="w">	</span><span class="n">DList</span><span class="w"> </span><span class="n">free</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">};</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="k">enum</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">NUM_SIZES</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">ALIGN</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">MIN_SIZE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">DList</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="n">HEADER_SIZE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OFFSETOF</span><span class="p">(</span><span class="n">Chunk</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">),</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="n">Chunk</span><span class="w"> </span><span class="o">*</span><span class="n">free_chunk</span><span class="p">[</span><span class="n">NUM_SIZES</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
+<span class="kt">size_t</span><span class="w"> </span><span class="n">mem_free</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="kt">size_t</span><span class="w"> </span><span class="n">mem_used</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="kt">size_t</span><span class="w"> </span><span class="n">mem_meta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="n">Chunk</span><span class="w"> </span><span class="o">*</span><span class="n">first</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="n">Chunk</span><span class="w"> </span><span class="o">*</span><span class="n">last</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">memory_chunk_init</span><span class="p">(</span><span class="n">Chunk</span><span class="w"> </span><span class="o">*</span><span class="n">chunk</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="c1">//printf(&quot;%s(%p)\n&quot;, __FUNCTION__, chunk);</span>
+<span class="w">    </span><span class="n">DLIST_INIT</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span><span class="w"> </span><span class="n">all</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">chunk</span><span class="o">-&gt;</span><span class="n">used</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">DLIST_INIT</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span><span class="w"> </span><span class="n">free</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="nf">memory_chunk_size</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Chunk</span><span class="w"> </span><span class="o">*</span><span class="n">chunk</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="c1">//printf(&quot;%s(%p)\n&quot;, __FUNCTION__, chunk);</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">end</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)(</span><span class="n">chunk</span><span class="o">-&gt;</span><span class="n">all</span><span class="p">.</span><span class="n">next</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">chunk</span><span class="o">-&gt;</span><span class="n">all</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">HEADER_SIZE</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">memory_chunk_slot</span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">while</span><span class="p">(</span><span class="n">size</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="o">++</span><span class="n">n</span><span class="p">;</span><span class="w"></span>
+<span class="w">	</span><span class="n">size</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">mrvn_memory_init</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">mem</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">mem_start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">)(((</span><span class="kt">intptr_t</span><span class="p">)</span><span class="n">mem</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ALIGN</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="p">(</span><span class="o">~</span><span class="p">(</span><span class="n">ALIGN</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)));</span><span class="w"></span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">mem_end</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">)(((</span><span class="kt">intptr_t</span><span class="p">)</span><span class="n">mem</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="p">(</span><span class="o">~</span><span class="p">(</span><span class="n">ALIGN</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)));</span><span class="w"></span>
+<span class="w">    </span><span class="n">first</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">Chunk</span><span class="o">*</span><span class="p">)</span><span class="n">mem_start</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">Chunk</span><span class="w"> </span><span class="o">*</span><span class="n">second</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">first</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">last</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="n">Chunk</span><span class="o">*</span><span class="p">)</span><span class="n">mem_end</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">memory_chunk_init</span><span class="p">(</span><span class="n">first</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">memory_chunk_init</span><span class="p">(</span><span class="n">second</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">memory_chunk_init</span><span class="p">(</span><span class="n">last</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">dlist_insert_after</span><span class="p">(</span><span class="o">&amp;</span><span class="n">first</span><span class="o">-&gt;</span><span class="n">all</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">second</span><span class="o">-&gt;</span><span class="n">all</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">dlist_insert_after</span><span class="p">(</span><span class="o">&amp;</span><span class="n">second</span><span class="o">-&gt;</span><span class="n">all</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">last</span><span class="o">-&gt;</span><span class="n">all</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="c1">// make first/last as used so they never get merged</span>
+<span class="w">    </span><span class="n">first</span><span class="o">-&gt;</span><span class="n">used</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">last</span><span class="o">-&gt;</span><span class="n">used</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">memory_chunk_size</span><span class="p">(</span><span class="n">second</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">memory_chunk_slot</span><span class="p">(</span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//printf(&quot;%s(%p,&#160;%#lx)&#160;: adding chunk&#160;%#lx [%d]\n&quot;, __FUNCTION__, mem, size, len, n);</span>
+<span class="w">    </span><span class="n">DLIST_PUSH</span><span class="p">(</span><span class="o">&amp;</span><span class="n">free_chunk</span><span class="p">[</span><span class="n">n</span><span class="p">],</span><span class="w"> </span><span class="n">second</span><span class="p">,</span><span class="w"> </span><span class="n">free</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">mem_free</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">HEADER_SIZE</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">mem_meta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">Chunk</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">HEADER_SIZE</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="nf">mrvn_malloc</span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//printf(&quot;%s(%#lx)\n&quot;, __FUNCTION__, size);</span>
+<span class="w">    </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ALIGN</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="p">(</span><span class="o">~</span><span class="p">(</span><span class="n">ALIGN</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span>
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">MIN_SIZE</span><span class="p">)</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MIN_SIZE</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span>
+<span class="w">	</span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">memory_chunk_slot</span><span class="p">(</span><span class="n">size</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span>
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">NUM_SIZES</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span>
+<span class="w">	</span><span class="k">while</span><span class="p">(</span><span class="o">!</span><span class="n">free_chunk</span><span class="p">[</span><span class="n">n</span><span class="p">])</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="o">++</span><span class="n">n</span><span class="p">;</span><span class="w"></span>
+<span class="w">		</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">NUM_SIZES</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span>
+<span class="w">	</span><span class="n">Chunk</span><span class="w"> </span><span class="o">*</span><span class="n">chunk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DLIST_POP</span><span class="p">(</span><span class="o">&amp;</span><span class="n">free_chunk</span><span class="p">[</span><span class="n">n</span><span class="p">],</span><span class="w"> </span><span class="n">free</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">size2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">memory_chunk_size</span><span class="p">(</span><span class="n">chunk</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span><span class="c1">//printf(&quot;@ %p [%#lx]\n&quot;, chunk, size2);</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span>
+<span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">Chunk</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">size2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">Chunk</span><span class="w"> </span><span class="o">*</span><span class="n">chunk2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">Chunk</span><span class="o">*</span><span class="p">)(((</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">chunk</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">HEADER_SIZE</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">size</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="n">memory_chunk_init</span><span class="p">(</span><span class="n">chunk2</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="n">dlist_insert_after</span><span class="p">(</span><span class="o">&amp;</span><span class="n">chunk</span><span class="o">-&gt;</span><span class="n">all</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">chunk2</span><span class="o">-&gt;</span><span class="n">all</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="n">len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">memory_chunk_size</span><span class="p">(</span><span class="n">chunk2</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">memory_chunk_slot</span><span class="p">(</span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="c1">//printf(&quot;  adding chunk @ %p&#160;%#lx [%d]\n&quot;, chunk2, len, n);</span>
+<span class="w">		</span><span class="n">DLIST_PUSH</span><span class="p">(</span><span class="o">&amp;</span><span class="n">free_chunk</span><span class="p">[</span><span class="n">n</span><span class="p">],</span><span class="w"> </span><span class="n">chunk2</span><span class="p">,</span><span class="w"> </span><span class="n">free</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="n">mem_meta</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">HEADER_SIZE</span><span class="p">;</span><span class="w"></span>
+<span class="w">		</span><span class="n">mem_free</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">HEADER_SIZE</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">	</span><span class="n">chunk</span><span class="o">-&gt;</span><span class="n">used</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//memset(chunk-&gt;data, 0xAA, size);</span>
+<span class="w">	</span><span class="c1">//printf(&quot;AAAA\n&quot;);</span>
+<span class="w">    </span><span class="n">mem_free</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">size2</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">mem_used</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">size2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">HEADER_SIZE</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//printf(&quot;  = %p [%p]\n&quot;, chunk-&gt;data, chunk);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">chunk</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">remove_free</span><span class="p">(</span><span class="n">Chunk</span><span class="w"> </span><span class="o">*</span><span class="n">chunk</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">memory_chunk_size</span><span class="p">(</span><span class="n">chunk</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">memory_chunk_slot</span><span class="p">(</span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//printf(&quot;%s(%p)&#160;: removing chunk&#160;%#lx [%d]\n&quot;, __FUNCTION__, chunk, len, n);</span>
+<span class="w">    </span><span class="n">DLIST_REMOVE_FROM</span><span class="p">(</span><span class="o">&amp;</span><span class="n">free_chunk</span><span class="p">[</span><span class="n">n</span><span class="p">],</span><span class="w"> </span><span class="n">chunk</span><span class="p">,</span><span class="w"> </span><span class="n">free</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">mem_free</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">HEADER_SIZE</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">push_free</span><span class="p">(</span><span class="n">Chunk</span><span class="w"> </span><span class="o">*</span><span class="n">chunk</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">memory_chunk_size</span><span class="p">(</span><span class="n">chunk</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">memory_chunk_slot</span><span class="p">(</span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//printf(&quot;%s(%p)&#160;: adding chunk&#160;%#lx [%d]\n&quot;, __FUNCTION__, chunk, len, n);</span>
+<span class="w">    </span><span class="n">DLIST_PUSH</span><span class="p">(</span><span class="o">&amp;</span><span class="n">free_chunk</span><span class="p">[</span><span class="n">n</span><span class="p">],</span><span class="w"> </span><span class="n">chunk</span><span class="p">,</span><span class="w"> </span><span class="n">free</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">mem_free</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">HEADER_SIZE</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">mrvn_free</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">mem</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">Chunk</span><span class="w"> </span><span class="o">*</span><span class="n">chunk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">Chunk</span><span class="o">*</span><span class="p">)((</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">mem</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">HEADER_SIZE</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">Chunk</span><span class="w"> </span><span class="o">*</span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CONTAINER</span><span class="p">(</span><span class="n">Chunk</span><span class="p">,</span><span class="w"> </span><span class="n">all</span><span class="p">,</span><span class="w"> </span><span class="n">chunk</span><span class="o">-&gt;</span><span class="n">all</span><span class="p">.</span><span class="n">next</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">Chunk</span><span class="w"> </span><span class="o">*</span><span class="n">prev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CONTAINER</span><span class="p">(</span><span class="n">Chunk</span><span class="p">,</span><span class="w"> </span><span class="n">all</span><span class="p">,</span><span class="w"> </span><span class="n">chunk</span><span class="o">-&gt;</span><span class="n">all</span><span class="p">.</span><span class="n">prev</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span>
+<span class="w">	</span><span class="c1">//printf(&quot;%s(%p): @%p&#160;%#lx [%d]\n&quot;, __FUNCTION__, mem, chunk, memory_chunk_size(chunk), memory_chunk_slot(memory_chunk_size(chunk)));</span>
+<span class="w">    </span><span class="n">mem_used</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">memory_chunk_size</span><span class="p">(</span><span class="n">chunk</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">next</span><span class="o">-&gt;</span><span class="n">used</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="c1">// merge in next</span>
+<span class="w">		</span><span class="n">remove_free</span><span class="p">(</span><span class="n">next</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="n">dlist_remove</span><span class="p">(</span><span class="o">&amp;</span><span class="n">next</span><span class="o">-&gt;</span><span class="n">all</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="c1">//memset(next, 0xDD, sizeof(Chunk));</span>
+<span class="w">		</span><span class="n">mem_meta</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">HEADER_SIZE</span><span class="p">;</span><span class="w"></span>
+<span class="w">		</span><span class="n">mem_free</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">HEADER_SIZE</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">prev</span><span class="o">-&gt;</span><span class="n">used</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="c1">// merge to prev</span>
+<span class="w">		</span><span class="n">remove_free</span><span class="p">(</span><span class="n">prev</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="n">dlist_remove</span><span class="p">(</span><span class="o">&amp;</span><span class="n">chunk</span><span class="o">-&gt;</span><span class="n">all</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="c1">//memset(chunk, 0xDD, sizeof(Chunk));</span>
+<span class="w">		</span><span class="n">push_free</span><span class="p">(</span><span class="n">prev</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="n">mem_meta</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">HEADER_SIZE</span><span class="p">;</span><span class="w"></span>
+<span class="w">		</span><span class="n">mem_free</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">HEADER_SIZE</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="c1">// make chunk as free</span>
+<span class="w">		</span><span class="n">chunk</span><span class="o">-&gt;</span><span class="n">used</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">		</span><span class="n">DLIST_INIT</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span><span class="w"> </span><span class="n">free</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="n">push_free</span><span class="p">(</span><span class="n">chunk</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="cp">#define MEM_SIZE (1024*1024*256)</span>
+<span class="kt">char</span><span class="w"> </span><span class="n">MEM</span><span class="p">[</span><span class="n">MEM_SIZE</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
+
+<span class="cp">#define MAX_BLOCK (1024*1024)</span>
+<span class="cp">#define NUM_SLOTS 1024</span>
+<span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">slot</span><span class="p">[</span><span class="n">NUM_SLOTS</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">	</span><span class="kt">int</span><span class="w">	</span><span class="n">i</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">Chunk</span><span class="w"> </span><span class="o">*</span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">last</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span>
+<span class="w">	</span><span class="n">DLIST_ITERATOR_BEGIN</span><span class="p">(</span><span class="n">first</span><span class="p">,</span><span class="w"> </span><span class="n">all</span><span class="p">,</span><span class="w"> </span><span class="n">it</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="n">assert</span><span class="p">(</span><span class="n">CONTAINER</span><span class="p">(</span><span class="n">Chunk</span><span class="p">,</span><span class="w"> </span><span class="n">all</span><span class="p">,</span><span class="w"> </span><span class="n">it</span><span class="o">-&gt;</span><span class="n">all</span><span class="p">.</span><span class="n">prev</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">t</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">it</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">DLIST_ITERATOR_END</span><span class="p">(</span><span class="n">it</span><span class="p">);</span><span class="w"></span>
+<span class="w">	</span>
+<span class="w">    </span><span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">NUM_SIZES</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">		</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">free_chunk</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">			</span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CONTAINER</span><span class="p">(</span><span class="n">Chunk</span><span class="p">,</span><span class="w"> </span><span class="n">free</span><span class="p">,</span><span class="w"> </span><span class="n">free_chunk</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">free</span><span class="p">.</span><span class="n">prev</span><span class="p">);</span><span class="w"></span>
+<span class="w">			</span><span class="n">DLIST_ITERATOR_BEGIN</span><span class="p">(</span><span class="n">free_chunk</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="w"> </span><span class="n">free</span><span class="p">,</span><span class="w"> </span><span class="n">it</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">			</span><span class="n">assert</span><span class="p">(</span><span class="n">CONTAINER</span><span class="p">(</span><span class="n">Chunk</span><span class="p">,</span><span class="w"> </span><span class="n">free</span><span class="p">,</span><span class="w"> </span><span class="n">it</span><span class="o">-&gt;</span><span class="n">free</span><span class="p">.</span><span class="n">prev</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">t</span><span class="p">);</span><span class="w"></span>
+<span class="w">			</span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">it</span><span class="p">;</span><span class="w"></span>
+<span class="w">			</span><span class="p">}</span><span class="w"> </span><span class="n">DLIST_ITERATOR_END</span><span class="p">(</span><span class="n">it</span><span class="p">);</span><span class="w"></span>
+<span class="w">		</span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<!-- 
+NewPP limit report
+Cached time: 20250212024220
+Cache expiry: 86400
+Reduced expiry: false
+Complications: []
+CPU time usage: 0.048 seconds
+Real time usage: 0.319 seconds
+Preprocessor visited node count: 16/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 61811/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:3593-0!canonical and timestamp 20250212024220 and revision id 16346.
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://wiki.osdev.org/index.php?title=User:Mrvn/LinkedListBucketHeapImplementation&amp;oldid=16346">https://wiki.osdev.org/index.php?title=User:Mrvn/LinkedListBucketHeapImplementation&amp;oldid=16346</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="../Special:Categories" title="Special:Categories">Category</a>: <ul><li><a href="https://wiki.osdev.org/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+
+<nav id="p-personal" class="vector-menu mw-portlet mw-portlet-personal vector-user-menu-legacy" aria-labelledby="p-personal-label" role="navigation"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-login" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=Special:UserLogin&amp;returnto=User%3AMrvn%2FLinkedListBucketHeapImplementation" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li><li id="pt-darkmode" class="mw-list-item"><a href="LinkedListBucketHeapImplementation#" class="ext-darkmode-link"><span>Dark mode</span></a></li></ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+
+<nav id="p-namespaces" class="vector-menu mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-namespaces-label" role="navigation"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-nstab-user" class="selected mw-list-item"><a href="LinkedListBucketHeapImplementation" title="View the user page [c]" accesskey="c"><span>User page</span></a></li><li id="ca-talk" class="new mw-list-item"><a href="https://wiki.osdev.org/index.php?title=User_talk:Mrvn/LinkedListBucketHeapImplementation&amp;action=edit&amp;redlink=1" rel="discussion" title="Discussion about the content page (page does not exist) [t]" accesskey="t"><span>Discussion</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-variants" class="vector-menu mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown" aria-labelledby="p-variants-label" role="navigation"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	/>
+	<label
+		id="p-variants-label"
+		 aria-label="Change language variant"
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+
+<nav id="p-views" class="vector-menu mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy" aria-labelledby="p-views-label" role="navigation"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-view" class="selected mw-list-item"><a href="LinkedListBucketHeapImplementation"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=User:Mrvn/LinkedListBucketHeapImplementation&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=User:Mrvn/LinkedListBucketHeapImplementation&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li></ul>
+		
+	</div>
+</nav>
+
+			
+
+<nav id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown" aria-labelledby="p-cactions-label" role="navigation"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	/>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<div>
+			<h3 >
+				<label for="searchInput">Search</label>
+			</h3>
+		<form action="https://wiki.osdev.org/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-navigation">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search OSDev Wiki" aria-label="Search OSDev Wiki" autocapitalize="sentences" title="Search OSDev Wiki [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<div id="mw-panel">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="../index.html"
+			title="Visit the main page"></a>
+	</div>
+	
+
+<nav id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation vector-menu-portal portal" aria-labelledby="p-navigation-label" role="navigation"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage" class="mw-list-item"><a href="../index.html" title="Visit the main page [z]" accesskey="z"><span>Main Page</span></a></li><li id="n-portal" class="mw-list-item"><a href="http://forum.osdev.org/" rel="nofollow" title="About the project, what you can do, where to find things"><span>Forums</span></a></li><li id="n-FAQ" class="mw-list-item"><a href="../Category:FAQ"><span>FAQ</span></a></li><li id="n-OS-Projects" class="mw-list-item"><a href="../Projects"><span>OS Projects</span></a></li><li id="n-randompage" class="mw-list-item"><a href="https://wiki.osdev.org/Special:Random" title="Load a random page [x]" accesskey="x"><span>Random page</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+
+<nav id="p-about" class="vector-menu mw-portlet mw-portlet-about vector-menu-portal portal" aria-labelledby="p-about-label" role="navigation"  >
+	<h3
+		id="p-about-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">About</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-This-site" class="mw-list-item"><a href="../OSDevWiki:About"><span>This site</span></a></li><li id="n-Joining" class="mw-list-item"><a href="../OSDevWiki:Joining"><span>Joining</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="../OSDevWiki:Editing"><span>Editing help</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="../Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r"><span>Recent changes</span></a></li></ul>
+		
+	</div>
+</nav>
+
+
+<nav id="p-tb" class="vector-menu mw-portlet mw-portlet-tb vector-menu-portal portal" aria-labelledby="p-tb-label" role="navigation"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="../Special:WhatLinksHere/User:Mrvn/LinkedListBucketHeapImplementation" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="https://wiki.osdev.org/Special:RecentChangesLinked/User:Mrvn/LinkedListBucketHeapImplementation" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-contributions" class="mw-list-item"><a href="../Special:Contributions/Mrvn" title="A list of contributions by this user"><span>User contributions</span></a></li><li id="t-log" class="mw-list-item"><a href="../Special:Log/Mrvn"><span>Logs</span></a></li><li id="t-userrights" class="mw-list-item"><a href="../Special:UserRights/Mrvn"><span>View user groups</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="../Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=User:Mrvn/LinkedListBucketHeapImplementation&amp;oldid=16346" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="https://wiki.osdev.org/index.php?title=User:Mrvn/LinkedListBucketHeapImplementation&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 6 May 2014, at 20:12.</li>
+	<li id="footer-info-0">This page has been accessed 581 times.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="../OSDev_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="../OSDev_Wiki:About">About OSDev Wiki</a></li>
+	<li id="footer-places-disclaimer"><a href="../OSDev_Wiki:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-mobileview"><a href="https://wiki.osdev.org/index.php?title=User:Mrvn/LinkedListBucketHeapImplementation&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="../resources/assets/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="../resources/assets/poweredby_mediawiki_132x47.png 1.5x, ../resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+<script data-cfasync="false" src="../cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.048","walltime":"0.319","ppvisitednodes":{"value":16,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":61811,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20250212024220","ttl":86400,"transientcontent":false}}});mw.config.set({"wgBackendResponseTime":434});});</script>
+</body>
+</html>
