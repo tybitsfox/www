@@ -58,8 +58,8 @@ echo "<td style=\"background-color:#00ff00\" width=6%>[0x200000,0x2000ff]<br> _S
 <td style=\"background-color:red\" width=16%>[0x21f000,0x25Afff]<br>vm页目录表<br>依据任务数量<br>size=60*4K</td>
 <td style=\"background-color:orange\" width=15%>[0x25b000,0x287fff]<br>vmst结构表<br>依据任务数量<br>size=60*12*256=180K</td>
 
-<td style=\"background-color:#e5eecc\" width=18%>[0x288000,0x2c2800]<br>文件系统结构,total:234k<br>size:234K</td>
-<td style=\"background-color:gray\" width=7%>(0x2c2800,0x2cffff]<br>GAP of fsinode<br>size:54K</td><td style=\"background-color:#e08080\" width=20%>[0x2d0000,0x2fffff]<br>待分配任务内核<br>size:192K</td></tr></table><br>";
+<td style=\"background-color:#e5eecc\" width=18%>[0x288000,0x2c1800]<br>文件系统结构,total:230k<br>size:230K</td>
+<td style=\"background-color:gray\" width=7%>(0x2c1800,0x2cffff]<br>GAP of fsinode<br>size:58K</td><td style=\"background-color:#e08080\" width=20%>[0x2d0000,0x2fffff]<br>待分配任务内核<br>size:192K</td></tr></table><br>";
 echo "<center><font size=5 color=blue>[3M,4M)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
 echo "<td style=\"background-color:#e08080\" width=100%>[0x300000,0x3fffff]<br>待分配任务内核堆栈<br>size:1M</td></tr><tr>";
 echo "</tr></table><br>";
