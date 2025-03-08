@@ -21,6 +21,29 @@ echo "<pre>
 　　BTC AX, 6 ;指令执行后，CF=0，(AX)=1274h
 　　BTR AX, 10 ;指令执行后，CF=0，(AX)=1234h
 　　BTS AX, 14 ;指令执行后，CF=0，(AX)=5234h 
+	
+	BSF: bit scan forward
+    BSR: bit scan reverse	
+信息介绍
+BSR-逆向位扫描指令，BSF - 正向位扫描 (386以上CPU可用)
+
+使用方法
+格式: BSF dest, src
+影响标志位: ZF
+功能：从源操作数的的最低位向高位搜索，将遇到的第一个“1”所在的位序号存入目标寄存器中，
+若所有位都是0，则ZF=1，否则ZF=0。
+
+格式: BSR dest, src
+影响标志位: ZF
+功能：从源操作数的的最高位向低位搜索，将遇到的第一个“1”所在的位序号存入目标寄存器中，
+若所有位都是0，则ZF=1，否则ZF=0。
+
+举例
+AX=0098H=0000000010011000B
+BSF BX,AX;
+ZF=0,BX=3h
+BSR DX,AX;
+ZF=0,DX=7H
 </pre>";
 
 
