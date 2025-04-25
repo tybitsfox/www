@@ -195,6 +195,6 @@ echo "<center><table border=1 width=80%><tr>
 
 ?>
 <?php
-include_once("/var/www/counter.php");
-upcounter(__FILE__)
+//include_once("/var/www/counter.php");
+//upcounter(__FILE__)
 ?>
