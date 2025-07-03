@@ -2,7 +2,7 @@
 <?php
 echo "<a name=bof000></a><center><font size=5 color=red>GBA龙战士II攻略</font></center>";
 echo "<br><center><a href=#bof2001>序章:咪娜的委托</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=#bof2002>第二章：命运的出会</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=#bof2003>第三章:共同的家园</a></center><br>";
-echo "<center><a href=#bof2004>第四章:青蛙王子</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=#bof005>第五章：虚幻</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=#bof2006>第六章:悲之翼</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=#bof2007>第七章:伪之正义</a></center><br>";
+echo "<center><a href=#bof2004>第四章:青蛙王子</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=#bof2005>第五章：虚幻</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=#bof2006>第六章:悲之翼</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=#bof2007>第七章:伪之正义</a></center><br>";
 echo "<center><a href=#bof2008>终章:无限的宿命</a></center><br><hr size=2 width=95%><br>";
 echo "<font size=3 color=red><a name=bof2001></a><center>序章:咪娜的委托 </center></font>";
 echo "<pre><font color=red>★</font>10年后的莫多町。博修询问长老是否有好的差事让他和龙去完成,长老说有一个寻找宠物的任务。博修正在为这件小儿科的事情抱怨时，委托者翼人族的少女咪娜进门来，色迷迷的博修马
