@@ -53,6 +53,6 @@ echo "<center><font color=red size=5>11种隐藏龙变身</font></center><pre>
 
 ?>
 <?php
-include_once("/var/www/counter.php");
-upcounter(__FILE__)
+//include_once("/var/www/counter.php");
+//upcounter(__FILE__)
 ?>

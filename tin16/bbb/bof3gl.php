@@ -191,6 +191,6 @@ echo "	繁荣的古代机械文明已成遥远的过去，而曾经是生物的�
 echo "</td></tr></table></font></pre></center>";
 ?>
 <?php
-include_once("/var/www/counter.php");
-upcounter(__FILE__)
+//include_once("/var/www/counter.php");
+//upcounter(__FILE__)
 ?>
