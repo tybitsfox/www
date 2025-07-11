@@ -970,6 +970,113 @@ echo "<pre>
 
 
 
-</pre>	
-";
+</pre>";
+echo "<a name=toys_define></a><center><font color=red size=5>#define和#、##、@#解析：</font></center>";
+echo "<pre>
+		本文详细解释了C语言预处理中的#define指令，包括标识符定义、函数定义、续行操作，以及其在方便维护、简化写法和条件编译等方面的作用。同时介绍了字符串常量化、符号连接
+	和单字符化操作符的用法和注意事项。
+	1.什么是预处理：
+
+	C语言源文件要经过预处理、编译、链接才能生成可执行程序。
+	预处理就是再编译前，对源文件进行简单的加工处理。
+	预处理主要是以 # 开头的命令，例如 #include<stdio.h> #define 等。
+	预处理命令要放在所有函数之外，而且一般都放在源文件的前面。
+
+	2.#define是什么：
+
+	#define 属于预处理器指令，可以将一些常量或代码模块定义为宏，在预处理是进行文本替换，这个行为被称为宏替换或宏展开。
+
+	一.关于#define:
+	1）.#define 的标识符定义：
+	定义标识符是 #define 最常见的用法，也可以说是没有参数的宏定义。
+	流程为：
+	#define -----> 标识符（也叫宏名、宏） ------>替换列表。
+	示例：
+	#include&lt;stdio.h&gt;
+	#define num 20
+	int main()
+	{
+		printf(\"%d\",num);
+		return 0;
+	}
+	2）.#define 的函数定义：
+	简单来说，就是 #define 的宏定义可以像函数一样接受参数。
+	示例：
+	#include&lt;stdio.h&gt;
+	#define add(x,y)	((x)+(y))
+	#define max(x,y)	((x)>)(y)?(x):(y))
+	int main()
+	{
+		printf(\"%d\\n\",add(2,3));
+		printf(\"%d\\n\",max(2,3));
+		return 0;
+	}
+	这里我们定义了两个名为 add ，max 的宏，进行文本替换后分别求出参数之和和参数中最大值。
+	3）#define 的续行操作：
+	顾名思义就是将 #define 的替换列表放在二行及更多行上。
+
+	4）#define 的常见作用：
+	a.方便维护：
+	b.方便程序员检测：
+	当看别人的代码时，或者回头观看以前的代码，通常会忘记一个代码块代表的含义，当使用如 add  等宏定义的函数时，可以帮助我们快速理解。
+	c.简化写法：
+	当我们需要经常使用 unsigned short int 时，由于该类型较长，经常会 觉得麻烦，这时候就可以通过将其定义为 usi ，并可以通过 usi 创建变量。
+	d.进行条件编译：
+	示例：
+	#define aaa	0
+	#ifdef aaa
+		printf(\"1\");
+	#endif
+	二.关于字符串常量化运算符 # ：
+	1）.常见用法:
+	示例：
+	#include&lt;stdio.h&gt;
+	#define print(a,b)	printf(#a\"and %d\\n\",b);
+	int main(){
+		print(abc,3);
+		return 0;
+	}
+	result:	abc and 3
+	由此，我们可以知道，在宏定义中，当需要把一个宏的参数转换为字符串常量时，则使用字符串常量化运算符（#）。在宏中使用的该运算符有一个特定的参数或参数列表。
+	2）.对空格处理：
+	示例：
+	#include&lt;stdio.h&gt;
+	#define print(a,b)	printf(#a\"and %d\\n\",b);
+	int main(){
+		print( ab  c,3);
+		return 0;
+	}
+	result:	ab c and 3
+	由此，我们可以知道，编译器会将子字符或者字子符串使用空格连接，并丢弃字符或字符串两边的空格。
+	三.符号连接操作符符 ##：
+	示例：
+	#include&lt;stdio.h&gt;
+	#define num1	100
+	#define num(x)	num##x
+	int main(){
+		printf(\"%d\",num(1));
+		return 0;
+	}
+	result:	100
+	这里我们通过符号链接操作符 ## 将 num 和 1 连接成 num1 。
+	<font color=red>注：1）.宏展开时， ## 两边的空格会自动去除。
+        2）.连接后的实际参数名，必须为实际存在的参数名或是编译器已知的宏定义。
+        3）.如果##后的参数本身也是一个宏的话，##会阻止这个宏的展开。</font>
+	四.单字符化操作符 #@ ：
+	用法与##类似。
+	示例：
+	#include&lt;stdio.h&gt;
+	#define func(a)		#@a
+	int main(){
+		printf(\"%c\",func(a));
+		return 0;
+	}
+	result:	a
+	<font color=red>这里通过 #@ 操作符，将 a 转换成字符。
+	注：单字符化操作符#@ 最多有四个参数，并只返回最后一个字符，当参数超过四个时，系统将报错。
+	注意事项：
+	1.define是宏定义，程序在预处理阶段将用define定义的内容进行了 替换 。因此在程序运行时，常量表中并没有用define定义的常量，系统不为它分配内存。
+	2.define没有类型检查的功能，因为它只进行文本替换。它只是简单地将宏调用替换为宏定义中指定的文本，没有对文本进行语法分析和类型检查。这种情况下，类型错误很容易发生，特别是对于复杂的宏定义。
+	3.define定义表达式时要注意边缘效应。</font>
+</pre>";
 ?>
