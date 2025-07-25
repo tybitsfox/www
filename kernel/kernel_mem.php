@@ -44,30 +44,10 @@ echo "<table border=0 width=90%><tr align=center><td style=\"background-color:#0
 echo "<center><font size=5 color=blue>[3M,4M)之间的内存分配</font></center><br>";
 echo "<table border=0 width=90%><tr align=center><td style=\"background-color:#e08080\" width=100%>[0x300000,0x3fffff]<br>待分配任务内核堆栈<br>size=1024k</td></tr></table><br>";
 echo "<center><font size=5 color=blue>[4M,kern_mem)之间的内存分配</font><br>kern_mem的定义：内存<32M 内存不满足本系统要求；内存<=64M kern_mem=8M； 内存<=256M kern_mem=16M； 内存<=512M kern_mem=32M； 内存<=1024M kern_mem=64M；else kern_mem=256M<br><br></center>";
-echo "<table border=0 width=90%><tr align=center><td style=\"background-color:yellow\" width=100%>[0x400000,0x4fffff]<br>供kalloc分配的内存<br>size=kern_mem-4M，64M物理内存时size=4M</td></tr></table><br>";
+echo "<table border=0 width=90%><tr align=center><td style=\"background-color:green\" width=10%>[0x400000,4397ff]<br>TOYS文件系统<br>size=230k</td><td style=\"background-color:yellow\" width=90%>[0x439800,kern_mem-1]<br>供kalloc分配的内存<br>size=kern_mem-4M+230k，64M物理内存时size=4M-230k</td></tr></table><br>";
 echo "<center><font size=5 color=blue>[kern_mem,mem_size)之间的内存分配</font></center><br>";
-echo "<table border=0 width=90%><tr align=center><td style=\"background-color:gray\" width=100%>[0x400000,0x4fffff]<br>用户内存空间，内核分配给新任务(新进程)加载执行的内存、以及任务通过valloc申请的内存<br>size=mem_size-kern_mem，64M物理内存时size=56M</td></tr></table><br>";
+echo "<table border=0 width=90%><tr align=center><td style=\"background-color:gray\" width=100%>[kern_mem,mem_size-1]<br>用户内存空间，内核分配给新任务(新进程)加载执行的内存、以及任务通过valloc申请的内存<br>size=mem_size-kern_mem，64M物理内存时size=56M</td></tr></table><br>";
 echo "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>";
-
-
-echo "<br><br><center>Updated on 2024-7-23	Version:toys</center><br>";
-echo "<center><font size=5 color=blue>[0M,1M)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
-echo "<td style=\"background-color:#00ff00\" width=5%>[0,0x3fff]<br>全局描述符表GDT<br>size:2048*8=0x4000</td>
-<td style=\"background-color:#00aaaa\" width=5%>[0x4000,0x47ff]<br>中断描述符表IDT<br>size:256*8=0x800</td>
-<td style=\"background-color:#e08080\" width=5%>[0x4800,0x4fff]<br>中断例程地址表COIDX<br>size:256*8=0x800</td>
-<td style=\"background-color:#00ff00\" width=5%>[0x5000,0x7fff]<br>内核页目录页表PDT<br>size:0x1000*3=0x3000</td>
-<td style=\"background-color:yellow\" width=80%>[0x8000,0x7ffff] DMA缓冲区 size:0x77fff=480k</td></tr><tr></table><table border=0 width=90%><tr align=center>
-<td style=\"background-color:gray\" width=10% align=center>[0x80000,0x8ffff]内核缓冲区<br>将来可用于TSS结构存储区域<br>size:0x10000=64K</td>
-<td style=\"background-color:red\" width=10%>[0x90000,0x9efff]<br>TSS结构链表<br>size:60*1024=0xf000</td>
-<td style=\"background-color:#00aaaa\" width=5%>[0x9f000,0x9ffff]<br>8个LDT<br>512*8=0x1000</td>
-<td style=\"background-color:#00ff00\" width=75%>[0xa0000,0xfffff] DISP&BIOS 384k</td>
-</tr></table>";
-echo "<center><font size=5 color=blue>[1M,2M)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
-echo "<td style=\"background-color:#00ff00\" width=5%>[0x100000,0x1007ff]<br>2k中断入口函数<br>256*8=0x800</td>
-<td style=\"background-color:#00aaaa\" width=80%>[0x100800,0x1dffff]<br>KERNEL code<br>size:894k</td>
-<td style=\"background-color:#e08080\" width=5%>[0x1e0000,0x1effff]<br>TASK0 stack<br>64k</td>
-<td style=\"background-color:#00aaaa\" width=5%>[0x1f0000,0x1fffff]<br>KERNEL stack<br>64k</td><tr></table><br>";
-echo "<center><font size=5 color=blue>[2M,3M)之间的内存分配</font></center><br><table border=0 width=90%><tr align=center>";
 
 
 echo "<br><br><center>Updated on 2024-7-23	Version:toys</center><br>";
