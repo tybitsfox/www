@@ -44,9 +44,9 @@ echo "<table border=0 width=90%><tr align=center><td style=\"background-color:#e
 echo "<center><font size=5 color=blue>[3M,4M)之间的内存分配</font></center><br>";
 echo "<table border=0 width=90%><tr align=center><td style=\"background-color:#e08080\" width=100%>[0x300000,0x3fffff]<br>待分配任务内核堆栈<br>size=1024k</td></tr></table><br>";
 echo "<center><font size=5 color=blue>[4M,kern_mem)之间的内存分配</font><br>kern_mem的定义：内存<32M 内存不满足本系统要求；内存<=64M kern_mem=8M； 内存<=256M kern_mem=16M； 内存<=512M kern_mem=32M； 内存<=1024M kern_mem=64M；else kern_mem=256M<br><br></center>";
-echo "<table border=0 width=90%><tr align=center><td style=\"background-color:yellow\" width=100%>[0x400000,0x4fffff]<br>供kalloc分配的内存<br>size=1024k</td></tr></table><br>";
-echo "<center><font size=5 color=blue>[kern_mem,memsize)之间的内存分配</font></center><br>";
-echo "<table border=0 width=90%><tr align=center><td style=\"background-color:gray\" width=100%>[0x400000,0x4fffff]<br>用户空间内存，内核分配给新任务(新进程)加载执行的内存、以及任务通过valloc申请的内存<br>size=1024k</td></tr></table><br>";
+echo "<table border=0 width=90%><tr align=center><td style=\"background-color:yellow\" width=100%>[0x400000,0x4fffff]<br>供kalloc分配的内存<br>size=kern_mem-4M，64M物理内存时size=4M</td></tr></table><br>";
+echo "<center><font size=5 color=blue>[kern_mem,mem_size)之间的内存分配</font></center><br>";
+echo "<table border=0 width=90%><tr align=center><td style=\"background-color:gray\" width=100%>[0x400000,0x4fffff]<br>用户内存空间，内核分配给新任务(新进程)加载执行的内存、以及任务通过valloc申请的内存<br>size=mem_size-kern_mem，64M物理内存时size=56M</td></tr></table><br>";
 echo "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>";
 
 
