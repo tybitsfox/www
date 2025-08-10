@@ -54,5 +54,46 @@ sudo apt install gnome-software
 
 
 
+
+
+
+
+
+
+
+
+
+
+</pre>";
+echo "<br><br><br><br><br><br><br><br><br><br><pre>
+<a name=rpm><center><font size=5 color=red>ubuntu 如何安装rpm包</font></center>
+在Ubuntu上安装RPM包（Red Hat Package Manager包）通常不是一个直接的过程，因为Ubuntu使用的是Debian包管理器（dpkg或apt）。然而，你可以通过一些方法间接地在Ubuntu上安装RPM包。以下是几种常见的方法：
+方法1：使用alien工具
+    安装alien工具：
+    首先，你需要安装alien工具，这个工具可以将RPM包转换成Debian包。打开终端并输入以下命令来安装alien：
+sudo apt-get update
+sudo apt-get install alien
+转换RPM包：
+使用alien将RPM包转换为Debian包。例如，如果你有一个名为example.rpm的文件，你可以使用以下命令：
+sudo alien -d example.rpm
+这个命令会生成一个.deb文件。
+安装Debian包：
+使用dpkg或apt安装生成的.deb文件：
+    sudo dpkg -i example_*.deb
+    sudo apt-get install -f  # 修复依赖问题
+
+方法2：使用rpm2cpio和cpio
+    安装必要的工具：
+sudo apt-get install rpm2cpio cpio
+将RPM包转换为CPIO归档：
+rpm2cpio example.rpm | cpio -idmv
+这个命令会将RPM包的内容解压到当前目录。
+手动安装：
+根据解压后的内容，你可能需要手动安装软件，这通常涉及到配置脚本和make命令。例如：
+./configure
+make
+sudo make install
+<br><br><br><br><br><br><br><br><br><br><br><br>
+
 </pre>";
 ?>

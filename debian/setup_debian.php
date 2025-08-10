@@ -1,7 +1,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <?php
 echo "<center><font size=5 color=red>debian安装笔记</font></center>";
-echo "<table width=90%><tr><td width=100% align=right><a href='./ubuntu.php' target=_blank>Ubuntu安装</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='./debian10.php' target=_blank>相关资料</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='./snap.php' target=_blank>snap移除</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='../linux_about/lab.php#lab19' target=_blank>AppImage应用</a></td></tr></table>";
+echo "<table width=90%><tr><td width=100% align=right><a href='./ubuntu.php' target=_blank>Ubuntu安装</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='./debian10.php' target=_blank>相关资料</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='./snap.php' target=_blank>snap移除</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='../linux_about/lab.php#lab19' target=_blank>AppImage应用</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='./snap.php#rpm'>Ubuntu下安装rpm包</a></td></tr></table>";
 echo "<hr width=80% size=2 color=blue>";
 include_once("debian11.php");
 echo "<hr width=80% size=2 color=blue>";
