@@ -1461,4 +1461,7 @@ l -funswitch-loops：将无变化的条件分支移出循环，取而代之的�
 3、循环的空操作
 </font>
 ";
+echo "<a name=gcco2></a><center><font color=red size=5>GCC -O2 踩坑指南：严格别名与整数环绕</font></center><pre>";
+include_once("gcc-o2.txt");
+echo "</pre>";
 ?>

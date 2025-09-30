@@ -20,4 +20,5 @@ echo "<a href=topic.php#gld>关于static,extern的定义域</a><br><br>";
 echo "<a href=topic.php#toys_task>toys近期相关问题汇总（switch task）</a><br><br>";
 echo "<a href=topic.php#toys_define>#define和#、##、@#解析：</a><br><br>";
 echo "<a href=topic.php#makeoptimize>编译的优化：</a><br><br>";
+echo "<a href=topic.php#gcco2>GCC -O2 踩坑指南：严格别名与整数环绕</a><br><br>";
 ?>
