@@ -69,7 +69,7 @@ for($i=0;$i<9;$i++)
 	echo "<br><a href='./openall.php?subid=$row[5]&submenu=$row[1]&url=$row[3]' title='$row[4]' target=_blank>$row[1]</a><br>";
 }
 mysqli_free_result($result);
-mysqli_close($conn);
+#mysqli_close($conn);
 echo "</td><td colspan=2 align=left valign=top><form name='form1' method='get' action='https://cn.bing.com/search' target=_blank><table class='aaaa'><tr><td align=left width=100px><input type=hidden name=action value=search size=0>站外搜索：</td><td align=left width=160px><input type=text name='q' size=20 /></td><td align=left><input type=submit value='搜 索' />&nbsp;&nbsp;<input type=reset value='清空' /></td></tr><tr><td colspan=3>";
 //echo "</td><td colspan=2 align=left valign=top><form name='form1' method='get' action='http://www.baidu.com/s' target=_blank><table class='aaaa'><tr><td align=left width=100px><input type=hidden name=action value=search size=0>站外搜索：</td><td align=left width=160px><input type=text name=word size=20 /></td><td align=left><input type=submit value='搜 索' />&nbsp;&nbsp;<input type=reset value='清空' /></td></tr><tr><td colspan=3>";
 /*if($_POST["action"]=="search")
@@ -86,6 +86,19 @@ echo "<br><br><a href='./huili/index.php' target=_blank>管家测试</a>&nbsp;&n
 echo "<a href='./tools/js_learn/index.php' target=_blank>jquery学习</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./www.veryhuo.com/php/index.html>PHP4手册</a>";
 echo "<br><br><a href='http://ff10.ffsky.cn/' target=_blank>最终幻想10</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='http://ff12.ffsky.cn/' target=_blank>最终幻想12</a>";
 echo "<br><br><a href='https://fanyi.baidu.com/?aldtype=85#en/zh/' target=_blank>翻译</a>";
+echo "<table width=100% border=1><tr>";
+$sqlstr="select * from lst_bookmark";
+$result=mysqli_query($conn,$sqlstr);
+$j=0;
+while($row=mysqli_fetch_row($result))
+{
+	$j++;
+	echo "<td><a href='$row[0]' target=_blank>$row[1]</a></td>";
+	if(($j % 5) == 0){echo "</tr><tr>";}
+}
+mysqli_free_result($result);
+mysqli_close($conn);
+echo "</table>";
 echo "</body>";
 }
 //echo "end of search....<br>";
