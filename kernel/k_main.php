@@ -40,7 +40,7 @@ echo "<a href=./oss.org.cn/kernel-book/ldd3/index.html target=_blank>Linux设备
 <a href=./vbe.php target=_blank>VBE3.0手册</a>
 <br><br>";
 echo "&nbsp;&nbsp;&nbsp;七、我的内核:<br><br>";
-echo "<a href=./kernel_mem.php target=_blank>内存映像</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./kernel_port.php target=_blank>硬件端口</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./asm_explain.php taget=_blank>汇编指令</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./topic.php#bochs taget=_blank>bochs使用</a><br><br>";
+echo "<a href=./kernel_mem.php target=_blank>内存映像</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./kernel_port.php target=_blank>硬件端口</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./asm_explain.php taget=_blank>汇编指令</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./topic.php#bochs taget=_blank>bochs使用</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./pci_pcie.php target=_blank>PCIE基础</a><br><br>";
 
 echo "</font></td></tr></table>";
 
