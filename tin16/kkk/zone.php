@@ -4,9 +4,9 @@ echo "<html><head>
 <link href='./main.css' rel='stylesheet' type='text/css' />";
 echo "<style type='text/css'>
 body{ text-align:left} 
-#divcenter{margin:0 auto;width:800px}</style>
+#divcenter{margin:0 auto;width:1280px}</style>
 </head><body><div id='divcenter'>";
-echo "
+echo "<font size=5>
 本作的职业系统采用了&ldquo;战斗次数=职业熟练度&rdquo;的设定，但是和弱小的怪物战斗不会提高熟练度。何种情况不会提升熟练度？下表中显示的数字即为等级，当角色等级<font color='#ff0000'>大于</font>该数值之后，就算战斗次数再多也不会再加算熟练度了。熟练度只和地域有关，当同样的怪物在不同的地方出现时，熟练度限界等级也未必相同。DS版和原版没有任何变化<br />
 游戏中期值得推荐的地方是梦世界的魔术师塔，那里怪物实力不强，但是熟练度限界等级是99，方便练职业。</p>
 <p><br />
@@ -92,7 +92,7 @@ echo "
 现实世界海梦世界（甘迪诺西侧海域）——９９<br>
 现实世界天马之塔全域——９９<br>
 狭間世界全域——９９<br>
-隐藏迷宫全域——９９<br>";
+隐藏迷宫全域——９９<br></font>";
 echo "</div></body></html>";
 ?>
 <?php
