@@ -4,9 +4,9 @@ echo "<html><head>
 <link href='./main.css' rel='stylesheet' type='text/css' />";
 echo "<style type='text/css'>
 body{ text-align:left} 
-#divcenter{margin:0 auto;width:800px}</style>
+#divcenter{margin:0 auto;width:1280px}</style>
 </head><body><div id='divcenter'>";
-echo "
+echo "<font size=4>
 主角：<img src='./images/icon01.gif' alt='' /><br />
 DQ系列永远无口无心的主角，其真实身份是现实世界レイドック城的王子，在讨伐魔王姆多的时候被一分为二，流程中与另一个自己合体后剧情修得雷系咒文ライデイン。全能型的角色。贵为主角的缘故，很容易就可以转成&ldquo;勇者&rdquo;这一究极职业；历代勇者的武器防具数值不一定是最高的，但是一定是最全面的，本作也不例外&mdash;&mdash;主角最强论！<br />
 魅力值在男同胞中算很高的，加上神武具的魅力修正，选美大赛的男性部分就放心的交给主角吧。<br />
@@ -74,7 +74,7 @@ MP上限：500<br />
 速度上限：190<br />
 守备上限：250<br />
 智力上限：260<br />
-帅气上限：80
+帅气上限：80</font>
 ";
 echo "</div></body></html>";
 ?>
