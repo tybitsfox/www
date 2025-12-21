@@ -42,7 +42,7 @@ echo "<table border=0 width=90%><tr align=center><td style=\"background-color:#e
 echo "<center><font size=5 color=blue>[2M,3M)之间的内存分配</font></center><br>";
 echo "<table border=0 width=90%><tr align=center><td style=\"background-color:#00aaaa\" width=100%>[0x200000,0x2fffff]<br><font color=red>KERNEL CODE</font><br>size=1024k</td></tr></table><br>";
 echo "<center><font size=5 color=blue>[3M,4M)之间的内存分配</font></center><br>";
-echo "<table border=0 width=90%><tr align=center><td style=\"background-color:#e08080\" width=80%>[0x300000,0x3effff]<br>待分配任务内核堆栈<br>size=96k/16k</td><td style=\"background-color:#cccccc\" width=10%>[0x3f0000,0x3f7fff]<br>内核堆栈0<br>size=32k</td><td style=\"background-color:#00aacc\" width=10%>[0x3f8000,0x3fffff]<br>内核堆栈1<br>size=32k</td></tr></table><br>";
+echo "<table border=0 width=90%><tr align=center><td style=\"background-color:#e08080\" width=80%>[0x300000,0x3effff]<br>待分配任务内核堆栈<br>size=960k/16k</td><td style=\"background-color:#cccccc\" width=10%>[0x3f0000,0x3f7fff]<br>内核堆栈0<br>size=32k</td><td style=\"background-color:#00aacc\" width=10%>[0x3f8000,0x3fffff]<br>内核堆栈1<br>size=32k</td></tr></table><br>";
 echo "<center><font size=5 color=blue>[4M,kern_mem)之间的内存分配</font><br>kern_mem的定义：内存<32M 内存不满足本系统要求；内存<=64M kern_mem=8M； 内存<=256M kern_mem=16M； 内存<=512M kern_mem=32M； 内存<=1024M kern_mem=64M；else kern_mem=256M<br><br></center>";
 echo "<table border=0 width=90%><tr align=center><td style=\"background-color:green\" width=10%>[0x400000,4397ff]<br>TOYS文件系统<br>size=230k</td><td style=\"background-color:yellow\" width=90%>[0x439800,kern_mem-1]<br>供kalloc分配的内存<br>size=kern_mem-4M+230k，64M物理内存时size=4M-230k</td></tr></table><br>";
 echo "<center><font size=5 color=blue>[kern_mem,mem_size)之间的内存分配</font></center><br>";
