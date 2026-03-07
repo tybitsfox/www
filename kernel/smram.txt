@@ -1,0 +1,49 @@
+本文只考虑最简单的系统环境，不涉及 SMM Space Locked(D_LCK)=1 时无法读写SMRAM的情况.这种方法局限性很大，只能在没有执行 Intel 修补方案的主板上运用,而两大VM模拟的都是I440BX
+首先说说什么是SMM（System Management Mode）。System Management Mode Hack中说：SMM是专门为电源管理设计的执行规则。当进入SMM后，系统的各个部件可以被关闭或者使用最低的功耗。
+SMM独立于其他的系统软件，也可以被用在其他目的...  该文章中文版点这里。
+了解SMM是什么东西就够了，这篇文章不会涉及太多SMM的东西。相反，读写SMRAM更需要的是PCI配置空间（PCI Configuration Space）方面的知识。
+先讲讲两个访问PCI配置空间的I/O端口：CF8h 和 CFCh
+通过向 CF8h 端口写一个特殊的地址，我们就可以在 CFCh 端口上读写指定寄存器的值。这里要读的寄存器是位于配置空间偏移为 72h 的8bit寄存器——SMRAM (System Management RAM Control Register)
+
+首先要介绍一下 CF8h 这个I/O端口。实际上 I/O CF8h 写的是CONFIG_ADDRESS寄存器，所以 CF8h又叫CONFIG_ADDRESS。其布局如下[1]：
+<center><img src="./srcs/192350_apm0i8wmmi3t2m5.gif" /></center>
+按上图格式，31位置1(enable)，假设I440BX的北桥82443BX位于Bus: 0, Device:0, Func:0（后面将教你如何确定芯片类型以及取得这几个值），这样配置空间的基址就是0x80000000。
+
+通过I/O指令向CF8h写入0x80000000，就可以从 CFCh（CONFIG_DATA）中读出82443BX配置空间偏移为0的一个DWORD值了。而这个DWORD的高低16位分别是VendorID和DeviceID，如图：
+<center><img src="./srcs/192350_uyjbdxms17oxcfq.gif" /></center>
+下面在我们去读配置空间偏移为72h的SMRAM前，首先注意一个特性。不知道你注意到没有，回头看看CONFIG_ADDRESS的低2位，它们被定义为0。且不谈PCI规范上的大道理，说白了这个
+地方为0是为了限制你给出的地址——必须为4的整数倍。了解到这一点再看那个Register Number就比较好理解了，原来这个寄存器编号和偏移是这么对应的。
+
+好了，那么偏移为72h (01110010) 的SMRAM，最后两位置零是70h (01110000)，即位于编号为1C (11100)的寄存器上。所以只要向 CF8h 里写入0x80000070这个地址，此时从 CFCh 端口
+读出的数据就是包含SMRAM的一个DWORD了。
+<center><img src="./srcs/192350_19qth6zgtw1cfli.gif" /></center>
+假设读出来的数据为DWORD 380A0000h (00 00 0A 38)，对照上面82443BX寄存器表可知：
+
+好了，SMRAM寄存器读出来了，下面进入正题：如何将SMRAM内容映射到0xA0000。
+从文献[2]中了解到，只要D_OPEN=1时，对物理内存0xA0000的访问会变成这样：
+<center> <img src="./srcs/192350_85dxvk0fi58quxj.jpg" /></center>
+D_OPEN位在哪？SMRAM = 0Ah又代表什么？根据文献[1]记载，SMRAM的各位意义如下（关于SMRAM更详细解释，见文章末尾补充资料不部分）：
+
+原来的0Ah就是 0000 1010。只要第四位的D_LCK不为1，好了，向SMRAM写入4Ah (0100 1010)，于是飞跃光明之巅！
+
+附带程序中整个映射SMRAM过如下：
+1. 首先遍历PCI设备，找到I440BX的82443BX Host Bridge Controller。
+    （VMware Workstation 6.0.x中82443BX 的VendorID: 8086h  DeviceID: 7190h）
+    （Virtual PC 2007 6.0.x 中82443BX 的VendorID: 8086h  DeviceID: 7192h）
+    很幸运，这两个虚拟机中，82443BX都位于Bus:0, Device:0, Func:0，所以PCI配置空间基址都是0x80000000。
+2. 以I/O伪代码为例，读SMRAM：
+    out( CF8h, 80000070h )   // 还记得0x80000070怎么来的吗？
+    in( CFCh, eax )          // 读出包含SMRAM的一个DWORD，如 380A0000h
+    shr eax, 10h             // SMRAM的8bit在第三个字节处，右移16位（2字节）
+    // 此时AL中就是SMRAM内容了（0Ah）
+3. 置D_OPEN为1，并且C_BASE_SEG设为010
+    （C_BASE_SEG在初始化时就是010了，不过为了防止意外，最好重设一下）
+    out( CF8h, 80000070h )
+    mov eax, 384A0000h       // 写回D_OPEN置1后的SMRAM（4Ah）
+    out( CFCh, eax )
+4. 此时对物理内存0xA0000-0xBFFFF读写，就是在SMRAM中了。写完试试D_OPEN=0隐藏看看，读0xA0000是不是又回到显存了？
+注意：当SMM Space Lock(D_LCK)为1时，这种方法是无法修改SMRAM的，只能另辟蹊径。
+
+另外，关于读出的SMRAM内容，一定会有人质疑0xA0000处真的是SMRAM？关于这点，可以去看看SMRAM的布局http://www.sandpile.org/ia32/smm.htm。
+
+

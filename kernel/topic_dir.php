@@ -21,4 +21,5 @@ echo "<a href=topic.php#toys_task>toys近期相关问题汇总（switch task）<
 echo "<a href=topic.php#toys_define>#define和#、##、@#解析：</a><br><br>";
 echo "<a href=topic.php#makeoptimize>编译的优化：</a><br><br>";
 echo "<a href=topic.php#gcco2>GCC -O2 踩坑指南：严格别名与整数环绕</a><br><br>";
+echo "<a href=topic.php#smram>读写SMRAM</a><br><br>";
 ?>
