@@ -9,6 +9,8 @@ echo "<a href=usb_mmio.php#res05>五、SCSI（Small Computer System Interface）
 echo "<a href=usb_mmio.php#res06>六、典型 USB Mass Storage BOT 协议流程示例(一个完整的读 4KB 的流程)</a><br><br>";
 echo "<a href=usb_mmio.php#res07>七、USB Bulk Endpoint,Bulk端点</a><br><br>";
 echo "<a href=usb_mmio.php#res08>八、Bulk IN / OUT 在 MMIO 中的位置</a><br><br>";
+echo "<a href=usb_mmio.php#res09>九、xHCI MMIO 空间的简化内存布局图</a><br><br>";
+echo "<a href=usb_mmio.php#res10>十、MMIO（Memory-Mapped I/O，内存映射输入输出）</a><br><br>";
 
 
 
@@ -363,118 +365,68 @@ UASP（USB Attached SCSI Protocol，USB 3.0+ 常用）更进一步，使用 Bulk
 USB Bulk 端口（Bulk Endpoint）是 USB 上专门用来“搬砖”的大容量可靠通道：它不保证速度和延迟，但保证数据最终完整无误地到达，非常适合文件读写、打印、扫描等“尽力而为但不能丢数据”的场景。
 几乎所有 U 盘/移动硬盘的高吞吐量数据通道都是靠 Bulk IN/OUT 端点实现的。<br>";
 echo "<font color=red size=4><a name=res08>Bulk IN / OUT 在 MMIO 中的位置</a></font>
-Bulk IN / OUT 在 MMIO 中的位置
-
 Bulk IN / OUT 在 MMIO 中的位置，指的是现代 USB 主机控制器（最常见的是 xHCI，即 USB 3.0+ 的 Extensible Host Controller Interface）中，与 Bulk 端点相关的寄存器/结构并不直接有一个固定的“Bulk IN 
 寄存器地址 = 0xXXXX 或“Bulk OUT 寄存器地址 = 0xYYYY。
-
 xHCI 采用高度间接的架构：Bulk 传输的控制和数据路径不通过 MMIO 寄存器直接读写数据，而是通过内存中的环形队列（Transfer Ring） + Doorbell 寄存器 来触发硬件。
-
 下面是实际在 MMIO 空间中与 Bulk IN/OUT 最相关的关键位置（以 xHCI 为例，地址都是相对基地址的偏移）：
-
 xHCI MMIO 整体布局（典型偏移，基于 Intel/AMD/大多数 SoC 的实现）
-
-部分						典型相对偏移范围				如何计算基地址				与 Bulk IN/OUT 的关系
-
-Capability Registers		0x0000 ~ CAPLENGTH-1			BAR0（或类似） + 0			读取能力参数，包括最大端点数、是否支持 Streams 等，但不直接控制 Bulk
-
-Operational Registers		CAPLENGTH ~ DBOFF-1				BAR0 + CAPLENGTH			全局控制（如 USBCMD、USBSTS、DCBAAP、CONFIG），配置所有端点共用
-
-Doorbell Registers			DBOFF ~ RTSOFF-1				BAR0 + DBOFF				最关键：每个端点（包括所有 Bulk IN/OUT）都有一个 doorbell 寄存器，写它来“敲门”触发传输
-
-Runtime Registers			RTSOFF ~ 扩展能力前				BAR0 + RTSOFF				中断、事件环、端口状态等，Bulk 完成事件会在这里报告
-
-Extended Capabilities		通常在更高地址					从 HCCPARAMS1 等读取指针	调试、虚拟化等，非必须
-
+<center><table border=1 width=80%><tr><td width=20%>
+部分</td><td width=20%>典型相对偏移范围</td><td width=20%>如何计算基地址</td><td width=40%>与 Bulk IN/OUT 的关系</td></tr><tr><td width=20%>
+Capability Registers</td><td width=20%>0x0000 ~ CAPLENGTH-1</td><td width=20%>BAR0（或类似） + 0</td><td width=40%>读取能力参数，包括最大端点数、是否支持 Streams 等，但不直接控制 Bulk</td></tr><tr><td width=20%>
+Operational Registers</td><td width=20%>CAPLENGTH ~ DBOFF-1</td><td width=20%>BAR0 + CAPLENGTH</td><td width=40%>全局控制（如 USBCMD、USBSTS、DCBAAP、CONFIG），配置所有端点共用</td></tr><tr><td width=20%>
+Doorbell Registers</td><td width=20%>DBOFF ~ RTSOFF-1</td><td width=20%>BAR0 + DBOFF</td><td width=40%>最关键：每个端点（包括所有 Bulk IN/OUT）都有一个 doorbell 寄存器，写它来“敲门”触发传输</td></tr><tr><td width=20%>
+Runtime Registers</td><td width=20%>RTSOFF ~ 扩展能力前</td><td width=20%>BAR0 + RTSOFF</td><td width=40%>中断、事件环、端口状态等，Bulk 完成事件会在这里报告</td></tr><tr><td width=20%>
+Extended Capabilities</td><td width=20%>通常在更高地址</td><td width=20%>从 HCCPARAMS1 等读取指针</td><td width=40%>调试、虚拟化等，非必须</td></tr></table></center>
 Bulk IN / OUT 最直接相关的 MMIO 位置：Doorbell Registers
-
 	•	Doorbell 寄存器 是 xHCI 中唯一“每个端点一个”的 MMIO 寄存器。
-
 	•	每个 USB 设备（slot）上的每个端点（endpoint context）对应一个 doorbell。
-
 	•	Bulk IN 和 Bulk OUT 各自有独立的 doorbell（因为它们是不同的端点号）。
-
 计算方式（非常重要）：
-
 	1	从 Capability 寄存器读取 DBOFF（Doorbell Offset，通常在偏移 0x14 处，4 字节值）。
-
 	•	实际 doorbell 基地址 = BAR0（PCI BAR0 的 MMIO 基址） + DBOFF
-
 	2	每个 doorbell 占 4 字节，编号从 0 开始：
-
 	•	Doorbell[0]：用于 Command Ring（命令环，全局用）
-
 	•	Doorbell[1 ~ MaxSlots]：对应 Slot 1 ~ Max 的端点 1（通常是控制端点 OUT）
-
 	•	后续端点 doorbell 按 endpoint ID × slot 排列，但实际是线性编号。
-
 	3	规范公式（简化版）：
 Doorbell address for endpoint context N (1-based) on slot S (1-based)
-
 	4	= BAR0 + DBOFF + (endpoint index × 4)
-
-
 endpoint index 通常是：
-
 	•	控制 OUT：1
-
 	•	控制 IN：2（如果有）
-
 	•	Bulk OUT：3 或 4（常见）
-
 	•	Bulk IN：4 或 5（常见）
-
 	5	实际例子（假设 DBOFF = 0x1000，某个 U 盘的 Bulk OUT 是 endpoint 3，slot 1）：
-
 	•	Bulk OUT doorbell ≈ BAR0 + 0x1000 + (3 × 4) = BAR0 + 0x100C
-
 	6	写 doorbell 的值（低 16 位通常是 stream ID，高位是 doorbell target，通常写 0 或 stream ID）来通知硬件：“这个端点有新的 TRB（Transfer Request Block）可以处理了”。
-
 Bulk 数据本身在哪里？
-
 	•	不在 MMIO 里！
 Bulk IN/OUT 的实际数据 通过 DMA 搬到/从系统内存（物理地址由 Transfer Ring 中的 TRB 描述）。
-
 	•	MMIO 只用来：
-
 	•	配置端点上下文（Endpoint Context，在 Device Context 里，内存中）
-
 	•	提交命令（写 Doorbell）
-
 	•	接收完成事件（Event Ring，在 Runtime 寄存器指向的内存中）
-
 总结：Bulk IN/OUT 在 MMIO 中的“位置一览
-
-位置类型			是否存在固定 MMIO 地址				实际位置计算方式						作用（对 Bulk 的意义）
-
-专用 Bulk 寄存器	不存在								—										xHCI 没有 per-Bulk 专用寄存器
-
-Doorbell			存在（每个端点一个）				BAR + DBOFF + (endpoint_index × 4)		触发 Bulk 传输的最关键 MMIO 写操作
-
-Operational regs	存在（全局）						BAR + CAPLENGTH							启用/复位控制器，影响所有 Bulk
-
-Runtime regs		存在								BAR + RTSOFF							处理 Bulk 完成中断/事件
+<center><table border=1 width=80%><tr><td width=25%>
+位置类型</td><td width=25%>是否存在固定 MMIO 地址</td><td width=25%>实际位置计算方式</td><td width=25%>作用（对 Bulk 的意义）</td></tr><tr><td width=25%>
+专用 Bulk 寄存器</td><td width=25%>不存在</td><td width=25%>	—</td><td width=25%>xHCI 没有 per-Bulk 专用寄存器</td></tr><tr><td width=25%>
+Doorbell</td><td width=25%>存在（每个端点一个）</td><td width=25%>BAR + DBOFF + (endpoint_index × 4)</td><td width=25%>触发 Bulk 传输的最关键 MMIO 写操作</td></tr><tr><td width=25%>
+Operational regs</td><td width=25%>存在（全局）</td><td width=25%>BAR + CAPLENGTH</td><td width=25%>启用/复位控制器，影响所有 Bulk</td></tr><tr><td width=25%>
+Runtime regs</td><td width=25%>存在</td><td width=25%>BAR + RTSOFF</td><td width=25%>处理 Bulk 完成中断/事件</td></tr></table></center>
 
 一句话结论：
-
 在 xHCI（现代 USB 控制器）中，Bulk IN 和 Bulk OUT 没有专属的 MMIO 寄存器来直接读写数据。它们通过内存中的 Transfer Ring + Doorbell 寄存器（MMIO 中唯一 per-endpoint 的地方）来驱动。
 Doorbell 是你能通过 MMIO “直接碰到的与特定 Bulk 端点最接近的东西。
-
-如果你在调试某个具体 SoC（如 Rockchip、Allwinner、NXP i.MX、AMD/Intel xHCI），可以告诉我芯片型号，我可以帮你找更精确的偏移或寄存器名。
-
-
-xHCI MMIO 空间的简化内存布局图
-
+如果你在调试某个具体 SoC（如 Rockchip、Allwinner、NXP i.MX、AMD/Intel xHCI），可以告诉我芯片型号，我可以帮你找更精确的偏移或寄存器名。<br>";
+echo "<font color=red size=4><a name=res09>xHCI MMIO 空间的简化内存布局图</a></font>
 以下是针对 xHCI MMIO 空间的简化内存布局图（文本艺术形式）和一段实用的 C 伪代码 示例，用于读取主要 Capability 和 Operational 寄存器。
-
 xHCI MMIO 简化布局图（从 BAR0 基地址开始）
-
 BAR0 基地址 (PCI BAR0 映射的物理地址)
 
 │
 ├─ 0x0000 ────────────────────────────────┐
-│   Capability Registers                   │
-│   ├─ 0x00     CAPLENGTH  (8-bit)         │ ← 告诉我们 Operational Registers 从哪里开始
+│   Capability Registers                  │
+│   ├─ 0x00     CAPLENGTH  (8-bit)        │ ← 告诉我们 Operational Registers 从哪里开始
 │   ├─ 0x02     HCIVERSION (16-bit)       │    通常 0x20 ~ 0x40 之间
 │   ├─ 0x04     HCSPARAMS1                │
 │   ├─ 0x08     HCSPARAMS2                │
@@ -482,7 +434,7 @@ BAR0 基地址 (PCI BAR0 映射的物理地址)
 │   ├─ 0x10     HCCPARAMS1                │ ← 包含 64-bit 支持 + Extended Caps Pointer
 │   ├─ 0x14     DBOFF  (Doorbell offset)  │
 │   └─ 0x18     RTSOFF (Runtime offset)   │
-│                                          │
+│                                         │
 │   (长度由 CAPLENGTH 决定，通常 ~0x20~0x40 字节)
 │
 ├─ Operational Registers 开始位置
@@ -511,14 +463,10 @@ BAR0 基地址 (PCI BAR0 映射的物理地址)
     └─ 0x40+  Interrupter 1、2... (每个中断器 0x20 字节)
 
 Extended Capabilities (链表)
-
     从 HCCPARAMS1[31:16] << 2 开始
-
     链表形式：Capability Header → Next Pointer → Data → ...
-
 这个图是高度简化的，实际大小和偏移因控制器实现而异，但结构是标准的。
 C 伪代码：读取 xHCI 主要寄存器（裸机/早期 bootloader 风格）
-
 #include <stdint.h>
 // 假设你已经通过 PCI 枚举获得了 BAR0 的虚拟/物理映射地址
 // 这里用 uintptr_t 表示映射后的地址（内核中可能是 ioremap，裸机可能是直接物理地址）
@@ -553,52 +501,42 @@ void dump_xhci_registers(void) {
     runtime_base = xhci_base + rtsoff;
     // 5. 打印一些关键信息（调试输出）
     // printf 或你的串口输出函数
-    serial_print(\"xHCI Base:      %p\n\", xhci_base);
-    serial_print(\"CAPLENGTH:      0x%02x → Op base at +0x%02x\n\", caplength, caplength);
-    serial_print(\"Max Slots:      %u\n\", max_slots);
-    serial_print(\"Max Interrupters: %u\n\", max_intr);
-    serial_print(\"Max Ports:      %u\n\", max_ports);
-    serial_print(\"Doorbell offset: 0x%x\n\", db_offset);
-    serial_print(\"Runtime offset:  0x%x\n\", rtsoff);
-    serial_print(\"Extended Caps:   +0x%x (DWORD offset)\n\", xecp << 2);
+    serial_print(\"xHCI Base:      %p\\n\", xhci_base);
+    serial_print(\"CAPLENGTH:      0x%02x → Op base at +0x%02x\\n\", caplength, caplength);
+    serial_print(\"Max Slots:      %u\\n\", max_slots);
+    serial_print(\"Max Interrupters: %u\\n\", max_intr);
+    serial_print(\"Max Ports:      %u\\n\", max_ports);
+    serial_print(\"Doorbell offset: 0x%x\\n\", db_offset);
+    serial_print(\"Runtime offset:  0x%x\\n\", rtsoff);
+    serial_print(\"Extended Caps:   +0x%x (DWORD offset)\\n\", xecp << 2);
     // 6. 示例：读取 USBCMD 和 USBSTS（Operational 区）
     uint32_t usbcmd = REG32(op_base + 0x00);
     uint32_t usbsts = REG32(op_base + 0x04);
-    serial_print(\"USBCMD:  0x%08x  (Run/Stop=%d, HCRST=%d)\n\",
-                 usbcmd, usbcmd & 1, (usbcmd >> 1) & 1);
-    serial_print(\"USBSTS:  0x%08x  (HCHalted=%d, HCE=%d)\n\",
-                 usbsts, usbsts & 1, (usbsts >> 2) & 1);
+    serial_print(\"USBCMD:  0x%08x  (Run/Stop=%d, HCRST=%d)\\n\",usbcmd, usbcmd & 1, (usbcmd >> 1) & 1);
+    serial_print(\"USBSTS:  0x%08x  (HCHalted=%d, HCE=%d)\\n\",usbsts, usbsts & 1, (usbsts >> 2) & 1);
     // 7. 示例：读取第一个 doorbell（Slot 1）
     uint32_t slot1_db = REG32(db_base + 0x04);
-    serial_print(\"Slot1 Doorbell: 0x%08x\n\", slot1_db);
+    serial_print(\"Slot1 Doorbell: 0x%08x\\n\", slot1_db);
     // 8. 如果想继续遍历 Extended Capabilities（链表）
     if (xecp != 0) {
         uintptr_t cap_ptr = xhci_base + (xecp << 2);
         uint32_t cap_header = REG32(cap_ptr);
         uint8_t cap_id   = cap_header & 0xFF;
         uint8_t next_ptr = (cap_header >> 8) & 0xFF;
-        serial_print(\"First Extended Cap ID: %u, Next: %u DWORDs\n\", cap_id, next_ptr);
+        serial_print(\"First Extended Cap ID: %u, Next: %u DWORDs\\n\", cap_id, next_ptr);
         // 可以 while(next_ptr) 继续遍历链表...
     }
 }
 
 注意事项（非常重要）
-
 	•	所有寄存器访问必须使用 volatile（防止编译器优化掉读写）
-
 	•	在多核/现代系统上，外设区应标记为 UC / Strongly Ordered / Device-nGnRnE（非缓存、非可合并）
-
 	•	在内核中使用 ioremap_nocache() 或 ioremap_wc()（取决于架构）
-
 	•	在裸机环境中，确保 MMU/MPU 已正确配置该区域为 Device 内存类型
-
-	•	64 位寄存器（如 CRCR、DCBAAP）要用 64 位读写，且地址必须 8 字节对齐
-
-如果你想看到MMIO（Memory-Mapped I/O，内存映射输入输出）更具体的部分（例如 PORTSC 寄存器位的详细展开、命令环初始化流程、Linux 风格的代码片段），或者需要调整为某个特定平台（Intel/AMD ARM xHCI），可以继续告诉我！
-
-MMIO（Memory-Mapped I/O，内存映射输入输出）
-
-MMIO（Memory-Mapped I/O，内存映射输入输出） 是系统级硬件编程、嵌入式开发、操作系统驱动开发中最核心的概念之一。几乎所有现代微控制器（ARM、RISC-V、STM32、ESP32）、SoC、甚至x86平台上的PCIe设备、GPU、网卡等，都通过MMIO来与CPU交互。
+	•	64 位寄存器（如 CRCR、DCBAAP）要用 64 位读写，且地址必须 8 字节对齐<br>";
+echo "<font color=red size=4><a name=res10>MMIO（Memory-Mapped I/O，内存映射输入输出）</a></font>
+MMIO（Memory-Mapped I/O，内存映射输入输出） 是系统级硬件编程、嵌入式开发、操作系统驱动开发中最核心的概念之一。几乎所有现代微控制器（ARM、RISC-V、STM32、ESP32）、SoC、
+甚至x86平台上的PCIe设备、GPU、网卡等，都通过MMIO来与CPU交互。
 下面我从零开始、由浅入深、结合实际代码和图解，给你最详细、最实用的介绍（2026年视角，适用于裸机、RTOS、Linux驱动）。
 1. 什么是MMIO？
 MMIO 的核心思想是：把外设的寄存器（控制寄存器、状态寄存器、数据寄存器）直接映射到CPU的物理内存地址空间里。
@@ -636,13 +574,14 @@ uint32_t status = *pGPIOA_IDR;  // 读取输入数据寄存器
 为什么必须加 volatile？
 编译器会认为“内存地址的值不会无缘无故变化”，可能把多次读写优化成只读一次或直接删掉。而外设寄存器随时可能被硬件改写（比如串口收到数据、定时器溢出、中断标志位），不加volatile会导致程序完全不工作！
 4. MMIO vs PMIO 详细对比
-项目				MMIO（内存映射）						PMIO（端口映射）
-地址空间			与内存共用同一地址空间					独立的I/O端口空间（0~65535）
-访问指令			普通内存指令（mov/ldr/str）				专用指令（in/out）
-地址宽度			32位/64位（可达GB级）					通常只有16位
-编程复杂度			极简（指针即可）						需要特殊汇编/函数
-缓存问题			必须把外设区设为non-cacheable			天然不缓存
-现代使用频率		99%的ARM、RISC-V、现代x86				老式x86、极少数老芯片
+<center><table border=1 width=80%><tr><td width=34%>
+项目</td><td width=33%>MMIO（内存映射）</td><td width=33%>PMIO（端口映射）</td></tr><tr><td width=34%>
+地址空间</td><td width=33%>与内存共用同一地址空间</td><td width=33%>	独立的I/O端口空间（0~65535）</td></tr><tr><td width=34%>
+访问指令</td><td width=33%>普通内存指令（mov/ldr/str）</td><td width=33%>	专用指令（in/out）</td></tr><tr><td width=34%>
+地址宽度</td><td width=33%>32位/64位（可达GB级）</td><td width=33%>通常只有16位</td></tr><tr><td width=34%>
+编程复杂度</td><td width=33%>极简（指针即可）</td><td width=33%>需要特殊汇编/函数</td></tr><tr><td width=34%>
+缓存问题</td><td width=33%>必须把外设区设为non-cacheable</td><td width=33%>天然不缓存</td></tr><tr><td width=34%>
+现代使用频率</td><td width=33%>99%的ARM、RISC-V、现代x86</td><td width=33%>老式x86、极少数老芯片</td></tr></table></center>
 5. MMIO的优点（为什么大家都爱用）
 	•	编程统一：读写外设和读写变量一样
 	•	支持任意大小的寄存器（8/16/32/64位）
