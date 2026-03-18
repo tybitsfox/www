@@ -8,7 +8,7 @@ echo "<center><table width=80% border=0>
 <tr><td width=50%><a href=usb_mmio.php#res04>四、MMIO 与 USB存储读取</a></td><td width=50%><a href=usb_mmio.php#res15>默认控制端点（EP0，64 字节 MPS）执行 USB 标准枚举</a></td></tr>
 <tr><td width=50%><a href=usb_mmio.php#res05>五、SCSI（Small Computer System Interface）</a></td><td width=50%><a href=usb_mmio.php#res16>TRB格式说明</a></td></tr>
 <tr><td width=50%><a href=usb_mmio.php#res06>六、典型 USB Mass Storage BOT 协议流程示例(一个完整的读 4KB 的流程)</a></td><td width=50%><a href=usb_mmio.php#res17>Pcie如何初始化一个usb-xhci 存储器</a></td></tr>
-<tr><td width=50%><a href=usb_mmio.php#res07>七、USB Bulk Endpoint,Bulk端点</a></td><td width=50%>待添加</td></tr>
+<tr><td width=50%><a href=usb_mmio.php#res07>七、USB Bulk Endpoint,Bulk端点</a></td><td width=50%><a href=usb_mmio.php#res18>PCI 设备配置空间（Configuration Space）全 256 字节结构（Type 0：通用设备）</a></td></tr>
 <tr><td width=50%><a href=usb_mmio.php#res08>八、Bulk IN / OUT 在 MMIO 中的位置</a></td><td width=50%>待添加</td></tr>
 <tr><td width=50%><a href=usb_mmio.php#res09>九、xHCI MMIO 空间的简化内存布局图</a></td><td width=50%>待添加</td></tr>
 <tr><td width=50%><a href=usb_mmio.php#res10>十、MMIO（Memory-Mapped I/O，内存映射输入输出）</a></td><td width=50%>待添加</td></tr>
@@ -1206,6 +1206,72 @@ sd 8:0:0:0: [sdb] Attached SCSI removable disk
     xHCI 复位后 USBCMD.Run 写 1 不起效（固件问题、电源域）
     端口复位超时（USB 线缆质量、供电不足）
     控制器 Capabilities 不支持 UAS → 降级到 BOT 协议&nbsp;&nbsp;&nbsp;&nbsp;<a href=./usb_mmio.php#res00>返回顶部</a>";
+echo "<br><a name=res18></a><font color=red size=4>PCI 设备配置空间（Configuration Space）全 256 字节结构（Type 0：通用设备）</font><br>";
+echo "CI 规范（Conventional PCI / PCI-X）为每个设备/功能定义了 256 字节 配置空间（地址 0x00 ~ 0xFF）。其中：
+    0x00 ~ 0x3F（前 64 字节）：标准头部（所有设备必须实现，布局固定）。
+    0x40 ~ 0xFF（后 192 字节）：设备特定寄存器 或 Capability 链表（通过 0x34 Capabilities Pointer 链接）。
+    Capability 链表是 PCI 3.0+ 引入的扩展机制，每个 Capability 以 8 位 ID + 8 位 Next Pointer 开头，后跟数据（如 Power Management、MSI、MSI-X、PCIe 等）。
+所有寄存器通过 配置读/写周期（Configuration Read/Write）访问，主机桥（Host Bridge）或 OS（如 Linux pci_read_config_*）负责翻译。以下按偏移量逐一详细说明每个字段的含义、位宽、读写属性及位级解释（基于 PCI 规范及 OSDev 标准描述）。
+1. 标准头部（0x00 ~ 0x3F）—— Type 0 布局:
+<center><table border=1 width=70%><tr><td width=10%>
+偏移量</td><td width=10%>寄存器名称</td><td width=10%>位宽</td><td width=10%>属性</td><td width=60%>含义与位级解释</td></tr><tr><td width=10%>
+0x00</td><td width=10%>Vendor ID</td><td width=10%>16</td><td width=10%>RO</td><td width=60%>厂商 ID（Vendor ID）。0xFFFF 表示设备不存在。示例：0x8086 = Intel、0x10DE = NVIDIA。</td></tr><tr><td width=10%>
+0x02</td><td width=10%>Device ID</td><td width=10%>16</td><td width=10%>RO</td><td width=60%>设备 ID（Device ID）。同一厂商下的具体型号，由厂商分配。</td></tr><tr><td width=10%>
+0x04</td><td width=10%>Command Register</td><td width=10%>16</td><td width=10%>RW</td><td width=60%>设备行为控制寄存器（关键！）。<br>Bit 0：I/O Space Enable（允许响应 I/O 访问）<br>Bit 1：Memory Space Enable（允许响应内存访问）<br>Bit 2：Bus Master Enable（允许设备发起 DMA）<br>Bit 3：Special Cycles（监控特殊周期）<br>Bit 4：Memory Write & Invalidate Enable<br>Bit 5：VGA Palette Snoop<br>Bit 6：Parity Error Response<br>Bit 7：保留（PCI 3.0 硬连 0）<br>Bit 8：Fast Back-to-Back Enable<br>Bit 9：SERR# Enable（系统错误报告）<br>Bit 10：Interrupt Disable（禁用 INTx#）<br>Bit 11~15：保留</td></tr><tr><td width=10%>
+0x06</td><td width=10%>Status Register</td><td width=10%>16</td><td width=10%>RW1C/RO</td><td width=60%>状态与能力报告寄存器（写 1 清零错误位）。<br>Bit 3：Interrupt Status（INTx# 当前状态）<br>Bit 4：Capabilities List（1=存在 0x34 Capabilities Pointer）<br>Bit 6：66 MHz Capable<br>Bit 7：Fast Back-to-Back Capable<br>Bit 8：Master Data Parity Error<br>Bit 9~10：DEVSEL Timing（00=Fast, 01=Medium, 10=Slow）<br>Bit 11：Signaled Target Abort<br>Bit 12：Received Target Abort<br>Bit 13：Received Master Abort<br>Bit 14：Signaled System Error（SERR#）<br>Bit 15：Detected Parity Error</td></tr><tr><td width=10%>
+0x08</td><td width=10%>Revision ID</td><td width=10%>8</td><td width=10%>RO</td><td width=60%>修订号（Revision ID）。厂商定义的版本。</td></tr><tr><td width=10%>
+0x09</td><td width=10%>Class Code（3 字节）</td><td width=10%>24</td><td width=10%>RO</td><td width=60%>设备类别码：<br>0x0B：Base Class（大类，如 0x02=网络、0x01=存储、0x03=显示）<br>0x0A：Subclass（子类）<br>0x09：Programming Interface（编程接口）</td></tr><tr><td width=10%>
+0x0C</td><td width=10%>Cache Line Size</td><td width=10%>8</td><td width=10%>RW</td><td width=60%>缓存行大小（单位：DWORD）。OS 写入 CPU 缓存行大小（如 64 字节 → <br>0x10），用于优化 Memory Write & Invalidate。</td></tr><tr><td width=10%>
+0x0D</td><td width=10%>Latency Timer</td><td width=10%>8</td><td width=10%>RW</td><td width=60%>延迟定时器（单位：PCI 时钟周期）。控制设备占有总线的最长时间，防止总线饥饿。</td></tr><tr><td width=10%>
+0x0E</td><td width=10%>Header Type</td><td width=10%>8</td><td width=10%>RO</td><td width=60%>头部类型。0x00 = Type 0（通用设备）；Bit 7=1 表示多功能设备（Multi-Function）。</td></tr><tr><td width=10%>
+0x0F</td><td width=10%>BIST</td><td width=10%>8</td><td width=10%>RW</td><td width=60%>Built-In Self Test（内建自检）。<br>Bit 7：BIST Capable<br>Bit 6：Start BIST<br>Bit 5~0：Completion Code（00=成功）</td></tr><tr><td width=10%>
+0x10</td><td width=10%>Base Address Register 0 (BAR0)</td><td width=10%>32</td><td width=10%>RW</td><td width=60%>基地址寄存器（最多 6 个）。详见下方 BAR 编码规则。</td></tr><tr><td width=10%>
+0x14</td><td width=10%>BAR1</td><td width=10%>32</td><td width=10%>RW</td><td width=60%>同上（可与 BAR0 组合成 64 位地址）。</td></tr><tr><td width=10%>
+0x18</td><td width=10%>BAR2</td><td width=10%>32</td><td width=10%>RW</td><td width=60%>同上。</td></tr><tr><td width=10%>
+0x1C</td><td width=10%>BAR3</td><td width=10%>32</td><td width=10%>RW</td><td width=60%>同上。</td></tr><tr><td width=10%>
+0x20</td><td width=10%>BAR4</td><td width=10%>32</td><td width=10%>RW</td><td width=60%>同上。</td></tr><tr><td width=10%>
+0x24</td><td width=10%>BAR5</td><td width=10%>32</td><td width=10%>RW</td><td width=60%>同上。</td></tr></table></center>
+
+BAR（Base Address Register）详细编码规则（所有 BAR 通用）每个 BAR 32 位：
+
+    Bit 0：0=Memory Space，1=I/O Space
+    Memory Space：
+        Bit 1~2：00=32 位地址，10=64 位地址（下一 BAR 存放高 32 位）
+        Bit 3：Prefetchable（1=可预取，可被缓存）
+        Bit 4~31：基地址（对齐要求）
+    I/O Space：Bit 1~2 保留（0），地址对齐 4 字节（Bit 1:0 忽略）
+    确定大小：软件写 0xFFFFFFFF 到 BAR，读回，屏蔽低位，取反+1 即大小（必须先禁用 Command 中的 I/O 和 Memory Enable）。
+<center><table border=1 width=70%><tr><td width=10%>
+偏移量</td><td width=10%>寄存器名称</td><td width=10%>位宽</td><td width=10%>属性</td><td width=55%>含义</td></tr><tr><td width=10%>
+0x28</td><td width=15%>CardBus CIS Pointer</td><td width=10%>32</td><td width=10%>RW</td><td width=55%>CardBus 卡信息结构指针（仅部分设备使用）。</td></tr><tr><td width=10%>
+0x2C</td><td width=15%>Subsystem Vendor ID</td><td width=10%>16</td><td width=10%>RO</td><td width=55%>子系统厂商 ID（主板/适配器厂商）。</td></tr><tr><td width=10%>
+0x2E</td><td width=15%>Subsystem ID</td><td width=10%>16</td><td width=10%>RO</td><td width=55%>子系统 ID。</td></tr><tr><td width=10%>
+0x30</td><td width=15%>Expansion ROM Base Address</td><td width=10%>32</td><td width=10%>RW</td><td width=55%>扩展 ROM 基地址。<br>Bit 0：ROM Enable（1=启用）<br>Bit 10~31：地址（对齐 2KB）</td></tr><tr><td width=10%>
+0x34</td><td width=15%>Capabilities Pointer</td><td width=10%>8</td><td width=10%>RO</td><td width=55%>Capability 链表起始偏移（必须 4 字节对齐）。如果 Status[4]=1 则有效。</td></tr><tr><td width=10%>
+0x35~0x3B</td><td width=15%>Reserved</td><td width=10%>-</td><td width=10%>-</td><td width=55%>保留（PCIe 中部分被扩展使用）。</td></tr><tr><td width=10%>
+0x3C</td><td width=15%>Interrupt Line</td><td width=10%>8</td><td width=10%>RW</td><td width=55%>中断线（x86 下对应 PIC IRQ 0~15；0xFF=无）。BIOS/OS 填写。</td></tr><tr><td width=10%>
+0x3D</td><td width=15%>Interrupt Pin</td><td width=10%>8</td><td width=10%>RO</td><td width=55%>中断引脚：0=无，1=INTA#, 2=INTB#, 3=INTC#, 4=INTD#。</td></tr><tr><td width=10%>
+0x3E</td><td width=15%>Min_Gnt</td><td width=10%>8</td><td width=10%>RO</td><td width=55%>最小授予时间（单位：1/4 μs）。设备希望的总线占有时间。</td></tr><tr><td width=10%>
+0x3F</td><td width=15%>Max_Lat</td><td width=10%>8</td><td width=10%>RO</td><td width=55%>最大延迟（单位：1/4 μs）。设备能容忍的延迟。</td></tr></table></center>
+
+2. 后 192 字节（0x40 ~ 0xFF）—— Capability 链表 & 设备特定区域
+    链表结构：从 Capabilities Pointer 开始，每个 Capability 至少 8 字节：
+        Byte 0：Capability ID（例如 0x01=Power Management, 0x05=MSI, 0x11=MSI-X, 0x10=PCIe 等）
+        Byte 1：Next Pointer（下一个 Capability 偏移，0=结束）
+        Byte 2~：Capability 特定数据
+    常见 Capability（放在 0x40+）：
+        Power Management（PM）
+        MSI / MSI-X（中断）
+        Vital Product Data (VPD)
+        PCIe Extended Capabilities（在 PCIe 4KB 扩展空间，但经典 PCI 也支持部分）
+    剩余空间：完全由厂商定义，可存放自定义寄存器（如网卡队列控制、SSD 寄存器等）。Linux 驱动通过 pci_find_capability() 遍历。
+注意事项：
+    多功能设备（Header Type Bit7=1）：每个 Function 都有独立 256 字节空间。
+    PCIe 扩展：经典 PCI 只到 256 字节；PCIe 使用 Enhanced Configuration Space（4KB），0x100~0xFFF 为 Extended Capabilities（Aer、ACS 等）。
+    访问方式：BIOS/UEFI 或 OS 在枚举时自动读取。驱动中严禁直接操作（除非用 pci_read_config_dword 等 API）。
+    调试命令：lspci -xxx（显示全部 256 字节）或 lspci -vvv（显示 Capability 解析）。
+以上就是 PCI Type 0 通用设备 256 字节配置空间的完整字段含义。每个寄存器的具体行为严格遵循 PCI 规范（PCI 3.0 及以后）。&nbsp;&nbsp;&nbsp;&nbsp;<a href=./usb_mmio.php#res00>返回顶部</a>";
+
 
 echo "</pre>";
 
