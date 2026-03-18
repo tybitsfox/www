@@ -1165,7 +1165,9 @@ echo "PCIe 如何初始化一个 USB xHCI 存储器（即 PCIe 接口的 xHCI US
 10</td><td width=20%>等待 Ready → !Ready → !Halted</td><td width=45%>USBSTS</td><td width=20%>确认控制器真正启动</td></tr><tr><td width=15%>
 11</td><td width=20%>端口上电与初始化</td><td width=45%>PORTSC[1..N]</td><td width=20%>Power → Reset → 检测连接</td></tr></table></center>
 
-完成后，xHCI 控制器进入可工作状态，开始监听端口状态变化（CCS、CSC 等）。3. USB 存储设备（Mass Storage）插入后的初始化（热插拔流程）当用户插入 U 盘或移动硬盘时：
+完成后，xHCI 控制器进入可工作状态，开始监听端口状态变化（CCS、CSC 等）。
+
+3. USB 存储设备（Mass Storage）插入后的初始化（热插拔流程）当用户插入 U 盘或移动硬盘时：
 
     硬件检测到连接 → Port Status Change  
     xHCI 产生 Port Status Change Event TRB → 写入 Event Ring  
