@@ -37,7 +37,7 @@ echo "<a href=./oss.org.cn/kernel-book/ldd3/index.html target=_blank>Linux设备
 <a href=/www.brokenthorn.com/Resources/OSDevIndex.html target=_blank>操作系统开发系列</a>&nbsp;&nbsp;&nbsp;&nbsp;
 <a href=./floppy.htm target=_blank>FDC82072a</a>&nbsp;&nbsp;&nbsp;&nbsp;
 <a href=../wiki.osdev.org/Expanded_Main_Page>HardWare develop</a>&nbsp;&nbsp;&nbsp;&nbsp;
-<a href=./vbe.php target=_blank>VBE3.0手册</a><br><br><a href=./usb_mmio.php target=_blank>USB Mass storage相关</a>&nbsp;&nbsp;&nbsp;&nbsp;
+<a href=./vbe.php target=_blank>VBE3.0手册</a><br><br><a href=./usb_mmio.php target=_blank>USB Mass storage相关</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./mmu.php target=_blank>内存管理五大技术概念：MMU、IOMMU、MMIO、mmap、ioremap</a>&nbsp;&nbsp;&nbsp;&nbsp;
 <br><br>";
 echo "&nbsp;&nbsp;&nbsp;七、我的内核:<br><br>";
 echo "<a href=./kernel_mem.php target=_blank>内存映像</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./kernel_port.php target=_blank>硬件端口</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./asm_explain.php taget=_blank>汇编指令</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./topic.php#bochs target=_blank>bochs使用</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./pci_pcie.php target=_blank>PCI基础</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./pcie.php target=_blank>PCIE基础</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./content/index.html target=_blank>Intel80386程序员参考手册</a><br><br>";

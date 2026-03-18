@@ -610,7 +610,7 @@ void __iomem *base = ioremap(0x40020000, 0x1000);
 MMIO = 把硬件寄存器伪装成内存，让你用最简单的指针操作就能控制整个芯片。
 这就是为什么嵌入式工程师、Linux驱动工程师、系统程序员必须把MMIO吃透的原因——它是你和硬件对话的“通用语言。&nbsp;&nbsp;&nbsp;&nbsp;<a href=./usb_mmio.php#res00>返回顶部</a>";
 echo "<br><a name=res11></a><font color=red size=4>xHCI 中最常用的传输请求块:Normal TRB（Type = 1）</font>";
-echo "Normal TRB（Type = 1）是 xHCI 中最常用的传输请求块，用于 Bulk、Interrupt 和 Isochronous 端点（以及 Control 传输的 Data 阶段）的普通数据搬运。它是 16 字节（128 bits）固定大小的结构，
+echo "<br>Normal TRB（Type = 1）是 xHCI 中最常用的传输请求块，用于 Bulk、Interrupt 和 Isochronous 端点（以及 Control 传输的 Data 阶段）的普通数据搬运。它是 16 字节（128 bits）固定大小的结构，
 在 Transfer Ring 上以 16 字节对齐放置。
 以下是 Normal TRB 的详细位布局（基于 xHCI 规范 1.1/1.2/1.14 版本，Section 6.4.1 Transfer TRBs → Normal TRB，Figure 4-14 或类似）。所有字段均为 little-endian（小端）。
 <center><table border=1 width=80%><tr><td width=10%>
