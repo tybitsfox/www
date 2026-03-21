@@ -12,7 +12,7 @@ echo "<center><table width=90% border=0>
 <tr><td width=33%><a href=usb_mmio.php#res08>八、Bulk IN / OUT 在 MMIO 中的位置</a></td><td width=33%><a href=usb_mmio.php#res19>十九、xHCI（eXtensible Host Controller Interface）MMIO寄存器详解</a></td><td width=34%>二十三、待添加</td></tr>
 <tr><td width=33%><a href=usb_mmio.php#res09>九、xHCI MMIO 空间的简化内存布局图</a></td><td width=33%><a href=usb_mmio.php#res20>二十、MMIO（Memory Mapped I/O）寄存器详解</a></td><td width=34%>二十三、待添加</td></tr>
 <tr><td width=33%><a href=usb_mmio.php#res10>十、MMIO（Memory-Mapped I/O，内存映射输入输出）</a></td><td width=33%><a href=usb_mmio.php#res21>二十一、MSI-X中断机制的实现</a></td><td width=34%>二十三、待添加</td></tr>
-<tr><td width=33%><a href=usb_mmio.php#res11>十一、xHCI 中最常用的传输请求块:Normal TRB（Type = 1）</a></td><td width=33%>二十二、待添加</td><td width=34%>二十三、待添加</td></tr>";
+<tr><td width=33%><a href=usb_mmio.php#res11>十一、xHCI 中最常用的传输请求块:Normal TRB（Type = 1）</a></td><td width=33%><a href=usb_mmio.php#res22>二十二、usb鼠标示例</a></td><td width=34%>二十三、待添加</td></tr>";
 echo "</table></center>";
 echo "<pre><font size=4 color=gray><a name=res01></a><font color=red size=4>USB控制器的MMIO区域</font>
 USB控制器的MMIO区域（Memory-Mapped I/O）是指USB主机控制器（Host Controller）通过PCI/PCIe BAR（Base Address Register）映射到系统物理内存地址空间的一段连续内存区域。操作系统（或裸机代码）
@@ -1493,7 +1493,7 @@ pci_free_irq_vectors(pdev);
     中断到来时：generic_handle_irq → 调用注册的handler。
 旧API（如pci_enable_msix_range）已被弃用，推荐新API。（3）驱动典型实现步骤（网卡示例）
     probe函数中：调用pci_alloc_irq_vectors。
-    为每个队列分配一个向量：for(i=0; i<nvec; i++) { irq = pci_irq_vector(...); request_irq(...); }
+    为每个队列分配一个向量：for(i=0; i&lt;nvec; i++) { irq = pci_irq_vector(...); request_irq(...); }
     remove时释放。
     Handler中处理事件并清除设备中断状态。
 4. 注意事项与调试
@@ -1503,10 +1503,9 @@ pci_free_irq_vectors(pdev);
     兼容：同时支持MSI和MSI-X时，内核优先MSI-X。
     FPGA/ASIC实现（如AMD/Xilinx）：设备端需在用户逻辑中实现usr_irq_req → 自动生成MSI-X TLP，并暴露Table/PBA到BAR。
 MSI-X的实现极大提升了PCIe设备的性能和可扩展性，是现代高性能驱动（如NVMe、10G/100G网卡）的标配。如果你需要具体设备（如Intel网卡）的驱动代码片段、寄存器位级细节，或Windows驱动实现（WDF/NDIS），
-可以提供更多上下文，我可以进一步展开！
-
-&nbsp;&nbsp;&nbsp;&nbsp;<a href=./usb_mmio.php#res00>返回顶部</a>";
-
+可以提供更多上下文，我可以进一步展开！&nbsp;&nbsp;&nbsp;&nbsp;<a href=./usb_mmio.php#res00>返回顶部</a>";
 echo "</pre>";
-
+echo "<br><a name=res22></a><font color=red size=4>usb鼠标示例</font><br>";
+include_once("usb10day.txt");
+echo "&nbsp;&nbsp;&nbsp;&nbsp;<a href=./usb_mmio.php#res00>返回顶部</a>";
 ?>

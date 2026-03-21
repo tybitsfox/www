@@ -1,0 +1,594 @@
+<pre>2. USB Host驱动
+现在能够绘制鼠标了，但是他是一只“死鼠”，想要让它动起来，需要接收实际鼠标发送的信号。现在USB是鼠标的主流接口，USB是Universal Serial Bus的缩写，是一种串行总线标准。
+    串行 （通信）是指在一条信号线上一次发送一个比特的信号。优点是所需的信号线较少，这意味着可以使用较细的电缆连接设备。此外，由于串行比并行更容易以更高的速度通信
+	（此时 电缆更长），因此串行是连接外设的最常见方式。
+    总线（bus）的特点不是一对一的专用连接，而是各种设备一起使 用。USB也是总线的一种，其上有各种设备（键盘、鼠标、扬声器、U盘、网络摄像头等）。
+通常集成在主板上的“南桥”芯片（现称 PCH）内部，它是USB设备和软件（操作系统）之间的桥梁。操作系统通过控制该控制器与USB设备通信，用于处理控制芯片等硬件的软件被称为驱
+动程序，驱动程序是操作系统的一部分。
+<center><img src=./pcie_pic/v2-23a76dedecbb3f03f459d9b5833b6555_1440w.jpg /></center>
+我们需要开发一个USB主机控制器驱动来操控USB主机控制器，USB相关的驱动程序太复杂了，直接拿来主义了（代码在kernel/usb/目录下）。
+在进行开发之前，先来理一下整体的逻辑（中断处理等内容之后会实现，先了解逻辑就行）：
+    我们做的，本质上就是让 CPU 能够与连接在 PCI 总线上的一个特定硬件芯片（鼠标控制器）进行安全、可靠、高效对话，并将芯片的物理信号（移动、点击）转化为内核能理解的事件。
+    现代计算机（包括 QEMU 模拟器）通常使用 xHCI (eXtensible Host Controller Interface) 控制器来处理 USB 鼠标
+        物理层：信号捕捉 (Mouse → USB Cable)
+            硬件动作：鼠标底部的红外传感器捕捉到桌面纹理的变化，将其转换为相对位移Δ X, ΔY。
+            编码数据：鼠标内部的微控制器将这些位移封装成符合 USB HID 协议 的数据包（Report）。
+        控制层：数据搬运 (USB Mouse → xHCI)
+            xHCI 控制器：主板上的 xHCI（USB 3.0）控制器扮演着“大管家”的角色。
+            轮询机制：USB 是一种主机驱动的协议。xHCI 控制器会根据你设置的周期（例如每 1ms），定期去问鼠标：“有新数据吗？”
+            DMA 传输：一旦鼠标有数据，xHCI 会直接通过 DMA（直接内存访问） 技术，把那几个字节的数据包写到你事先在 RAM 中开辟好的缓冲区里。
+        中断层：内核感知 (xHCI → CPU Interrupt)
+            MSI/MSI-X 中断：数据写入内存后，xHCI 控制器会向 CPU 发送一个中断信号（通常是 MSI-X 中断）。
+            IDT 跳转：CPU 停止当前工作，查 IDT（中断描述符表），跳转到你写的 中断处理程序（ISR）。
+            确认状态：你的 ISR 会读取 xHCI 的寄存器，确认“哦，确实是 USB 端口 1 有数据到了”。
+        驱动/逻辑层：事件封装 (Interrupt Handler → Queue)
+            生产者：中断处理程序从内存中读出那几个字节（如 01 FF 02，表示左键按下，位移量等）。
+            异步解耦：为了不让 CPU 锁死在中断里，ISR 只是简单地把数据丢进一个全局 FIFO 队列（生产者），然后执行 EOI（中断结束）让 CPU 回去干活。
+            消费者：内核的 main 循环不断轮询这个队列。一旦发现有东西，就取出来交给鼠标处理函数。
+        表现层：图形渲染 (CPU → Frame Buffer)
+            坐标累加：内核根据Δ X, ΔY更新鼠标的全局绝对坐标(X, Y)，并进行越界检查。
+            重绘像素：
+                恢复背景：在旧位置重新画上原来被遮盖的像素。
+                绘制光标：在(X_new, Y_new) 处，根据你的 pixel_writer 将鼠标箭头的点阵（如你之前用 objcopy 嵌入的数据）写进 Frame Buffer。
+                显示：显卡（GPU/VBE）读取 Frame Buffer，屏幕刷新。
+核心问题：PCI 总线是什么？它解决了什么根本问题？
+    在 PCI 之前，硬件（如 ISA 卡）的地址、中断都是通过跳线手动设置的，冲突频繁，系统无法感知有哪些设备。
+    PCI 总线为每个设备提供了一个标准的、可查询的配置空间。这是一个小型的、地址化的寄存器区域，就像设备的“身份证”和“控制面板”。
+        作用1（发现）：CPU 可以通过扫描总线，读取这个配置空间，就知道“有什么设备在哪儿”，而无需人工配置，这是即插即用的基础。
+        作用2（配置）：操作系统可以通过写入这个空间，告诉设备“你用什么内存地址/中断号与我通信”，这是资源统一分配的基础。
+        所以要学会和 PCI 总线控制器对话，来读取这个“配置空间”。
+具体的实现思路：
+    枚举与发现—— “谁在那里？”
+        访问 PCI 配置空间：在 x86 架构上，主要通过两个 I/O 端口：0xCF8(CONFIG_ADDRESS) 和 0xCFC(CONFIG_DATA)。你构造一个格式化的地址（总线号、设备号、功能号、寄存
+		器偏移），写入 0xCF8，然后从 0xCFC读取数据。
+        扫描总线：你需要遍历所有可能的总线、设备、功能号，读取其配置空间中的 Vendor ID 和 Device ID。这两个 ID 是设备的唯一标识。一个全为 1 的 Vendor ID (0xFFFF)表
+		示该位置无设备。
+        识别鼠标控制器：当你找到一个设备的 Vendor/Device ID 与你已知的鼠标控制器（例如，某种 USB 主机控制器或 PS/2 兼容控制器）匹配时，你就找到了目标。
+    资源配置与映射 —— “我该怎么和你说话？”
+        读取 Base Address Registers：在配置空间中，有6个 BAR 寄存器。设备通过它们告诉系统：“我需要一段内存或 I/O 空间来工作”。读取这些 BAR，你能知道设备希望得到哪
+		种类型的资源（内存空间还是 I/O 空间）以及它需要多大。
+        分配资源：你的内核需要管理全局的物理内存和中断资源
+            内存映射（MMIO）：从空闲的物理地址空间中，划出一段连续的、大小合适的、对齐的物理地址，分配给这个设备的 BAR
+            专用I/O： 分配一个 I/O 端口范围
+            分配一个可用的中断号（暂时还没有实现中断，不考虑）
+    设备初始化与通信 —— “你好，请开始工作。”
+        映射与访问：
+            如果你分配的是 MMIO，你需要将分配的那段物理地址，映射到内核的虚拟地址空间（通过修改页表），这样你的内核代码才能用指针去访问这些地址。
+            如果你分配的是 I/O 空间，你可以直接通过 in/out指令访问。
+        理解设备寄存器：现在可以通过 BAR 映射的区域访问设备的操作寄存器。你需要研读该设备（如 USB 主机控制器）的数据手册。手册会定义每个寄存器的位（bit）的含义：控制、
+		状态、命令、数据。这与“配置空间”完全不同，是设备专属的。
+        初始化序列：按照数据手册，一步步写寄存器：设置工作模式、重置控制器、分配数据结构（如队列头、传输描述符）的内存，并将这些内存的物理地址告诉设备。最后，设置“运
+		行”位，启动控制器。
+    输入事件获取 —— “告诉我发生了什么。”
+        从设备获取输入事件，并将其转化为操作系统输入事件
+        两种工作模式：
+            轮询：内核定期（例如每次时钟中断）去读取设备的“状态寄存器”，看是否有数据（鼠标移动数据包）到达。简单但有延迟，浪费CPU。
+            中断：这是标准方式。在初始化时，你已经配置了设备的中断。当鼠标有动作，设备产生一个数据包，放入你准备好的内存缓冲区，然后触发中断。
+简化一下：
+    枚举所有连接到PCI总线的PCI设备（扫描配置空间）
+    在枚举的设备列表中找到xHC
+    初始化xHC
+    在USB总线上找到鼠标
+    初始化鼠标
+    从鼠标接收数据。
+PCI（Peripheral Component Interconnect）是连接组件和主板的标准，是现代计算机的核心技术。NVMe SSD、高精度计时器、网卡和GPU 等计算机的主要组件都通过PCI及其后续PCIe标准连接。
+xHCI（eXtensible Host Controller Interface）是USB3.0或更高版本的控制标准，而xHC（xHCI Controller）是实现了xHCI标准的硬件设备。我们的CPU通过xHC与鼠标等USB设备进行通信。
+每个符合PCI标准的设备都有一个256字节的PCI配置空间（0x00~0xff,，前 0x40字节为所有PCI设备所共有），该空间包含PCI设备的基本信息：
+<center><img src=./pcie_pic/v2-6cb7299d94c8d45d1df7afde16963ab0_1440w.jpg /></center>
+读取PCI配置空间需要使用CONFIG_ADDRESS和CONFIG_DATA寄存器，在CONFIG_ ADDRESS寄存器中设置要读/写的PCI配置空间的位置，然后通过CONFIG_DATA`来读/写 PCI配置空间。
+<center><img src=./pcie_pic/v2-547eb1cebde940da6477d35d0143dec0_1440w.jpg /></center>
+PCI总线可以有多条，一条总线最多可连接32个PCI设备。每个PCI设备最多可有8个功能 （函数）。设备始终具有功能0，但可能没有其他功能。如果有多个功能，则不一定从1开始 依次编号。
+允许有孔洞状态。通过读取某个功能编号的供应商ID并判断其是否为0xffff（无效供应商ID），可以确定该功能编号是否未实现。
+从各种编号中生成一个32位值，用于构造写入CONFIG_ ADDRESS寄存器的内容（参考上表），第四个参数reg_addr表示偏移：
+// pci.hpp  
+  uint32_t MakeAddress(uint8_t bus, uint8_t device,
+                       uint8_t function, uint8_t reg_addr) {
+    // lambda表达式，用于对参数x左移bits位
+    auto shl = [](uint32_t x, unsigned int bits) {
+        return x << bits;
+    };
+    return shl(1, 31)       // enable bit
+        | shl(bus, 16)      // 总线编号
+        | shl(device, 11)   // 设备编号
+        | shl(function, 8)  // 功能编号
+        | (reg_addr & 0xfcu); // reg_addr指定访问PCI配置空间中的哪个位置
+                              // & 0xfcu表示按4字节对齐
+  }
+前面提到过，上述两个寄存器位于I/O地址空间的0x0cf8和0x0cfc处，所以定义两个常量来表示：
+  const uint16_t kConfigAddress = 0x0cf8;
+  const uint16_t kConfigData = 0x0cfc;
+    x86的CPI采用独立IO（另一种方式是内存映射，直接将IO设备映射到内存地址空间中），因此IO地址空间与内存地址空间是两个完全独立的地址空间，使用in和out指令来进行读写，这两
+	条指令使用dx和eax作为地址和数据缓存，细节请自行搜索。
+; asmfunc.asm
+;
+; System V AMD64 Calling Convention
+; Registers: RDI, RSI, RDX, RCX, R8, R9
+bits 64
+section .text
+; 向地址为addr的寄存器写入data
+global IoOut32  ; void IoOut32(uint16_t addr, uint32_t data);
+IoOut32:
+    mov dx, di    ; dx = addr
+    mov eax, esi  ; eax = data
+    out dx, eax   ; 将data写入addr
+    ret
+; 从地址为addr的寄存器读出数据到eax
+global IoIn32  ; uint32_t IoIn32(uint16_t addr);
+IoIn32:
+    mov dx, di    ; dx = addr
+    in eax, dx    ; 从addr读出数据
+    ret
+下面对汇编函数进行封装：
+// pci.cpp
+namespace pci {
+  // 将地址写入CONFIG_ADDRESS寄存器
+  void WriteAddress(uint32_t address) {
+    IoOut32(kConfigAddress, address);     
+  }
+  
+  // 将数据写入CONFIG_DATA寄存器
+  void WriteData(uint32_t value) {
+    IoOut32(kConfigData, value);          
+  }
+  // 从CONFIG_DATA寄存器中读出数据
+  uint32_t ReadData() { 
+    return IoIn32(kConfigData);           
+  }
+    
+  // 根据总线号、设备号和功能号获取供应商ID
+  uint16_t ReadVendorId(uint8_t bus, uint8_t device, uint8_t function) {
+    WriteAddress(MakeAddress(bus, device, function, 0x00)); // 将地址写入CONFIG_ADDRESS寄存器
+    return ReadData() & 0xffffu;    // 供应商ID在低16位，将其截取出来
+  }
+}
+在开始搜索设备之前，还需要定义两个全局变量devices和num_device，用于存放搜索到的有效PCI设备和数量：
+// pci.hpp
+  struct Device {
+    uint8_t bus, device, function, header_type;
+  };
+// 存放发现的PCI设备列表
+  inline std::array<Device, 32> devices;
+  
+// devices有效设备的数量
+  inline int num_device;    
+实现PCI设备搜索的函数：
+    头类型是一个8位整数，其中第7位为1，表示这是一个多功能设备，即除了功能0之外还 有其他功能的PCI设备。
+    总线0上的设备0始终是主机桥接器，用于主机与PCI总线之间的通信
+// pci.cpp
+  Error ScanAllBus() {
+    num_device = 0;    // 初始化有效设备数量为0
+    // 总线0上的设备0始终是主机桥接器，这是主机与PCI总线之间通信的桥梁
+    auto header_type = ReadHeaderType(0, 0, 0);
+      
+    // 头类型是一个8位整数，其中第7位为1，表示这是一个多功能设备，为0表示单功能设备
+    // 主机桥接器的每个功能负责一条总线，这里如果是单功能，就说明只有一条总线，直接返回扫描0号总线的结果
+    if (IsSingleFunctionDevice(header_type)) { 
+      return ScanBus(0);  
+    }
+    
+    // 检查主机桥接器其它功能是否有管理总线
+    for (uint8_t function = 1; function < 8; ++function) {
+      // 表示当前功能上不存在管理的总线，跳过
+      if (ReadVendorId(0, 0, function) == 0xffffu) {
+        continue;
+      }
+      if (auto err = ScanBus(function)) { // 扫描总线上的设备
+        return err;
+      }
+    }
+    return Error::kSuccess;
+  }
+  // 获取头部类型
+  uint8_t ReadHeaderType(uint8_t bus, uint8_t device, uint8_t function) {
+    WriteAddress(MakeAddress(bus, device, function, 0x0c));
+    return (ReadData() >> 16) & 0xffu;
+  }
+  // 检查是否为单功能设备
+  bool IsSingleFunctionDevice(uint8_t header_type) {
+    return (header_type & 0x80u) == 0;  // 第7位为1表示多功能设备
+  }
+通过主机桥接器找到总线后通过ScanBus进行扫描：
+// pci.cpp
+  // 扫描单个设备
+  Error ScanBus(uint8_t bus) {
+    for (uint8_t device = 0; device < 32; ++device) { // 每个总线最多连接32个设备，逐一检查
+      if (ReadVendorId(bus, device, 0) == 0xffffu) {  // 快速判断是否有设备
+        continue;
+      }
+      if (auto err = ScanDevice(bus, device)) {   // 扫描设备
+        return err;
+      }
+    }
+    return Error::kSuccess;
+  }
+}
+通过ScanDevice来扫描设备：
+// pci.cpp
+  Error ScanDevice(uint8_t bus, uint8_t device) {
+    // 扫描第一个功能
+    if (auto err = ScanFunction(bus, device, 0)) {
+      return err;
+    }
+      
+    if (IsSingleFunctionDevice(ReadHeaderType(bus, device, 0))) {
+      return Error::kSuccess;
+    }
+    
+    // 扫描剩余功能
+    for (uint8_t function = 1; function < 8; ++function) {
+      if (ReadVendorId(bus, device, function) == 0xffffu) {
+        continue;
+      }
+      if (auto err = ScanFunction(bus, device, function)) {
+        return err;
+      }
+    }
+    return Error::kSuccess;
+  }
+其中通过ScanFunction函数来扫描设备下的每个功能：
+// 扫描设备上的功能
+  Error ScanFunction(uint8_t bus, uint8_t device, uint8_t function) {
+    auto header_type = ReadHeaderType(bus, device, function);       
+    if (auto err = AddDevice(bus, device, function, header_type)) {  // 将设备添加到数组中
+      return err;
+    }
+    // 读取类型信息
+    auto class_code = ReadClassCode(bus, device, function);
+    uint8_t base = (class_code >> 24) & 0xffu;  // base class字段，表示广泛的设备类型
+    uint8_t sub = (class_code >> 16) & 0xffu;   // sub class字段，表示详细的设备类型
+    // 如果它的基类为0x06，子类为0x04，那么它就是PCI-PCI桥接器
+    if (base == 0x06u && sub == 0x04u) {
+      // standard PCI-PCI bridge
+      auto bus_numbers = ReadBusNumbers(bus, device, function); // 获取连接的总线编号
+      uint8_t secondary_bus = (bus_numbers >> 8) & 0xffu;       // 第8~15位为次总线编号，连接下游对应的PCI设备
+      // 找到连接到次总线的设备，即目标设备
+      return ScanBus(secondary_bus);
+    }
+    return Error::kSuccess;
+  }
+// 将设备添加到devices数组中
+  Error AddDevice(uint8_t bus, uint8_t device,
+                  uint8_t function, uint8_t header_type) {
+    if (num_device == devices.size()) { // 设备过多，无法放入，返回满错误
+      return Error::kFull;
+    }
+    devices[num_device] = Device{bus, device, function, header_type};
+    ++num_device;
+    return Error::kSuccess;
+  }
+在主函数中调用ScanAllBus扫描设备，然后遍历devices数组，输出扫描到的设备：
+  auto err = pci::ScanAllBus();
+  printk(\"ScanAllBus: %s\n\", err.Name());
+  for (int i = 0; i < pci::num_device; ++i) {
+    const auto& dev = pci::devices[i];
+    auto vendor_id = pci::ReadVendorId(dev.bus, dev.device, dev.function);
+    auto class_code = pci::ReadClassCode(dev.bus, dev.device, dev.function);
+    printk(\"%d.%d.%d: vend %04x, class %08x, head %02x\n\",
+        dev.bus, dev.device, dev.function,
+        vendor_id, class_code, dev.header_type);
+  }
+3. 轮询鼠标输入
+我们已经将所有搜索到的设备保存在devices数组中了，下面从中找到xHC（就是一个USB控制器，用于与USB设备通信），并将其初始化。
+    xHC 是 eXtensible Host Controller（可扩展主机控制器）的缩写，它是支持 USB 3.0 协议的硬件标准。
+    内核需要通过PCI 配置空间里的 Class Code（类代码）来查找xHC：
+        Base Class=0x0c，Sub Class=0x03，Interface=0x30
+        一旦这三个值对上，就说明找到了USB 3.0控制器
+    如果搜索到多个xHC，我们也只选择一个xHC，因为只选择一个xHC可使整个USB驱动程序机制保持简单。
+    当从多个xHC中选择一个时，应优先选择 Intel的xHC，因为Intel的产品最有可能成为主控制器。
+ // main.cpp
+  // 搜索xHC，找到一个就break
+  pci::Device* xhc_dev = nullptr;
+  for (int i = 0; i < pci::num_device; ++i) {
+    if (pci::devices[i].class_code.Match(0x0cu, 0x03u, 0x30u)) {  // 找到xHC
+      xhc_dev = &pci::devices[i];
+      if (0x8086 == pci::ReadVendorId(*xhc_dev)) { // 供应商编号为8086，表示Intel
+        break;
+      }
+    }
+  }
+  if (xhc_dev) {
+    Log(kInfo, \"xHC has been found: %d.%d.%d\n\",
+        xhc_dev->bus, xhc_dev->device, xhc_dev->function);
+  }
+// pci.hpp
+  struct ClassCode {
+    uint8_t base, sub, interface;
+    bool Match(uint8_t b) { return b == base; }
+    bool Match(uint8_t b, uint8_t s) { return Match(b) && s == sub; }
+    bool Match(uint8_t b, uint8_t s, uint8_t i) {
+      return Match(b, s) && i == interface;
+    }
+  };
+  struct Device {
+    uint8_t bus, device, function, header_type;
+    ClassCode class_code;
+  };
+    其中的Log 和printk 用法差不多，目的是改进显示效果，暂时就把他当成printk吧。 
+执行完这段代码，xhc_dev就指向了第一个供应商为Intel的xHC。注意，xHC这个设备使用内存映射（MMIO）的方式与CPU进行交互（之前的CONFIG_ADDRESS和CONFIG_DATA则是使用专用I/O，
+通过in和out指令进行读写）。
+在找到 xHC 后，它还处于“睡眠”或“默认”状态，不能直接工作，需要进行初始化：
+    映射寄存器：读取 PCI 的 BAR (Base Address Register)，获取 xHC 在内存中的物理地址（MMIO），这样内核就能通过读写内存来控制xHC硬件。
+    重置控制器：给硬件发指令，让它清空内部状态，准备重新开始。
+    设置数据结构：在内存中建立 Device Context（设备上下文）和 Transfer Ring（传输环），这是 xHCI 这种高性能控制器特有的设计，它通过内存中的环形队列来异步处理数据。
+xHC硬件的BAR寄存器：
+    BAR0+BAR1 ：BAR 0 和 BAR 1 通常组合成一个 64 位的地址，这是xHCI 寄存器组的基地址 (MMIO Base Address)
+    BAR 2- BAR 5 ：通常被设置为0
+使用pci::ReadBar从BAR0和BAR1中读取出xHC在内存中的地址：
+  const WithError<uint64_t> xhc_bar = pci::ReadBar(*xhc_dev, 0);
+  const uint64_t xhc_mmio_base = xhc_bar.value & ~static_cast<uint64_t>(0xf);  // 第4位为标志位，将其剔除
+template <class T>
+struct WithError {
+  T value;
+  Error error;
+};
+  WithError<uint64_t> ReadBar(Device& device, unsigned int bar_index) {
+    if (bar_index >= 6) {
+      return {0, MAKE_ERROR(Error::kIndexOutOfRange)};
+    }
+    const auto addr = CalcBarAddress(bar_index);
+    const auto bar = ReadConfReg(device, addr);
+    // 32 bit address
+    if ((bar & 4u) == 0) {
+      return {bar, MAKE_ERROR(Error::kSuccess)};
+    }
+    // 64 bit address
+    if (bar_index >= 5) {
+      return {0, MAKE_ERROR(Error::kIndexOutOfRange)};
+    }
+    const auto bar_upper = ReadConfReg(device, addr + 4);
+    return {
+      bar | (static_cast<uint64_t>(bar_upper) << 32),
+      MAKE_ERROR(Error::kSuccess)
+    };
+  }
+usb::xhci::Controller是USB驱动程序中的一个类，用于根据xHCI标准来控制主机控制器。
+// 构造xhc类
+  usb::xhci::Controller xhc{xhc_mmio_base};
+  // 检查供应商是否为Intel
+  if (0x8086 == pci::ReadVendorId(*xhc_dev)) {
+    SwitchEhci2Xhci(*xhc_dev);
+  }
+  {
+    auto err = xhc.Initialize();  // 初始化xHC
+    Log(kDebug, \"xhc.Initialize: %s\n\", err.Name());
+  }
+  // 运行xhc控制器
+  xhc.Run();
+只有当xHC是Intel的xHC时，才会在初始化xHC之前调用SwitchEhci2Xhci()。该函数为 2012年发布的Intel Panther Point芯片组内置的USB主机控制器提供特殊支持。最后调用Initialize
+和run方法来初始化并启动xHC。
+  usb::HIDMouseDriver::default_observer = MouseObserver;
+  // 搜索USB端口，发现有连接设备就调用ConfigurePort进行初始化
+  for (int i = 1; i <= xhc.MaxPorts(); ++i) {
+    auto port = xhc.PortAt(i);
+    Log(kDebug, \"Port %d: IsConnected=%d\n\", i, port.IsConnected());
+    if (port.IsConnected()) {
+      if (auto err = ConfigurePort(xhc, port)) {   // 为设备生成驱动！！！
+        Log(kError, \"failed to configure port: %s at %s:%d\n\",
+            err.Name(), err.File(), err.Line());
+        continue;
+      }
+    }
+  }
+首先将usb::HIDMouseDriver::default_ observer（鼠标驱动类中的静态成员）设置为MouseObserver 。然后遍历xHC的全部端口，对已连接上设备的端口调用ConfigurePort函数，该函数用
+于重置xHC的端口、进行内部设置并生成类驱动实例。
+如果USB 鼠标已连接到某个xHC端口，那么调用ConfigurePort将为USB鼠标创建一个HIDMouseDriver实例，用于管理CPU与鼠标的通信。
+梳理下这里的逻辑：
+    usb::HIDMouseDriver::default_observer = MouseObserver，将HIDMouseDriver的静态变量设置为MouseObserver
+    枚举xHC的全部端口，如果发现有连接设备的端口，就调用ConfigurePort，它会识别出接入的是一个 HIDMouse，然后xHCI 驱动库为这个鼠标创建一个 HIDMouseDriver 的实例
+    其中的关键是：在创建驱动实例时，它会读取之前设置好的 default_observer，并将其保存到该实例的内部。
+下面是对鼠标的实际处理：通过轮询的方式不断调用ProcessEvent
+    如果每次询问都 有高概率的事件（事件发生频率高）要处理，那么轮询方法就很有效。
+    然而，鼠标和键盘输 入是零星的，因此在查询事件发生情况时，往往没有事件发生。
+    而如果轮询频率较低，鼠标移动响应慢；轮询频率高，又占用CPU资源，后面将用中断来解决这个问题
+  while (1) {
+    if (auto err = ProcessEvent(xhc)) {
+      Log(kError, \"Error while ProcessEvent: %s at %s:%d\n\",
+          err.Name(), err.File(), err.Line());
+    }
+  }
+其中的逻辑是：
+    硬件动作：你移动了鼠标。
+    xHCI 捕获：xHCI 控制器通过中断传输获取了数据包（Report），并产生了一个 Transfer Event。
+    ProcessEvent：主循环检测到事件，开始处理。它会发现：“这个事件属于那个鼠标所在的端点（Endpoint）”。
+    驱动处理：xHCI 把原始数据包交给绑定的驱动程序——即 HIDMouseDriver::OnDataReceived（或类似命名的内部函数）。
+    逻辑解析：HIDMouseDriver 把原始的 3 字节或 4 字节数据解析成具体的位移量
+    调用处理函数：就是我们为其设置的MouseObserver
+我们还需要创建一个MouseCursor类，来管理鼠标的绘制和光标位置，对外只暴漏了一个接口MoveRelative，用于将鼠标移动到当前位置+displacement处：
+// mouse.hpp
+class MouseCursor {
+ public:
+  MouseCursor(PixelWriter* writer, PixelColor erase_color,
+              Vector2D<int> initial_position);
+  void MoveRelative(Vector2D<int> displacement);
+ private:
+  PixelWriter* pixel_writer_ = nullptr;
+  PixelColor erase_color_;
+  Vector2D<int> position_;
+};
+下面是一些方法的实现：
+    为了实现MoveRelative，还提供了DrawMouseCursor和EraseMouseCursor，分别用于绘制鼠标光标和擦除鼠标光标：
+    MoveRelative的实现思路是先擦除当前光标，再计算相对位置后重新绘制
+// mouse.cpp
+#include \"mouse.hpp\"
+#include \"graphics.hpp\"
+namespace {
+  const int kMouseCursorWidth = 15;
+  const int kMouseCursorHeight = 24;
+  const char mouse_cursor_shape[kMouseCursorHeight][kMouseCursorWidth + 1] = {
+    \"@              \",
+    \"@@             \",
+    \"@.@            \",
+    \"@..@           \",
+    \"@...@          \",
+    \"@....@         \",
+    \"@.....@        \",
+    \"@......@       \",
+    \"@.......@      \",
+    \"@........@     \",
+    \"@.........@    \",
+    \"@..........@   \",
+    \"@...........@  \",
+    \"@............@ \",
+    \"@......@@@@@@@@\",
+    \"@......@       \",
+    \"@....@@.@      \",
+    \"@...@ @.@      \",
+    \"@..@   @.@     \",
+    \"@.@    @.@     \",
+    \"@@      @.@    \",
+    \"@       @.@    \",
+    \"         @.@   \",
+    \"         @@@   \",
+  };
+  void DrawMouseCursor(PixelWriter* pixel_writer, Vector2D<int> position) {
+    for (int dy = 0; dy < kMouseCursorHeight; ++dy) {
+      for (int dx = 0; dx < kMouseCursorWidth; ++dx) {
+        if (mouse_cursor_shape[dy][dx] == '@') {
+          pixel_writer->Write(position.x + dx, position.y + dy, {0, 0, 0});
+        } else if (mouse_cursor_shape[dy][dx] == '.') {
+          pixel_writer->Write(position.x + dx, position.y + dy, {255, 255, 255});
+        }
+      }
+    }
+  }
+  void EraseMouseCursor(PixelWriter* pixel_writer, Vector2D<int> position,
+                        PixelColor erase_color) {
+    for (int dy = 0; dy < kMouseCursorHeight; ++dy) {
+      for (int dx = 0; dx < kMouseCursorWidth; ++dx) {
+        if (mouse_cursor_shape[dy][dx] != ' ') {
+          pixel_writer->Write(position.x + dx, position.y + dy, erase_color);
+        }
+      }
+    }
+  }
+}
+MouseCursor::MouseCursor(PixelWriter* writer, PixelColor erase_color,
+                         Vector2D<int> initial_position)
+    : pixel_writer_{writer},
+      erase_color_{erase_color},
+      position_{initial_position} {
+  DrawMouseCursor(pixel_writer_, position_);
+}
+void MouseCursor::MoveRelative(Vector2D<int> displacement) {
+  EraseMouseCursor(pixel_writer_, position_, erase_color_);
+  position_ += displacement;
+  DrawMouseCursor(pixel_writer_, position_);
+}
+瞅一眼主函数：
+// main.cpp
+char mouse_cursor_buf[sizeof(MouseCursor)];
+MouseCursor* mouse_cursor;
+void MouseObserver(int8_t displacement_x, int8_t displacement_y) {
+  mouse_cursor->MoveRelative({displacement_x, displacement_y});
+}
+extern \"C\" void KernelMain(const FrameBufferConfig& frame_buffer_config) {
+  // 1. 判断像素数据格式
+  switch (frame_buffer_config.pixel_format) {
+    case kPixelRGBResv8BitPerColor:
+      pixel_writer = new(pixel_writer_buf)
+        RGBResv8BitPerColorPixelWriter{frame_buffer_config};
+      break;
+    case kPixelBGRResv8BitPerColor:
+      pixel_writer = new(pixel_writer_buf)
+        BGRResv8BitPerColorPixelWriter{frame_buffer_config};
+      break;
+  }
+  // 2. 屏幕的宽高
+  const int kFrameWidth = frame_buffer_config.horizontal_resolution;
+  const int kFrameHeight = frame_buffer_config.vertical_resolution;
+  // 3. 绘制desktop
+  FillRectangle(*pixel_writer,
+                {0, 0},
+                {kFrameWidth, kFrameHeight - 50},
+                kDesktopBGColor);
+  FillRectangle(*pixel_writer,
+                {0, kFrameHeight - 50},
+                {kFrameWidth, 50},
+                {1, 8, 17});
+  FillRectangle(*pixel_writer,
+                {0, kFrameHeight - 50},
+                {kFrameWidth / 5, 50},
+                {80, 80, 80});
+  DrawRectangle(*pixel_writer,
+                {10, kFrameHeight - 40},
+                {30, 30},
+                {160, 160, 160});
+  // 4. 在静态内存上构造console
+  console = new(console_buf) Console{
+    *pixel_writer, kDesktopFGColor, kDesktopBGColor
+  };
+  printk(\"Welcome to MikanOS!\n\");
+  SetLogLevel(kWarn);       // 设置日志级别
+  // 5. 创建一个鼠标对象，用于维护鼠标位置信息和绘制鼠标
+  mouse_cursor = new(mouse_cursor_buf) MouseCursor{
+    pixel_writer, kDesktopBGColor, {300, 200}
+  };
+  // 6. 扫描所有PCI设备，将其添加到devices数组中
+  auto err = pci::ScanAllBus();
+  Log(kDebug, \"ScanAllBus: %s\n\", err.Name());
+  // 7. 输出扫描到的PCI设备信息，包括供总线号、设备号、功能号、应商、类别和头部
+  for (int i = 0; i < pci::num_device; ++i) {
+    const auto& dev = pci::devices[i];
+    auto vendor_id = pci::ReadVendorId(dev);
+    auto class_code = pci::ReadClassCode(dev.bus, dev.device, dev.function);
+    Log(kDebug, \"%d.%d.%d: vend %04x, class %08x, head %02x\n\",
+        dev.bus, dev.device, dev.function,
+        vendor_id, class_code, dev.header_type);
+  }
+  // 8. 从设备中查找供应商为Intel的设备
+  pci::Device* xhc_dev = nullptr;
+  for (int i = 0; i < pci::num_device; ++i) {
+    if (pci::devices[i].class_code.Match(0x0cu, 0x03u, 0x30u)) {
+      xhc_dev = &pci::devices[i];
+      if (0x8086 == pci::ReadVendorId(*xhc_dev)) {
+        break;
+      }
+    }
+  }
+  if (xhc_dev) {
+    Log(kInfo, \"xHC has been found: %d.%d.%d\n\",
+        xhc_dev->bus, xhc_dev->device, xhc_dev->function);
+  }
+  // 9. 初始化xHC：从BAR0寄存器读取xHC的内存地址（MMIO）
+  const WithError<uint64_t> xhc_bar = pci::ReadBar(*xhc_dev, 0);
+  Log(kDebug, \"ReadBar: %s\n\", xhc_bar.error.Name());
+  const uint64_t xhc_mmio_base = xhc_bar.value & ~static_cast<uint64_t>(0xf);
+  Log(kDebug, \"xHC mmio_base = %08lx\n\", xhc_mmio_base);
+  // 10. 构造xHCI控制器
+  usb::xhci::Controller xhc{xhc_mmio_base};
+  if (0x8086 == pci::ReadVendorId(*xhc_dev)) {
+    SwitchEhci2Xhci(*xhc_dev);
+  }
+  {
+    auto err = xhc.Initialize();
+    Log(kDebug, \"xhc.Initialize: %s\n\", err.Name());
+  }
+  Log(kInfo, \"xHC starting\n\");
+  xhc.Run();
+  // 11. 为HIDMouse驱动设置回调函数
+  usb::HIDMouseDriver::default_observer = MouseObserver;
+  
+  // 12. 为所有连接到xhc端口的设备创建驱动实例
+  for (int i = 1; i <= xhc.MaxPorts(); ++i) {
+    auto port = xhc.PortAt(i);
+    Log(kDebug, \"Port %d: IsConnected=%d\n\", i, port.IsConnected());
+    if (port.IsConnected()) {
+      if (auto err = ConfigurePort(xhc, port)) {
+        Log(kError, \"failed to configure port: %s at %s:%d\n\",
+            err.Name(), err.File(), err.Line());
+        continue;
+      }
+    }
+  }
+  // 13. 轮询处理来自xhc的事件
+  while (1) {
+    if (auto err = ProcessEvent(xhc)) {
+      Log(kError, \"Error while ProcessEvent: %s at %s:%d\n\",
+          err.Name(), err.File(), err.Line());
+    }
+  }
+  while (1) __asm__(\"hlt\");
+}
+extern \"C\" void __cxa_pure_virtual() {
+  while (1) __asm__(\"hlt\");
+}</pre>
