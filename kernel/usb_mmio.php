@@ -2,7 +2,7 @@
 <?php
 echo "<a name=res00></a><font size=6 color=#ff0000><center>PCIE, USB, MMIO, SCSI相关资料 --from grok</center></font><br><br><br>";
 echo "<center><table width=90% border=0>
-<tr><td width=33%><a href=usb_mmio.php#res01>一、USB控制器的MMIO区域</a></td><td width=33%><a href=usb_mmio.php#res12>十二、通过 0xCFC 端口读取 BAR0</a></td><td width=34%>二十三、待添加</td></tr>
+<tr><td width=33%><a href=usb_mmio.php#res01>一、USB控制器的MMIO区域</a></td><td width=33%><a href=usb_mmio.php#res12>十二、通过 0xCFC 端口读取 BAR0</a></td><td width=34%><a href=usb_mmio.php#res23>二十三、关于修改pci的bar0后新的mmio地址没有数据的问题</a></td></tr>
 <tr><td width=33%><a href=usb_mmio.php#res02>二、典型xHCI MMIO布局示例（简化）</a></td><td width=33%><a href=usb_mmio.php#res13>十三、PCIe（PCI Express）中的中断处理机制</a></td><td width=34%>二十三、待添加</td></tr>
 <tr><td width=33%><a href=usb_mmio.php#res03>三、通过USB控制器的MMIO获取usb存储器的状态</a></td><td width=33%><a href=usb_mmio.php#res14>十四、Pcie如何初始化一个usb-xhci 存储器</a></td><td width=34%>二十三、待添加</td></tr>
 <tr><td width=33%><a href=usb_mmio.php#res04>四、MMIO 与 USB存储读取</a></td><td width=33%><a href=usb_mmio.php#res15>十五、默认控制端点（EP0，64 字节 MPS）执行 USB 标准枚举</a></td><td width=34%>二十三、待添加</td></tr>
@@ -1508,4 +1508,40 @@ echo "</pre>";
 echo "<br><a name=res22></a><font color=red size=4>usb鼠标示例</font><br>";
 include_once("usb10day.txt");
 echo "&nbsp;&nbsp;&nbsp;&nbsp;<a href=./usb_mmio.php#res00>返回顶部</a>";
+echo "<pre><font size=4 color=gray><a name=res23></a><font color=red size=4>关于修改pci的bar0后新的mmio地址没有数据的问题</font><bar>
+主要原因是：修改 XHCI 的 BAR0/BAR1 后，只更新了设备自身的配置空间，但上游 PCI/PCIe 桥（Bridge，通常是 Root Port 或 P2P Bridge）的 Memory Base & Limit 寄存器没有同步更新，导致内存事务
+（Memory Transaction）无法被转发到新地址。 PCIe 地址路由是分层的：
+    设备（Endpoint，如 XHCI）只通过自己的 BAR 决定“自己要不要认这个地址”。
+    但事务要先经过上游所有 Bridge 的 Memory Base/Limit（或 Prefetchable Memory Base/Limit）窗口过滤，只有落在窗口内的地址才会被转发到下游总线。
+    你把 BAR0 改成 0x01000000（4KB 对齐，64-bit prefetchable），但上游 Bridge 的窗口很可能仍然指向原来的高地址区间（如 0xFExxxxxx 或 Above 4G 区域），新地址根本进不了 Bridge 的转发范围，
+	自然读不到任何数据（通常返回 0xFF 或全 0，取决于系统）。
+为什么 0x01000000 特别容易出问题？
+    大部分 x86 系统里，低地址（< 1GB 或 < 4GB）默认被 Memory Controller 路由到 DRAM，不会走 PCI 总线。
+    即使你确认“系统无冲突”（比如 /proc/iomem 里没重叠），Bridge 的窗口也没覆盖它，CPU 发出的读写请求就被 DRAM 吃掉或被 Bridge 丢弃了。
+    原 BAR 通常在高地址 MMIO 区域，正是因为 BIOS/固件在枚举时已经把 Bridge 的 Base/Limit 设好了。
+正确修改 BAR 的完整流程（你可能漏了第 3 步）
+    关闭设备内存响应（必须先做）
+    写 Command Register（偏移 0x04），清 Memory Space Enable（bit 1）和 Bus Master（bit 2）。
+    修改 BAR（你已经做了）  
+        先读 BAR0/BAR1 确认是 64-bit prefetchable、size=4KB。  
+        写新地址（BAR0 = 0x01000000 | 类型位，BAR1 = 0x00000000）。  
+        读回确认写入成功。
+    更新上游所有 Bridge 的窗口（最容易漏的步骤）
+    找到 XHCI 所在的 Root Port / Bridge（遍历 PCI 总线，Header Type=1 的设备），修改它的 Type 1 配置空间：
+        Prefetchable Memory Base / Limit（偏移 0x24~0x2F，通常是 64-bit）。
+        把新地址 0x01000000 ~ 0x01000FFF 包含进窗口（Base ≤ 新地址 ≤ Limit）。
+        如果原来有旧 BAR 范围，建议先把旧范围从窗口里去掉，避免重叠。
+    重新启用设备
+    写回 Command Register，打开 Memory Space Enable + Bus Master。
+    可选：如果在 OS 环境下，还需要更新内核的 resource tree（pci_assign_resource / pci_realloc 等），否则驱动可能还是按旧地址工作。
+其他可能同时存在的次要原因
+    Command Register 的 Memory Space Enable 没重新打开 → 设备根本不响应任何 MMIO。 
+    新地址虽然“无冲突”，但落在 DRAM 映射区 → 直接被内存控制器吃掉。
+    极少数设备在 BAR 修改后需要软复位（写 PCI Command 的 bit 15，或通过 XHCI 的 Reset 寄存器），但 XHCI 一般不需要。
+验证方法（推荐）：
+    用 lspci -vvxxx -s <你的 xhci 设备> 看 Command 和 BAR 是否正确。
+    同时 dump 上游 Bridge 的配置空间，检查 Prefetchable Memory Base/Limit 是否包含 0x01000000。
+    直接用 devmem / ioremap 读新地址前，先确认 Bridge 窗口已更新。
+按上面补上 Bridge 窗口更新这一步，读新地址就能看到 XHCI 的 Capability/Operational Registers 数据了（CAPLENGTH、HCIVERSION 等）。这是 PCI 规范里最经典的“只改 Endpoint BAR 却忘记 
+Bridge 路由”的坑。	&nbsp;&nbsp;&nbsp;&nbsp;<a href=./usb_mmio.php#res00>返回顶部</a>";
 ?>
