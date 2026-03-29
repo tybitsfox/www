@@ -10,8 +10,8 @@ echo "<center><table width=90% border=0>
 <tr><td width=33%><a href=usb_mmio.php#res06>六、典型 USB Mass Storage BOT 协议流程示例(一个完整的读 4KB 的流程)</a></td><td width=33%><a href=usb_mmio.php#res17>十七、Pcie如何初始化一个usb-xhci 存储器</a></td><td width=34%><a href=usb_mmio.php#res28>二十八、Qemu下获取的物理内存比实际分配的内存少64k</a></td></tr>
 <tr><td width=33%><a href=usb_mmio.php#res07>七、USB Bulk Endpoint,Bulk端点</a></td><td width=33%><a href=usb_mmio.php#res18>十八、PCI 设备配置空间,全 256 字节结构（Type 0：通用设备）</a></td><td width=34%><a href=usb_mmio.php#res29>二十九、AHCI驱动与IDE PIO差异</a></td></tr>
 <tr><td width=33%><a href=usb_mmio.php#res08>八、Bulk IN / OUT 在 MMIO 中的位置</a></td><td width=33%><a href=usb_mmio.php#res19>十九、xHCI（eXtensible Host Controller Interface）MMIO寄存器详解</a></td><td width=34%><a href=usb_mmio.php#res30>三十、Virtio-blk 驱动与 AHCI 驱动的对比</a></td></tr>
-<tr><td width=33%><a href=usb_mmio.php#res09>九、xHCI MMIO 空间的简化内存布局图</a></td><td width=33%><a href=usb_mmio.php#res20>二十、MMIO（Memory Mapped I/O）寄存器详解</a></td><td width=34%><a href=usb_mmio.php#res31>三十、QEMU启动参数：-machine pc后挂载xchi设备</a></td></tr>
-<tr><td width=33%><a href=usb_mmio.php#res10>十、MMIO（Memory-Mapped I/O，内存映射输入输出）</a></td><td width=33%><a href=usb_mmio.php#res21>二十一、MSI-X中断机制的实现</a></td><td width=34%>二十三、待添加</td></tr>
+<tr><td width=33%><a href=usb_mmio.php#res09>九、xHCI MMIO 空间的简化内存布局图</a></td><td width=33%><a href=usb_mmio.php#res20>二十、MMIO（Memory Mapped I/O）寄存器详解</a></td><td width=34%><a href=usb_mmio.php#res31>三十一、QEMU启动参数：-machine pc后挂载xchi设备</a></td></tr>
+<tr><td width=33%><a href=usb_mmio.php#res10>十、MMIO（Memory-Mapped I/O，内存映射输入输出）</a></td><td width=33%><a href=usb_mmio.php#res21>二十一、MSI-X中断机制的实现</a></td><td width=34%><a href=usb_mmio.php#res32>三十二、USB3.0接口—数据结构</a></td></tr>
 <tr><td width=33%><a href=usb_mmio.php#res11>十一、xHCI 中最常用的传输请求块:Normal TRB（Type = 1）</a></td><td width=33%><a href=usb_mmio.php#res22>二十二、usb鼠标示例</a></td><td width=34%>二十三、待添加</td></tr>";
 echo "</table></center>";
 echo "<pre><font size=4 color=gray><a name=res01></a><font color=red size=4>USB控制器的MMIO区域</font>
@@ -1304,12 +1304,10 @@ Doorbell Registers</td><td width=30%>BAR基址 + Doorbell Offset (从 Capability
 20h~</td><td width=20%>xHCI Extended Capabilities</td><td width=10%>变长</td><td width=60%>链表形式：USB Legacy Support、Supported Protocol (USB2/USB3)、MSI-X 等</td></tr></table></center>
 
 扩展能力链表（常见 ID）：
-
     01h → USB Legacy Support Capability
     02h → Supported Protocol Capability（USB 2.0 / USB 3.x 端口定义）
     03h → Extended Power Management
     0Ah → xHCI Message Interrupt Capability（MSI/MSI-X 相关）
-
 3. Operational Registers（操作寄存器，最核心部分）偏移 = BAR + CAPLENGTH（通常 0x20 ~ 0x40 左右开始）
 <center><table border=1 width=70%><tr><td width=15%>
 偏移 (从 Operational Base)</td><td width=15%>寄存器名称</td><td width=10%>大小</td><td width=60%>主要功能与关键位</td></tr><tr><td width=15%>
@@ -1336,27 +1334,22 @@ Doorbell Registers</td><td width=30%>BAR基址 + Doorbell Offset (从 Capability
 38h + interrupter×20h</td><td width=25%>ERDP[interrupter]</td><td width=15%>64位</td><td width=35%>Event Ring Dequeue Pointer（软件更新）</td></tr></table></center>
 
 5. Doorbell Registers（门铃寄存器）偏移 = BAR + DBOFF每个设备槽（Device Slot）一个 32 位门铃寄存器（通常支持 32~255 个槽）
-
     写任意非零值 → 通知硬件处理对应槽的 Transfer Ring（Submission Queue）
     写 0 → 通常无效或停止
-
 典型写法：
-writel( doorbell_value | (endpoint << 16), doorbell_base + slot*4 );6. 实际使用总结（Linux 内核视角）Linux 驱动（drivers/usb/host/xhci*.c）中：
+writel( doorbell_value | (endpoint << 16), doorbell_base + slot*4 );
 
+6. 实际使用总结（Linux 内核视角）Linux 驱动（drivers/usb/host/xhci*.c）中：
     hcd->regs = ioremap(pci_resource_start(pdev,0), ...);
     xhci->hcor = (struct xhci_op_regs __iomem *)(hcd->regs + XHCI_OP_REGS_OFFSET);
     xhci->dba = (struct xhci_doorbell_array __iomem *)(hcd->regs + xhci->dboff);
     xhci->ir_set = (struct xhci_intr_reg __iomem *)(hcd->regs + xhci->run_regs->ir_set[0]);
-
 调试技巧：
-
     lspci -s xx:xx.x -vvv 查看 BAR0 大小和地址
     sudo devmem <BAR物理地址>+偏移 直接读寄存器
     Windbg：!usb3kd.xhci_registers
     dmesg | grep xhci 查看能力参数
-
 xHCI 的 MMIO 设计非常模块化且强大，支持数百个 USB 设备、多个中断向量、硬件门铃机制，是现代 USB 栈的核心。如果你需要：
-
     某个具体寄存器的位定义细节（例如 USBCMD、PORTSC）
     Linux 内核源码对应片段
     Intel/AMD 具体平台差异（例如 Intel PCH vs AMD XHCI）
@@ -2343,6 +2336,208 @@ bash
 小建议：
 既然你现在已经在 -machine pc 下把 IDE PIO、文件系统、进程管理、VBE 图形都跑通了，可以先在 pc 上把 xHCI 驱动初步实现（因为 PCI 配置空间访问方式相同）。等 xHCI 基本工作后，
 再考虑切换到 q35 + virtio-blk/AHCI 的方案，这样风险更低。需要我帮你调整完整的启动命令，或者给出 xHCI 驱动初始化的大致框架（PCI 配置 + BAR 映射 + 寄存器定义），随时告诉我！
+&nbsp;&nbsp;&nbsp;&nbsp;<a href=./usb_mmio.php#res00>返回顶部</a><br>";
+echo "<br><a name=res32></a><font color=red size=4>USB3.0接口——数据结构</font><br>
+USB3.0接口系列：
+USB3.0接口——（1）基础知识
+USB3.0接口——（2）数据结构
+USB3.0接口——（3） 协议 层（包格式）
+USB3.0接口——（4）生产消费者模型
+USB3.0接口——（5）Host数据传输模型
+USB3.0接口——（6）Device数据传输模型
+USB3.0接口——（2）数据结构
+1.数据结构
+在 USB 3.0 及更高版本的 xHCI 协议中，“Rings”、“Transfer Request Block (TRB)” 和 “Transfer Descriptor (TD)” 是用于管理 USB 数据传输和事件的重要概念。
+1.1.Rings
+Rings是指一种数据结构，用于组织和管理 USB 数据传输和事件。在 xHCI 协议中，存在多个Rings，每个 Ring 用于特定类型的数据传输或事件。
+Ring是数据结构的循环队列。——>TRB Ring定义了一个队列，该队列用于在生产者(Producer)实体和消费者(Consumer)实体之间传输工作项目。
+注意： Command和Event TRBs并不支持Chain bit（CH），因此所有的Command Descriptors (CDs)和Event Descriptor (EDs)只有单个TRB构成。
+注意： TRB Ring可能大于page，但是它们不得越过64K字节边界。 由于主机控制器可支持255个USB设备，每个设备最多可以声明31个端点，31个端点中的30个可以声明多达64K个流，这意味着单个xHC可能存在大约500M个 Transfer Ring。
+1.1.1命令环（Command Ring）
+用于xHC（eXtensible Host Controller，可扩展主机 控制器 ）的一种循环队列，使系统软件能够发出命令以枚举USB设备，配置xHC以支持这些设备以及协调虚拟化功能。
+<center><img src=./pcie_pic/3d7282b8be1327d5c0ceef561965238d.png /></center>
+Command Ring Control Register，命令环控制寄存器。
+Command Ring为系统软件提供发送命令来枚举USB设备，配置xHCI支持设备，以及协调虚拟化功能的能力。Command Ring由Operational register中的Command Ring Control Register来支持。
+1.1.2.传输环（Transfer Ring）
+每个端点或流的一种命令循环队列，提供了与USB设备之间的数据传输。
+<center><img src=./pcie_pic/72467d9de5e4ec6a2364a4c7f65e427c.png /></center>
+<center><img src=./pcie_pic/3de3fa44151eee7b8abcb5c1aff3ad67.png /></center>
+1.1.2.1.DCBAAP
+<center><img src=./pcie_pic/477b0b4158a48b9337a7a42df870e8fe.png /></center>
+DCBAAP，设备上下文及地址数组指针寄存器。
+xhci里面的Operational 寄存器组里面的设备上下文基地址数组指针寄存器（Device Context Base Address Array Pointer Register，DCBAAP），用于保存设备上下文基地址数组（DCBAA）的指针（也就是这个数组的首地址）。
+1.1.2.1.1.DCBAA
+DCBAA，设备上下文基地址数组， 内存数据结构。
+DCBAA数组里的每个元素都是指针，指向设备上下文数据结构的基地址。（设备上下文数据结构也是数组）
+DCBAA和xHCI的设备槽（Device Slot）相关联，一个Slot对应DCBAA里面的一个条目，可以通过Slot ID来索引对应的设备上下文（Device Context）数据结构，也就是可以将DCBAA看为是一个查找表。
+在初始化xHCI时每个条目都会初始化为0。注意DCBAA的首个条目（Slot ID=0）是被xHCI的暂存机制（xHCI Scratchpad Mechanism）使用的。
+并且设备上下文基地址数组的首地址，在xHCI被设置为“run”模式（也就是USBCMD寄存器的R/S bit位置1）之前，应该被写入到DCBAAP寄存器中，同时Scratchpad Buffer Array的首地址也要在此之前放入到设备上下文及地址数组的第0个条目。
+设备上下文基地址数组元素0的位定义：
+<center><img src=./pcie_pic/7bd6095f87da3677fc5b577ed1126084.png /></center>
+<center><img src=./pcie_pic/1732572534948a2f1a691eb16e044db9.png /></center>
+Scratchpad缓冲区是系统内存的PAGESIZE块，xHCI用来存储其内部状态。xHCI可以请求0到1024个缓冲区。所需的缓冲区数量在HCSPARAMS1寄存器中给出。每个缓冲区是一个与PAGESIZE边界对齐的PAGESIZE块（Page Size一般是4KByte，整个Scratchpad缓冲区大小为N*4KByte）。
+Scratchpad缓冲区数组是一个包含Scratchpad缓冲器地址的数组。它的大小等于硬件所需的最大暂存缓冲区的数量。指向此数组基的指针位于设备上下文基地址数组的开头。硬件使用此指针访问访问缓冲区的数组。分配后，系统软件不应干扰Scratchpad缓冲区。在将控制器置于运行状态之前，
+应分配临时缓冲区。设备上下文基地址数组元素1~N的位定义：
+<center><img src=./pcie_pic/391e20f33b7a2da7e729075a3ab0c569.png /></center>
+<center><img src=./pcie_pic/cba395dafcf06eeb4ad11581818b6eac.png /></center>
+每个slot又会对应一个Doorbell寄存器，软件可以通过写对应的寄存器，来告知xHCI使用对应slot，所对应的设备上下文。
+当使用某个slot，也即是enable某个slot后，需要构造对应的设备上下文数据结构，然后将其首地址放入DCBAA数组里面对应的条目中。
+1.1.2.1.1.1.DC
+<center><img src=./pcie_pic/5f0c8343203294303f08109fcf9c8601.png /></center>
+<center><img src=./pcie_pic/6095fe6631d07e330cd3e8f6e076b224.png /></center>
+DC，设备上下文数据结构，内存数据结构。
+设备上下文数据结构（Device Context data structure）被xHC管理并用来向系统软件报告设备配置和状态 信息 。
+设备上下文数据结构由32个数据结构的数组组成。 第一个上下文数据结构（索引=“ 0”）是Slot上下文数据结构。 其余上下文数据结构（索引1-31）是端点上下文数据结构。
+作为枚举USB设备的一部分，系统软件分配一个设备上下文数据结构给在Host内存中的设备并且将它初始化为“0”。数据结构的归属权就传给了xHC通过一个地址设备命令（Address Device Command）。xHC保持着设备上下文信息的归属权直到设备slot因为Disable Slot命令不能使用。
+设备上下文数据结构由xHC拥有时，应被系统软件视为只读。
+DCBAA里面的每个条目存放的是一个设备上下文数据结构的首地址（首地址，因为设备上下文也是一个数组）。
+1.1.2.1.1.1.1.Slot Context
+槽上下文（Slot Context）的结构如下：
+<center><img src=./pcie_pic/7965f5a1b49a71488a8bddd596943ac8.png /></center>
+<center><img src=./pcie_pic/a61b6b57163a219c2899487172806867.png /></center>
+<center><img src=./pcie_pic/50bd9f7b201673f708abeac6ec67d10a.png /></center>
+槽上下文包含与整个设备相关的信息，或影响一个USB设备的所有端点。这个数据结构作为设备上下文的成员（也作为Input Context的成员，这里我们只讲作为设备上下文的成员）。槽上下文数据结构提供的信息包括：控制（Control），状态（State），寻址（Addressing），
+和功耗管理（Power Management）。xHC使用Slot State来标识当前设备的状态并映射到USB协议中描述的USB 设备的状态（如下图）。
+xHC分配的USB设备地址，可以被开发者使用总线分析仪来跟踪设备相关的USB活动。Route String被hubs用来路由Packets到下游端口，即定位Super Speed Packet的目标。Route Srting的形式在USB3协议规范的8.9节有介绍。Speed， TT Port Number和TT Hub Slot ID允许xHC执行
+address连接到高速hub后面的低速（low）和全速（full）设备时所必须的拆分事务（Split Transactions）。功耗管理信息包括Max Exit Latency，被xHC用于总线上等时包（Isoch packets）的调度。
+7.1.2.1.1.1.2.Endpoint Context
+<center><img src=./pcie_pic/e077c340e2cc2f0ea72cd9584f65c75b.png /></center>
+<center><img src=./pcie_pic/5317d4775a0b70667985a58f7010fd10.png /></center>
+<center><img src=./pcie_pic/8a6d98392d401add3de52c2db3ff6f6c.png /></center>
+端点上下文数据结构定义一个具体USB端点（Endpoint）的配置（Configuration）和状态（State），这个数据结构作为设备上下文的成员（也作为Input Context的成员，这里我们只讲作为设备上下文的成员）。端点上下文数据结构被xHC用来向系统软件报告端点相关的参数值。
+大多数端点上下文（Endpoint Context）包含端点相关的类型（Type），状态（State），带宽（Bandwidth）的信息，这些信息对应着设备报告的相关的端点描述符中的信息。在端点描述符中，也定义了TR Dequeue Pointer字段，这个指针指向与Pipe相关联的Transfer Ring。
+对于USB3的Bulk端点有一个特殊的情况，因为USB3的Bulk Pipe支持Streams，所以TR Dequeue Pointer也可能指向一个 Stream Context Array。
+注意设备上下文提供USB设备所能声明的31个端点的设备上下文。但是大多数设备只有声明少部分的端点，也就说设备上下文中大部分端点上下文是没有被使用的。
+端点上下文也包含一些和Debug与Pip相关的Transfer操作的字段。Error Counter（CErr）字段可以用来强制对USB事务的无限制的Retry。
+1.1.2.1.1.1.2.1.Stream Context Array
+流山下文数组被用来定义USB3中支持Streams的端点的Transfer Ring。一个流上下文数组（Stream Context Array）由流上下文数据结构组成（Streams Context Data Structures）。在一个主流上下文数组（Primary Streams Context Array）中，其流上下文数据结构
+（Streams Context Data Structures）数量和其位置，都是被定义在其父端点上下文数据结构中（Parent Endpoint Context）。
+1.1.2.1.1.1.2.1.1.Stream Context
+Stream上下文数据结构提供了一个指针，该指针指向流的Transfer Ring，并向xHC提供一些不透明（Opaque）（暂存，Scratchpad）的空间。
+<center><img src=./pcie_pic/93fd52194fb3a532c2f002e4a2f5d22f.png /></center>
+<center><img src=./pcie_pic/17b4f35957cd7e5ff623aed31a72deb7.png /></center>
+1.1.2.1.1.1.3.Input Context
+系统软件使用输入上下文数据结构来定义设备配置和状态信息，这些信息将由地址设备，配置端点或评估上下文命令传递给xHC。它由一个输入控制上下文数据结构，一个Slot Context和端点上下文数据结构组成。
+输入控制上下文数据结构确定该命令会影响其余的哪些上下文。命令完成后，软件可以重新使用或释放输入上下文数据结构。
+在整个文档中，输入上下文中包含的插槽上下文或端点上下文也称为“输入”插槽或端点上下文。
+1.1.2.1.1.1.3.1.Input Control Context
+<center><img src=./pcie_pic/7ee93412720908088847afe4be8d23d9.png /></center>
+<center><img src=./pcie_pic/632e47b22f1fae4c9e82cf6f67680912.png /></center>
+在这里插入图片描述
+在这里插入图片描述
+1.1.2.2.DBOFF
+Doorbell Array Offset，门铃寄存器数组偏移。
+<center><img src=./pcie_pic/8e73250abb7c2ea1928d780ba2e28512.png /></center>
+1.1.2.3.DB
+Doorbell，门铃寄存器。(一个设备对应一个DB)
+偏移地址：由xHC的capability寄存器空间里的DBOFF寄存器来指定。
+数组大小：由xHC的capability寄存器空间里的HCSPARAMS1寄存器MAXSLOTS字段定义。
+<center><img src=./pcie_pic/918f3043cbdaaac31aca91293121a7f5.png /></center>
+xHCI提供了256个32位门铃寄存器的数组，位于MMIO空间中，并通过设备Slot ID进行索引。
+最多256个门铃寄存器的阵列，最多支持255个USB设备或集线器。
+每个门铃寄存器Doorbell Register为系统软件提供了一种机制，用于通知xHC是否要执行与插槽或端点相关的工作。
+系统软件通过门铃寄存器中的“ DB Target”字段将写入一个值，该值标识“敲响”门铃的原因。
+门铃寄存器0分配给主机控制器以进行命令环管理。
+此寄存器，DB Target字段只有一个有效值，即0（主机控制器命令）
+门铃寄存器1-255称为设备上下文门铃寄存器。
+设备上下文门铃寄存器与设备插槽之间存在1：1映射。
+系统软件在与各自的设备插槽关联的Transfer Ring（端点/流）上插入工作后，会响起设备上下文门铃。
+1.1.3.事件环（Event Ring）
+每个中断器的一种循环队列，为xHC提供了一种向系统软件报告的方式：数据传输和命令完成状态，根集线器端口状态更改以及其他与xHC相关的事件。（或者说：xHC使用事件环返回状态和命令结果，并将其传输到系统软件。）
+Transfer Request Block (TRB)
+Event Rings为xHCI提供向系统软件报告的方式，报告的内容包括：数据传输和命令完成状态，root hub port状态改变，和其他xHCI相关的事件。一个Event Ring通过Runtime Registers中的Event Ring Segment Table Base Address，Segment Table Size和Dequeue Pointer Registers来定义。
+1.1.3.1.RTSOFF
+Runtime Register Space Offset Register，运行时间寄存器空间偏移寄存器。
+1.1.3.2.IMAN
+Interrupt Management Register，中断管理寄存器。
+1.1.3.3.ERSTSZ
+Event Ring Segment Table Size Register，事件环段表大小寄存器。
+1.1.3.4.ERSTBA
+Event Ring Segment Table Base Address Register，事件环段表的基地址寄存器
+1.1.3.5.ERDP
+Event Ring Dequeue Pointer Registers，事件环出队指针寄存器。
+1.2.Transfer Request Block (TRB)
+<center><img src=./pcie_pic/068eb5d2fe43afe7835a94e976c23537.png /></center>
+Transfer Request Block（TRB）是描述 USB 数据传输或事件的数据结构。TRB 包含了传输或事件的各种参数、状态和控制信息，如端点地址、数据缓冲区、传输长度、传输类型、方向等。TRB 是用于与 xHCI 控制器进行通信的重要数据结构。
+传输请求块（TRB）是一种通过软件在内存中构造的数据结构，其主要用于在主机内存和xHC之间传输单个物理上连续的数据块。
+每个TRB包含单个数据缓冲区指针，缓冲区的大小以及一些其他控制信息。
+TRB数据结构的小尺寸允许在4K段（内存页）中最多定义256个单独的缓冲区。
+所有TRB数据结构的大小应为16个字节。
+TRB的“数据缓冲区指针”字段为数据寻址提供了字节粒度。TRB的“数据缓冲区指针”字段为数据寻址提供了字节粒度。
+“Length”字段可以包含的最大值是64K。传输“长度”字节后，xHC将自动访问环中的下一个TRB。系统软件有责任确保“长度”字段与可能遇到的任何页面交叉都一致。
+TRB中的“控制字”应包含一个TRB类型字段，并且可以包含以下一个或多个字段：链（CH），完成中断（IOC），立即数据（IDT），无监听（NS），中断 短数据包（ISP），启动Isoch ASAP（SIA）和帧ID。
+1.2.1.TRB类型
+<center><img src=./pcie_pic/11f8f6db20f14ca2ad43bed41f10a2c7.png /></center>
+<center><img src=./pcie_pic/1d0cb7bd5629572a1af6d98ab68ac672.png /></center>
+EP允许的TRB类型:
+<center><img src=./pcie_pic/179fa9847698a51df30b6f137d043a61.png /></center>
+Transfer Descriptor Type允许的TRB类型:
+<center><img src=./pcie_pic/1b8907f2c8db916f6a110a3441a0e2f7.png /></center>
+1.2.1.1.Transfer TRB
+1.2.1.1.1.Normal TRB
+Normal TRB用于块/控制（数据阶段）/中断端点传输。
+<center><img src=./pcie_pic/f65878416cb8dee93713965f58285226.png /></center>
+<center><img src=./pcie_pic/df88ff2a271ca57e8e8003624d3529ed.png /></center>
+<center><img src=./pcie_pic/214ec60c16ffb04f475f5810ec350dd4.png /></center>
+<center><img src=./pcie_pic/73f54d80fd17c21419b7302c12b08588.png /></center>
+<center><img src=./pcie_pic/19808c8db0051b1d361b69252ead2743.png /></center>
+1.2.1.1.2.Control TRBs
+1.2.1.1.2.1.Setup Stage TRB
+<center><img src=./pcie_pic/de1217ee4293a98a1cc36f8b9c6e64b1.png /></center>
+<center><img src=./pcie_pic/cad60c2fbaeb1cd7f9ba1b05263396ec.png /></center>
+1.2.1.1.2.2.Date Stage TRB
+<center><img src=./pcie_pic/79df4f615dd0484c1ed18f30a71efe26.png /></center>
+<center><img src=./pcie_pic/06c42ee008adaee1a7d8021d9e62b4a0.png /></center>
+1.2.1.1.2.3.Status Stage TRB
+<center><img src=./pcie_pic/a0a74ccdd246a59ae6f8cd662f807650.png /></center>
+<center><img src=./pcie_pic/d866fc0d9b3e67be0f67e9370f4a3800.png /></center>
+1.2.1.1.3.Isoch TRB
+<center><img src=./pcie_pic/53a18524d97b5985de6b429a6a451e5c.png /></center>
+1.2.1.1.4.No Op TRB
+<center><img src=./pcie_pic/7bea3470658d5cfba04272c91a9f8e11.png /></center>
+1.2.1.2.Event TRBs
+1.2.1.2.1.Transfer Event TRB
+<center><img src=./pcie_pic/6a05ceff15f63a3b47d0bd6bd05f7c65.png /></center>
+1.2.1.2.2.Command Completion Event TRB
+<center><img src=./pcie_pic/60f3b57133cdc208d001d36d2f6d941c.png /></center>
+1.2.1.2.3.Port Status Change Event TRB
+1.2.1.2.4.Bandwidth Request Event TRB
+1.2.1.2.5.Doorbell Event TRB
+1.2.1.2.6.Host Controller Event TRB
+1.2.1.2.7.Device Notification Event TRB
+1.2.1.2.8.MFINDEX Wrap Event TRB
+1.2.1.3.Command TRBs
+1.2.1.3.1.No Op Command TRB
+1.2.1.3.2.Enable Slot Command TRB
+1.2.1.3.3.Disable Slot Command TRB
+1.2.1.3.4.Address Device Command TRB
+1.2.1.3.5.Configure Enapoint Command TRB
+1.2.1.3.6.Evaluate Context Command TRB
+1.2.1.3.7.Reset Endpoint Command TRB
+1.2.1.3.8.Stop Endpoint Command TRB
+1.2.1.3.9.Set TR Dequeue Pointer Command TRB
+1.2.1.3.10.Reset Device Command TRB
+1.2.1.3.11.Force Event Command TRB
+1.2.1.3.12.Negotiate Bamdwidth Command TRB
+1.2.1.3.13.Set Latency Tolerance Value Command TRB
+1.2.1.3.14.Get Port Bandwith Command TRB
+1.2.1.3.15.Force header Command TRB
+1.2.1.3.16.Get Extended Property Command TRB
+1.2.1.3.17.Set Extended Property Command TRB
+1.2.1.4.Other TRB
+1.2.2.2.1.Link TRB
+1.2.2.2.2.Event Data TRB
+1.3.Transfer Descriptor (TD)
+Transfer Descriptor（TD）也是描述 USB 数据传输的数据结构。
+TRB中的链标志用于标识组成TD的TRB。
+因此，TD指的是Transfer Ring上连续的TRB数据结构集（其中在TD的最后一个TRB之外的所有TRB中都设置了Chain标志）。
+注意：
+Command和Event TRB不支持链位（CH），因此所有命令描述符（CD）和事件描述符（ED）仅包含一个TRB。
+传输描述符通过驻留在主机内存中的传输环进行管理。
+TD中的Normal，Data Stage或Isoch TRB指向的任何缓冲区的大小可以在0到64K字节之间。
+如果在处理含有多个TRB 的TD时检测到错误，则xHC应为TRB生成一个Transfer Event，并使用适当的错误条件代码检测到该错误，然后才可以前进到下一个TD。
+如果在前进到下一个TD的过程中遇到了带有其IOC标志的传输TRB，则为该传输TRB生成的 Transfer Event 的条件代码应为“成功”，因为与该TRB实际无关的错误生成了事件。但是，xHC实现可能会多余地声明原始错误条件代码。
+通常，Transfer Event的完成代码代表生成它的传输TRB引用的缓冲区的状态，但是可能会有例外。
 &nbsp;&nbsp;&nbsp;&nbsp;<a href=./usb_mmio.php#res00>返回顶部</a><br>";
 echo "</pre>";
 ?>
