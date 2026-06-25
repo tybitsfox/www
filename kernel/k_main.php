@@ -39,7 +39,7 @@ echo "<a href=./oss.org.cn/kernel-book/ldd3/index.html target=_blank>Linux设备
 <a href=../wiki.osdev.org/Expanded_Main_Page>HardWare develop</a>&nbsp;&nbsp;&nbsp;&nbsp;
 <a href=./vbe.php target=_blank>VBE3.0手册</a><br><br><a href=./usb_mmio.php target=_blank>USB Mass storage相关</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./mmu.php target=_blank>内存管理五大技术概念：MMU、IOMMU、MMIO、mmap、ioremap</a>&nbsp;&nbsp;&nbsp;&nbsp;
 <br><br>
-<a href=./xhci12B.php target=_blank>XHCI 1.2b 规范摘要</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./bot.php target=_blank>BOT 简介 Bulk-Only Transport</a>&nbsp;&nbsp;&nbsp;&nbsp;";
+<a href=./xhci12B.php target=_blank>XHCI 1.2b 规范摘要</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./bot.php target=_blank>BOT 简介 Bulk-Only Transport</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./apic.php target=_blank>APIC高级可编程中断控制器</a>&nbsp;&nbsp;&nbsp;&nbsp;";
 echo "<br><br>&nbsp;&nbsp;&nbsp;七、我的内核:<br><br>";
 echo "<a href=./kernel_mem.php target=_blank>内存映像</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./kernel_port.php target=_blank>硬件端口</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./asm_explain.php taget=_blank>汇编指令</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./topic.php#bochs target=_blank>bochs使用</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./pci_pcie.php target=_blank>PCI基础</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./pcie.php target=_blank>PCIE基础</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=./content/index.html target=_blank>Intel80386程序员参考手册</a><br><br>";
 
