@@ -1,7 +1,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <?php
 echo "<font size=6 color=#ff0000><center>汇编指令补充</center></font><br><br><br>";
-echo "<center><a href=asm_explain.php#asm_bt>一、BT/BTC/BTR/BTS指令</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=asm_explain.php#asm_cpuid>二、cpuid指令</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=asm_explain.php#asm_rdmsr>三、RDMSR/WRMSR指令</a></center>";
+echo "<center><a href=asm_explain.php#asm_bt>一、BT/BTC/BTR/BTS指令</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=asm_explain.php#asm_cpuid>二、cpuid指令</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=asm_explain.php#asm_rdmsr>三、RDMSR/WRMSR指令</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=asm_explain.php#asm_bswap>四、bswap指令</a></center>";
 echo "<pre>
 <font size=5 color=#ff0000><a name=asm_bt></a>一、BT/BTC/BTR/BTS指令</font>
 汇编语言中bt是位操作指令：
@@ -397,8 +397,7 @@ CPU字串索引 (Brand Index)详解:
 0x8: Pentium 4
 
 </pre>";
-echo "<pre>
-<font size=5 color=#ff0000><a name=asm_rdmsr></a>三、rdmsr, wrmsr指令</font>
+echo "<pre><font size=5 color=#ff0000><a name=asm_rdmsr></a>三、rdmsr, wrmsr指令</font>
 
 1、MSR简介
           Model Specific Register (MSR) as the name implies is model specific and may change from processor model number (n) to processor model number (n+1).
@@ -473,6 +472,20 @@ INSTRUCTION SET REFERENCE
 RDMSR—Read from Model Specific Register (Continued)
 Virtual-8086 Mode Exceptions
 #GP(0)  The RDMSR instruction is not recognized in virtual-8086 mode.
+</pre>";
+echo "<pre><font size=5 color=#ff0000><a name=asm_bswap></a>四、bswap指令</font>
+32位寄存器大小端序转换指令：bswap，该指令可将32位寄存器中的低8位（0-7）与最高8位(24-31)以及中低位(8-15)与中高位(16-23)互换，一条指令实现MSB（大端序）与LSB（小端序）转换：
+movl $0x12345678,%eax;
+bswap %eax;
+结果: eax=0x78563412
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+
 </pre>";
 
 ?>
